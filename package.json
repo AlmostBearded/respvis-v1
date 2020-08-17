@@ -1,0 +1,46 @@
+{
+  "name": "respvis",
+  "version": "0.2.0",
+  "description": "A f\u001framework to build responsive Svisualizations ",
+  "main": "index.js",
+  "scripts": {
+    "build": "npx gulp build",
+    "start": "npx gulp"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlmostBearded/respvis.git"
+  },
+  "keywords": [
+    "d3",
+    "faberjs",
+    "layout-engine",
+    "svg",
+    "information-visualization",
+    "visualization",
+    "charts"
+  ],
+  "author": "Peter Oberrauner",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AlmostBearded/respvis/issues"
+  },
+  "homepage": "https://github.com/AlmostBearded/respvis#readme",
+  "devDependencies": {
+    "browser-sync": "^2.26.10",
+    "del": "^5.1.0",
+    "gulp": "^4.0.2",
+    "gulp-cli": "^2.3.0",
+    "rollup": "^2.23.0",
+    "@rollup/plugin-commonjs": "^11.0.2",
+    "@rollup/plugin-typescript": "^4.1.1",
+    "@rollup/plugin-node-resolve": "^7.1.1",
+    "@types/d3": "^5.7.2",
+    "tslib": "^1.11.1",
+    "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "d3": "^5.16.0",
+    "debounce": "^1.2.0"
+  }
+}
