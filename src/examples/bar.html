@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <title>RespVis - Bar Charts</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="../respvis.css" />
+    <style>
+      #chart-container {
+        width: 100%;
+        height: 75vh;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Bar Charts</h1>
+    <div id="chart-container"></div>
+    <script src="../respvis.js"></script>
+    <script>
+      console.log('bar example');
+
+      var bars = respVis
+        .bars()
+        .categories(['Vienna', 'Graz', 'Linz', 'Salzburg', 'Innsbruck', 'Klagenfurt', 'Villach'])
+        .values([1691000, 222000, 205000, 153000, 132000, 91000, 59000])
+        .padding(0.1)
+        .orientation('Vertical');
+
+      // var categoriesAxis = respVis
+      //   .axis()
+      //   .scale(bars.categoriesScale())
+      //   .position('Bottom')
+      //   .title('Cities');
+
+      // var valuesAxis = respVis
+      //   .axis()
+      //   .scale(bars.valuesScale())
+      //   .position('Left')
+      //   .title('Population');
+
+      var chart = respVis
+        .chart()
+        .components([bars /*, categoriesAxis, valuesAxis*/]);
+
+      chart('#chart-container');
+    </script>
+  </body>
+</html>

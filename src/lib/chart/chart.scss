@@ -1,0 +1,19 @@
+.chart {
+  width: 100%;
+  height: 100%;
+}
+
+.chart {
+  display: grid;
+  grid-template-columns: [leftMargin] 2px [axisStart] auto [axisEnd barsStart] 1fr [barsEnd rightMargin] 2px;
+  grid-template-rows: [topMargin] 0px [barsStart] 1fr [barsEnd axisStart] auto [axisEnd bottomMargin] 0px;
+  justify-items: stretch;
+  align-items: stretch;
+}
+
+@media screen and (min-width: 50rem) {
+  .chart {
+    grid-template-columns: [leftMargin] 25px [axisStart] auto [axisEnd barsStart] 1fr [barsEnd rightMargin] 25px;
+    grid-template-rows: [topMargin] 25px [barsStart] 1fr [barsEnd axisStart] auto [axisEnd bottomMargin] 25px;
+  }
+}
