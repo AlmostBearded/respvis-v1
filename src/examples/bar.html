@@ -25,11 +25,11 @@
         .padding(0.1)
         .orientation('Vertical');
 
-      // var categoriesAxis = respVis
-      //   .axis()
-      //   .scale(bars.categoriesScale())
-      //   .position('Bottom')
-      //   .title('Cities');
+      var categoriesAxis = respVis
+        .axis()
+        .scale(bars.categoriesScale())
+        .position(respVis.AxisPosition.Bottom)
+        .title('Cities');
 
       // var valuesAxis = respVis
       //   .axis()
@@ -37,9 +37,9 @@
       //   .position('Left')
       //   .title('Population');
 
-      var chart = respVis
-        .chart()
-        .components([bars /*, categoriesAxis, valuesAxis*/]);
+      var layout = respVis.layout().components([bars, categoriesAxis /*, valuesAxis*/]);
+
+      var chart = respVis.chart().layout(layout);
 
       chart('#chart-container');
     </script>

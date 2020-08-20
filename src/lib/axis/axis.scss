@@ -1,0 +1,101 @@
+.axis .title {
+  letter-spacing: 0.5em;
+  font-size: 1.15em;
+  font-weight: bold;
+}
+
+.axis .ticks .domain,
+.axis .tick line {
+  stroke: black;
+}
+
+.axis .ticks .domain {
+  fill: none;
+}
+
+.axis {
+  opacity: 1;
+  transition: opacity 0.5s;
+}
+
+.transition .axis {
+  opacity: 0;
+  transition: opacity 0s;
+}
+
+.left-axis {
+  display: grid;
+  grid-column: leftAxisStart / leftAxisEnd;
+  grid-row: leftAxisStart / leftAxisEnd;
+  grid-template-columns: [titleStart] auto [titleEnd margin] 0px [ticksStart] auto [ticksEnd];
+}
+
+.left-axis .ticks {
+  width: min-content;
+  grid-column: ticksStart / ticksEnd;
+  grid-row: 1 / 2;
+}
+
+.left-axis .ticks text {
+  transform: translate(0, -0.3em) rotate(-45deg);
+  transition: transform 1s;
+  text-anchor: end;
+}
+
+.left-axis .title {
+  transform: translate(0.7em, 0) rotate(-90deg);
+  text-anchor: end;
+
+  height: min-content;
+  width: min-content;
+  grid-column: titleStart / titleEnd;
+  grid-row: 1 / 2;
+  align-self: center;
+}
+
+.bottom-axis {
+  display: grid;
+  grid-column: bottomAxisStart / bottomAxisEnd;
+  grid-row: bottomAxisStart / bottomAxisEnd;
+  grid-template-rows: [ticksStart] auto [ticksEnd margin] 0px [titleStart] auto [titleEnd];
+}
+
+.bottom-axis .ticks {
+  height: min-content;
+  grid-column: 1 / 2;
+  grid-row: ticksStart / ticksEnd;
+}
+
+.bottom-axis .ticks text {
+  transform: translate(0, 0.5em) rotate(-45deg);
+  transition: transform 1s;
+  text-anchor: end;
+}
+
+.bottom-axis .title {
+  transform: translate(0, 0.7em);
+  height: min-content;
+  width: min-content;
+  grid-column: 1 / 2;
+  grid-row: titleStart / titleEnd;
+  justify-self: center;
+}
+
+@media screen and (min-width: 50rem) {
+  .left-axis {
+    grid-template-columns: [titleStart] auto [titleEnd margin] 10px [ticksStart] auto [ticksEnd];
+  }
+
+  .left-axis .ticks text {
+    transform: translate(0, 0.3em);
+  }
+
+  .bottom-axis {
+    grid-template-rows: [ticksStart] auto [ticksEnd margin] 10px [titleStart] auto [titleEnd];
+  }
+
+  .bottom-axis .ticks text {
+    transform: translate(0, 0.7em) rotate(0deg);
+    text-anchor: middle;
+  }
+}

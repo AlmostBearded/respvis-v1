@@ -1,8 +1,10 @@
+import { Component } from '../component';
 import { chainedTransition } from '../transition';
 import { nullFunction } from '../utils';
-import { Selection } from 'd3-selection';
+import { Selection, BaseType } from 'd3-selection';
 import { scaleBand, scaleLinear, ScaleBand, ScaleLinear } from 'd3-scale';
 import { max } from 'd3-array';
+import { Transition } from 'd3-transition';
 
 export function renderVerticalBars(selection, data, bandScale, linearScale, transitionDuration) {
   selection
@@ -41,21 +43,22 @@ enum Orientation {
   Horizontal = 'Horizontal',
 }
 
-export function bars() {
+export function bars(): Component {
   let _categories: Array<string> = [];
   let _values: Array<number> = [];
   let _padding: number = 0;
   let _orientation: Orientation = Orientation.Vertical;
-  let _categoriesScale: ScaleBand<string>;
-  let _valuesScale: ScaleLinear<number, number>;
+  let _categoriesScale: ScaleBand<string> = scaleBand();
+  let _valuesScale: ScaleLinear<number, number> = scaleLinear();
   let _updateCategories = nullFunction;
   let _updateValues = nullFunction;
   let _updatePadding = nullFunction;
   let _updateOrientation = nullFunction;
+  let _resize = nullFunction;
 
   function renderedBars(selection: Selection<SVGElement, unknown, HTMLElement, unknown>) {
-    _categoriesScale = scaleBand().domain(_categories).padding(_padding);
-    _valuesScale = scaleLinear().domain([0, max(_values)!]);
+    _categoriesScale.domain(_categories).padding(_padding);
+    _valuesScale.domain([0, max(_values)!]);
 
     console.assert(selection.node(), 'Cannot render bars into an empty selection.');
     var boundingRect = selection.node()!.getBoundingClientRect();
@@ -68,23 +71,40 @@ export function bars() {
     }
 
     const barsContainerSelection = selection.append('g').classed('bars', true);
+    let barsSelection = renderBars();
 
-    const mergedData: [string, number][] = _categories.map((category, index) => [
-      category,
-      _values[index],
-    ]);
+    function renderBars(): Transition<SVGRectElement, unknown, BaseType, unknown> {
+      const mergedData: [string, number][] = _categories.map((category, index) => [
+        category,
+        _values[index],
+      ]);
 
-    const barsSelection = barsContainerSelection
-      .selectAll<SVGRectElement, [string, number][]>('rect')
-      .data(mergedData)
-      .join('rect')
-      .classed('bar', true)
-      .transition()
-      .duration(0)
-      .attr('x', (d) => _categoriesScale(d[0])!)
-      .attr('y', (d) => _valuesScale(d[1]))
-      .attr('height', (d) => _valuesScale(0) - _valuesScale(d[1]))
-      .attr('width', (d) => _categoriesScale.bandwidth());
+      return barsContainerSelection
+        .selectAll<SVGRectElement, [string, number][]>('rect')
+        .data(mergedData)
+        .join('rect')
+        .classed('bar', true)
+        .transition()
+        .duration(0)
+        .attr('x', (d) => _categoriesScale(d[0])!)
+        .attr('y', (d) => _valuesScale(d[1]))
+        .attr('height', (d) => _valuesScale(0) - _valuesScale(d[1]))
+        .attr('width', (d) => _categoriesScale.bandwidth());
+    }
+
+    _resize = function () {
+      // TODO: Fit into calculated layout for drawing area
+      var boundingRect = selection.node()!.getBoundingClientRect();
+      if (_orientation === Orientation.Vertical) {
+        _categoriesScale.range([0, boundingRect.width]);
+        _valuesScale.range([boundingRect.height, 0]);
+      } else if (_orientation === Orientation.Horizontal) {
+        _categoriesScale.range([0, boundingRect.height]);
+        _valuesScale.range([0, boundingRect.width]);
+      }
+
+      barsSelection = renderBars();
+    };
 
     _updateCategories = function () {};
     _updateValues = function () {};
@@ -118,6 +138,18 @@ export function bars() {
     _orientation = orientation || Orientation.Vertical;
     _updateOrientation();
     return renderedBars;
+  };
+
+  renderedBars.categoriesScale = function categoriesScale() {
+    return _categoriesScale;
+  };
+
+  renderedBars.valuesScale = function valuesScale() {
+    return _valuesScale;
+  };
+
+  renderedBars.resize = function resize(): void {
+    _resize();
   };
 
   return renderedBars;
