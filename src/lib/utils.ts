@@ -1,10 +1,12 @@
+import { Primitive } from 'd3-array';
+
 export function nullFunction() {}
 
 // Code inspired by https://stackoverflow.com/a/22909984
 export function getComputedStyleWithoutDefaults(
   element: SVGElement,
   properties: string[]
-): { [key: string]: string | number | boolean } {
+): PrimitiveObject {
   // creating an empty dummy object to compare with
   var dummy = document.createElementNS(
     'http://www.w3.org/2000/svg',
@@ -29,3 +31,5 @@ export function getComputedStyleWithoutDefaults(
 
   return diffObj;
 }
+
+export type PrimitiveObject = { [key: string]: Primitive };

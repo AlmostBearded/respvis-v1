@@ -5,6 +5,7 @@ import { Selection, BaseType } from 'd3-selection';
 import { scaleBand, scaleLinear, ScaleBand, ScaleLinear } from 'd3-scale';
 import { max } from 'd3-array';
 import { Transition } from 'd3-transition';
+import { Layout } from '../layout/layout';
 
 export function renderVerticalBars(selection, data, bandScale, linearScale, transitionDuration) {
   selection
@@ -54,7 +55,7 @@ export function bars(): Component {
   let _updateValues = nullFunction;
   let _updatePadding = nullFunction;
   let _updateOrientation = nullFunction;
-  let _resize = nullFunction;
+  let _resize: (layout: Layout) => void;
 
   function renderedBars(selection: Selection<SVGElement, unknown, HTMLElement, unknown>) {
     _categoriesScale.domain(_categories).padding(_padding);
@@ -92,15 +93,15 @@ export function bars(): Component {
         .attr('width', (d) => _categoriesScale.bandwidth());
     }
 
-    _resize = function () {
+    _resize = function (layout: Layout) {
       // TODO: Fit into calculated layout for drawing area
-      var boundingRect = selection.node()!.getBoundingClientRect();
+      var layoutRect =  layout.layoutOfElement(barsContainerSelection.node()!)!;
       if (_orientation === Orientation.Vertical) {
-        _categoriesScale.range([0, boundingRect.width]);
-        _valuesScale.range([boundingRect.height, 0]);
+        _categoriesScale.range([0, layoutRect.width]);
+        _valuesScale.range([layoutRect.height, 0]);
       } else if (_orientation === Orientation.Horizontal) {
-        _categoriesScale.range([0, boundingRect.height]);
-        _valuesScale.range([0, boundingRect.width]);
+        _categoriesScale.range([0, layoutRect.height]);
+        _valuesScale.range([0, layoutRect.width]);
       }
 
       barsSelection = renderBars();
@@ -148,8 +149,8 @@ export function bars(): Component {
     return _valuesScale;
   };
 
-  renderedBars.resize = function resize(): void {
-    _resize();
+  renderedBars.resize = function resize(layout: Layout): void {
+    _resize(layout);
   };
 
   return renderedBars;
