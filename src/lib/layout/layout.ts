@@ -1,10 +1,12 @@
 import { Component, nullComponent } from '../component';
-import { select, Selection } from 'd3-selection';
+import { select, Selection, BaseType } from 'd3-selection';
 import { nullFunction, getComputedStyleWithoutDefaults, PrimitiveObject } from '../utils';
 import { computeLayout as faberComputeLayout } from './faberjs';
 
-export interface Layout extends Component {
+export interface Layout {
+  (selection: Selection<SVGElement, unknown, BaseType, unknown>): void;
   components(components?: Component[]): Component[] | Layout;
+  resize(): void;
   layoutOfElement(element: SVGElement): DOMRect | null;
 }
 
@@ -14,7 +16,9 @@ export function layout(): Layout {
   let _resize = nullFunction;
   let _layoutOfElement: (element: SVGElement) => DOMRect | null;
 
-  const renderedLayout = function renderedLayout(selection: Selection<SVGElement, unknown, HTMLElement, unknown>) {
+  const renderedLayout = function renderedLayout(
+    selection: Selection<SVGElement, unknown, HTMLElement, unknown>
+  ) {
     for (let i = 0; i < _components.length; ++i) {
       _components[i](selection);
     }
@@ -41,7 +45,7 @@ export function layout(): Layout {
     };
 
     _updateComponents = function (): void {};
-  }
+  };
 
   renderedLayout.resize = function resize(): void {
     _resize();

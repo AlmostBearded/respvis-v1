@@ -3,46 +3,16 @@ import { chainedTransition } from '../transition';
 import { nullFunction } from '../utils';
 import { Selection, BaseType } from 'd3-selection';
 import { scaleBand, scaleLinear, ScaleBand, ScaleLinear } from 'd3-scale';
-import { max } from 'd3-array';
+import { max, merge } from 'd3-array';
 import { Transition } from 'd3-transition';
 import { Layout } from '../layout/layout';
 
-export function renderVerticalBars(selection, data, bandScale, linearScale, transitionDuration) {
-  selection
-    .selectAll('rect')
-    .data(data)
-    .join('rect')
-    .classed('bar', true)
-    .each(function (d) {
-      chainedTransition(this)
-        .duration(transitionDuration)
-        .attr('x', bandScale(d.bandScaleValue))
-        .attr('y', linearScale(d.linearScaleValue))
-        .attr('height', linearScale(0) - linearScale(d.linearScaleValue))
-        .attr('width', bandScale.bandwidth());
-    });
+export enum Orientation {
+  Vertical,
+  Horizontal,
 }
 
-export function renderHorizontalBars(selection, data, bandScale, linearScale, transitionDuration) {
-  selection
-    .selectAll('rect')
-    .data(data)
-    .join('rect')
-    .classed('bar', true)
-    .each(function (d) {
-      chainedTransition(this)
-        .duration(transitionDuration)
-        .attr('x', linearScale(0))
-        .attr('y', bandScale(d.bandScaleValue))
-        .attr('height', bandScale.bandwidth())
-        .attr('width', linearScale(d.linearScaleValue));
-    });
-}
-
-enum Orientation {
-  Vertical = 'Vertical',
-  Horizontal = 'Horizontal',
-}
+type BarsData = [string, number][];
 
 export function bars(): Component {
   let _categories: Array<string> = [];
@@ -57,7 +27,7 @@ export function bars(): Component {
   let _updateOrientation = nullFunction;
   let _resize: (layout: Layout) => void;
 
-  function renderedBars(selection: Selection<SVGElement, unknown, HTMLElement, unknown>) {
+  function renderedBars(selection: Selection<SVGElement, unknown, BaseType, unknown>) {
     _categoriesScale.domain(_categories).padding(_padding);
     _valuesScale.domain([0, max(_values)!]);
 
@@ -72,30 +42,20 @@ export function bars(): Component {
     }
 
     const barsContainerSelection = selection.append('g').classed('bars', true);
-    let barsSelection = renderBars();
+    renderBars();
 
-    function renderBars(): Transition<SVGRectElement, unknown, BaseType, unknown> {
-      const mergedData: [string, number][] = _categories.map((category, index) => [
-        category,
-        _values[index],
-      ]);
+    function renderBars() {
+      const mergedData: BarsData = _categories.map((category, index) => [category, _values[index]]);
 
-      return barsContainerSelection
-        .selectAll<SVGRectElement, [string, number][]>('rect')
-        .data(mergedData)
-        .join('rect')
-        .classed('bar', true)
-        .transition()
-        .duration(0)
-        .attr('x', (d) => _categoriesScale(d[0])!)
-        .attr('y', (d) => _valuesScale(d[1]))
-        .attr('height', (d) => _valuesScale(0) - _valuesScale(d[1]))
-        .attr('width', (d) => _categoriesScale.bandwidth());
+      const renderFunction =
+        _orientation === Orientation.Vertical ? renderVerticalBars : renderHorizontalBars;
+
+      barsContainerSelection.call(renderFunction, mergedData, _categoriesScale, _valuesScale, 0);
     }
 
     _resize = function (layout: Layout) {
       // TODO: Fit into calculated layout for drawing area
-      var layoutRect =  layout.layoutOfElement(barsContainerSelection.node()!)!;
+      var layoutRect = layout.layoutOfElement(barsContainerSelection.node()!)!;
       if (_orientation === Orientation.Vertical) {
         _categoriesScale.range([0, layoutRect.width]);
         _valuesScale.range([layoutRect.height, 0]);
@@ -104,7 +64,7 @@ export function bars(): Component {
         _valuesScale.range([0, layoutRect.width]);
       }
 
-      barsSelection = renderBars();
+      renderBars();
     };
 
     _updateCategories = function () {};
@@ -154,4 +114,48 @@ export function bars(): Component {
   };
 
   return renderedBars;
+}
+
+function renderVerticalBars(
+  selection: Selection<SVGElement, unknown, BaseType, unknown>,
+  data: BarsData,
+  bandScale: ScaleBand<string>,
+  linearScale: ScaleLinear<number, number>,
+  transitionDuration: number
+) {
+  selection
+    .selectAll('rect')
+    .data(data)
+    .join('rect')
+    .classed('bar', true)
+    .each(function (d) {
+      chainedTransition(this)
+        .duration(transitionDuration)
+        .attr('x', bandScale(d[0])!)
+        .attr('y', linearScale(d[1]))
+        .attr('height', linearScale(0) - linearScale(d[1]))
+        .attr('width', bandScale.bandwidth());
+    });
+}
+
+function renderHorizontalBars(
+  selection: Selection<SVGElement, unknown, BaseType, unknown>,
+  data: BarsData,
+  bandScale: ScaleBand<string>,
+  linearScale: ScaleLinear<number, number>,
+  transitionDuration: number
+) {
+  selection
+    .selectAll('rect')
+    .data(data)
+    .join('rect')
+    .classed('bar', true)
+    .each(function (d) {
+      chainedTransition(this)
+        .duration(transitionDuration)
+        .attr('x', linearScale(0))
+        .attr('y', bandScale(d[0])!)
+        .attr('height', bandScale.bandwidth())
+        .attr('width', linearScale(d[1]));
+    });
 }

@@ -1,8 +1,8 @@
-import { Selection } from 'd3-selection';
+import { Selection, BaseType } from 'd3-selection';
 import { Layout } from './layout/layout';
 
 export interface Component {
-  (selection: Selection<SVGElement, unknown, HTMLElement, unknown>): void;
+  (selection: Selection<SVGElement, unknown, BaseType, unknown>): void;
   resize(layout: Layout): void;
 }
 

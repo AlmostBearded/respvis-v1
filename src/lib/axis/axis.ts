@@ -1,4 +1,4 @@
-import { Selection, select } from 'd3-selection';
+import { Selection, select, BaseType } from 'd3-selection';
 import { axisLeft, axisBottom, axisTop, axisRight, AxisScale, Axis } from 'd3-axis';
 import { nullFunction } from '../utils';
 import { Component } from '../component';
@@ -32,35 +32,27 @@ export function axis(): Component {
   let _updateTitle = nullFunction;
   let _resize: (layout: Layout) => void;
 
-  function renderedAxis(selection: Selection<SVGElement, unknown, HTMLElement, unknown>) {
-    const axisSelection = selection.append('g').classed('axis', true);
-    const titleSelection = axisSelection.append('text').classed('title', true).text(_title);
-    const ticksSelection = axisSelection.append('g').classed('ticks', true);
+  function renderedAxis(selection: Selection<SVGElement, unknown, BaseType, unknown>) {
+    const axisSelection = selection
+      .append('g')
+      .classed('axis', true)
+      .classed(classByPosition.get(_position)!, true);
+    axisSelection.call(renderTitle, _title);
+    axisSelection.call(renderTicks);
 
-    axisSelection.classed(classByPosition.get(_position)!, true);
-
-    renderTicks();
-
-    function renderTicks() {
-      ticksSelection
-        .call(axisFunctionByPosition.get(_position)!(_scale))
-        .attr('font-size', null)
-        .attr('font-family', null)
-        .attr('text-anchor', null)
-        .attr('fill', null)
-        .call((ticksSelection) => ticksSelection.selectAll('text').attr('dy', null))
-        .call((ticksSelection) => ticksSelection.select('.domain').attr('stroke', null))
-        .call((ticksSelection) =>
-          ticksSelection
-            .selectAll('.tick')
-            .attr('opacity', null)
-            .call((tick) => tick.select('line').attr('stroke', null))
-            .call((tick) => tick.select('text').attr('fill', null))
-        );
+    function renderTicks(selection: Selection<SVGElement, unknown, BaseType, unknown>) {
+      switch (_position) {
+        case Position.Bottom:
+          selection.call(renderBottomTicks, _scale);
+          break;
+        case Position.Left:
+          selection.call(renderLeftTicks, _scale);
+          break;
+      }
     }
 
     _resize = function (layout: Layout) {
-      renderTicks();
+      axisSelection.call(renderTicks);
     };
     _updateScale = function () {};
     _updatePosition = function () {};
@@ -97,7 +89,7 @@ export function axis(): Component {
 }
 
 function renderTicks(
-  selection: Selection<SVGElement, unknown, SVGElement, unknown>,
+  selection: Selection<SVGElement, unknown, BaseType, unknown>,
   position: Position,
   scale: AxisScale<unknown>
 ): void {
@@ -123,7 +115,7 @@ function renderTicks(
 }
 
 function renderLeftTicks(
-  selection: Selection<SVGElement, unknown, SVGElement, unknown>,
+  selection: Selection<SVGElement, unknown, BaseType, unknown>,
   scale: AxisScale<unknown>
 ): void {
   selection
@@ -136,13 +128,13 @@ function renderLeftTicks(
 }
 
 function renderBottomTicks(
-  selection: Selection<SVGElement, unknown, SVGElement, unknown>,
+  selection: Selection<SVGElement, unknown, BaseType, unknown>,
   scale: AxisScale<unknown>
 ): void {
-  selection.call(renderTicks, 'Bottom', scale);
+  selection.call(renderTicks, Position.Bottom, scale);
 }
 
-function clearTickAttributes(selection: Selection<SVGElement, unknown, SVGElement, unknown>): void {
+function clearTickAttributes(selection: Selection<SVGElement, unknown, BaseType, unknown>): void {
   selection
     .select('.ticks')
     .attr('transform', 'translate(0, 0)')
@@ -154,9 +146,6 @@ function clearTickAttributes(selection: Selection<SVGElement, unknown, SVGElemen
     });
 }
 
-function renderTitle(
-  selection: Selection<SVGElement, unknown, SVGElement, unknown>,
-  title: string
-) {
+function renderTitle(selection: Selection<SVGElement, unknown, BaseType, unknown>, title: string) {
   selection.selectAll('.title').data([null]).join('text').classed('title', true).text(title);
 }

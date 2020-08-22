@@ -18,17 +18,19 @@
     <script>
       console.log('bar example');
 
+      var mediumMediaQuery = window.matchMedia('screen and (min-width: 40rem)');
+
       var bars = respVis
         .bars()
         .categories(['Vienna', 'Graz', 'Linz', 'Salzburg', 'Innsbruck', 'Klagenfurt', 'Villach'])
         .values([1691000, 222000, 205000, 153000, 132000, 91000, 59000])
         .padding(0.1)
-        .orientation('Vertical');
+        .orientation(respVis.BarOrientation.Horizontal);
 
       var categoriesAxis = respVis
         .axis()
         .scale(bars.categoriesScale())
-        .position(respVis.AxisPosition.Bottom)
+        .position(respVis.AxisPosition.Left)
         .title('Cities');
 
       // var valuesAxis = respVis
@@ -42,6 +44,19 @@
       var chart = respVis.chart().layout(layout);
 
       chart('#chart-container');
+
+      mediumMediaQuery.addListener(function () {
+        var barOrientation = mediumMediaQuery.matches
+          ? respVis.BarOrientation.Vertical
+          : respVis.BarOrientation.Horizontal;
+
+        var categoriesAxisPosition = mediumMediaQuery.matches
+          ? respVis.AxisPosition.Bottom
+          : respVis.AxisPosition.Left;
+
+        bars.orientation(barOrientation);
+        categoriesAxis.position(categoriesAxisPosition);
+      });
     </script>
   </body>
 </html>
