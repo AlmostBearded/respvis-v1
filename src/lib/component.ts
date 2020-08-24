@@ -3,7 +3,7 @@ import { Layout } from './layout/layout';
 
 export interface Component {
   (selection: Selection<SVGElement, unknown, BaseType, unknown>): void;
-  resize(layout: Layout): void;
+  resize(layout: Layout, transitionDuration: number): void;
 }
 
 export function nullComponent(): Component {

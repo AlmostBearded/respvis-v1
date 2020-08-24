@@ -13,7 +13,9 @@ export function chart(): (containerSelector: string) => void {
   let _updateLayout = nullFunction;
 
   function renderedChart(containerSelector: string) {
-    const selection = select(containerSelector).append('svg').classed('chart', true);
+    const selection = select(containerSelector)
+      .append('svg')
+      .classed('chart', true);
     _layout(selection);
 
     resize();
@@ -32,13 +34,28 @@ export function chart(): (containerSelector: string) => void {
       debounce(function () {
         resizing = false;
         window.clearInterval(resizeIntervalHandle);
-        // updateLayout();
+        _layout.transition();
       }, 1000)
     );
 
+    selection.node()!.addEventListener('transitionstart', function (e) {
+      // console.log(`transitionstart`);
+      // console.log(e.target);
+      select(e.target as HTMLElement).classed('transition', true);
+    });
+
+    selection.node()!.addEventListener('transitionend', function (e) {
+      // console.log(`transitionend`);
+      // console.log(e.target);
+      select(e.target as HTMLElement).classed('transition', false);
+    });
+
     function resize() {
       const boundingRect = selection.node()!.getBoundingClientRect();
-      selection.attr('viewBox', `0, 0, ${boundingRect.width}, ${boundingRect.height}`);
+      selection.attr(
+        'viewBox',
+        `0, 0, ${boundingRect.width}, ${boundingRect.height}`
+      );
       _layout.resize();
     }
 

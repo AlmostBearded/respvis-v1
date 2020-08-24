@@ -16,36 +16,46 @@
     <div id="chart-container"></div>
     <script src="../respvis.js"></script>
     <script>
-      console.log('bar example');
+      // console.log('bar example');
 
       var mediumMediaQuery = window.matchMedia('screen and (min-width: 40rem)');
 
       var bars = respVis
         .bars()
-        .categories(['Vienna', 'Graz', 'Linz', 'Salzburg', 'Innsbruck', 'Klagenfurt', 'Villach'])
+        .categories([
+          'Vienna',
+          'Graz',
+          'Linz',
+          'Salzburg',
+          'Innsbruck',
+          'Klagenfurt',
+          'Villach',
+        ])
         .values([1691000, 222000, 205000, 153000, 132000, 91000, 59000])
-        .padding(0.1)
-        .orientation(respVis.BarOrientation.Horizontal);
+        .padding(0.1);
 
       var categoriesAxis = respVis
         .axis()
         .scale(bars.categoriesScale())
-        .position(respVis.AxisPosition.Left)
         .title('Cities');
 
-      // var valuesAxis = respVis
-      //   .axis()
-      //   .scale(bars.valuesScale())
-      //   .position('Left')
-      //   .title('Population');
+      var valuesAxis = respVis
+        .axis()
+        .scale(bars.valuesScale())
+        .title('Population');
 
-      var layout = respVis.layout().components([bars, categoriesAxis /*, valuesAxis*/]);
+      updateResponsiveFeatures();
+
+      var layout = respVis
+        .layout()
+        .components([bars, categoriesAxis, valuesAxis])
+        .onTransition(updateResponsiveFeatures);
 
       var chart = respVis.chart().layout(layout);
 
       chart('#chart-container');
 
-      mediumMediaQuery.addListener(function () {
+      function updateResponsiveFeatures() {
         var barOrientation = mediumMediaQuery.matches
           ? respVis.BarOrientation.Vertical
           : respVis.BarOrientation.Horizontal;
@@ -54,9 +64,14 @@
           ? respVis.AxisPosition.Bottom
           : respVis.AxisPosition.Left;
 
-        bars.orientation(barOrientation);
+        var valuesAxisPosition = mediumMediaQuery.matches
+          ? respVis.AxisPosition.Left
+          : respVis.AxisPosition.Bottom;
+
+        bars.orientation(barOrientation, 1000);
         categoriesAxis.position(categoriesAxisPosition);
-      });
+        valuesAxis.position(valuesAxisPosition);
+      }
     </script>
   </body>
 </html>

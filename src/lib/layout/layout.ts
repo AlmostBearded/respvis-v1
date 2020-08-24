@@ -1,29 +1,40 @@
 import { Component, nullComponent } from '../component';
 import { select, Selection, BaseType } from 'd3-selection';
-import { nullFunction, getComputedStyleWithoutDefaults, PrimitiveObject } from '../utils';
+import {
+  nullFunction,
+  getComputedStyleWithoutDefaults,
+  PrimitiveObject,
+} from '../utils';
 import { computeLayout as faberComputeLayout } from './faberjs';
+import { group } from 'd3';
 
 export interface Layout {
   (selection: Selection<SVGElement, unknown, BaseType, unknown>): void;
   components(components?: Component[]): Component[] | Layout;
   resize(): void;
+  transition(): void;
   layoutOfElement(element: SVGElement): DOMRect | null;
+  onTransition(callback?: () => void): (() => void) | Layout;
 }
 
 export function layout(): Layout {
   let _components: Component[] = [nullComponent()];
+  let _onTransition = nullFunction;
   let _updateComponents = nullFunction;
   let _resize = nullFunction;
+  let _transition = nullFunction;
   let _layoutOfElement: (element: SVGElement) => DOMRect | null;
 
-  const renderedLayout = function renderedLayout(
+  const renderedLayout: Layout = function renderedLayout(
     selection: Selection<SVGElement, unknown, HTMLElement, unknown>
   ) {
     for (let i = 0; i < _components.length; ++i) {
       _components[i](selection);
     }
 
-    let { laidOutElements, layoutHierarchyNodes } = parseDOMHierarchy(selection.node()!);
+    let { laidOutElements, layoutHierarchyNodes } = parseDOMHierarchy(
+      selection.node()!
+    );
     const layoutGroupElements = createLayoutGroups(laidOutElements);
 
     _resize = function (): void {
@@ -32,7 +43,17 @@ export function layout(): Layout {
       applyLayout(layoutGroupElements, layoutHierarchyNodes, false);
 
       for (let i = 0; i < _components.length; ++i) {
-        _components[i].resize(renderedLayout);
+        _components[i].resize(renderedLayout, 0);
+      }
+    };
+
+    _transition = function (): void {
+      let boundingRect = selection.node()!.getBoundingClientRect();
+      computeLayout(laidOutElements, layoutHierarchyNodes, boundingRect);
+      applyLayout(layoutGroupElements, layoutHierarchyNodes, true);
+
+      for (let i = 0; i < _components.length; ++i) {
+        _components[i].resize(renderedLayout, 1000);
       }
     };
 
@@ -51,14 +72,31 @@ export function layout(): Layout {
     _resize();
   };
 
-  renderedLayout.components = function (components?: Component[]): Component[] | Layout {
+  renderedLayout.transition = function transition(): void {
+    _onTransition();
+    _transition();
+  };
+
+  renderedLayout.components = function (
+    components?: Component[]
+  ): Component[] | Layout {
     if (!arguments.length) return _components;
     _components = components || [nullComponent()];
     _updateComponents();
     return renderedLayout;
   };
 
-  renderedLayout.layoutOfElement = function (element: SVGElement): DOMRect | null {
+  renderedLayout.onTransition = function (
+    callback?: () => void
+  ): (() => void) | Layout {
+    if (!arguments.length) return _onTransition;
+    _onTransition = callback || nullFunction;
+    return renderedLayout;
+  };
+
+  renderedLayout.layoutOfElement = function (
+    element: SVGElement
+  ): DOMRect | null {
     return _layoutOfElement(element);
   };
 
@@ -85,7 +123,10 @@ var layoutProperties = [
 // Parse the required CSS properties for layouting from the elements computed style
 export function parseLayoutStyle(element: SVGElement): PrimitiveObject | null {
   // Get the computed style for the needed properties
-  var computedStyle = getComputedStyleWithoutDefaults(element, layoutProperties);
+  var computedStyle = getComputedStyleWithoutDefaults(
+    element,
+    layoutProperties
+  );
 
   // Post-process the computed styles for FaberJS
   for (var i = 0; i < layoutProperties.length; ++i) {
@@ -120,7 +161,10 @@ type LayoutHierarchyNode = {
 
 function parseDOMHierarchy(
   element: SVGElement
-): { laidOutElements: SVGElement[]; layoutHierarchyNodes: LayoutHierarchyNode[] } {
+): {
+  laidOutElements: SVGElement[];
+  layoutHierarchyNodes: LayoutHierarchyNode[];
+} {
   var laidOutElements: SVGElement[] = [];
   var layoutHierarchyNodes: LayoutHierarchyNode[] = [];
   parseDOMHierarchyRecursive(element, laidOutElements, layoutHierarchyNodes);
@@ -162,7 +206,10 @@ function createLayoutGroups(laidOutElements: SVGElement[]): SVGElement[] {
   var groupElements: SVGElement[] = [laidOutElements[0]];
 
   for (var i = 1; i < laidOutElements.length; ++i) {
-    var groupElement = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    var groupElement = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'g'
+    );
     groupElement.setAttribute('class', 'layout-group');
     laidOutElements[i].parentNode!.append(groupElement);
     groupElement.append(laidOutElements[i]);
@@ -203,11 +250,13 @@ function setMinContentDimensions(
 function setLayoutDimensions(layoutHierarchyNodes: LayoutHierarchyNode[]) {
   for (var i = 0; i < layoutHierarchyNodes.length; ++i) {
     if (!layoutHierarchyNodes[i].style.width) {
-      layoutHierarchyNodes[i].style.width = layoutHierarchyNodes[i].layout.width;
+      layoutHierarchyNodes[i].style.width =
+        layoutHierarchyNodes[i].layout.width;
     }
 
     if (!layoutHierarchyNodes[i].style.height) {
-      layoutHierarchyNodes[i].style.height = layoutHierarchyNodes[i].layout.height;
+      layoutHierarchyNodes[i].style.height =
+        layoutHierarchyNodes[i].layout.height;
     }
   }
 }
@@ -239,12 +288,18 @@ function applyLayout(
   transition: boolean
 ) {
   for (let i = 1; i < layoutHierarchyNodes.length; ++i) {
-    select(layoutGroupElements[i])
-      .classed('transition', transition)
-      .style(
-        'transform',
-        `translate(${layoutHierarchyNodes[i].layout.x}px, ${layoutHierarchyNodes[i].layout.y}px)`
-      );
+    const newTransform = `translate(${
+      Math.round(layoutHierarchyNodes[i].layout.x * 10) / 10
+    }px, ${Math.round(layoutHierarchyNodes[i].layout.y * 10) / 10}px)`;
+
+    const groupSelection = select(layoutGroupElements[i]);
+
+    if (groupSelection.style('transform') !== newTransform) {
+      // console.log(`${groupSelection.style('transform')} → ${newTransform}`);
+      groupSelection
+        .classed('transition', transition)
+        .style('transform', newTransform);
+    }
 
     // layoutGroupElements[i].setAttribute(
     //   'debugLayout',

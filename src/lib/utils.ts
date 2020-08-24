@@ -1,6 +1,6 @@
 import { Primitive } from 'd3-array';
 
-export function nullFunction() {}
+export function nullFunction<P1>(a?: P1) {}
 
 // Code inspired by https://stackoverflow.com/a/22909984
 export function getComputedStyleWithoutDefaults(

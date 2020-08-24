@@ -95,16 +95,24 @@ exports.clean = function clean() {
 
 exports.build = gulp.series([
   exports.clean,
-  gulp.parallel([compileSass, bundleJSLib, bundleJSLibMin, bundleJSLibMinZipped, copyHTMLFiles]),
+  gulp.parallel([
+    compileSass,
+    bundleJSLib,
+    /*bundleJSLibMin, bundleJSLibMinZipped,*/ copyHTMLFiles,
+  ]),
 ]);
 
 exports.serve = function serve() {
   browserSync.init({
     server: './dist',
-    startPath: '/examples'
+    startPath: '/examples',
   });
 
-  gulp.watch('./src/**/*', { ignoreInitial: false }, gulp.series(exports.build, reloadBrowser));
+  gulp.watch(
+    './src/**/*',
+    { ignoreInitial: false },
+    gulp.series(exports.build, reloadBrowser)
+  );
 };
 
 exports.default = exports.serve;
