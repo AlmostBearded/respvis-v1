@@ -40,7 +40,7 @@ export function layout(): Layout {
     _resize = function (): void {
       let boundingRect = selection.node()!.getBoundingClientRect();
       computeLayout(laidOutElements, layoutHierarchyNodes, boundingRect);
-      applyLayout(layoutGroupElements, layoutHierarchyNodes, false);
+      applyLayout(layoutGroupElements, layoutHierarchyNodes);
 
       for (let i = 0; i < _components.length; ++i) {
         _components[i].resize(renderedLayout, 0);
@@ -48,13 +48,18 @@ export function layout(): Layout {
     };
 
     _transition = function (): void {
+      selection.classed('transition', true);
+
+      _onTransition();
+
       let boundingRect = selection.node()!.getBoundingClientRect();
       computeLayout(laidOutElements, layoutHierarchyNodes, boundingRect);
-      applyLayout(layoutGroupElements, layoutHierarchyNodes, true);
+      applyLayout(layoutGroupElements, layoutHierarchyNodes);
 
       for (let i = 0; i < _components.length; ++i) {
         _components[i].resize(renderedLayout, 1000);
       }
+      window.setTimeout(() => selection.classed('transition', false), 1000);
     };
 
     _layoutOfElement = function (element: SVGElement): DOMRect | null {
@@ -73,7 +78,6 @@ export function layout(): Layout {
   };
 
   renderedLayout.transition = function transition(): void {
-    _onTransition();
     _transition();
   };
 
@@ -284,8 +288,7 @@ function computeLayout(
 // Apply the computed layout on the layout group elements
 function applyLayout(
   layoutGroupElements: SVGElement[],
-  layoutHierarchyNodes: LayoutHierarchyNode[],
-  transition: boolean
+  layoutHierarchyNodes: LayoutHierarchyNode[]
 ) {
   for (let i = 1; i < layoutHierarchyNodes.length; ++i) {
     const newTransform = `translate(${
@@ -293,25 +296,19 @@ function applyLayout(
     }px, ${Math.round(layoutHierarchyNodes[i].layout.y * 10) / 10}px)`;
 
     const groupSelection = select(layoutGroupElements[i]);
+    groupSelection.style('transform', newTransform);
 
-    if (groupSelection.style('transform') !== newTransform) {
-      // console.log(`${groupSelection.style('transform')} → ${newTransform}`);
-      groupSelection
-        .classed('transition', transition)
-        .style('transform', newTransform);
-    }
+    layoutGroupElements[i].setAttribute(
+      'debugLayout',
+      `${layoutHierarchyNodes[i].layout.x}, ${layoutHierarchyNodes[i].layout.y}, ${layoutHierarchyNodes[i].layout.width}, ${layoutHierarchyNodes[i].layout.height}`
+    );
 
-    // layoutGroupElements[i].setAttribute(
-    //   'debugLayout',
-    //   `${layoutHierarchyNodes[i].layout.x}, ${layoutHierarchyNodes[i].layout.y}, ${layoutHierarchyNodes[i].layout.width}, ${layoutHierarchyNodes[i].layout.height}`
-    // );
-
-    // layoutGroupElements[i].setAttribute(
-    //   'debugLayoutStyle',
-    //   `${JSON.stringify(layoutHierarchyNodes[i].style)
-    //     .replace(/\"/g, '')
-    //     .replace(/,/g, ', ')
-    //     .replace(/:/g, ': ')}`
-    // );
+    layoutGroupElements[i].setAttribute(
+      'debugLayoutStyle',
+      `${JSON.stringify(layoutHierarchyNodes[i].style)
+        .replace(/\"/g, '')
+        .replace(/,/g, ', ')
+        .replace(/:/g, ': ')}`
+    );
   }
 }

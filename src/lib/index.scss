@@ -2,6 +2,6 @@
 @import './bars/bars.scss';
 @import './axis/axis.scss';
 
-.layout-group.transition {
+.transition .layout-group {
   transition: transform 1s;
 }

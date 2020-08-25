@@ -61,12 +61,12 @@
           : respVis.BarOrientation.Horizontal;
 
         var categoriesAxisPosition = mediumMediaQuery.matches
-          ? respVis.AxisPosition.Bottom
+          ? respVis.AxisPosition.Top
           : respVis.AxisPosition.Left;
 
         var valuesAxisPosition = mediumMediaQuery.matches
           ? respVis.AxisPosition.Left
-          : respVis.AxisPosition.Bottom;
+          : respVis.AxisPosition.Top;
 
         bars.orientation(barOrientation, 1000);
         categoriesAxis.position(categoriesAxisPosition);

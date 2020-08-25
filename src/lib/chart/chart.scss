@@ -5,15 +5,15 @@
 
 .chart {
   display: grid;
-  grid-template-columns: [leftMargin] 2px [leftAxisStart] auto [leftAxisEnd bottomAxisStart barsStart] 1fr [bottomAxisEnd barsEnd rightMargin] 2px;
-  grid-template-rows: [topMargin] 0px [leftAxisStart barsStart] 1fr [leftAxisEnd barsEnd bottomAxisStart] auto [bottomAxisEnd bottomMargin] 0px;
+  grid-template-columns: [leftMargin] 10px [leftAxisStart] auto [leftAxisEnd bottomAxisStart topAxisStart barsStart] 1fr [bottomAxisEnd topAxisEnd barsEnd rightAxisStart] auto [rightAxisEnd rightMargin] 10px;
+  grid-template-rows: [topMargin] 10px [topAxisStart] auto [topAxisEnd leftAxisStart rightAxisStart barsStart] 1fr [leftAxisEnd rightAxisEnd barsEnd bottomAxisStart] auto [bottomAxisEnd bottomMargin] 10px;
   justify-items: stretch;
   align-items: stretch;
 }
 
 @media screen and (min-width: 50rem) {
   .chart {
-    grid-template-columns: [leftMargin] 25px [leftAxisStart] auto [leftAxisEnd bottomAxisStart barsStart] 1fr [bottomAxisEnd barsEnd rightMargin] 25px;
-    grid-template-rows: [topMargin] 25px [leftAxisStart barsStart] 1fr [leftAxisEnd barsEnd bottomAxisStart] auto [bottomAxisEnd bottomMargin] 25px;
+    grid-template-columns: [leftMargin] 25px [leftAxisStart] auto [leftAxisEnd bottomAxisStart topAxisStart barsStart] 1fr [bottomAxisEnd topAxisEnd barsEnd rightAxisStart] auto [rightAxisEnd rightMargin] 25px;
+    grid-template-rows: [topMargin] 10px [topAxisStart] auto [topAxisEnd leftAxisStart rightAxisStart barsStart] 1fr [leftAxisEnd rightAxisEnd barsEnd bottomAxisStart] auto [bottomAxisEnd bottomMargin] 10px;
   }
 }

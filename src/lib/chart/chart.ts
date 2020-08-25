@@ -34,21 +34,22 @@ export function chart(): (containerSelector: string) => void {
       debounce(function () {
         resizing = false;
         window.clearInterval(resizeIntervalHandle);
+
         _layout.transition();
       }, 1000)
     );
 
-    selection.node()!.addEventListener('transitionstart', function (e) {
-      // console.log(`transitionstart`);
-      // console.log(e.target);
-      select(e.target as HTMLElement).classed('transition', true);
-    });
+    // selection.node()!.addEventListener('transitionstart', function (e) {
+    //   // console.log(`transitionstart`);
+    //   // console.log(e.target);
+    //   select(e.target as HTMLElement).classed('transition', true);
+    // });
 
-    selection.node()!.addEventListener('transitionend', function (e) {
-      // console.log(`transitionend`);
-      // console.log(e.target);
-      select(e.target as HTMLElement).classed('transition', false);
-    });
+    // selection.node()!.addEventListener('transitionend', function (e) {
+    //   // console.log(`transitionend`);
+    //   // console.log(e.target);
+    //   select(e.target as HTMLElement).classed('transition', false);
+    // });
 
     function resize() {
       const boundingRect = selection.node()!.getBoundingClientRect();

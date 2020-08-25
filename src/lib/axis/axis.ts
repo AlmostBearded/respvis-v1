@@ -67,6 +67,9 @@ export function axis(): Axis {
         case Position.Left:
           selection.call(renderLeftTicks, _scale);
           break;
+        case Position.Top:
+          selection.call(renderTopTicks, _scale);
+          break;
       }
     }
 
@@ -171,6 +174,21 @@ function renderBottomTicks(
   scale: AxisScale<unknown>
 ): void {
   selection.call(renderTicks, Position.Bottom, scale);
+}
+
+function renderTopTicks(
+  selection: Selection<SVGElement, unknown, BaseType, unknown>,
+  scale: AxisScale<unknown>
+): void {
+  selection
+    .call(renderTicks, Position.Top, scale)
+    .selectAll('.ticks')
+    .call(function (
+      ticksSelection: Selection<SVGGElement, unknown, SVGElement, unknown>
+    ) {
+      var boundingRect = ticksSelection.node()!.getBoundingClientRect();
+      ticksSelection.attr('transform', `translate(0, ${boundingRect.height})`);
+    });
 }
 
 function clearTickAttributes(

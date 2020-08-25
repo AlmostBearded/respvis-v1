@@ -23,6 +23,14 @@
   transition: opacity 0s;
 }
 
+.axis .ticks text {
+  transition: transform 1s;
+}
+
+.transition .axis .ticks text {
+  transition: transform 0s;
+}
+
 .left-axis {
   display: grid;
   grid-column: leftAxisStart / leftAxisEnd;
@@ -38,7 +46,6 @@
 
 .left-axis .ticks text {
   transform: translate(0, -0.3em) rotate(-45deg);
-  transition: transform 1s;
   text-anchor: end;
 }
 
@@ -68,7 +75,6 @@
 
 .bottom-axis .ticks text {
   transform: translate(0, 0.5em) rotate(-45deg);
-  transition: transform 1s;
   text-anchor: end;
 }
 
@@ -81,9 +87,36 @@
   justify-self: center;
 }
 
+.top-axis {
+  display: grid;
+  grid-column: topAxisStart / topAxisEnd;
+  grid-row: topAxisStart / topAxisEnd;
+  grid-template-rows: [titleStart] auto [titleEnd margin] 0px [ticksStart] auto [ticksEnd] ;
+}
+
+.top-axis .ticks {
+  height: min-content;
+  grid-column: 1 / 2;
+  grid-row: ticksStart / ticksEnd;
+}
+
+.top-axis .ticks text {
+  transform: translate(0, 0) rotate(45deg);
+  text-anchor: end;
+}
+
+.top-axis .title {
+  transform: translate(0, 0.7em);
+  height: min-content;
+  width: min-content;
+  grid-column: 1 / 2;
+  grid-row: titleStart / titleEnd;
+  justify-self: center;
+}
+
 @media screen and (min-width: 50rem) {
   .left-axis {
-    grid-template-columns: [titleStart] auto [titleEnd margin] 10px [ticksStart] auto [ticksEnd];
+    grid-template-columns: [titleStart] auto [titleEnd margin] 15px [ticksStart] auto [ticksEnd];
   }
 
   .left-axis .ticks text {
@@ -91,11 +124,20 @@
   }
 
   .bottom-axis {
-    grid-template-rows: [ticksStart] auto [ticksEnd margin] 10px [titleStart] auto [titleEnd];
+    grid-template-rows: [ticksStart] auto [ticksEnd margin] 15px [titleStart] auto [titleEnd];
   }
 
   .bottom-axis .ticks text {
     transform: translate(0, 0.7em) rotate(0deg);
+    text-anchor: middle;
+  }
+
+  .top-axis {
+    grid-template-rows: [titleStart] auto [titleEnd margin] 15px [ticksStart] auto [ticksEnd];
+  }
+
+  .top-axis .ticks text {
+    transform: rotate(0deg);
     text-anchor: middle;
   }
 }
