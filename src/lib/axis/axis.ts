@@ -70,6 +70,9 @@ export function axis(): Axis {
         case Position.Top:
           selection.call(renderTopTicks, _scale);
           break;
+        case Position.Right:
+          selection.call(renderRightTicks, _scale);
+          break;
       }
     }
 
@@ -189,6 +192,13 @@ function renderTopTicks(
       var boundingRect = ticksSelection.node()!.getBoundingClientRect();
       ticksSelection.attr('transform', `translate(0, ${boundingRect.height})`);
     });
+}
+
+function renderRightTicks(
+  selection: Selection<SVGElement, unknown, BaseType, unknown>,
+  scale: AxisScale<unknown>
+): void {
+  selection.call(renderTicks, Position.Right, scale);
 }
 
 function clearTickAttributes(

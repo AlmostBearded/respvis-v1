@@ -91,7 +91,7 @@
   display: grid;
   grid-column: topAxisStart / topAxisEnd;
   grid-row: topAxisStart / topAxisEnd;
-  grid-template-rows: [titleStart] auto [titleEnd margin] 0px [ticksStart] auto [ticksEnd] ;
+  grid-template-rows: [titleStart] auto [titleEnd margin] 0px [ticksStart] auto [ticksEnd];
 }
 
 .top-axis .ticks {
@@ -112,6 +112,35 @@
   grid-column: 1 / 2;
   grid-row: titleStart / titleEnd;
   justify-self: center;
+}
+
+.right-axis {
+  display: grid;
+  grid-column: rightAxisStart / rightAxisEnd;
+  grid-row: rightAxisStart / rightAxisEnd;
+  grid-template-columns: [ticksStart] auto [ticksEnd margin] 0px [titleStart] auto [titleEnd];
+}
+
+.right-axis .ticks {
+  width: min-content;
+  grid-column: ticksStart / ticksEnd;
+  grid-row: 1 / 2;
+}
+
+.right-axis .ticks text {
+  transform: translate(0, -0.3em) rotate(45deg);
+  text-anchor: start;
+}
+
+.right-axis .title {
+  transform: translate(0.7em, 0) rotate(-90deg);
+  text-anchor: end;
+
+  height: min-content;
+  width: min-content;
+  grid-column: titleStart / titleEnd;
+  grid-row: 1 / 2;
+  align-self: center;
 }
 
 @media screen and (min-width: 50rem) {
@@ -139,5 +168,13 @@
   .top-axis .ticks text {
     transform: rotate(0deg);
     text-anchor: middle;
+  }
+
+  .right-axis {
+    grid-template-columns: [ticksStart] auto [ticksEnd margin] 15px [titleStart] auto [titleEnd];
+  }
+
+  .right-axis .ticks text {
+    transform: translate(0, 0.3em);
   }
 }

@@ -16,13 +16,14 @@ type BarsData = [string, number][];
 export interface Bars extends Component {
   categories(categories?: string[]): string[] | Bars;
   values(values?: number[]): number[] | Bars;
-  padding(padding?: number): number | Bars;
+  padding(padding?: number, transitionDuration?: number): number | Bars;
   orientation(
     orientation?: Orientation,
     transitionDuration?: number
   ): Orientation | Bars;
   categoriesScale(): ScaleBand<string>;
   valuesScale(): ScaleLinear<number, number>;
+  flipValues(flip?: boolean): boolean | Bars;
 }
 
 export function bars(): Bars {
@@ -32,10 +33,14 @@ export function bars(): Bars {
   let _orientation: Orientation = Orientation.Vertical;
   let _categoriesScale: ScaleBand<string> = scaleBand();
   let _valuesScale: ScaleLinear<number, number> = scaleLinear();
+  let _flipValues: boolean = false;
+  let _flipCategories: boolean = false;
   let _updateCategories = nullFunction;
   let _updateValues = nullFunction;
-  let _updatePadding = nullFunction;
+  let _updatePadding = (transitionDuration: number): void => {};
   let _updateOrientation = (transitionDuration: number): void => {};
+  let _updateFlipValues = nullFunction;
+  let _updateFlipCategories = nullFunction;
   let _resize: (layout: Layout, transitionDuration: number) => void;
 
   function renderedBars(
@@ -50,11 +55,19 @@ export function bars(): Bars {
     );
     var boundingRect = selection.node()!.getBoundingClientRect();
     if (_orientation === Orientation.Vertical) {
-      _categoriesScale.range([0, boundingRect.width]);
-      _valuesScale.range([boundingRect.height, 0]);
+      _categoriesScale.range(
+        _flipCategories ? [boundingRect.width, 0] : [0, boundingRect.width]
+      );
+      _valuesScale.range(
+        _flipValues ? [0, boundingRect.height] : [boundingRect.height, 0]
+      );
     } else if (_orientation === Orientation.Horizontal) {
-      _categoriesScale.range([0, boundingRect.height]);
-      _valuesScale.range([0, boundingRect.width]);
+      _categoriesScale.range(
+        _flipCategories ? [boundingRect.height, 0] : [0, boundingRect.height]
+      );
+      _valuesScale.range(
+        _flipValues ? [boundingRect.width, 0] : [0, boundingRect.width]
+      );
     }
 
     const barsContainerSelection = selection.append('g').classed('bars', true);
@@ -87,11 +100,19 @@ export function bars(): Bars {
 
       var layoutRect = layout.layoutOfElement(barsContainerSelection.node()!)!;
       if (_orientation === Orientation.Vertical) {
-        _categoriesScale.range([0, layoutRect.width]);
-        _valuesScale.range([layoutRect.height, 0]);
+        _categoriesScale.range(
+          _flipCategories ? [layoutRect.width, 0] : [0, layoutRect.width]
+        );
+        _valuesScale.range(
+          _flipValues ? [0, layoutRect.height] : [layoutRect.height, 0]
+        );
       } else if (_orientation === Orientation.Horizontal) {
-        _categoriesScale.range([0, layoutRect.height]);
-        _valuesScale.range([0, layoutRect.width]);
+        _categoriesScale.range(
+          _flipCategories ? [layoutRect.height, 0] : [0, layoutRect.height]
+        );
+        _valuesScale.range(
+          _flipValues ? [layoutRect.width, 0] : [0, layoutRect.width]
+        );
       }
 
       renderBars(transitionDuration);
@@ -99,10 +120,35 @@ export function bars(): Bars {
 
     _updateCategories = function (): void {};
     _updateValues = function (): void {};
-    _updatePadding = function (): void {};
+    _updatePadding = function (transitionDuration: number): void {
+      _categoriesScale.padding(_padding);
+      renderBars(transitionDuration);
+    };
     _updateOrientation = function (transitionDuration: number): void {
       // console.log(`updateBarsOrientation(${transitionDuration})`);
       renderBars(transitionDuration);
+    };
+    _updateFlipValues = function (): void {
+      const r = _valuesScale.range(),
+        max = Math.max(...r),
+        min = Math.min(...r);
+      if (_orientation === Orientation.Vertical) {
+        _valuesScale.range(_flipValues ? [min, max] : [max, min]);
+      } else if (_orientation === Orientation.Horizontal) {
+        _valuesScale.range(_flipValues ? [max, min] : [min, max]);
+      }
+      renderBars(0);
+    };
+    _updateFlipCategories = function (): void {
+      const r = _categoriesScale.range(),
+        max = Math.max(...r),
+        min = Math.min(...r);
+      if (_orientation === Orientation.Vertical) {
+        _categoriesScale.range(_flipValues ? [max, min] : [min, max]);
+      } else if (_orientation === Orientation.Horizontal) {
+        _categoriesScale.range(_flipValues ? [max, min] : [min, max]);
+      }
+      renderBars(0);
     };
   }
 
@@ -122,10 +168,13 @@ export function bars(): Bars {
     return renderedBars;
   };
 
-  renderedBars.padding = function padding(padding?: number): number | Bars {
+  renderedBars.padding = function padding(
+    padding?: number,
+    transitionDuration?: number
+  ): number | Bars {
     if (!arguments.length) return _padding;
     _padding = padding || 0;
-    _updatePadding();
+    _updatePadding(transitionDuration!);
     return renderedBars;
   };
 
@@ -148,6 +197,24 @@ export function bars(): Bars {
     number
   > {
     return _valuesScale;
+  };
+
+  renderedBars.flipValues = function flipValues(
+    flip?: boolean
+  ): boolean | Bars {
+    if (!arguments.length) return _flipValues;
+    _flipValues = flip || false;
+    _updateFlipValues();
+    return renderedBars;
+  };
+
+  renderedBars.flipCategories = function flipCategories(
+    flip?: boolean
+  ): boolean | Bars {
+    if (!arguments.length) return _flipCategories;
+    _flipCategories = flip || false;
+    _updateFlipCategories();
+    return renderedBars;
   };
 
   renderedBars.resize = function resize(
@@ -175,8 +242,8 @@ function renderVerticalBars(
     .transition()
     .duration(transitionDuration)
     .attr('x', (d) => bandScale(d[0])!)
-    .attr('y', (d) => linearScale(d[1]))
-    .attr('height', (d) => linearScale(0) - linearScale(d[1]))
+    .attr('y', (d) => Math.min(linearScale(d[1]), linearScale(0)))
+    .attr('height', (d) => Math.abs(linearScale(0) - linearScale(d[1])))
     .attr('width', bandScale.bandwidth());
 }
 
@@ -194,8 +261,8 @@ function renderHorizontalBars(
     .classed('bar', true)
     .transition()
     .duration(transitionDuration)
-    .attr('x', (d) => linearScale(0))
+    .attr('x', (d) => Math.min(linearScale(0), linearScale(d[1])))
     .attr('y', (d) => bandScale(d[0])!)
     .attr('height', bandScale.bandwidth())
-    .attr('width', (d) => linearScale(d[1]));
+    .attr('width', (d) => Math.abs(linearScale(d[1]) - linearScale(0)));
 }
