@@ -1,6 +1,6 @@
 .bars {
-  grid-column: barsStart / barsEnd;
-  grid-row: barsStart / barsEnd;
+  grid-column: drawingAreaStart / drawingAreaEnd;
+  grid-row: drawingAreaStart / drawingAreaEnd;
 }
 
 .bar {
