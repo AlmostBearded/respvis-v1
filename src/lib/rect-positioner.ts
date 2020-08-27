@@ -1,5 +1,6 @@
 import { scaleBand, ScaleBand, scaleLinear, ScaleLinear } from 'd3-scale';
 import { max, Primitive } from 'd3-array';
+import { Size } from './utils';
 
 export enum Orientation {
   Vertical,
@@ -17,7 +18,8 @@ export interface RectPositioner {
   categoryPadding(padding?: number): number | RectPositioner;
   //   subcategoryPadding(padding?: number): number | RectPositioner;
   //   stack(stack?: boolean): boolean | RectPositioner;
-  rects(size: { width: number; height: number }): Rect[];
+  update(size: Size): RectPositioner;
+  rects(): Rect[];
   categoriesScale(): ScaleBand<Primitive>;
   valuesScale(): ScaleLinear<number, number>;
 }
@@ -29,6 +31,7 @@ export function rectPositioner(): RectPositioner {
   let _categoryPadding: number = 0;
   let _flipValues: boolean = false;
   let _flipCategories: boolean = false;
+  let _rects: Rect[] = [];
   let _categoriesScale: ScaleBand<Primitive> = scaleBand();
   let _valuesScale: ScaleLinear<number, number> = scaleLinear();
 
@@ -63,7 +66,7 @@ export function rectPositioner(): RectPositioner {
       _flipValues = flip || false;
       return rectPositioner;
     },
-    rects(size: { width: number; height: number }): Rect[] {
+    update(size: Size): RectPositioner {
       _categoriesScale.domain(_categories).padding(_categoryPadding);
       _valuesScale.domain([0, max(_values.map((v) => max(v)!))!]);
 
@@ -79,7 +82,7 @@ export function rectPositioner(): RectPositioner {
         _valuesScale.range(_flipValues ? [size.width, 0] : [0, size.width]);
       }
 
-      let rects: Rect[] = [];
+      _rects = [];
       for (let i = 0; i < _values.length; ++i) {
         const values = _values[i];
         for (let j = 0; j < values.length; ++j) {
@@ -87,14 +90,14 @@ export function rectPositioner(): RectPositioner {
           const v = values[j];
 
           if (_orientation === Orientation.Vertical) {
-            rects.push({
+            _rects.push({
               x: _categoriesScale(c)!,
               y: Math.min(_valuesScale(0), _valuesScale(v)),
               width: _categoriesScale.bandwidth(),
               height: Math.abs(_valuesScale(0) - _valuesScale(v)),
             });
           } else if (_orientation === Orientation.Horizontal) {
-            rects.push({
+            _rects.push({
               x: Math.min(_valuesScale(0), _valuesScale(v)),
               y: _categoriesScale(c)!,
               width: Math.abs(_valuesScale(0) - _valuesScale(v)),
@@ -103,7 +106,10 @@ export function rectPositioner(): RectPositioner {
           }
         }
       }
-      return rects;
+      return rectPositioner;
+    },
+    rects(): Rect[] {
+      return _rects;
     },
     categoriesScale(): ScaleBand<Primitive> {
       return _categoriesScale;

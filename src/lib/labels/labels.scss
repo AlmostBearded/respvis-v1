@@ -1,0 +1,13 @@
+.labels {
+  grid-column: drawingAreaStart / drawingAreaEnd;
+  grid-row: drawingAreaStart / drawingAreaEnd;
+}
+
+.transition .labels .label {
+  transition: transform 1s;
+}
+
+.labels .label text {
+  text-anchor: middle;
+  transform: translate(0, 0.35em);
+}

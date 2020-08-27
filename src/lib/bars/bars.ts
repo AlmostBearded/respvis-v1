@@ -13,7 +13,6 @@ export interface Bars extends Component {
 
 export function bars(): Bars {
   let _rectPositioner: RectPositioner;
-  let _rects: Rect[] = [];
   let _resize: (layout: Layout, transitionDuration: number) => void;
   let _render = (transitionDuration: number): void => {};
 
@@ -26,21 +25,25 @@ export function bars(): Bars {
     );
     _render = function (transitionDuration: number): void {
       // console.log("render bars");
-      barsContainerSelection.call(renderBars, _rects, transitionDuration);
+      barsContainerSelection.call(
+        renderBars,
+        _rectPositioner.rects(),
+        transitionDuration
+      );
     };
 
     _resize = function (layout: Layout, transitionDuration: number): void {
       var layoutRect = layout.layoutOfElement(barsContainerSelection.node()!)!;
       // console.log('resize bars');
       // console.log(layoutRect);
-      _rects = _rectPositioner.rects(layoutRect);
+      _rectPositioner.update(layoutRect);
       _render(transitionDuration);
     };
 
     const barsContainerSelection = selection.append('g').classed('bars', true);
 
     var boundingRect = selection.node()!.getBoundingClientRect();
-    _rects = _rectPositioner.rects(boundingRect);
+    _rectPositioner.update(boundingRect);
 
     _render(0);
   };
