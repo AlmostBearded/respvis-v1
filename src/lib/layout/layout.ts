@@ -7,13 +7,14 @@ import {
 } from '../utils';
 import { computeLayout as faberComputeLayout } from './faberjs';
 import { group } from 'd3';
+import { Rect } from '..';
 
 export interface Layout {
   (selection: Selection<SVGElement, unknown, BaseType, unknown>): void;
   components(components?: Component[]): Component[] | Layout;
   resize(): void;
   transition(): void;
-  layoutOfElement(element: SVGElement): DOMRect | null;
+  layoutOfElement(element: SVGElement): Rect | null;
   onTransition(callback?: () => void): (() => void) | Layout;
 }
 
@@ -23,11 +24,12 @@ export function layout(): Layout {
   let _updateComponents = nullFunction;
   let _resize = nullFunction;
   let _transition = nullFunction;
-  let _layoutOfElement: (element: SVGElement) => DOMRect | null;
+  let _layoutOfElement: (element: SVGElement) => Rect | null;
 
   const renderedLayout: Layout = function renderedLayout(
     selection: Selection<SVGElement, unknown, HTMLElement, unknown>
   ) {
+    // console.log("init layout");
     for (let i = 0; i < _components.length; ++i) {
       _components[i](selection);
     }
@@ -38,6 +40,7 @@ export function layout(): Layout {
     const layoutGroupElements = createLayoutGroups(laidOutElements);
 
     _resize = function (): void {
+      // console.log('resize layout');
       let boundingRect = selection.node()!.getBoundingClientRect();
       computeLayout(laidOutElements, layoutHierarchyNodes, boundingRect);
       applyLayout(layoutGroupElements, layoutHierarchyNodes);
@@ -62,7 +65,7 @@ export function layout(): Layout {
       window.setTimeout(() => selection.classed('transition', false), 1000);
     };
 
-    _layoutOfElement = function (element: SVGElement): DOMRect | null {
+    _layoutOfElement = function (element: SVGElement): Rect | null {
       const index = laidOutElements.indexOf(element);
       if (index < 0) {
         return null;
@@ -98,9 +101,7 @@ export function layout(): Layout {
     return renderedLayout;
   };
 
-  renderedLayout.layoutOfElement = function (
-    element: SVGElement
-  ): DOMRect | null {
+  renderedLayout.layoutOfElement = function (element: SVGElement): Rect | null {
     return _layoutOfElement(element);
   };
 
@@ -159,7 +160,7 @@ export function parseLayoutStyle(element: SVGElement): PrimitiveObject | null {
 
 type LayoutHierarchyNode = {
   style: PrimitiveObject;
-  layout: DOMRect;
+  layout: Rect;
   children: LayoutHierarchyNode[];
 };
 
@@ -183,7 +184,7 @@ function parseDOMHierarchyRecursive(
 ) {
   var hierarchyNode: LayoutHierarchyNode = {
     style: {},
-    layout: new DOMRect(),
+    layout: { x: 0, y: 0, width: 0, height: 0 },
     children: [],
   };
 

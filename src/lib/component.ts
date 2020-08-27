@@ -4,6 +4,7 @@ import { Layout } from './layout/layout';
 export interface Component {
   (selection: Selection<SVGElement, unknown, BaseType, unknown>): void;
   resize(layout: Layout, transitionDuration: number): void;
+  render(transitionDuration: number): void;
 }
 
 export function nullComponent(): Component {
@@ -11,9 +12,8 @@ export function nullComponent(): Component {
     selection: Selection<SVGElement, unknown, HTMLElement, unknown>
   ): void {}
 
-  renderedEmptyComponent.resize = function resize() {
-    return renderedEmptyComponent;
-  };
+  renderedEmptyComponent.render = function render(): void {};
+  renderedEmptyComponent.resize = function resize(): void {};
 
   return renderedEmptyComponent;
 }

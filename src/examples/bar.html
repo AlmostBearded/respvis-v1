@@ -55,7 +55,7 @@
         'Villach',
       ];
 
-      var values = [1691000, 222000, 205000, 153000, 132000, 91000, 59000];
+      var values = [[1691000, 222000, 205000, 153000, 132000, 91000, 59000]];
 
       var mediumMediaQuery = window.matchMedia('screen and (min-width: 40rem)');
 
@@ -69,69 +69,82 @@
       responsive();
 
       function bars() {
-        var bars = respVis.bars().categories(categories).values(values);
+        var rectPositioner = respVis
+          .rectPositioner()
+          .categories(categories)
+          .values(values);
+        var bars = respVis.bars().rectPositioner(rectPositioner);
         var layout = respVis.layout().components([bars]);
         var chart = respVis.chart().layout(layout);
         chart('#bars');
       }
 
       function flippedValues() {
-        var bars = respVis
-          .bars()
+        var rectPositioner = respVis
+          .rectPositioner()
           .categories(categories)
           .values(values)
           .flipValues(true);
+        var bars = respVis.bars().rectPositioner(rectPositioner);
         var layout = respVis.layout().components([bars]);
         var chart = respVis.chart().layout(layout);
         chart('#flipped-values');
       }
 
       function flippedCategories() {
-        var bars = respVis
-          .bars()
+        var rectPositioner = respVis
+          .rectPositioner()
           .categories(categories)
           .values(values)
           .flipCategories(true);
+        var bars = respVis.bars().rectPositioner(rectPositioner);
         var layout = respVis.layout().components([bars]);
         var chart = respVis.chart().layout(layout);
         chart('#flipped-categories');
       }
 
       function flippedValuesAndCategories() {
-        var bars = respVis
-          .bars()
+        var rectPositioner = respVis
+          .rectPositioner()
           .categories(categories)
           .values(values)
           .flipCategories(true)
           .flipValues(true);
+        var bars = respVis.bars().rectPositioner(rectPositioner);
         var layout = respVis.layout().components([bars]);
         var chart = respVis.chart().layout(layout);
         chart('#flipped-values-and-categories');
       }
 
       function padding() {
-        var bars = respVis
-          .bars()
+        var rectPositioner = respVis
+          .rectPositioner()
           .categories(categories)
           .values(values)
-          .padding(0.1);
+          .categoryPadding(0.1);
+        var bars = respVis.bars().rectPositioner(rectPositioner);
         var layout = respVis.layout().components([bars]);
         var chart = respVis.chart().layout(layout);
         chart('#padding');
       }
 
       function axes() {
-        var bars = respVis.bars().categories(categories).values(values);
+        var rectPositioner = respVis
+          .rectPositioner()
+          .categories(categories)
+          .values(values);
+
+        var bars = respVis.bars().rectPositioner(rectPositioner);
 
         var categoriesAxis = respVis
           .axis()
-          .scale(bars.categoriesScale())
+          .scale(rectPositioner.categoriesScale())
           .position(respVis.AxisPosition.Bottom)
           .title('Cities');
 
         var valuesAxis = respVis
           .axis()
-          .scale(bars.valuesScale())
+          .scale(rectPositioner.valuesScale())
           .position(respVis.AxisPosition.Left)
           .title('Population');
 
@@ -145,17 +158,22 @@
       }
 
       function flippedAxes() {
-        var bars = respVis.bars().categories(categories).values(values);
+        var rectPositioner = respVis
+          .rectPositioner()
+          .categories(categories)
+          .values(values);
+
+        var bars = respVis.bars().rectPositioner(rectPositioner);
 
         var categoriesAxis = respVis
           .axis()
-          .scale(bars.categoriesScale())
+          .scale(rectPositioner.categoriesScale())
           .position(respVis.AxisPosition.Top)
           .title('Cities');
 
         var valuesAxis = respVis
           .axis()
-          .scale(bars.valuesScale())
+          .scale(rectPositioner.valuesScale())
           .position(respVis.AxisPosition.Right)
           .title('Population');
 
@@ -169,16 +187,22 @@
       }
 
       function responsive() {
-        var bars = respVis.bars().categories(categories).values(values);
+
+        var rectPositioner = respVis
+          .rectPositioner()
+          .categories(categories)
+          .values(values);
+
+        var bars = respVis.bars().rectPositioner(rectPositioner);
 
         var categoriesAxis = respVis
           .axis()
-          .scale(bars.categoriesScale())
+          .scale(rectPositioner.categoriesScale())
           .title('Cities');
 
         var valuesAxis = respVis
           .axis()
-          .scale(bars.valuesScale())
+          .scale(rectPositioner.valuesScale())
           .title('Population');
 
         var layout = respVis
@@ -193,11 +217,11 @@
         chart('#responsive');
 
         function updateResponsiveFeatures() {
-          var barOrientation = mediumMediaQuery.matches
-            ? respVis.BarOrientation.Vertical
-            : respVis.BarOrientation.Horizontal;
+          var rectOrientation = mediumMediaQuery.matches
+            ? respVis.RectOrientation.Vertical
+            : respVis.RectOrientation.Horizontal;
 
-          var barPadding = mediumMediaQuery.matches ? 0.15 : 0.05;
+          var categoryPadding = mediumMediaQuery.matches ? 0.15 : 0.05;
 
           var categoriesAxisPosition = mediumMediaQuery.matches
             ? respVis.AxisPosition.Bottom
@@ -207,8 +231,8 @@
             ? respVis.AxisPosition.Left
             : respVis.AxisPosition.Bottom;
 
-          bars.padding(barPadding, 1000);
-          bars.orientation(barOrientation, 1000);
+          rectPositioner.categoryPadding(categoryPadding).orientation(rectOrientation);
+          bars.render(1000);
           categoriesAxis.position(categoriesAxisPosition);
           valuesAxis.position(valuesAxisPosition);
         }

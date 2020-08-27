@@ -45,7 +45,11 @@
     "typescript": "^3.8.3"
   },
   "dependencies": {
-    "d3": "^5.16.0",
+    "d3-array": "^2.6.0",
+    "d3-axis": "^2.0.0",
+    "d3-scale": "^3.2.2",
+    "d3-selection": "^2.0.0",
+    "d3-transition": "^2.0.0",
     "debounce": "^1.2.0"
   }
 }

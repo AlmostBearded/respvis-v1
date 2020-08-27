@@ -35,6 +35,8 @@ axisFunctionByPosition.set(Position.Right, axisRight);
 
 export interface Axis extends Component {
   title(title?: string): string | Axis;
+  position(position?: Position): Position | Axis;
+  scale(scale?: AxisScale<unknown>): AxisScale<unknown> | Axis;
 }
 
 export function axis(): Axis {
@@ -44,59 +46,60 @@ export function axis(): Axis {
   let _updateScale = nullFunction;
   let _updatePosition = (previousPosition: Position) => {};
   let _updateTitle = nullFunction;
-  let _resize: (layout: Layout, transitionDuration: number) => void;
+  let _resize = (layout: Layout, transitionDuration: number): void => {};
+  let _render = (transitionDuration: number): void => {};
 
-  function renderedAxis(
+  const renderedAxis: Axis = function renderedAxis(
     selection: Selection<SVGElement, unknown, BaseType, unknown>
   ) {
+    _render = function render(transitionDuration: number): void {
+      // console.log('render axis');
+      axisSelection.call(renderTitle, _title);
+      switch (_position) {
+        case Position.Bottom:
+          axisSelection.call(renderBottomTicks, _scale);
+          break;
+        case Position.Left:
+          axisSelection.call(renderLeftTicks, _scale);
+          break;
+        case Position.Top:
+          axisSelection.call(renderTopTicks, _scale);
+          break;
+        case Position.Right:
+          axisSelection.call(renderRightTicks, _scale);
+          break;
+      }
+    };
+
+    _resize = function (layout: Layout, transitionDuration: number) {
+      _render(transitionDuration);
+    };
+
+    _updateScale = function () {};
+
+    _updatePosition = function (previousPosition: Position): void {
+      axisSelection
+        .classed(classByPosition.get(previousPosition)!, false)
+        .classed(classByPosition.get(_position)!, true)
+        .call(clearTickAttributes);
+
+      _render(0);
+    };
+
+    _updateTitle = function () {};
+
     const axisSelection = selection
       .append('g')
       .classed('axis', true)
       .classed(classByPosition.get(_position)!, true);
-    axisSelection.call(renderTitle, _title);
-    axisSelection.call(renderTicks);
-
-    function renderTicks(
-      selection: Selection<SVGElement, unknown, BaseType, unknown>
-    ) {
-      // console.log(`renderTicks`);
-      switch (_position) {
-        case Position.Bottom:
-          selection.call(renderBottomTicks, _scale);
-          break;
-        case Position.Left:
-          selection.call(renderLeftTicks, _scale);
-          break;
-        case Position.Top:
-          selection.call(renderTopTicks, _scale);
-          break;
-        case Position.Right:
-          selection.call(renderRightTicks, _scale);
-          break;
-      }
-    }
-
-    _resize = function (layout: Layout, transitionDuration: number) {
-      // console.log(`resizeAxis`);
-      axisSelection.call(renderTicks);
-    };
-    _updateScale = function () {};
-    _updatePosition = function (previousPosition: Position): void {
-      // console.log(`updateAxisPosition`);
-      axisSelection
-        .classed(classByPosition.get(previousPosition)!, false)
-        .classed(classByPosition.get(_position)!, true)
-        .call(clearTickAttributes)
-        .call(renderTicks);
-    };
-    _updateTitle = function () {};
-  }
+    _render(0);
+  };
 
   renderedAxis.scale = function scale(
     scale?: AxisScale<unknown>
   ): AxisScale<unknown> | Axis {
     if (!arguments.length) return _scale;
-    console.assert(scale, 'Cannot set scale to an invalid value');
+    console.assert(scale, 'Axis requires a valid scale!');
     _scale = scale!;
     _updateScale();
     return renderedAxis;
@@ -117,6 +120,10 @@ export function axis(): Axis {
     _title = title || '';
     _updateTitle();
     return renderedAxis;
+  };
+
+  renderedAxis.render = function render(transitionDuration: number): void {
+    _render(transitionDuration);
   };
 
   renderedAxis.resize = function resize(
