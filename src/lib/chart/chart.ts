@@ -1,28 +1,37 @@
-import { Component, nullComponent } from '../component';
-import { nullFunction } from '../utils';
-import { select, Selection } from 'd3-selection';
+import { BaseType, select, Selection } from 'd3-selection';
 import debounce from 'debounce';
-import { Layout, layout } from '../layout/layout';
+import { ILayout } from '../layout/layout';
 
-export interface Chart {
-  (containerSelector: string): void;
+export interface IChart {
+  mount(containerSelector: string): this;
+  layout(layout?: ILayout): ILayout | this;
 }
 
-export function chart(): (containerSelector: string) => void {
-  let _layout: Layout;
-  let _updateLayout = nullFunction;
+export class Chart implements IChart {
+  private _layout: ILayout;
+  private _selection: Selection<SVGElement, unknown, BaseType, unknown>;
 
-  function renderedChart(containerSelector: string) {
-    const selection = select(containerSelector)
+  mount(containerSelector: string): this {
+    this._selection = select(containerSelector)
       .append('svg')
       .classed('chart', true);
-    _layout(selection);
+
+    this._layout.mount(this._selection);
+
+    const resize = () => {
+      const boundingRect = this._selection.node()!.getBoundingClientRect();
+      this._selection.attr(
+        'viewBox',
+        `0, 0, ${boundingRect.width}, ${boundingRect.height}`
+      );
+      this._layout.resize();
+    };
 
     resize();
 
-    var resizing = false;
-    var resizeIntervalHandle: number;
-    window.addEventListener('resize', function () {
+    let resizing = false;
+    let resizeIntervalHandle: number;
+    window.addEventListener('resize', () => {
       if (!resizing) {
         resizing = true;
         resizeIntervalHandle = window.setInterval(resize, 10);
@@ -31,45 +40,25 @@ export function chart(): (containerSelector: string) => void {
 
     window.addEventListener(
       'resize',
-      debounce(function () {
+      debounce(() => {
         resizing = false;
         window.clearInterval(resizeIntervalHandle);
 
-        _layout.transition();
+        this._layout.transition();
       }, 1000)
     );
 
-    // selection.node()!.addEventListener('transitionstart', function (e) {
-    //   // console.log(`transitionstart`);
-    //   // console.log(e.target);
-    //   select(e.target as HTMLElement).classed('transition', true);
-    // });
-
-    // selection.node()!.addEventListener('transitionend', function (e) {
-    //   // console.log(`transitionend`);
-    //   // console.log(e.target);
-    //   select(e.target as HTMLElement).classed('transition', false);
-    // });
-
-    function resize() {
-      const boundingRect = selection.node()!.getBoundingClientRect();
-      selection.attr(
-        'viewBox',
-        `0, 0, ${boundingRect.width}, ${boundingRect.height}`
-      );
-      _layout.resize();
-    }
-
-    _updateLayout = function (): void {};
+    return this;
   }
 
-  renderedChart.layout = function layout(layout?: Layout): Layout | Chart {
-    if (!arguments.length) return _layout;
+  layout(layout?: ILayout): ILayout | this {
+    if (!arguments.length) return this._layout;
     console.assert(layout, 'Cannot set layout to an undefined value');
-    _layout = layout!;
-    _updateLayout();
-    return renderedChart;
-  };
+    this._layout = layout!;
+    return this;
+  }
+}
 
-  return renderedChart;
+export function chart(): Chart {
+  return new Chart();
 }

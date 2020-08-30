@@ -1,40 +1,23 @@
-import { chart } from './chart/chart';
-import { layout } from './layout/layout';
-import { bars } from './bars/bars';
-import { labels } from './labels/labels';
-import { axis, Position as AxisPosition } from './axis/axis';
-import {
-  rectPositioner,
-  RectPositioner,
-  Rect,
-  Orientation as RectOrientation,
-} from './rect-positioner';
-import {
-  rectPointPositioner,
-  PointPositioner,
-  RectPointPositioner,
-  Point,
-  VerticalPosition,
-  HorizontalPosition,
-} from './rect-point-positioner';
-
-// console.log('respvis initializing');
+export { chart, Chart, IChart } from './chart/chart';
+export { layout, Layout, ILayout } from './layout/layout';
+export { bars, Bars, IBars } from './bars/bars';
+export { axis, Axis, IAxis, Position as AxisPosition } from './axis/axis';
+export { barLabels, BarLabels, IBarLabels } from './bars/bar-labels';
 
 export {
-  chart,
-  layout,
-  bars,
-  labels,
-  axis,
-  AxisPosition,
-  rectPositioner,
-  RectPositioner,
-  Rect,
-  RectOrientation,
-  rectPointPositioner,
-  PointPositioner,
-  RectPointPositioner,
-  Point,
-  VerticalPosition,
+  barPositioner,
+  IBarPositioner,
+  BarPositioner,
+  Bar,
+  Orientation as BarOrientation,
+} from './bars/bar-positioner';
+
+export {
+  barPointPositioner,
+  BarPointPositioner,
   HorizontalPosition,
-};
+  VerticalPosition,
+  IBarPointPositioner,
+  IPointPositioner,
+  Point,
+} from './bars/bar-point-positioner';

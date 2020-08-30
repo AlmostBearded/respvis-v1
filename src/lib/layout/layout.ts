@@ -1,4 +1,4 @@
-import { Component, nullComponent } from '../component';
+import { IComponent, NullComponent } from '../component';
 import { select, Selection, BaseType } from 'd3-selection';
 import {
   nullFunction,
@@ -6,106 +6,116 @@ import {
   PrimitiveObject,
 } from '../utils';
 import { computeLayout as faberComputeLayout } from './faberjs';
-import { group } from 'd3';
-import { Rect } from '..';
+import { Bar } from '../bars/bar-positioner';
 
-export interface Layout {
-  (selection: Selection<SVGElement, unknown, BaseType, unknown>): void;
-  components(components?: Component[]): Component[] | Layout;
-  resize(): void;
-  transition(): void;
-  layoutOfElement(element: SVGElement): Rect | null;
-  onTransition(callback?: () => void): (() => void) | Layout;
+export interface ILayout {
+  mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this;
+  components(components?: IComponent[]): IComponent[] | this;
+  resize(): this;
+  transition(): this;
+  layoutOfElement(element: SVGElement): Bar | null;
+  onTransition(callback?: () => void): (() => void) | this;
+}
+
+export class Layout implements ILayout {
+  private _components: IComponent[] = [new NullComponent()];
+  private _onTransition = nullFunction;
+
+  private _selection: Selection<SVGElement, unknown, BaseType, unknown>;
+  private _laidOutElements: SVGElement[] = [];
+  private _layoutHierarchyNodes: LayoutHierarchyNode[] = [];
+  private _layoutGroupElements: SVGElement[] = [];
+
+  mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
+    this._selection = selection;
+    for (let i = 0; i < this._components.length; ++i) {
+      this._components[i].mount(this._selection);
+    }
+
+    ({
+      laidOutElements: this._laidOutElements,
+      layoutHierarchyNodes: this._layoutHierarchyNodes,
+    } = parseDOMHierarchy(this._selection.node()!));
+
+    this._layoutGroupElements = createLayoutGroups(this._laidOutElements);
+
+    return this;
+  }
+
+  resize(): this {
+    console.assert(
+      this._selection,
+      'Method must only be called on mounted component!'
+    );
+    let boundingRect = this._selection.node()!.getBoundingClientRect();
+    computeLayout(
+      this._laidOutElements,
+      this._layoutHierarchyNodes,
+      boundingRect
+    );
+    applyLayout(this._layoutGroupElements, this._layoutHierarchyNodes);
+
+    for (let i = 0; i < this._components.length; ++i) {
+      this._components[i].fitInLayout(this).render(0);
+    }
+
+    return this;
+  }
+
+  transition(): this {
+    console.assert(
+      this._selection,
+      'Method must only be called on mounted component!'
+    );
+    this._selection.classed('transition', true);
+
+    this._onTransition();
+
+    let boundingRect = this._selection.node()!.getBoundingClientRect();
+    computeLayout(
+      this._laidOutElements,
+      this._layoutHierarchyNodes,
+      boundingRect
+    );
+    applyLayout(this._layoutGroupElements, this._layoutHierarchyNodes);
+
+    for (let i = 0; i < this._components.length; ++i) {
+      this._components[i].fitInLayout(this).render(1000);
+    }
+
+    window.setTimeout(() => this._selection.classed('transition', false), 1000);
+
+    return this;
+  }
+
+  components(components?: IComponent[]): IComponent[] | this {
+    if (!arguments.length) return this._components;
+    this._components = components || [new NullComponent()];
+    // TODO: update components if called after mount
+    return this;
+  }
+
+  onTransition(callback?: () => void): (() => void) | this {
+    if (!arguments.length) return this._onTransition;
+    this._onTransition = callback || nullFunction;
+    return this;
+  }
+
+  layoutOfElement(element: SVGElement): Bar | null {
+    console.assert(
+      this._selection,
+      'Method must only be called on mounted component!'
+    );
+    const index = this._laidOutElements.indexOf(element);
+    if (index < 0) {
+      return null;
+    }
+    return this._layoutHierarchyNodes[index].layout;
+  }
 }
 
 export function layout(): Layout {
-  let _components: Component[] = [nullComponent()];
-  let _onTransition = nullFunction;
-  let _updateComponents = nullFunction;
-  let _resize = nullFunction;
-  let _transition = nullFunction;
-  let _layoutOfElement: (element: SVGElement) => Rect | null;
-
-  const renderedLayout: Layout = function renderedLayout(
-    selection: Selection<SVGElement, unknown, HTMLElement, unknown>
-  ) {
-    // console.log("init layout");
-    for (let i = 0; i < _components.length; ++i) {
-      _components[i](selection);
-    }
-
-    let { laidOutElements, layoutHierarchyNodes } = parseDOMHierarchy(
-      selection.node()!
-    );
-    const layoutGroupElements = createLayoutGroups(laidOutElements);
-
-    _resize = function (): void {
-      // console.log('resize layout');
-      let boundingRect = selection.node()!.getBoundingClientRect();
-      computeLayout(laidOutElements, layoutHierarchyNodes, boundingRect);
-      applyLayout(layoutGroupElements, layoutHierarchyNodes);
-
-      for (let i = 0; i < _components.length; ++i) {
-        _components[i].resize(renderedLayout, 0);
-      }
-    };
-
-    _transition = function (): void {
-      selection.classed('transition', true);
-
-      _onTransition();
-
-      let boundingRect = selection.node()!.getBoundingClientRect();
-      computeLayout(laidOutElements, layoutHierarchyNodes, boundingRect);
-      applyLayout(layoutGroupElements, layoutHierarchyNodes);
-
-      for (let i = 0; i < _components.length; ++i) {
-        _components[i].resize(renderedLayout, 1000);
-      }
-      window.setTimeout(() => selection.classed('transition', false), 1000);
-    };
-
-    _layoutOfElement = function (element: SVGElement): Rect | null {
-      const index = laidOutElements.indexOf(element);
-      if (index < 0) {
-        return null;
-      }
-      return layoutHierarchyNodes[index].layout;
-    };
-
-    _updateComponents = function (): void {};
-  };
-
-  renderedLayout.resize = function resize(): void {
-    _resize();
-  };
-
-  renderedLayout.transition = function transition(): void {
-    _transition();
-  };
-
-  renderedLayout.components = function (
-    components?: Component[]
-  ): Component[] | Layout {
-    if (!arguments.length) return _components;
-    _components = components || [nullComponent()];
-    _updateComponents();
-    return renderedLayout;
-  };
-
-  renderedLayout.onTransition = function (
-    callback?: () => void
-  ): (() => void) | Layout {
-    if (!arguments.length) return _onTransition;
-    _onTransition = callback || nullFunction;
-    return renderedLayout;
-  };
-
-  renderedLayout.layoutOfElement = function (element: SVGElement): Rect | null {
-    return _layoutOfElement(element);
-  };
-
-  return renderedLayout;
+  return new Layout();
 }
 
 // The CSS properties that are needed for layouting
@@ -126,7 +136,7 @@ var layoutProperties = [
 ];
 
 // Parse the required CSS properties for layouting from the elements computed style
-export function parseLayoutStyle(element: SVGElement): PrimitiveObject | null {
+function parseLayoutStyle(element: SVGElement): PrimitiveObject | null {
   // Get the computed style for the needed properties
   var computedStyle = getComputedStyleWithoutDefaults(
     element,
@@ -160,7 +170,7 @@ export function parseLayoutStyle(element: SVGElement): PrimitiveObject | null {
 
 type LayoutHierarchyNode = {
   style: PrimitiveObject;
-  layout: Rect;
+  layout: Bar;
   children: LayoutHierarchyNode[];
 };
 
@@ -299,17 +309,17 @@ function applyLayout(
     const groupSelection = select(layoutGroupElements[i]);
     groupSelection.style('transform', newTransform);
 
-    layoutGroupElements[i].setAttribute(
-      'debugLayout',
-      `${layoutHierarchyNodes[i].layout.x}, ${layoutHierarchyNodes[i].layout.y}, ${layoutHierarchyNodes[i].layout.width}, ${layoutHierarchyNodes[i].layout.height}`
-    );
+    // layoutGroupElements[i].setAttribute(
+    //   'debugLayout',
+    //   `${layoutHierarchyNodes[i].layout.x}, ${layoutHierarchyNodes[i].layout.y}, ${layoutHierarchyNodes[i].layout.width}, ${layoutHierarchyNodes[i].layout.height}`
+    // );
 
-    layoutGroupElements[i].setAttribute(
-      'debugLayoutStyle',
-      `${JSON.stringify(layoutHierarchyNodes[i].style)
-        .replace(/\"/g, '')
-        .replace(/,/g, ', ')
-        .replace(/:/g, ': ')}`
-    );
+    // layoutGroupElements[i].setAttribute(
+    //   'debugLayoutStyle',
+    //   `${JSON.stringify(layoutHierarchyNodes[i].style)
+    //     .replace(/\"/g, '')
+    //     .replace(/,/g, ', ')
+    //     .replace(/:/g, ': ')}`
+    // );
   }
 }

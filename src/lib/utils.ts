@@ -1,6 +1,6 @@
 import { Primitive } from 'd3-array';
 
-export function nullFunction<P1>(a?: P1) {}
+export function nullFunction() {}
 
 // Code inspired by https://stackoverflow.com/a/22909984
 export function getComputedStyleWithoutDefaults(
@@ -36,6 +36,6 @@ export type PrimitiveObject = { [key: string]: Primitive };
 
 export type Size = { width: number; height: number };
 
-export interface Stringable {
+export interface IStringable {
   toString(): string;
 }

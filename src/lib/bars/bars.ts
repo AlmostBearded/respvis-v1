@@ -1,90 +1,183 @@
-import { Component } from '../component';
-import { nullFunction } from '../utils';
+import { IComponent } from '../component';
+import { Size } from '../utils';
+import { ILayout } from '../layout/layout';
+import {
+  Bar,
+  BarPositioner,
+  Orientation,
+  IBarPositioner,
+} from './bar-positioner';
 import { Selection, BaseType } from 'd3-selection';
 import { scaleBand, scaleLinear, ScaleBand, ScaleLinear } from 'd3-scale';
-import { max, merge } from 'd3-array';
+import { max, merge, Primitive } from 'd3-array';
 import 'd3-transition';
-import { Layout } from '../layout/layout';
-import { Rect, RectPositioner } from '..';
 
-export interface Bars extends Component {
-  rectPositioner(rectPositioner?: RectPositioner): RectPositioner | Bars;
+export interface IBars extends IComponent, IBarPositioner {
+  // on(
+  //   eventType: string,
+  //   listener:
+  //     | ((evnt: Event, barElement: SVGElement, index: number) => void)
+  //     | null
+  // ): Bars;
+}
+
+export class Bars implements IBars {
+  private _barPositioner = new BarPositioner();
+
+  // private _eventListeners = new Map<
+  //   string,
+  //   (evnt: Event, barElement: SVGRectElement, index: number) => void
+  // >();
+
+  // private _on = (
+  //   eventType: string,
+  //   listener:
+  //     | ((evnt: Event, barElement: SVGRectElement, index: number) => void)
+  //     | null
+  // ): void => {};
+
+  private _containerSelection: Selection<
+    SVGGElement,
+    unknown,
+    BaseType,
+    unknown
+  >;
+
+  private _barsSelection: Selection<SVGGElement, Bar, SVGGElement, unknown>;
+
+  constructor() {}
+
+  mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
+    //   _on = function (
+    //     eventType: string,
+    //     listener:
+    //       | ((evnt: Event, barElement: SVGRectElement, index: number) => void)
+    //       | null
+    //   ): void {
+    //     if (!listener) {
+    //       _barsContainerSelection.on(eventType, null);
+    //     } else {
+    //       _barsContainerSelection.on(eventType, function (e: Event) {
+    //         const barElement: SVGRectElement = e.target as SVGRectElement;
+    //         const index = Array.prototype.indexOf.call(
+    //           barElement.parentNode!.children,
+    //           e.target
+    //         );
+
+    //         listener(e, barElement, index);
+    //       });
+    //     }
+    //   };
+
+    this._containerSelection = selection
+      .selectAll<SVGGElement, unknown>('.bars')
+      .data([null])
+      .join('g')
+      .classed('bars', true);
+
+    var boundingRect = selection.node()!.getBoundingClientRect();
+    this.fitInSize(boundingRect);
+    this.render(0);
+
+    //   console.log(_eventListeners);
+    //   _eventListeners.forEach((listener, eventType) => {
+    //     _on(eventType, listener);
+    //   });
+
+    return this;
+  }
+
+  fitInLayout(layout: ILayout): this {
+    var layoutRect = layout.layoutOfElement(this._containerSelection.node()!)!;
+    this.fitInSize(layoutRect);
+    return this;
+  }
+
+  render(transitionDuration: number): this {
+    this._barsSelection = renderBars(
+      this._containerSelection,
+      this._barPositioner.bars(),
+      transitionDuration
+    );
+    return this;
+  }
+
+  // renderedBars.on = function on(
+  //   eventType: string,
+  //   listener:
+  //     | ((evnt: Event, barElement: SVGElement, index: number) => void)
+  //     | null
+  // ): Bars {
+  //   if (listener) _eventListeners.set(eventType, listener);
+  //   else _eventListeners.delete(eventType);
+  //   _on(eventType, listener);
+  //   return renderedBars;
+  // };
+
+  // # BarPositioner
+  categories(categories?: Primitive[]): this | Primitive[] {
+    const result = this._barPositioner.categories(categories);
+    return result instanceof BarPositioner ? this : result;
+  }
+  values(values?: number[][]): this | number[][] {
+    const result = this._barPositioner.values(values);
+    return result instanceof BarPositioner ? this : result;
+  }
+  orientation(orientation?: Orientation): this | Orientation {
+    const result = this._barPositioner.orientation(orientation);
+    return result instanceof BarPositioner ? this : result;
+  }
+  flipCategories(flip?: boolean): boolean | this {
+    const result = this._barPositioner.flipCategories(flip);
+    return result instanceof BarPositioner ? this : result;
+  }
+  flipValues(flip?: boolean): boolean | this {
+    const result = this._barPositioner.flipValues(flip);
+    return result instanceof BarPositioner ? this : result;
+  }
+  categoryPadding(padding?: number): number | this {
+    const result = this._barPositioner.categoryPadding(padding);
+    return result instanceof BarPositioner ? this : result;
+  }
+  fitInSize(size: Size): this {
+    this._barPositioner.fitInSize(size);
+    return this;
+  }
+  bars(): Bar[] {
+    return this._barPositioner.bars();
+  }
+  categoriesScale(): ScaleBand<Primitive> {
+    return this._barPositioner.categoriesScale();
+  }
+  valuesScale(): ScaleLinear<number, number> {
+    return this._barPositioner.valuesScale();
+  }
 }
 
 export function bars(): Bars {
-  let _rectPositioner: RectPositioner;
-  let _resize: (layout: Layout, transitionDuration: number) => void;
-  let _render = (transitionDuration: number): void => {};
-
-  const renderedBars: Bars = function renderedBars(
-    selection: Selection<SVGElement, unknown, BaseType, unknown>
-  ): void {
-    console.assert(
-      selection.node(),
-      'Cannot render bars into an empty selection.'
-    );
-    _render = function (transitionDuration: number): void {
-      // console.log("render bars");
-      barsContainerSelection.call(
-        renderBars,
-        _rectPositioner.rects(),
-        transitionDuration
-      );
-    };
-
-    _resize = function (layout: Layout, transitionDuration: number): void {
-      var layoutRect = layout.layoutOfElement(barsContainerSelection.node()!)!;
-      // console.log('resize bars');
-      // console.log(layoutRect);
-      _rectPositioner.update(layoutRect);
-      _render(transitionDuration);
-    };
-
-    const barsContainerSelection = selection.append('g').classed('bars', true);
-
-    var boundingRect = selection.node()!.getBoundingClientRect();
-    _rectPositioner.update(boundingRect);
-
-    _render(0);
-  };
-
-  renderedBars.rectPositioner = function rectPositioner(
-    rectPositioner?: RectPositioner
-  ): RectPositioner | Bars {
-    if (!arguments.length) return _rectPositioner;
-    console.assert(rectPositioner, 'Bars require a valid rect positioner!');
-    _rectPositioner = rectPositioner!;
-    return renderedBars;
-  };
-
-  renderedBars.resize = function resize(
-    layout: Layout,
-    transitionDuration: number
-  ): void {
-    _resize(layout, transitionDuration);
-  };
-
-  renderedBars.render = function render(transitionDuration: number): void {
-    _render(transitionDuration);
-  };
-
-  return renderedBars;
+  return new Bars();
 }
 
 function renderBars(
-  selection: Selection<SVGElement, unknown, BaseType, unknown>,
-  bars: Rect[],
+  selection: Selection<SVGGElement, unknown, BaseType, unknown>,
+  bars: Bar[],
   transitionDuration: number
-): void {
-  selection
-    .selectAll('rect')
+): Selection<SVGGElement, Bar, SVGGElement, unknown> {
+  const barsSelection = selection
+    .selectAll<SVGGElement, Bar>('.bar')
     .data(bars)
+    .join((enter) => enter.append('g').classed('bar', true));
+
+  barsSelection
+    .selectAll('rect')
+    .data((d) => [d])
     .join('rect')
-    .classed('bar', true)
     .transition()
     .duration(transitionDuration)
     .attr('x', (d) => d.x)
     .attr('y', (d) => d.y)
     .attr('height', (d) => d.height)
     .attr('width', (d) => d.width);
+
+  return barsSelection;
 }

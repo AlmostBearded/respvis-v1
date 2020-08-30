@@ -1,19 +1,20 @@
 import { Selection, BaseType } from 'd3-selection';
-import { Layout } from './layout/layout';
+import { ILayout } from './layout/layout';
 
-export interface Component {
-  (selection: Selection<SVGElement, unknown, BaseType, unknown>): void;
-  resize(layout: Layout, transitionDuration: number): void;
-  render(transitionDuration: number): void;
+export interface IComponent {
+  mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this;
+  fitInLayout(layout: ILayout): this;
+  render(transitionDuration: number): this;
 }
 
-export function nullComponent(): Component {
-  function renderedEmptyComponent(
-    selection: Selection<SVGElement, unknown, HTMLElement, unknown>
-  ): void {}
-
-  renderedEmptyComponent.render = function render(): void {};
-  renderedEmptyComponent.resize = function resize(): void {};
-
-  return renderedEmptyComponent;
+export class NullComponent implements IComponent {
+  mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
+    return this;
+  }
+  render(transitionDuration: number): this {
+    return this;
+  }
+  fitInLayout(layout: ILayout): this {
+    return this;
+  }
 }

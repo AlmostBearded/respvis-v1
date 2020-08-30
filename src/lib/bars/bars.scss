@@ -3,7 +3,25 @@
   grid-row: drawingAreaStart / drawingAreaEnd;
 }
 
-.bar {
+.bar rect {
   fill: rgb(70, 130, 180);
   stroke: rgb(63, 117, 162);
+}
+
+.bar:hover rect {
+  fill: rgb(88, 160, 219);
+  stroke: rgb(63, 117, 162);
+}
+
+.transition .bar .label {
+  transition: transform 1s;
+}
+
+.bar .label text {
+  text-anchor: middle;
+  transform: translate(0, 0.35em);
+}
+
+.bar:hover .label text {
+  font-weight: bold;
 }

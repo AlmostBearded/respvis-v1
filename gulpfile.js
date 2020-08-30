@@ -105,7 +105,7 @@ exports.build = gulp.series([
 exports.serve = function serve() {
   browserSync.init({
     server: './dist',
-    startPath: '/examples',
+    startPath: '/',
   });
 
   gulp.watch(
