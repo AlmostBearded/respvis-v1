@@ -1,12 +1,7 @@
 import { IComponent } from '../component';
 import { Size } from '../utils';
 import { ILayout } from '../layout/layout';
-import {
-  Bar,
-  BarPositioner,
-  Orientation,
-  IBarPositioner,
-} from './bar-positioner';
+import { Bar, BarPositioner, Orientation, IBarPositioner } from './bar-positioner';
 import { Selection, BaseType } from 'd3-selection';
 import { scaleBand, scaleLinear, ScaleBand, ScaleLinear } from 'd3-scale';
 import { max, merge, Primitive } from 'd3-array';
@@ -22,7 +17,7 @@ export interface IBars extends IComponent, IBarPositioner {
 }
 
 export class Bars implements IBars {
-  private _barPositioner = new BarPositioner();
+  private _barPositioner: IBarPositioner = new BarPositioner();
 
   // private _eventListeners = new Map<
   //   string,
@@ -36,14 +31,7 @@ export class Bars implements IBars {
   //     | null
   // ): void => {};
 
-  private _containerSelection: Selection<
-    SVGGElement,
-    unknown,
-    BaseType,
-    unknown
-  >;
-
-  private _barsSelection: Selection<SVGGElement, Bar, SVGGElement, unknown>;
+  private _containerSelection: Selection<SVGGElement, unknown, BaseType, unknown>;
 
   constructor() {}
 
@@ -94,11 +82,7 @@ export class Bars implements IBars {
   }
 
   render(transitionDuration: number): this {
-    this._barsSelection = renderBars(
-      this._containerSelection,
-      this._barPositioner.bars(),
-      transitionDuration
-    );
+    renderBars(this._containerSelection, this._barPositioner.bars(), transitionDuration);
     return this;
   }
 
@@ -115,29 +99,35 @@ export class Bars implements IBars {
   // };
 
   // # BarPositioner
-  categories(categories?: Primitive[]): this | Primitive[] {
-    const result = this._barPositioner.categories(categories);
-    return result instanceof BarPositioner ? this : result;
+  categories(categories?: Primitive[]): any {
+    if (categories === undefined) return this._barPositioner.categories();
+    this._barPositioner.categories(categories);
+    return this;
   }
-  values(values?: number[][]): this | number[][] {
-    const result = this._barPositioner.values(values);
-    return result instanceof BarPositioner ? this : result;
+  values(values?: number[]): any {
+    if (values === undefined) return this._barPositioner.values();
+    this._barPositioner.values(values);
+    return this;
   }
-  orientation(orientation?: Orientation): this | Orientation {
-    const result = this._barPositioner.orientation(orientation);
-    return result instanceof BarPositioner ? this : result;
+  orientation(orientation?: Orientation): any {
+    if (orientation === undefined) return this._barPositioner.orientation();
+    this._barPositioner.orientation(orientation);
+    return this;
   }
-  flipCategories(flip?: boolean): boolean | this {
-    const result = this._barPositioner.flipCategories(flip);
-    return result instanceof BarPositioner ? this : result;
+  flipCategories(flip?: boolean): any {
+    if (flip === undefined) return this._barPositioner.flipCategories();
+    this._barPositioner.flipCategories(flip);
+    return this;
   }
-  flipValues(flip?: boolean): boolean | this {
-    const result = this._barPositioner.flipValues(flip);
-    return result instanceof BarPositioner ? this : result;
+  flipValues(flip?: boolean): any {
+    if (flip === undefined) return this._barPositioner.flipValues();
+    this._barPositioner.flipValues(flip);
+    return this;
   }
-  categoryPadding(padding?: number): number | this {
-    const result = this._barPositioner.categoryPadding(padding);
-    return result instanceof BarPositioner ? this : result;
+  categoryPadding(padding?: number): any {
+    if (padding === undefined) return this._barPositioner.categoryPadding();
+    this._barPositioner.categoryPadding(padding);
+    return this;
   }
   fitInSize(size: Size): this {
     this._barPositioner.fitInSize(size);
@@ -158,7 +148,7 @@ export function bars(): Bars {
   return new Bars();
 }
 
-function renderBars(
+export function renderBars(
   selection: Selection<SVGGElement, unknown, BaseType, unknown>,
   bars: Bar[],
   transitionDuration: number

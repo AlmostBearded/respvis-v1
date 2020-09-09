@@ -15,6 +15,7 @@ const rollupGzip = require('rollup-plugin-gzip').default;
 
 const gulpSass = require('gulp-sass');
 const nodeSass = require('node-sass');
+const chromaticSass = require('chromatic-sass');
 gulpSass.compiler = nodeSass;
 
 // ## BrowserSync
@@ -33,7 +34,7 @@ const rename = require('gulp-rename');
 function compileSass() {
   return gulp
     .src('./src/lib/index.scss')
-    .pipe(gulpSass().on('error', gulpSass.logError))
+    .pipe(gulpSass({ functions: chromaticSass }).on('error', gulpSass.logError))
     .pipe(rename('respvis.css'))
     .pipe(gulp.dest('./dist'));
 }
@@ -108,11 +109,7 @@ exports.serve = function serve() {
     startPath: '/',
   });
 
-  gulp.watch(
-    './src/**/*',
-    { ignoreInitial: false },
-    gulp.series(exports.build, reloadBrowser)
-  );
+  gulp.watch('./src/**/*', { ignoreInitial: false }, gulp.series(exports.build, reloadBrowser));
 };
 
 exports.default = exports.serve;

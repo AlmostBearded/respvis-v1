@@ -1,16 +1,39 @@
+@use "sass:color";
+
+$firstBarColor: green;
+$lastBarColor: blue;
+$barColorCount: 8;
+
+$barColors: chromatic-scale(
+  $firstBarColor,
+  $lastBarColor,
+  (
+    mode: 'hcl',
+    stops: $barColorCount,
+  )
+);
+
 .bars {
   grid-column: drawingAreaStart / drawingAreaEnd;
   grid-row: drawingAreaStart / drawingAreaEnd;
 }
 
 .bar rect {
-  fill: rgb(70, 130, 180);
-  stroke: rgb(63, 117, 162);
+  $barColor: map-get(
+    $map: $barColors,
+    $key: 0,
+  );
+  fill: $barColor;
+  stroke: scale-color($color: $barColor, $lightness: -33%);
 }
 
 .bar:hover rect {
-  fill: rgb(88, 160, 219);
-  stroke: rgb(63, 117, 162);
+  $barColor: map-get(
+    $map: $barColors,
+    $key: 0,
+  );
+  fill: scale-color($color: $barColor, $lightness: 10%);
+  stroke: scale-color($color: $barColor, $lightness: 0%);
 }
 
 .transition .bar .label {
@@ -24,4 +47,15 @@
 
 .bar:hover .label text {
   font-weight: bold;
+}
+
+@each $index, $color in $barColors {
+  .bar-group .bar:nth-child(#{$barColorCount}n + #{$index + 1}) rect {
+    fill: $color;
+    stroke: scale-color($color: $color, $lightness: -33%);
+  }
+  .bar-group .bar:nth-child(#{$barColorCount}n + #{$index + 1}):hover rect {
+    fill: scale-color($color: $color, $lightness: 10%);
+    stroke: scale-color($color: $color, $lightness: 0%);
+  }
 }

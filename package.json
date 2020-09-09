@@ -36,6 +36,7 @@
     "@types/d3-selection": "^1.4.2",
     "@types/d3-transition": "^1.1.6",
     "browser-sync": "^2.26.10",
+    "chromatic-sass": "^0.1.8",
     "del": "^5.1.0",
     "gulp": "^4.0.2",
     "gulp-cli": "^2.3.0",
