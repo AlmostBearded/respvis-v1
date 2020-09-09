@@ -1,8 +1,9 @@
-@use "sass:color";
 
 $firstBarColor: green;
 $lastBarColor: blue;
 $barColorCount: 8;
+$barStrokeLightnessScale: -33%;
+$hoveredBarFillLighnessScale: 10%;
 
 $barColors: chromatic-scale(
   $firstBarColor,
@@ -24,7 +25,7 @@ $barColors: chromatic-scale(
     $key: 0,
   );
   fill: $barColor;
-  stroke: scale-color($color: $barColor, $lightness: -33%);
+  stroke: scale-color($color: $barColor, $lightness: $barStrokeLightnessScale);
 }
 
 .bar:hover rect {
@@ -32,8 +33,11 @@ $barColors: chromatic-scale(
     $map: $barColors,
     $key: 0,
   );
-  fill: scale-color($color: $barColor, $lightness: 10%);
-  stroke: scale-color($color: $barColor, $lightness: 0%);
+  fill: scale-color($color: $barColor, $lightness: $hoveredBarFillLighnessScale);
+  stroke: scale-color(
+    $color: $barColor,
+    $lightness: $hoveredBarFillLighnessScale + $barStrokeLightnessScale
+  );
 }
 
 .transition .bar .label {
@@ -52,10 +56,13 @@ $barColors: chromatic-scale(
 @each $index, $color in $barColors {
   .bar-group .bar:nth-child(#{$barColorCount}n + #{$index + 1}) rect {
     fill: $color;
-    stroke: scale-color($color: $color, $lightness: -33%);
+    stroke: scale-color($color: $color, $lightness: $barStrokeLightnessScale);
   }
   .bar-group .bar:nth-child(#{$barColorCount}n + #{$index + 1}):hover rect {
-    fill: scale-color($color: $color, $lightness: 10%);
-    stroke: scale-color($color: $color, $lightness: 0%);
+    fill: scale-color($color: $color, $lightness: $hoveredBarFillLighnessScale);
+    stroke: scale-color(
+      $color: $color,
+      $lightness: $hoveredBarFillLighnessScale + $barStrokeLightnessScale
+    );
   }
 }

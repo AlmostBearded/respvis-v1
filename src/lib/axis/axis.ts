@@ -1,12 +1,5 @@
 import { Selection, select, BaseType } from 'd3-selection';
-import {
-  axisLeft,
-  axisBottom,
-  axisTop,
-  axisRight,
-  AxisScale,
-  Axis as D3Axis,
-} from 'd3-axis';
+import { axisLeft, axisBottom, axisTop, axisRight, AxisScale, Axis as D3Axis } from 'd3-axis';
 import { IComponent } from '../component';
 import { ILayout } from '../layout/layout';
 
@@ -23,19 +16,19 @@ classByPosition.set(Position.Bottom, 'bottom-axis');
 classByPosition.set(Position.Top, 'top-axis');
 classByPosition.set(Position.Right, 'right-axis');
 
-const axisFunctionByPosition = new Map<
-  Position,
-  (scale: AxisScale<unknown>) => D3Axis<unknown>
->();
+const axisFunctionByPosition = new Map<Position, (scale: AxisScale<unknown>) => D3Axis<unknown>>();
 axisFunctionByPosition.set(Position.Left, axisLeft);
 axisFunctionByPosition.set(Position.Bottom, axisBottom);
 axisFunctionByPosition.set(Position.Top, axisTop);
 axisFunctionByPosition.set(Position.Right, axisRight);
 
 export interface IAxis extends IComponent {
-  title(title?: string): string | this;
-  position(position?: Position): Position | this;
-  scale(scale?: AxisScale<unknown>): AxisScale<unknown> | this;
+  title(title: string): this;
+  title(): string;
+  position(position: Position): this;
+  position(): Position;
+  scale(scale: AxisScale<unknown>): this;
+  scale(): AxisScale<unknown>;
 }
 
 export class Axis implements IAxis {
@@ -53,17 +46,16 @@ export class Axis implements IAxis {
     return this;
   }
 
-  scale(scale?: AxisScale<unknown>): AxisScale<unknown> | this {
-    if (!arguments.length) return this._scale;
-    console.assert(scale, 'Axis requires a valid scale!');
-    this._scale = scale!;
+  scale(scale?: AxisScale<unknown>): any {
+    if (scale === undefined) return this._scale;
+    this._scale = scale;
     // TODO: Update scale if called after creation
     return this;
   }
 
-  position(position?: Position): Position | this {
-    if (!arguments.length) return this._position;
-    const newPosition = position || Position.Left;
+  position(position?: Position): any {
+    if (position === undefined) return this._position;
+    const newPosition = position;
 
     if (this._axisSelection) {
       this._axisSelection
@@ -77,9 +69,9 @@ export class Axis implements IAxis {
     return this;
   }
 
-  title(title?: string): string | this {
-    if (!arguments.length) return this._title;
-    this._title = title || '';
+  title(title?: string): any {
+    if (title === undefined) return this._title;
+    this._title = title;
     // TODO: Update title if called after creation
     return this;
   }
@@ -131,9 +123,7 @@ function renderTicks(
     .attr('text-anchor', null)
     .attr('fill', null)
     .call((ticksSelection) => ticksSelection.selectAll('text').attr('dy', null))
-    .call((ticksSelection) =>
-      ticksSelection.select('.domain').attr('stroke', null)
-    )
+    .call((ticksSelection) => ticksSelection.select('.domain').attr('stroke', null))
     .call((ticksSelection) =>
       ticksSelection
         .selectAll('.tick')
@@ -150,9 +140,7 @@ function renderLeftTicks(
   selection
     .call(renderTicks, Position.Left, scale)
     .selectAll('.ticks')
-    .call(function (
-      ticksSelection: Selection<SVGGElement, unknown, SVGElement, unknown>
-    ) {
+    .call(function (ticksSelection: Selection<SVGGElement, unknown, SVGElement, unknown>) {
       var boundingRect = ticksSelection.node()!.getBoundingClientRect();
       ticksSelection.attr('transform', `translate(${boundingRect.width}, 0)`);
     });
@@ -172,9 +160,7 @@ function renderTopTicks(
   selection
     .call(renderTicks, Position.Top, scale)
     .selectAll('.ticks')
-    .call(function (
-      ticksSelection: Selection<SVGGElement, unknown, SVGElement, unknown>
-    ) {
+    .call(function (ticksSelection: Selection<SVGGElement, unknown, SVGElement, unknown>) {
       var boundingRect = ticksSelection.node()!.getBoundingClientRect();
       ticksSelection.attr('transform', `translate(0, ${boundingRect.height})`);
     });
@@ -187,9 +173,7 @@ function renderRightTicks(
   selection.call(renderTicks, Position.Right, scale);
 }
 
-function clearTickAttributes(
-  selection: Selection<SVGElement, unknown, BaseType, unknown>
-): void {
+function clearTickAttributes(selection: Selection<SVGElement, unknown, BaseType, unknown>): void {
   selection
     .select('.ticks')
     .attr('transform', 'translate(0, 0)')
@@ -201,14 +185,6 @@ function clearTickAttributes(
     });
 }
 
-function renderTitle(
-  selection: Selection<SVGElement, unknown, BaseType, unknown>,
-  title: string
-) {
-  selection
-    .selectAll('.title')
-    .data([null])
-    .join('text')
-    .classed('title', true)
-    .text(title);
+function renderTitle(selection: Selection<SVGElement, unknown, BaseType, unknown>, title: string) {
+  selection.selectAll('.title').data([null]).join('text').classed('title', true).text(title);
 }
