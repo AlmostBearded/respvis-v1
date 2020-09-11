@@ -117,7 +117,7 @@
       }
 
       function padding() {
-        var bars = respVis.bars().categories(categories).values(values).categoryPadding(0.1);
+        var bars = respVis.bars().categories(categories).values(values).categoryPadding(0.25);
         var layout = respVis.layout().components([bars]);
         var chart = respVis.chart().layout(layout);
         chart.mount('#padding');

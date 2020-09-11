@@ -32,7 +32,7 @@ export class BarPositioner implements IBarPositioner {
   private _categories: Primitive[] = [];
   private _values: number[] = [];
   private _orientation: Orientation = Orientation.Vertical;
-  private _categoryPadding: number = 0;
+  private _categoryPadding: number = 0.1;
   private _flipValues: boolean = false;
   private _flipCategories: boolean = false;
   private _bars: Bar[] = [];

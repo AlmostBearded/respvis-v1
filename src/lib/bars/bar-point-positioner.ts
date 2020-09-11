@@ -21,9 +21,12 @@ export interface IPointPositioner {
 }
 
 export interface IBarPointPositioner extends IPointPositioner {
-  bars(bars?: IBarPositioner): IBarPositioner | this;
-  horizontalPosition(position?: HorizontalPosition): HorizontalPosition | this;
-  verticalPosition(position?: VerticalPosition): VerticalPosition | this;
+  bars(bars: IBarPositioner): this;
+  bars(): IBarPositioner;
+  horizontalPosition(position: HorizontalPosition): this;
+  horizontalPosition(): HorizontalPosition;
+  verticalPosition(position: VerticalPosition): this;
+  verticalPosition(): VerticalPosition;
 }
 
 export class BarPointPositioner implements IBarPointPositioner {
@@ -32,22 +35,21 @@ export class BarPointPositioner implements IBarPointPositioner {
   private _verticalPosition: VerticalPosition = VerticalPosition.Center;
   private _points: Point[] = [];
 
-  bars(bars?: IBarPositioner): IBarPositioner | this {
-    if (!arguments.length) return this._bars;
-    console.assert(bars, 'BarPointPositioner requires valid bars!');
-    this._bars = bars!;
+  bars(bars?: IBarPositioner): any {
+    if (bars === undefined) return this._bars;
+    this._bars = bars;
     return this;
   }
 
-  horizontalPosition(position?: HorizontalPosition): HorizontalPosition | this {
-    if (!arguments.length) return this._horizontalPosition;
-    this._horizontalPosition = position || HorizontalPosition.Center;
+  horizontalPosition(position?: HorizontalPosition): any {
+    if (position === undefined) return this._horizontalPosition;
+    this._horizontalPosition = position;
     return this;
   }
 
-  verticalPosition(position?: VerticalPosition): VerticalPosition | this {
-    if (!arguments.length) return this._verticalPosition;
-    this._verticalPosition = position || VerticalPosition.Center;
+  verticalPosition(position?: VerticalPosition): any {
+    if (position === undefined) return this._verticalPosition;
+    this._verticalPosition = position;
     return this;
   }
 

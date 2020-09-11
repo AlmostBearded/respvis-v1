@@ -32,7 +32,7 @@ export class GroupedBarPositioner implements IGroupedBarPositioner {
   private _values: number[][] = [];
   private _orientation: Orientation = Orientation.Vertical;
   private _categoryPadding: number = 0.1;
-  private _subcategoryPadding: number = 0;
+  private _subcategoryPadding: number = 0.1;
   private _flipValues: boolean = false;
   private _flipCategories: boolean = false;
   private _flipSubcategories: boolean = false;

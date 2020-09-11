@@ -16,14 +16,9 @@ export interface IBarLabels extends IComponent, IBarPointPositioner {
 }
 
 export class BarLabels implements IBarLabels {
-  private _barPointPositioner: BarPointPositioner = new BarPointPositioner();
+  private _barPointPositioner: IBarPointPositioner = new BarPointPositioner();
   private _labels: IStringable[] = [];
-  private _containerSelection: Selection<
-    SVGGElement,
-    unknown,
-    BaseType,
-    unknown
-  >;
+  private _containerSelection: Selection<SVGGElement, unknown, BaseType, unknown>;
   private _labelsSelection: Selection<SVGGElement, unknown, BaseType, unknown>;
 
   constructor() {}
@@ -49,11 +44,7 @@ export class BarLabels implements IBarLabels {
     return this;
   }
   render(transitionDuration: number): this {
-    this._labelsSelection = renderBarLabels(
-      this._containerSelection,
-      this.points(),
-      this._labels
-    );
+    this._labelsSelection = renderBarLabels(this._containerSelection, this.points(), this._labels);
     return this;
   }
 
@@ -66,17 +57,20 @@ export class BarLabels implements IBarLabels {
   points(): Point[] {
     return this._barPointPositioner.points();
   }
-  bars(bars?: IBarPositioner): IBarPositioner | this {
-    const result = this._barPointPositioner.bars(bars);
-    return result instanceof BarPointPositioner ? this : result;
+  bars(bars?: IBarPositioner): any {
+    if (bars === undefined) return this._barPointPositioner.bars();
+    this._barPointPositioner.bars(bars);
+    return this;
   }
-  horizontalPosition(position?: HorizontalPosition): HorizontalPosition | this {
-    const result = this._barPointPositioner.horizontalPosition(position);
-    return result instanceof BarPointPositioner ? this : result;
+  horizontalPosition(position?: HorizontalPosition): any {
+    if (position === undefined) return this._barPointPositioner.horizontalPosition();
+    this._barPointPositioner.horizontalPosition(position);
+    return this;
   }
-  verticalPosition(position?: VerticalPosition): VerticalPosition | this {
-    const result = this._barPointPositioner.verticalPosition(position);
-    return result instanceof BarPointPositioner ? this : result;
+  verticalPosition(position?: VerticalPosition): any {
+    if (position === undefined) return this._barPointPositioner.verticalPosition();
+    this._barPointPositioner.verticalPosition(position);
+    return this;
   }
 
   // # IBarLabels
