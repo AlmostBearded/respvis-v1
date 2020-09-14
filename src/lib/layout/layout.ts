@@ -1,20 +1,18 @@
 import { IComponent, NullComponent } from '../component';
 import { select, Selection, BaseType } from 'd3-selection';
-import {
-  nullFunction,
-  getComputedStyleWithoutDefaults,
-  PrimitiveObject,
-} from '../utils';
+import { nullFunction, getComputedStyleWithoutDefaults, PrimitiveObject } from '../utils';
 import { computeLayout as faberComputeLayout } from './faberjs';
 import { Bar } from '../bars/bar-positioner';
 
 export interface ILayout {
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this;
-  components(components?: IComponent[]): IComponent[] | this;
+  components(components: IComponent[]): this;
+  components(): IComponent[];
   resize(): this;
   transition(): this;
   layoutOfElement(element: SVGElement): Bar | null;
-  onTransition(callback?: () => void): (() => void) | this;
+  onTransition(callback: () => void): this;
+  onTransition(): () => void;
 }
 
 export class Layout implements ILayout {
@@ -43,16 +41,9 @@ export class Layout implements ILayout {
   }
 
   resize(): this {
-    console.assert(
-      this._selection,
-      'Method must only be called on mounted component!'
-    );
+    console.assert(this._selection, 'Method must only be called on mounted component!');
     let boundingRect = this._selection.node()!.getBoundingClientRect();
-    computeLayout(
-      this._laidOutElements,
-      this._layoutHierarchyNodes,
-      boundingRect
-    );
+    computeLayout(this._laidOutElements, this._layoutHierarchyNodes, boundingRect);
     applyLayout(this._layoutGroupElements, this._layoutHierarchyNodes);
 
     for (let i = 0; i < this._components.length; ++i) {
@@ -63,20 +54,13 @@ export class Layout implements ILayout {
   }
 
   transition(): this {
-    console.assert(
-      this._selection,
-      'Method must only be called on mounted component!'
-    );
+    console.assert(this._selection, 'Method must only be called on mounted component!');
     this._selection.classed('transition', true);
 
     this._onTransition();
 
     let boundingRect = this._selection.node()!.getBoundingClientRect();
-    computeLayout(
-      this._laidOutElements,
-      this._layoutHierarchyNodes,
-      boundingRect
-    );
+    computeLayout(this._laidOutElements, this._layoutHierarchyNodes, boundingRect);
     applyLayout(this._layoutGroupElements, this._layoutHierarchyNodes);
 
     for (let i = 0; i < this._components.length; ++i) {
@@ -88,24 +72,21 @@ export class Layout implements ILayout {
     return this;
   }
 
-  components(components?: IComponent[]): IComponent[] | this {
-    if (!arguments.length) return this._components;
-    this._components = components || [new NullComponent()];
+  components(components?: IComponent[]): any {
+    if (components === undefined) return this._components;
+    this._components = components;
     // TODO: update components if called after mount
     return this;
   }
 
-  onTransition(callback?: () => void): (() => void) | this {
-    if (!arguments.length) return this._onTransition;
-    this._onTransition = callback || nullFunction;
+  onTransition(callback?: () => void): any {
+    if (callback === undefined) return this._onTransition;
+    this._onTransition = callback;
     return this;
   }
 
   layoutOfElement(element: SVGElement): Bar | null {
-    console.assert(
-      this._selection,
-      'Method must only be called on mounted component!'
-    );
+    console.assert(this._selection, 'Method must only be called on mounted component!');
     const index = this._laidOutElements.indexOf(element);
     if (index < 0) {
       return null;
@@ -138,10 +119,7 @@ var layoutProperties = [
 // Parse the required CSS properties for layouting from the elements computed style
 function parseLayoutStyle(element: SVGElement): PrimitiveObject | null {
   // Get the computed style for the needed properties
-  var computedStyle = getComputedStyleWithoutDefaults(
-    element,
-    layoutProperties
-  );
+  var computedStyle = getComputedStyleWithoutDefaults(element, layoutProperties);
 
   // Post-process the computed styles for FaberJS
   for (var i = 0; i < layoutProperties.length; ++i) {
@@ -221,10 +199,7 @@ function createLayoutGroups(laidOutElements: SVGElement[]): SVGElement[] {
   var groupElements: SVGElement[] = [laidOutElements[0]];
 
   for (var i = 1; i < laidOutElements.length; ++i) {
-    var groupElement = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'g'
-    );
+    var groupElement = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     groupElement.setAttribute('class', 'layout-group');
     laidOutElements[i].parentNode!.append(groupElement);
     groupElement.append(laidOutElements[i]);
@@ -265,13 +240,11 @@ function setMinContentDimensions(
 function setLayoutDimensions(layoutHierarchyNodes: LayoutHierarchyNode[]) {
   for (var i = 0; i < layoutHierarchyNodes.length; ++i) {
     if (!layoutHierarchyNodes[i].style.width) {
-      layoutHierarchyNodes[i].style.width =
-        layoutHierarchyNodes[i].layout.width;
+      layoutHierarchyNodes[i].style.width = layoutHierarchyNodes[i].layout.width;
     }
 
     if (!layoutHierarchyNodes[i].style.height) {
-      layoutHierarchyNodes[i].style.height =
-        layoutHierarchyNodes[i].layout.height;
+      layoutHierarchyNodes[i].style.height = layoutHierarchyNodes[i].layout.height;
     }
   }
 }
@@ -302,9 +275,9 @@ function applyLayout(
   layoutHierarchyNodes: LayoutHierarchyNode[]
 ) {
   for (let i = 1; i < layoutHierarchyNodes.length; ++i) {
-    const newTransform = `translate(${
-      Math.round(layoutHierarchyNodes[i].layout.x * 10) / 10
-    }px, ${Math.round(layoutHierarchyNodes[i].layout.y * 10) / 10}px)`;
+    const newTransform = `translate(${Math.round(layoutHierarchyNodes[i].layout.x * 10) / 10}px, ${
+      Math.round(layoutHierarchyNodes[i].layout.y * 10) / 10
+    }px)`;
 
     const groupSelection = select(layoutGroupElements[i]);
     groupSelection.style('transform', newTransform);
