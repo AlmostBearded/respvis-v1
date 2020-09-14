@@ -4,7 +4,8 @@ import { ILayout } from '../layout/layout';
 
 export interface IChart {
   mount(containerSelector: string): this;
-  layout(layout?: ILayout): ILayout | this;
+  layout(layout: ILayout): this;
+  layout(): ILayout;
 }
 
 export class Chart implements IChart {
@@ -12,18 +13,13 @@ export class Chart implements IChart {
   private _selection: Selection<SVGElement, unknown, BaseType, unknown>;
 
   mount(containerSelector: string): this {
-    this._selection = select(containerSelector)
-      .append('svg')
-      .classed('chart', true);
+    this._selection = select(containerSelector).append('svg').classed('chart', true);
 
     this._layout.mount(this._selection);
 
     const resize = () => {
       const boundingRect = this._selection.node()!.getBoundingClientRect();
-      this._selection.attr(
-        'viewBox',
-        `0, 0, ${boundingRect.width}, ${boundingRect.height}`
-      );
+      this._selection.attr('viewBox', `0, 0, ${boundingRect.width}, ${boundingRect.height}`);
       this._layout.resize();
     };
 
@@ -51,10 +47,9 @@ export class Chart implements IChart {
     return this;
   }
 
-  layout(layout?: ILayout): ILayout | this {
-    if (!arguments.length) return this._layout;
-    console.assert(layout, 'Cannot set layout to an undefined value');
-    this._layout = layout!;
+  layout(layout?: ILayout): any {
+    if (layout === undefined) return this._layout;
+    this._layout = layout;
     return this;
   }
 }
