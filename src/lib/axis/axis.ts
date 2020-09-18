@@ -101,6 +101,14 @@ export class Axis implements IAxis {
     // Possibly a separate IDynamicSizedComponent component?
     return this;
   }
+
+  selection(): Selection<SVGElement, unknown, BaseType, unknown> {
+    return this._axisSelection;
+  }
+
+  renderOrder(): number {
+    return 10;
+  }
 }
 
 export function axis(): Axis {

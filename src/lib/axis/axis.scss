@@ -33,8 +33,6 @@
 
 .left-axis {
   display: grid;
-  grid-column: leftAxisStart / leftAxisEnd;
-  grid-row: leftAxisStart / leftAxisEnd;
   grid-template-columns: [titleStart] auto [titleEnd margin] 0px [ticksStart] auto [ticksEnd];
 }
 
@@ -62,8 +60,6 @@
 
 .bottom-axis {
   display: grid;
-  grid-column: bottomAxisStart / bottomAxisEnd;
-  grid-row: bottomAxisStart / bottomAxisEnd;
   grid-template-rows: [ticksStart] auto [ticksEnd margin] 0px [titleStart] auto [titleEnd];
 }
 
@@ -89,8 +85,6 @@
 
 .top-axis {
   display: grid;
-  grid-column: topAxisStart / topAxisEnd;
-  grid-row: topAxisStart / topAxisEnd;
   grid-template-rows: [titleStart] auto [titleEnd margin] 0px [ticksStart] auto [ticksEnd];
 }
 
@@ -116,8 +110,6 @@
 
 .right-axis {
   display: grid;
-  grid-column: rightAxisStart / rightAxisEnd;
-  grid-row: rightAxisStart / rightAxisEnd;
   grid-template-columns: [ticksStart] auto [ticksEnd margin] 0px [titleStart] auto [titleEnd];
 }
 

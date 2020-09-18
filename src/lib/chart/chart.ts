@@ -1,26 +1,32 @@
 import { BaseType, select, Selection } from 'd3-selection';
 import debounce from 'debounce';
-import { ILayout } from '../layout/layout';
+import { IComponent } from '../component';
+import { ILayout, Layout } from '../layout/layout';
 
 export interface IChart {
   mount(containerSelector: string): this;
-  layout(layout: ILayout): this;
-  layout(): ILayout;
+  layout(layout: IComponent): this;
+  layout(): IComponent;
 }
 
 export class Chart implements IChart {
-  private _layout: ILayout;
+  private _gridLayout: ILayout;
+  private _layout: IComponent;
   private _selection: Selection<SVGElement, unknown, BaseType, unknown>;
+
+  constructor() {
+    this._gridLayout = new Layout();
+  }
 
   mount(containerSelector: string): this {
     this._selection = select(containerSelector).append('svg').classed('chart', true);
 
-    this._layout.mount(this._selection);
+    this._gridLayout.layout(this._layout).mount(this._selection);
 
     const resize = () => {
       const boundingRect = this._selection.node()!.getBoundingClientRect();
       this._selection.attr('viewBox', `0, 0, ${boundingRect.width}, ${boundingRect.height}`);
-      this._layout.resize();
+      this._gridLayout.resize();
     };
 
     resize();
@@ -40,16 +46,17 @@ export class Chart implements IChart {
         resizing = false;
         window.clearInterval(resizeIntervalHandle);
 
-        this._layout.transition();
+        this._gridLayout.transition();
       }, 1000)
     );
 
     return this;
   }
 
-  layout(layout?: ILayout): any {
+  layout(layout?: IComponent): any {
     if (layout === undefined) return this._layout;
     this._layout = layout;
+    // TODO: Handle changing after mount.
     return this;
   }
 }

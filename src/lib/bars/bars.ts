@@ -56,15 +56,15 @@ export class Bars implements IBars {
     //       });
     //     }
     //   };
-
     this._containerSelection = selection
       .selectAll<SVGGElement, unknown>('.bars')
       .data([null])
       .join('g')
       .classed('bars', true);
 
-    var boundingRect = selection.node()!.getBoundingClientRect();
-    this.fitInSize(boundingRect);
+    // var boundingRect = selection.node()!.getBoundingClientRect();
+    // this.fitInSize(boundingRect);
+    this.fitInSize({ width: 600, height: 400 });
     this.render(0);
 
     //   console.log(_eventListeners);
@@ -84,6 +84,14 @@ export class Bars implements IBars {
   render(transitionDuration: number): this {
     renderBars(this._containerSelection, this._barPositioner.bars(), transitionDuration);
     return this;
+  }
+
+  selection(): Selection<SVGElement, unknown, BaseType, unknown> {
+    return this._containerSelection;
+  }
+
+  renderOrder(): number {
+    return 0;
   }
 
   // renderedBars.on = function on(

@@ -1,0 +1,22 @@
+.border-layout {
+  display: grid;
+  grid-template-columns: 10px auto 1fr auto 10px;
+  grid-template-rows: 10px auto 1fr auto 10px;
+  justify-items: stretch;
+  align-items: stretch;
+}
+
+// .border-layout {
+//   display: grid;
+//   grid-template-columns: [leftMargin] 10px [leftAxisStart] auto [leftAxisEnd bottomAxisStart topAxisStart drawingAreaStart] 1fr [bottomAxisEnd topAxisEnd drawingAreaEnd rightAxisStart] auto [rightAxisEnd rightMargin] 10px;
+//   grid-template-rows: [topMargin] 10px [topAxisStart] auto [topAxisEnd leftAxisStart rightAxisStart drawingAreaStart] 1fr [leftAxisEnd rightAxisEnd drawingAreaEnd bottomAxisStart] auto [bottomAxisEnd bottomMargin] 10px;
+//   justify-items: stretch;
+//   align-items: stretch;
+// }
+
+// @media screen and (min-width: 50rem) {
+//   .border-layout {
+//     grid-template-columns: [leftMargin] 25px [leftAxisStart] auto [leftAxisEnd bottomAxisStart topAxisStart drawingAreaStart] 1fr [bottomAxisEnd topAxisEnd drawingAreaEnd rightAxisStart] auto [rightAxisEnd rightMargin] 25px;
+//     grid-template-rows: [topMargin] 10px [topAxisStart] auto [topAxisEnd leftAxisStart rightAxisStart drawingAreaStart] 1fr [leftAxisEnd rightAxisEnd drawingAreaEnd bottomAxisStart] auto [bottomAxisEnd bottomMargin] 10px;
+//   }
+// }

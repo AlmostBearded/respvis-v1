@@ -47,6 +47,12 @@ export class BarLabels implements IBarLabels {
     this._labelsSelection = renderBarLabels(this._containerSelection, this.points(), this._labels);
     return this;
   }
+  selection(): Selection<SVGElement, unknown, BaseType, unknown> {
+    return this._containerSelection;
+  }
+  renderOrder(): number {
+    return 1;
+  }
 
   // # IBarPointPositioner
 

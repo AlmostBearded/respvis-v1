@@ -65,8 +65,8 @@
       padding();
       axes();
       flippedAxes();
-      labels();
-      responsive();
+      // labels();
+      // responsive();
 
       function verticalBars() {
         var bars = respVis
@@ -74,8 +74,10 @@
           .categories(categories)
           .values(values)
           .orientation(respVis.BarOrientation.Vertical);
-        var layout = respVis.layout().components([bars]);
-        var chart = respVis.chart().layout(layout);
+        var borderLayout = respVis
+          .borderLayout()
+          .slot(respVis.BorderLayoutRow.Center, respVis.BorderLayoutColumn.Center, bars);
+        var chart = respVis.chart().layout(borderLayout);
         chart.mount('#vertical-bars');
       }
 
@@ -85,22 +87,28 @@
           .categories(categories)
           .values(values)
           .orientation(respVis.BarOrientation.Horizontal);
-        var layout = respVis.layout().components([bars]);
-        var chart = respVis.chart().layout(layout);
+        var borderLayout = respVis
+          .borderLayout()
+          .slot(respVis.BorderLayoutRow.Center, respVis.BorderLayoutColumn.Center, bars);
+        var chart = respVis.chart().layout(borderLayout);
         chart.mount('#horizontal-bars');
       }
 
       function flippedValues() {
         var bars = respVis.bars().categories(categories).values(values).flipValues(true);
-        var layout = respVis.layout().components([bars]);
-        var chart = respVis.chart().layout(layout);
+        var borderLayout = respVis
+          .borderLayout()
+          .slot(respVis.BorderLayoutRow.Center, respVis.BorderLayoutColumn.Center, bars);
+        var chart = respVis.chart().layout(borderLayout);
         chart.mount('#flipped-values');
       }
 
       function flippedCategories() {
         var bars = respVis.bars().categories(categories).values(values).flipCategories(true);
-        var layout = respVis.layout().components([bars]);
-        var chart = respVis.chart().layout(layout);
+        var borderLayout = respVis
+          .borderLayout()
+          .slot(respVis.BorderLayoutRow.Center, respVis.BorderLayoutColumn.Center, bars);
+        var chart = respVis.chart().layout(borderLayout);
         chart.mount('#flipped-categories');
       }
 
@@ -111,15 +119,19 @@
           .values(values)
           .flipCategories(true)
           .flipValues(true);
-        var layout = respVis.layout().components([bars]);
-        var chart = respVis.chart().layout(layout);
+        var borderLayout = respVis
+          .borderLayout()
+          .slot(respVis.BorderLayoutRow.Center, respVis.BorderLayoutColumn.Center, bars);
+        var chart = respVis.chart().layout(borderLayout);
         chart.mount('#flipped-values-and-categories');
       }
 
       function padding() {
         var bars = respVis.bars().categories(categories).values(values).categoryPadding(0.25);
-        var layout = respVis.layout().components([bars]);
-        var chart = respVis.chart().layout(layout);
+        var borderLayout = respVis
+          .borderLayout()
+          .slot(respVis.BorderLayoutRow.Center, respVis.BorderLayoutColumn.Center, bars);
+        var chart = respVis.chart().layout(borderLayout);
         chart.mount('#padding');
       }
 
@@ -138,9 +150,13 @@
           .position(respVis.AxisPosition.Left)
           .title('Population');
 
-        var layout = respVis.layout().components([bars, categoriesAxis, valuesAxis]);
+        var borderLayout = respVis
+          .borderLayout()
+          .slot(respVis.BorderLayoutRow.Center, respVis.BorderLayoutColumn.Left, valuesAxis)
+          .slot(respVis.BorderLayoutRow.Bottom, respVis.BorderLayoutColumn.Center, categoriesAxis)
+          .slot(respVis.BorderLayoutRow.Center, respVis.BorderLayoutColumn.Center, bars);
 
-        var chart = respVis.chart().layout(layout);
+        var chart = respVis.chart().layout(borderLayout);
 
         chart.mount('#axes');
       }
@@ -160,9 +176,13 @@
           .position(respVis.AxisPosition.Right)
           .title('Population');
 
-        var layout = respVis.layout().components([bars, categoriesAxis, valuesAxis]);
+        var borderLayout = respVis
+          .borderLayout()
+          .slot(respVis.BorderLayoutRow.Center, respVis.BorderLayoutColumn.Right, valuesAxis)
+          .slot(respVis.BorderLayoutRow.Top, respVis.BorderLayoutColumn.Center, categoriesAxis)
+          .slot(respVis.BorderLayoutRow.Center, respVis.BorderLayoutColumn.Center, bars);
 
-        var chart = respVis.chart().layout(layout);
+        var chart = respVis.chart().layout(borderLayout);
 
         chart.mount('#flipped-axes');
       }

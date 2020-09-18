@@ -15,8 +15,8 @@ $barColors: chromatic-scale(
 );
 
 .bars {
-  grid-column: drawingAreaStart / drawingAreaEnd;
-  grid-row: drawingAreaStart / drawingAreaEnd;
+  // grid-column: drawingAreaStart / drawingAreaEnd;
+  // grid-row: drawingAreaStart / drawingAreaEnd;
 }
 
 .bar rect {

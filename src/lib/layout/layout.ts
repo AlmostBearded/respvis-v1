@@ -6,8 +6,8 @@ import { Bar } from '../bars/bar-positioner';
 
 export interface ILayout {
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this;
-  components(components: IComponent[]): this;
-  components(): IComponent[];
+  layout(layout: IComponent): this;
+  layout(): IComponent;
   resize(): this;
   transition(): this;
   layoutOfElement(element: SVGElement): Bar | null;
@@ -16,7 +16,7 @@ export interface ILayout {
 }
 
 export class Layout implements ILayout {
-  private _components: IComponent[] = [new NullComponent()];
+  private _layout: IComponent;
   private _onTransition = nullFunction;
 
   private _selection: Selection<SVGElement, unknown, BaseType, unknown>;
@@ -26,14 +26,11 @@ export class Layout implements ILayout {
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
     this._selection = selection;
-    for (let i = 0; i < this._components.length; ++i) {
-      this._components[i].mount(this._selection);
-    }
-
+    this._layout.mount(this._selection);
     ({
       laidOutElements: this._laidOutElements,
       layoutHierarchyNodes: this._layoutHierarchyNodes,
-    } = parseDOMHierarchy(this._selection.node()!));
+    } = parseDOMHierarchy(this._layout.selection().node()!));
 
     this._layoutGroupElements = createLayoutGroups(this._laidOutElements);
 
@@ -46,9 +43,7 @@ export class Layout implements ILayout {
     computeLayout(this._laidOutElements, this._layoutHierarchyNodes, boundingRect);
     applyLayout(this._layoutGroupElements, this._layoutHierarchyNodes);
 
-    for (let i = 0; i < this._components.length; ++i) {
-      this._components[i].fitInLayout(this).render(0);
-    }
+    this._layout.fitInLayout(this).render(0);
 
     return this;
   }
@@ -63,18 +58,16 @@ export class Layout implements ILayout {
     computeLayout(this._laidOutElements, this._layoutHierarchyNodes, boundingRect);
     applyLayout(this._layoutGroupElements, this._layoutHierarchyNodes);
 
-    for (let i = 0; i < this._components.length; ++i) {
-      this._components[i].fitInLayout(this).render(1000);
-    }
+    this._layout.fitInLayout(this).render(1000);
 
     window.setTimeout(() => this._selection.classed('transition', false), 1000);
 
     return this;
   }
 
-  components(components?: IComponent[]): any {
-    if (components === undefined) return this._components;
-    this._components = components;
+  layout(layout?: IComponent): any {
+    if (layout === undefined) return this._layout;
+    this._layout = layout;
     // TODO: update components if called after mount
     return this;
   }
@@ -274,7 +267,7 @@ function applyLayout(
   layoutGroupElements: SVGElement[],
   layoutHierarchyNodes: LayoutHierarchyNode[]
 ) {
-  for (let i = 1; i < layoutHierarchyNodes.length; ++i) {
+  for (let i = 0; i < layoutHierarchyNodes.length; ++i) {
     const newTransform = `translate(${Math.round(layoutHierarchyNodes[i].layout.x * 10) / 10}px, ${
       Math.round(layoutHierarchyNodes[i].layout.y * 10) / 10
     }px)`;
@@ -282,17 +275,17 @@ function applyLayout(
     const groupSelection = select(layoutGroupElements[i]);
     groupSelection.style('transform', newTransform);
 
-    // layoutGroupElements[i].setAttribute(
-    //   'debugLayout',
-    //   `${layoutHierarchyNodes[i].layout.x}, ${layoutHierarchyNodes[i].layout.y}, ${layoutHierarchyNodes[i].layout.width}, ${layoutHierarchyNodes[i].layout.height}`
-    // );
+    layoutGroupElements[i].setAttribute(
+      'debugLayout',
+      `${layoutHierarchyNodes[i].layout.x}, ${layoutHierarchyNodes[i].layout.y}, ${layoutHierarchyNodes[i].layout.width}, ${layoutHierarchyNodes[i].layout.height}`
+    );
 
-    // layoutGroupElements[i].setAttribute(
-    //   'debugLayoutStyle',
-    //   `${JSON.stringify(layoutHierarchyNodes[i].style)
-    //     .replace(/\"/g, '')
-    //     .replace(/,/g, ', ')
-    //     .replace(/:/g, ': ')}`
-    // );
+    layoutGroupElements[i].setAttribute(
+      'debugLayoutStyle',
+      `${JSON.stringify(layoutHierarchyNodes[i].style)
+        .replace(/\"/g, '')
+        .replace(/,/g, ', ')
+        .replace(/:/g, ': ')}`
+    );
   }
 }

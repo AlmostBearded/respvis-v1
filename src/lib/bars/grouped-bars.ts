@@ -56,6 +56,14 @@ export class GroupedBars implements IGroupedBars {
 
     return this;
   }
+  
+  selection(): Selection<SVGElement, unknown, BaseType, unknown> {
+    return this._containerSelection;
+  }
+
+  renderOrder(): number {
+    return 0;
+  }
 
   // # GroupedBarPositioner
   categories(categories?: Primitive[]): any {
