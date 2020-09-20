@@ -24,7 +24,6 @@ export class BorderLayout implements IBorderLayout {
   private _slots: Map<[Row, Column], IComponent> = new Map();
 
   slot(row: Row, column: Column, component?: IComponent | null): any {
-    // TODO: Handle setting/clearing of slots after mounting
     if (component === undefined) return this._slots.get([row, column]);
     if (component === null) {
       this._slots.delete([row, column]);
@@ -33,7 +32,18 @@ export class BorderLayout implements IBorderLayout {
     this._slots.set([row, column], component);
 
     // Sort map by render order of components
-    this._slots = new Map([...this._slots].sort((a, b) => a[1].renderOrder() - b[1].renderOrder()));
+    this._slots = new Map(
+      [...this._slots].sort((a, b) => a[1].renderOrder() - b[1].renderOrder())
+    );
+
+    // Set grid positions if already mounted
+    if (this._selection) {
+      this._slots.forEach((component, position) => {
+        component
+          .selection()
+          .call(setSingleCellGridPosition, position[0], position[1]);
+      });
+    }
 
     return this;
   }
@@ -43,10 +53,7 @@ export class BorderLayout implements IBorderLayout {
       component
         .mount(this._selection)
         .selection()
-        .style('grid-row-start', position[0])
-        .style('grid-row-end', position[0] + 1)
-        .style('grid-column-start', position[1])
-        .style('grid-column-end', position[1] + 1);
+        .call(setSingleCellGridPosition, position[0], position[1]);
     });
 
     return this;
@@ -66,8 +73,23 @@ export class BorderLayout implements IBorderLayout {
   selection(): Selection<SVGElement, unknown, BaseType, unknown> {
     return this._selection;
   }
+  renderOrder(): number {
+    return 0;
+  }
 }
 
 export function borderLayout(): BorderLayout {
   return new BorderLayout();
+}
+
+export function setSingleCellGridPosition(
+  selection: Selection<SVGElement, unknown, BaseType, unknown>,
+  row: number,
+  column: number
+) {
+  selection
+    .style('grid-row-start', row)
+    .style('grid-row-end', row + 1)
+    .style('grid-column-start', column)
+    .style('grid-column-end', column + 1);
 }

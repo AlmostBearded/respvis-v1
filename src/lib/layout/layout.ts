@@ -11,8 +11,6 @@ export interface ILayout {
   resize(): this;
   transition(): this;
   layoutOfElement(element: SVGElement): Bar | null;
-  onTransition(callback: () => void): this;
-  onTransition(): () => void;
 }
 
 export class Layout implements ILayout {
@@ -50,17 +48,12 @@ export class Layout implements ILayout {
 
   transition(): this {
     console.assert(this._selection, 'Method must only be called on mounted component!');
-    this._selection.classed('transition', true);
-
-    this._onTransition();
 
     let boundingRect = this._selection.node()!.getBoundingClientRect();
     computeLayout(this._laidOutElements, this._layoutHierarchyNodes, boundingRect);
     applyLayout(this._layoutGroupElements, this._layoutHierarchyNodes);
 
     this._layout.fitInLayout(this).render(1000);
-
-    window.setTimeout(() => this._selection.classed('transition', false), 1000);
 
     return this;
   }
@@ -69,12 +62,6 @@ export class Layout implements ILayout {
     if (layout === undefined) return this._layout;
     this._layout = layout;
     // TODO: update components if called after mount
-    return this;
-  }
-
-  onTransition(callback?: () => void): any {
-    if (callback === undefined) return this._onTransition;
-    this._onTransition = callback;
     return this;
   }
 

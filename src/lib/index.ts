@@ -7,6 +7,11 @@ export {
   Row as BorderLayoutRow,
   Column as BorderLayoutColumn,
 } from './layout/border-layout';
+export {
+  overlayLayout,
+  OverlayLayout,
+  IOverlayLayout,
+} from './layout/overlay-layout';
 export { bars, Bars, IBars } from './bars/bars';
 export { groupedBars, GroupedBars, IGroupedBars } from './bars/grouped-bars';
 export { axis, Axis, IAxis, Position as AxisPosition } from './axis/axis';

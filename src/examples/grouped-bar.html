@@ -75,8 +75,14 @@
           .categories(categories)
           .values(values)
           .orientation(respVis.BarOrientation.Vertical);
-        var layout = respVis.layout().components([bars]);
-        var chart = respVis.chart().layout(layout);
+        var borderLayout = respVis
+          .borderLayout()
+          .slot(
+            respVis.BorderLayoutRow.Center,
+            respVis.BorderLayoutColumn.Center,
+            bars
+          );
+        var chart = respVis.chart().layout(borderLayout);
         chart.mount('#vertical-bars');
       }
 
@@ -86,22 +92,48 @@
           .categories(categories)
           .values(values)
           .orientation(respVis.BarOrientation.Horizontal);
-        var layout = respVis.layout().components([bars]);
-        var chart = respVis.chart().layout(layout);
+        var borderLayout = respVis
+          .borderLayout()
+          .slot(
+            respVis.BorderLayoutRow.Center,
+            respVis.BorderLayoutColumn.Center,
+            bars
+          );
+        var chart = respVis.chart().layout(borderLayout);
         chart.mount('#horizontal-bars');
       }
 
       function flippedValues() {
-        var bars = respVis.groupedBars().categories(categories).values(values).flipValues(true);
-        var layout = respVis.layout().components([bars]);
-        var chart = respVis.chart().layout(layout);
+        var bars = respVis
+          .groupedBars()
+          .categories(categories)
+          .values(values)
+          .flipValues(true);
+        var borderLayout = respVis
+          .borderLayout()
+          .slot(
+            respVis.BorderLayoutRow.Center,
+            respVis.BorderLayoutColumn.Center,
+            bars
+          );
+        var chart = respVis.chart().layout(borderLayout);
         chart.mount('#flipped-values');
       }
 
       function flippedCategories() {
-        var bars = respVis.groupedBars().categories(categories).values(values).flipCategories(true);
-        var layout = respVis.layout().components([bars]);
-        var chart = respVis.chart().layout(layout);
+        var bars = respVis
+          .groupedBars()
+          .categories(categories)
+          .values(values)
+          .flipCategories(true);
+        var borderLayout = respVis
+          .borderLayout()
+          .slot(
+            respVis.BorderLayoutRow.Center,
+            respVis.BorderLayoutColumn.Center,
+            bars
+          );
+        var chart = respVis.chart().layout(borderLayout);
         chart.mount('#flipped-categories');
       }
 
@@ -111,15 +143,31 @@
           .categories(categories)
           .values(values)
           .flipSubcategories(true);
-        var layout = respVis.layout().components([bars]);
-        var chart = respVis.chart().layout(layout);
+        var borderLayout = respVis
+          .borderLayout()
+          .slot(
+            respVis.BorderLayoutRow.Center,
+            respVis.BorderLayoutColumn.Center,
+            bars
+          );
+        var chart = respVis.chart().layout(borderLayout);
         chart.mount('#flipped-subcategories');
       }
 
       function padding() {
-        var bars = respVis.groupedBars().categories(categories).values(values).subcategoryPadding(0.2);
-        var layout = respVis.layout().components([bars]);
-        var chart = respVis.chart().layout(layout);
+        var bars = respVis
+          .groupedBars()
+          .categories(categories)
+          .values(values)
+          .subcategoryPadding(0.2);
+        var borderLayout = respVis
+          .borderLayout()
+          .slot(
+            respVis.BorderLayoutRow.Center,
+            respVis.BorderLayoutColumn.Center,
+            bars
+          );
+        var chart = respVis.chart().layout(borderLayout);
         chart.mount('#padding');
       }
 
@@ -138,9 +186,25 @@
           .position(respVis.AxisPosition.Left)
           .title('Revenue');
 
-        var layout = respVis.layout().components([bars, categoriesAxis, valuesAxis]);
+        var borderLayout = respVis
+          .borderLayout()
+          .slot(
+            respVis.BorderLayoutRow.Center,
+            respVis.BorderLayoutColumn.Left,
+            valuesAxis
+          )
+          .slot(
+            respVis.BorderLayoutRow.Bottom,
+            respVis.BorderLayoutColumn.Center,
+            categoriesAxis
+          )
+          .slot(
+            respVis.BorderLayoutRow.Center,
+            respVis.BorderLayoutColumn.Center,
+            bars
+          );
 
-        var chart = respVis.chart().layout(layout);
+        var chart = respVis.chart().layout(borderLayout);
 
         chart.mount('#axes');
       }
@@ -156,28 +220,41 @@
           .verticalPosition(respVis.VerticalPosition.Center)
           .labels(flatValues);
 
-        var layout = respVis.layout().components([bars, labels]);
-        var chart = respVis.chart().layout(layout);
+        var overlayLayout = respVis.overlayLayout().slots([bars, labels]);
+
+        var chart = respVis.chart().layout(overlayLayout);
         chart.mount('#labels');
       }
 
       function responsive() {
         var bars = respVis.groupedBars().categories(categories).values(values);
 
-        var categoriesAxis = respVis.axis().scale(bars.categoriesScale()).title('Years');
+        var categoriesAxis = respVis
+          .axis()
+          .scale(bars.categoriesScale())
+          .title('Years');
 
-        var valuesAxis = respVis.axis().scale(bars.valuesScale()).title('Revenue');
+        var valuesAxis = respVis
+          .axis()
+          .scale(bars.valuesScale())
+          .title('Revenue');
 
-        var layout = respVis
-          .layout()
-          .components([bars, categoriesAxis, valuesAxis])
+        var borderLayout = respVis
+          .borderLayout()
+          .slot(
+            respVis.BorderLayoutRow.Center,
+            respVis.BorderLayoutColumn.Center,
+            bars
+          );
+
+        var chart = respVis
+          .chart()
+          .layout(borderLayout)
           .onTransition(function () {
             setResponsiveFeatures();
             categoriesAxis.render(0);
             valuesAxis.render(0);
           });
-
-        var chart = respVis.chart().layout(layout);
 
         setResponsiveFeatures();
 
@@ -198,9 +275,28 @@
             ? respVis.AxisPosition.Left
             : respVis.AxisPosition.Bottom;
 
-          bars.categoryPadding(padding).subcategoryPadding(padding).orientation(barOrientation);
+          var leftAxis = mediumMediaQuery.matches ? valuesAxis : categoriesAxis;
+          var bottomAxis = mediumMediaQuery.matches
+            ? categoriesAxis
+            : valuesAxis;
+
+          bars
+            .categoryPadding(padding)
+            .subcategoryPadding(padding)
+            .orientation(barOrientation);
           categoriesAxis.position(categoriesAxisPosition);
           valuesAxis.position(valuesAxisPosition);
+          borderLayout
+            .slot(
+              respVis.BorderLayoutRow.Center,
+              respVis.BorderLayoutColumn.Left,
+              leftAxis
+            )
+            .slot(
+              respVis.BorderLayoutRow.Bottom,
+              respVis.BorderLayoutColumn.Center,
+              bottomAxis
+            );
         }
       }
     </script>
