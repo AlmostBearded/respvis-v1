@@ -1,7 +1,7 @@
 import { IComponent } from '../component';
 import { Selection, BaseType, select } from 'd3-selection';
 import { ILayout } from './layout';
-import { setSingleCellGridPosition } from './border-layout';
+import { setSingleCellGridPosition } from './nine-patch';
 
 export interface ICustomGrid extends IComponent {
   rows(style: string): this;
@@ -9,7 +9,7 @@ export interface ICustomGrid extends IComponent {
   columns(style: string): this;
   columns(): string;
   child(row: number, column: number, child: IComponent | null): this;
-  child(row: number, column: number): IComponent;
+  child(row: number, column: number): IComponent | undefined;
 }
 
 export class CustomGrid implements ICustomGrid {
@@ -35,7 +35,7 @@ export class CustomGrid implements ICustomGrid {
   }
 
   child(row: number, column: number, child: IComponent | null): this;
-  child(row: number, column: number): IComponent;
+  child(row: number, column: number): IComponent | undefined;
   child(row: number, column: number, child?: IComponent | null): any {
     if (child === undefined) return this._children.get([row, column]);
     else if (child === null) this._children.delete([row, column]);

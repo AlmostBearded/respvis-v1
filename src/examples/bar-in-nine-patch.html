@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
   <head>
-    <title>RespVis - Bar Chart in Custom Grid</title>
+    <title>RespVis - Bar Chart in 9-Patch</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" type="text/css" href="../respvis.css" />
     <style>
@@ -17,7 +17,7 @@
     </style>
   </head>
   <body>
-    <h1>Bar Chart in Custom Grid</h1>
+    <h1>Bar Chart in 9-Patch</h1>
     <div id="chart"></div>
     <script src="../respvis.js"></script>
     <script>
@@ -38,15 +38,13 @@
         .position(respVis.AxisPosition.Left)
         .title('Population');
 
-      var customGrid = respVis
-        .customGrid()
-        .rows('1fr auto')
-        .columns('auto 1fr')
-        .child(1, 1, valuesAxis)
-        .child(1, 2, bars)
-        .child(2, 2, categoriesAxis);
+      var ninePatch = respVis
+        .ninePatch()
+        .child(respVis.NinePatchRow.Center, respVis.NinePatchColumn.Left, valuesAxis)
+        .child(respVis.NinePatchRow.Center, respVis.NinePatchColumn.Center, bars)
+        .child(respVis.NinePatchRow.Bottom, respVis.NinePatchColumn.Center, categoriesAxis);
 
-      var chart = respVis.chart().layout(customGrid);
+      var chart = respVis.chart().layout(ninePatch);
 
       chart.mount('#chart');
     </script>

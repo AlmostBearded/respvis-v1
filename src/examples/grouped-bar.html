@@ -1,19 +1,11 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
   <head>
-    <title>RespVis - Groupepd Bar Charts</title>
+    <title>RespVis - Grouped Bar Chart</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" type="text/css" href="../respvis.css" />
     <style>
-      #vertical-bars,
-      #horizontal-bars,
-      #flipped-values,
-      #flipped-categories,
-      #flipped-subcategories,
-      #padding,
-      #axes,
-      #labels,
-      #responsive {
+      #chart {
         width: 100%;
         height: 50vh;
         min-height: 25rem;
@@ -25,29 +17,10 @@
     </style>
   </head>
   <body>
-    <h1>Grouped Bar Charts</h1>
-    <h2>Vertical Bars</h2>
-    <div id="vertical-bars"></div>
-    <h2>Horizontal Bars</h2>
-    <div id="horizontal-bars"></div>
-    <h2>Flipped Values</h2>
-    <div id="flipped-values"></div>
-    <h2>Flipped Categories</h2>
-    <div id="flipped-categories"></div>
-    <h2>Flipped Subcategories</h2>
-    <div id="flipped-subcategories"></div>
-    <h2>Subcategory Padding</h2>
-    <div id="padding"></div>
-    <h2>Axes</h2>
-    <div id="axes"></div>
-    <h2>Labels</h2>
-    <div id="labels"></div>
-    <h2>Responsive</h2>
-    <div id="responsive"></div>
+    <h1>Grouped Bar Chart</h1>
+    <div id="chart"></div>
     <script src="../respvis.js"></script>
     <script>
-      // console.log('bar example');
-
       var categories = ['Vienna', 'Rome', 'Paris', 'Berlin', 'Amsterdam'];
       var values = [
         [23, 27, 29],
@@ -57,248 +30,31 @@
         [12, 14, 18],
       ];
 
-      var mediumMediaQuery = window.matchMedia('screen and (min-width: 40rem)');
+      var bars = respVis.groupedBars().categories(categories).values(values);
 
-      verticalBars();
-      horizontalBars();
-      flippedValues();
-      flippedCategories();
-      flippedSubcategories();
-      padding();
-      axes();
-      labels();
-      responsive();
+      var categoriesAxis = respVis
+        .axis()
+        .scale(bars.categoriesScale())
+        .position(respVis.AxisPosition.Bottom)
+        .title('Years');
 
-      function verticalBars() {
-        var bars = respVis
-          .groupedBars()
-          .categories(categories)
-          .values(values)
-          .orientation(respVis.BarOrientation.Vertical);
-        var borderLayout = respVis
-          .borderLayout()
-          .slot(
-            respVis.BorderLayoutRow.Center,
-            respVis.BorderLayoutColumn.Center,
-            bars
-          );
-        var chart = respVis.chart().layout(borderLayout);
-        chart.mount('#vertical-bars');
-      }
+      var valuesAxis = respVis
+        .axis()
+        .scale(bars.valuesScale())
+        .position(respVis.AxisPosition.Left)
+        .title('Revenue');
 
-      function horizontalBars() {
-        var bars = respVis
-          .groupedBars()
-          .categories(categories)
-          .values(values)
-          .orientation(respVis.BarOrientation.Horizontal);
-        var borderLayout = respVis
-          .borderLayout()
-          .slot(
-            respVis.BorderLayoutRow.Center,
-            respVis.BorderLayoutColumn.Center,
-            bars
-          );
-        var chart = respVis.chart().layout(borderLayout);
-        chart.mount('#horizontal-bars');
-      }
+      var customGrid = respVis
+        .customGrid()
+        .rows('10px 1fr auto') // Small padding at the top
+        .columns('auto 1fr')
+        .child(2, 1, valuesAxis)
+        .child(2, 2, bars)
+        .child(3, 2, categoriesAxis);
 
-      function flippedValues() {
-        var bars = respVis
-          .groupedBars()
-          .categories(categories)
-          .values(values)
-          .flipValues(true);
-        var borderLayout = respVis
-          .borderLayout()
-          .slot(
-            respVis.BorderLayoutRow.Center,
-            respVis.BorderLayoutColumn.Center,
-            bars
-          );
-        var chart = respVis.chart().layout(borderLayout);
-        chart.mount('#flipped-values');
-      }
+      var chart = respVis.chart().layout(customGrid);
 
-      function flippedCategories() {
-        var bars = respVis
-          .groupedBars()
-          .categories(categories)
-          .values(values)
-          .flipCategories(true);
-        var borderLayout = respVis
-          .borderLayout()
-          .slot(
-            respVis.BorderLayoutRow.Center,
-            respVis.BorderLayoutColumn.Center,
-            bars
-          );
-        var chart = respVis.chart().layout(borderLayout);
-        chart.mount('#flipped-categories');
-      }
-
-      function flippedSubcategories() {
-        var bars = respVis
-          .groupedBars()
-          .categories(categories)
-          .values(values)
-          .flipSubcategories(true);
-        var borderLayout = respVis
-          .borderLayout()
-          .slot(
-            respVis.BorderLayoutRow.Center,
-            respVis.BorderLayoutColumn.Center,
-            bars
-          );
-        var chart = respVis.chart().layout(borderLayout);
-        chart.mount('#flipped-subcategories');
-      }
-
-      function padding() {
-        var bars = respVis
-          .groupedBars()
-          .categories(categories)
-          .values(values)
-          .subcategoryPadding(0.2);
-        var borderLayout = respVis
-          .borderLayout()
-          .slot(
-            respVis.BorderLayoutRow.Center,
-            respVis.BorderLayoutColumn.Center,
-            bars
-          );
-        var chart = respVis.chart().layout(borderLayout);
-        chart.mount('#padding');
-      }
-
-      function axes() {
-        var bars = respVis.groupedBars().categories(categories).values(values);
-
-        var categoriesAxis = respVis
-          .axis()
-          .scale(bars.categoriesScale())
-          .position(respVis.AxisPosition.Bottom)
-          .title('Years');
-
-        var valuesAxis = respVis
-          .axis()
-          .scale(bars.valuesScale())
-          .position(respVis.AxisPosition.Left)
-          .title('Revenue');
-
-        var borderLayout = respVis
-          .borderLayout()
-          .slot(
-            respVis.BorderLayoutRow.Center,
-            respVis.BorderLayoutColumn.Left,
-            valuesAxis
-          )
-          .slot(
-            respVis.BorderLayoutRow.Bottom,
-            respVis.BorderLayoutColumn.Center,
-            categoriesAxis
-          )
-          .slot(
-            respVis.BorderLayoutRow.Center,
-            respVis.BorderLayoutColumn.Center,
-            bars
-          );
-
-        var chart = respVis.chart().layout(borderLayout);
-
-        chart.mount('#axes');
-      }
-
-      function labels() {
-        var bars = respVis.groupedBars().categories(categories).values(values);
-
-        var flatValues = [].concat.apply([], values);
-        var labels = respVis
-          .barLabels()
-          .bars(bars)
-          .horizontalPosition(respVis.HorizontalPosition.Center)
-          .verticalPosition(respVis.VerticalPosition.Center)
-          .labels(flatValues);
-
-        var overlayLayout = respVis.overlayLayout().slots([bars, labels]);
-
-        var chart = respVis.chart().layout(overlayLayout);
-        chart.mount('#labels');
-      }
-
-      function responsive() {
-        var bars = respVis.groupedBars().categories(categories).values(values);
-
-        var categoriesAxis = respVis
-          .axis()
-          .scale(bars.categoriesScale())
-          .title('Years');
-
-        var valuesAxis = respVis
-          .axis()
-          .scale(bars.valuesScale())
-          .title('Revenue');
-
-        var borderLayout = respVis
-          .borderLayout()
-          .slot(
-            respVis.BorderLayoutRow.Center,
-            respVis.BorderLayoutColumn.Center,
-            bars
-          );
-
-        var chart = respVis
-          .chart()
-          .layout(borderLayout)
-          .onTransition(function () {
-            setResponsiveFeatures();
-            categoriesAxis.render(0);
-            valuesAxis.render(0);
-          });
-
-        setResponsiveFeatures();
-
-        chart.mount('#responsive');
-
-        function setResponsiveFeatures() {
-          var barOrientation = mediumMediaQuery.matches
-            ? respVis.BarOrientation.Vertical
-            : respVis.BarOrientation.Horizontal;
-
-          var padding = mediumMediaQuery.matches ? 0.15 : 0.1;
-
-          var categoriesAxisPosition = mediumMediaQuery.matches
-            ? respVis.AxisPosition.Bottom
-            : respVis.AxisPosition.Left;
-
-          var valuesAxisPosition = mediumMediaQuery.matches
-            ? respVis.AxisPosition.Left
-            : respVis.AxisPosition.Bottom;
-
-          var leftAxis = mediumMediaQuery.matches ? valuesAxis : categoriesAxis;
-          var bottomAxis = mediumMediaQuery.matches
-            ? categoriesAxis
-            : valuesAxis;
-
-          bars
-            .categoryPadding(padding)
-            .subcategoryPadding(padding)
-            .orientation(barOrientation);
-          categoriesAxis.position(categoriesAxisPosition);
-          valuesAxis.position(valuesAxisPosition);
-          borderLayout
-            .slot(
-              respVis.BorderLayoutRow.Center,
-              respVis.BorderLayoutColumn.Left,
-              leftAxis
-            )
-            .slot(
-              respVis.BorderLayoutRow.Bottom,
-              respVis.BorderLayoutColumn.Center,
-              bottomAxis
-            );
-        }
-      }
+      chart.mount('#chart');
     </script>
   </body>
 </html>

@@ -262,17 +262,17 @@ function applyLayout(
     const groupSelection = select(layoutGroupElements[i]);
     groupSelection.style('transform', newTransform);
 
-    layoutGroupElements[i].setAttribute(
-      'debugLayout',
-      `${layoutHierarchyNodes[i].layout.x}, ${layoutHierarchyNodes[i].layout.y}, ${layoutHierarchyNodes[i].layout.width}, ${layoutHierarchyNodes[i].layout.height}`
-    );
+    // layoutGroupElements[i].setAttribute(
+    //   'debugLayout',
+    //   `${layoutHierarchyNodes[i].layout.x}, ${layoutHierarchyNodes[i].layout.y}, ${layoutHierarchyNodes[i].layout.width}, ${layoutHierarchyNodes[i].layout.height}`
+    // );
 
-    layoutGroupElements[i].setAttribute(
-      'debugLayoutStyle',
-      `${JSON.stringify(layoutHierarchyNodes[i].style)
-        .replace(/\"/g, '')
-        .replace(/,/g, ', ')
-        .replace(/:/g, ': ')}`
-    );
+    // layoutGroupElements[i].setAttribute(
+    //   'debugLayoutStyle',
+    //   `${JSON.stringify(layoutHierarchyNodes[i].style)
+    //     .replace(/\"/g, '')
+    //     .replace(/,/g, ', ')
+    //     .replace(/:/g, ': ')}`
+    // );
   }
 }
