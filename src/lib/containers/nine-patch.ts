@@ -1,6 +1,6 @@
 import { IComponent, NULL_COMPONENT } from '../component';
 import { Selection, BaseType } from 'd3-selection';
-import { ILayout } from './layout';
+import { ILayout } from '../layout/layout';
 
 export enum Row {
   Top = 1,

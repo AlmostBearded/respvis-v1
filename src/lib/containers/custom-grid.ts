@@ -1,6 +1,6 @@
 import { IComponent } from '../component';
 import { Selection, BaseType, select } from 'd3-selection';
-import { ILayout } from './layout';
+import { ILayout } from '../layout/layout';
 import { setSingleCellGridPosition } from './nine-patch';
 
 export interface ICustomGrid extends IComponent {
