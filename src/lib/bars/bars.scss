@@ -1,42 +1,18 @@
-
-$firstBarColor: green;
-$lastBarColor: blue;
-$barColorCount: 8;
-$barStrokeLightnessScale: -33%;
-$hoveredBarFillLighnessScale: 10%;
-
-$barColors: chromatic-scale(
-  $firstBarColor,
-  $lastBarColor,
-  (
-    mode: 'hcl',
-    stops: $barColorCount,
-  )
-);
-
 .bars {
   // grid-column: drawingAreaStart / drawingAreaEnd;
   // grid-row: drawingAreaStart / drawingAreaEnd;
 }
 
 .bar rect {
-  $barColor: map-get(
-    $map: $barColors,
-    $key: 0,
-  );
-  fill: $barColor;
-  stroke: scale-color($color: $barColor, $lightness: $barStrokeLightnessScale);
+  fill: $firstColor;
+  stroke: scale-color($color: $firstColor, $lightness: $strokeLightnessScale);
 }
 
 .bar:hover rect {
-  $barColor: map-get(
-    $map: $barColors,
-    $key: 0,
-  );
-  fill: scale-color($color: $barColor, $lightness: $hoveredBarFillLighnessScale);
+  fill: scale-color($color: $firstColor, $lightness: $hoverFillLighnessScale);
   stroke: scale-color(
-    $color: $barColor,
-    $lightness: $hoveredBarFillLighnessScale + $barStrokeLightnessScale
+    $color: $firstColor,
+    $lightness: $hoverFillLighnessScale + $strokeLightnessScale
   );
 }
 
@@ -51,21 +27,4 @@ $barColors: chromatic-scale(
 
 .bar:hover .label text {
   font-weight: bold;
-}
-
-@each $index, $color in $barColors {
-  // Color bars & legend swatches
-  .bar-group .bar:nth-child(#{$barColorCount}n + #{$index + 1}) rect, .legend g:nth-child(#{$barColorCount}n + #{$index + 1}) rect {
-    fill: $color;
-    stroke: scale-color($color: $color, $lightness: $barStrokeLightnessScale);
-  }
-
-  // Color hovered bars
-  .bar-group .bar:nth-child(#{$barColorCount}n + #{$index + 1}):hover rect {
-    fill: scale-color($color: $color, $lightness: $hoveredBarFillLighnessScale);
-    stroke: scale-color(
-      $color: $color,
-      $lightness: $hoveredBarFillLighnessScale + $barStrokeLightnessScale
-    );
-  }
 }

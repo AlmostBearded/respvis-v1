@@ -1,0 +1,97 @@
+$firstColor: green;
+$lastColor: blue;
+$strokeLightnessScale: -33%;
+$hoverFillLighnessScale: 10%;
+
+$colors3: chromatic-scale(
+  $firstColor,
+  $lastColor,
+  (
+    mode: 'hcl',
+    stops: 3,
+  )
+);
+
+$colors5: chromatic-scale(
+  $firstColor,
+  $lastColor,
+  (
+    mode: 'hcl',
+    stops: 5,
+  )
+);
+
+$colors8: chromatic-scale(
+  $firstColor,
+  $lastColor,
+  (
+    mode: 'hcl',
+    stops: 8,
+  )
+);
+
+@each $index, $color in $colors3 {
+  // Color bars & legend swatches
+  .bar-group .bar:nth-child(3n + #{$index + 1}):nth-last-child(#{3 - $index}) rect,
+  .bar-group .bar:nth-child(3n + #{$index + 1}):nth-last-child(#{2 - $index}) rect,
+  .legend g:nth-child(3n + #{$index + 1}):nth-last-child(#{3 - $index}) rect,
+  .legend g:nth-child(3n + #{$index + 1}):nth-last-child(#{2 - $index}) rect {
+    fill: $color;
+    stroke: scale-color($color: $color, $lightness: $strokeLightnessScale);
+  }
+
+  // Color hovered bars
+  .bar-group .bar:nth-child(3n + #{$index + 1}):nth-last-child(#{3 - $index}):hover rect,
+  .bar-group .bar:nth-child(3n + #{$index + 1}):nth-last-child(#{2 - $index}):hover rect {
+    fill: scale-color($color: $color, $lightness: $hoverFillLighnessScale);
+    stroke: scale-color(
+      $color: $color,
+      $lightness: $hoverFillLighnessScale + $strokeLightnessScale
+    );
+  }
+}
+
+@each $index, $color in $colors5 {
+  // Color bars & legend swatches
+  .bar-group .bar:nth-child(5n + #{$index + 1}):nth-last-child(#{4 - $index}) rect,
+  .bar-group .bar:nth-child(5n + #{$index + 1}):nth-last-child(#{5 - $index}) rect,
+  .legend g:nth-child(5n + #{$index + 1}):nth-last-child(#{4 - $index}) rect,
+  .legend g:nth-child(5n + #{$index + 1}):nth-last-child(#{5 - $index}) rect {
+    fill: $color;
+    stroke: scale-color($color: $color, $lightness: $strokeLightnessScale);
+  }
+
+  // Color hovered bars
+  .bar-group .bar:nth-child(5n + #{$index + 1}):nth-last-child(#{4 - $index}):hover rect,
+  .bar-group .bar:nth-child(5n + #{$index + 1}):nth-last-child(#{5 - $index}):hover rect {
+    fill: scale-color($color: $color, $lightness: $hoverFillLighnessScale);
+    stroke: scale-color(
+      $color: $color,
+      $lightness: $hoverFillLighnessScale + $strokeLightnessScale
+    );
+  }
+}
+
+@each $index, $color in $colors8 {
+  // Color bars & legend swatches
+  .bar-group .bar:nth-child(8n + #{$index + 1}):nth-last-child(#{6 - $index}) rect,
+  .bar-group .bar:nth-child(8n + #{$index + 1}):nth-last-child(#{7 - $index}) rect,
+  .bar-group .bar:nth-child(8n + #{$index + 1}):nth-last-child(#{8 - $index}) rect,
+  .legend g:nth-child(8n + #{$index + 1}):nth-last-child(#{6 - $index}) rect,
+  .legend g:nth-child(8n + #{$index + 1}):nth-last-child(#{7 - $index}) rect,
+  .legend g:nth-child(8n + #{$index + 1}):nth-last-child(#{8 - $index}) rect {
+    fill: $color;
+    stroke: scale-color($color: $color, $lightness: $strokeLightnessScale);
+  }
+
+  // Color hovered bars
+  .bar-group .bar:nth-child(8n + #{$index + 1}):nth-last-child(#{6 - $index}):hover rect,
+  .bar-group .bar:nth-child(8n + #{$index + 1}):nth-last-child(#{7 - $index}):hover rect,
+  .bar-group .bar:nth-child(8n + #{$index + 1}):nth-last-child(#{8 - $index}):hover rect {
+    fill: scale-color($color: $color, $lightness: $hoverFillLighnessScale);
+    stroke: scale-color(
+      $color: $color,
+      $lightness: $hoverFillLighnessScale + $strokeLightnessScale
+    );
+  }
+}
