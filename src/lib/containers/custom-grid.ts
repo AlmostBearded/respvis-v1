@@ -1,6 +1,6 @@
 import { IComponent } from '../component';
 import { Selection, BaseType, select } from 'd3-selection';
-import { ILayout } from '../layout/layout';
+import { ILayout, ILayoutElement } from '../layout/layout';
 import { setSingleCellGridPosition } from './nine-patch';
 
 export interface ICustomGrid extends IComponent {
@@ -8,12 +8,14 @@ export interface ICustomGrid extends IComponent {
   rows(): string;
   columns(style: string): this;
   columns(): string;
+  inline(inline: boolean) : this;
+  inline(): boolean;
   child(row: number, column: number, child: IComponent | null): this;
   child(row: number, column: number): IComponent | undefined;
 }
 
 export class CustomGrid implements ICustomGrid {
-  private _selection: Selection<SVGGElement, unknown, BaseType, unknown>;
+  private _selection: Selection<ILayoutElement, unknown, BaseType, unknown>;
   private _rows: string = '1fr';
   private _columns: string = '1fr';
   private _children: Map<[number, number], IComponent> = new Map();
@@ -32,6 +34,12 @@ export class CustomGrid implements ICustomGrid {
     if (style === undefined) return this._columns;
     this._columns = style;
     return this;
+  }
+  
+  inline(inline: boolean): this;
+  inline(): boolean;
+  inline(inline?: any) {
+    throw new Error('Method not implemented.');
   }
 
   child(row: number, column: number, child: IComponent | null): this;

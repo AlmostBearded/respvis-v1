@@ -22,6 +22,7 @@
     <script src="../respvis.js"></script>
     <script>
       var categories = ['Vienna', 'Rome', 'Paris', 'Berlin', 'Amsterdam'];
+      var years = ['2018', '2019', '2020'];
       var values = [
         [23, 27, 29],
         [15, 13, 16],
@@ -44,15 +45,28 @@
         .position(respVis.AxisPosition.Left)
         .title('Revenue');
 
-      var customGrid = respVis
-        .customGrid()
-        .rows('10px 1fr auto') // Small padding at the top
-        .columns('auto 1fr')
-        .child(2, 1, valuesAxis)
-        .child(2, 2, bars)
-        .child(3, 2, categoriesAxis);
+      var legend = respVis.legend().categories(years).rows(1).columns(years.length);
 
-      var chart = respVis.chart().layout(customGrid);
+      var chart = respVis.chart().layout(
+        respVis
+          .customGrid()
+          .rows('auto 10px 1fr')
+          .columns('1fr')
+          .child(1, 1, legend) // Legend spread over whole width
+          // .child(1, 1, respVis.customGrid().rows('1fr').columns('1fr auto').child(1, 2, legend))  // Legend fit to right
+          // .child(1, 1, respVis.customGrid().rows('1fr').columns('1fr auto 1fr').child(1, 2, legend))  // Legend fit to center
+          .child(
+            3,
+            1,
+            respVis
+              .customGrid()
+              .rows('10px 1fr auto') // Small padding at the top
+              .columns('auto 1fr')
+              .child(2, 1, valuesAxis)
+              .child(2, 2, bars)
+              .child(3, 2, categoriesAxis)
+          )
+      );
 
       chart.mount('#chart');
     </script>

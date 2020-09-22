@@ -54,10 +54,13 @@ $barColors: chromatic-scale(
 }
 
 @each $index, $color in $barColors {
-  .bar-group .bar:nth-child(#{$barColorCount}n + #{$index + 1}) rect {
+  // Color bars & legend swatches
+  .bar-group .bar:nth-child(#{$barColorCount}n + #{$index + 1}) rect, .legend g:nth-child(#{$barColorCount}n + #{$index + 1}) rect {
     fill: $color;
     stroke: scale-color($color: $color, $lightness: $barStrokeLightnessScale);
   }
+
+  // Color hovered bars
   .bar-group .bar:nth-child(#{$barColorCount}n + #{$index + 1}):hover rect {
     fill: scale-color($color: $color, $lightness: $hoveredBarFillLighnessScale);
     stroke: scale-color(

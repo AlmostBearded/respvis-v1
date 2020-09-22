@@ -97,9 +97,14 @@ var layoutProperties = [
 ];
 
 // Parse the required CSS properties for layouting from the elements computed style
-function parseLayoutStyle(element: SVGElement): PrimitiveObject | null {
+function parseLayoutStyle(element: ILayoutElement): PrimitiveObject | null {
   // Get the computed style for the needed properties
   var computedStyle = getComputedStyleWithoutDefaults(element, layoutProperties);
+
+  // Merge with layoutStyle property if it is set
+  if (element.layoutStyle) {
+    computedStyle = Object.assign(computedStyle, element.layoutStyle);
+  }
 
   // Post-process the computed styles for FaberJS
   for (var i = 0; i < layoutProperties.length; ++i) {
@@ -262,17 +267,37 @@ function applyLayout(
     const groupSelection = select(layoutGroupElements[i]);
     groupSelection.style('transform', newTransform);
 
-    // layoutGroupElements[i].setAttribute(
-    //   'debugLayout',
-    //   `${layoutHierarchyNodes[i].layout.x}, ${layoutHierarchyNodes[i].layout.y}, ${layoutHierarchyNodes[i].layout.width}, ${layoutHierarchyNodes[i].layout.height}`
-    // );
+    layoutGroupElements[i].setAttribute(
+      'debugLayout',
+      `${layoutHierarchyNodes[i].layout.x}, ${layoutHierarchyNodes[i].layout.y}, ${layoutHierarchyNodes[i].layout.width}, ${layoutHierarchyNodes[i].layout.height}`
+    );
 
-    // layoutGroupElements[i].setAttribute(
-    //   'debugLayoutStyle',
-    //   `${JSON.stringify(layoutHierarchyNodes[i].style)
-    //     .replace(/\"/g, '')
-    //     .replace(/,/g, ', ')
-    //     .replace(/:/g, ': ')}`
-    // );
+    layoutGroupElements[i].setAttribute(
+      'debugLayoutStyle',
+      `${JSON.stringify(layoutHierarchyNodes[i].style)
+        .replace(/\"/g, '')
+        .replace(/,/g, ', ')
+        .replace(/:/g, ': ')}`
+    );
   }
+}
+
+export interface ILayoutStyle {
+  width?: number | string;
+  height?: number | string;
+  display?: 'grid';
+  gridTemplateColumns?: string;
+  gridTemplateRows?: string;
+  gridColumnStart?: number | string;
+  gridColumnEnd?: number | string;
+  gridRowStart?: number | string;
+  gridRowEnd?: number | string;
+  justifyItems?: 'start' | 'center' | 'end' | 'stretch';
+  alignItems?: 'start' | 'center' | 'end' | 'stretch';
+  justifySelf?: 'start' | 'center' | 'end' | 'stretch';
+  alignSelf?: 'start' | 'center' | 'end' | 'stretch';
+}
+
+export interface ILayoutElement extends SVGElement {
+  layoutStyle?: ILayoutStyle;
 }

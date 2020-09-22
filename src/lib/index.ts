@@ -13,6 +13,7 @@ export { bars, Bars, IBars } from './bars/bars';
 export { groupedBars, GroupedBars, IGroupedBars } from './bars/grouped-bars';
 export { axis, Axis, IAxis, Position as AxisPosition } from './axis/axis';
 export { barLabels, BarLabels, IBarLabels } from './bars/bar-labels';
+export {legend, Legend, ILegend} from './legend/legend'
 
 export {
   barPositioner,
