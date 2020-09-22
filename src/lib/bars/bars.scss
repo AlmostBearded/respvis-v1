@@ -4,17 +4,7 @@
 }
 
 .bar rect {
-  fill: $firstColor;
-  stroke: scale-color($color: $firstColor, $lightness: $strokeLightnessScale);
   stroke-width: 2px;
-}
-
-.bar:hover rect {
-  fill: scale-color($color: $firstColor, $lightness: $hoverFillLighnessScale);
-  stroke: scale-color(
-    $color: $firstColor,
-    $lightness: $hoverFillLighnessScale + $strokeLightnessScale
-  );
 }
 
 .transition .bar .label {

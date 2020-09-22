@@ -30,6 +30,21 @@ $colors8: chromatic-scale(
   )
 );
 
+
+.bar rect {
+  fill: $firstColor;
+  stroke: scale-color($color: $firstColor, $lightness: $strokeLightnessScale);
+  stroke-width: 2px;
+}
+
+.bar:hover rect {
+  fill: scale-color($color: $firstColor, $lightness: $hoverFillLighnessScale);
+  stroke: scale-color(
+    $color: $firstColor,
+    $lightness: $hoverFillLighnessScale + $strokeLightnessScale
+  );
+}
+
 @each $index, $color in $colors3 {
   // Color bars & legend swatches
   .bar-group .bar:nth-child(3n + #{$index + 1}):nth-last-child(#{3 - $index}) rect,
