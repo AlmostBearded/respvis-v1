@@ -76,13 +76,20 @@ export class Bars implements IBars {
   }
 
   fitInLayout(layout: ILayout): this {
-    var layoutRect = layout.layoutOfElement(this._containerSelection.node()!)!;
+    const layoutRect = layout.layoutOfElement(this._containerSelection.node()!)!;
     this.fitInSize(layoutRect);
+
+    const clipRect: Bar = Object.assign(layoutRect, { x: 0, y: 0 });
+    this._containerSelection.call(renderClipRect, clipRect, 'bar-clip-rect');
+
     return this;
   }
 
   render(transitionDuration: number): this {
-    renderBars(this._containerSelection, this._barPositioner.bars(), transitionDuration);
+    this._containerSelection
+      .call(renderBars, this._barPositioner.bars(), transitionDuration)
+      .selectAll('.bar rect')
+      .attr('clip-path', 'url(#bar-clip-rect)');
     return this;
   }
 
@@ -178,4 +185,23 @@ export function renderBars(
     .attr('width', (d) => d.width);
 
   return barsSelection;
+}
+
+export function renderClipRect(
+  selection: Selection<SVGElement, unknown, BaseType, unknown>,
+  rect: Bar,
+  id: string
+) {
+  selection
+    .selectAll(`#${id}`)
+    .data([null])
+    .join('clipPath')
+    .attr('id', id)
+    .selectAll('rect')
+    .data([null])
+    .join('rect')
+    .attr('x', rect.x)
+    .attr('y', rect.y)
+    .attr('height', rect.height)
+    .attr('width', rect.width);
 }

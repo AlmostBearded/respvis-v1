@@ -3,7 +3,7 @@ import { IGroupedBarPositioner, GroupedBarPositioner } from './grouped-bar-posit
 import { BaseType, Selection, select } from 'd3-selection';
 import { Bar, Orientation } from './bar-positioner';
 import { ILayout } from '../layout/layout';
-import { renderBars } from './bars';
+import { renderBars, renderClipRect } from './bars';
 import { ScaleBand, ScaleLinear } from 'd3-scale';
 import { Primitive } from 'd3-array';
 import { Size } from '../utils';
@@ -34,6 +34,10 @@ export class GroupedBars implements IGroupedBars {
   fitInLayout(layout: ILayout): this {
     var layoutRect = layout.layoutOfElement(this._containerSelection.node()!)!;
     this.fitInSize(layoutRect);
+
+    const clipRect: Bar = Object.assign(layoutRect, { x: 0, y: 0 });
+    this._containerSelection.call(renderClipRect, clipRect, 'bar-clip-rect');
+
     return this;
   }
 
@@ -52,11 +56,13 @@ export class GroupedBars implements IGroupedBars {
           bars.slice(i * barsPerGroup, i * barsPerGroup + barsPerGroup),
           transitionDuration
         );
-      });
+      })
+      .selectAll('rect')
+      .attr('clip-path', 'url(#bar-clip-rect)');
 
     return this;
   }
-  
+
   selection(): Selection<SVGElement, unknown, BaseType, unknown> {
     return this._containerSelection;
   }
