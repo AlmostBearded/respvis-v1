@@ -6,6 +6,7 @@ import { select, Selection, BaseType } from 'd3-selection';
 import { scaleBand, scaleLinear, ScaleBand, ScaleLinear } from 'd3-scale';
 import { max, merge, Primitive } from 'd3-array';
 import 'd3-transition';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface IBars extends IComponent, IBarPositioner {
   // on(
@@ -175,14 +176,19 @@ export function renderClippedRect(
   rect: DOMRect,
   transitionDuration: number
 ): void {
-  const clipId = `bar-clip-${rect.x}-${rect.y}`;
+  let clipId: string;
   selection
     // Casting to disable type checking as the latest d3-selection types don't contain selectChildren yet.
     .call((s: any) =>
       (s.selectChildren('clipPath') as Selection<SVGClipPathElement, unknown, BaseType, unknown>)
         .data([null])
-        .join((enter) => enter.append('clipPath').call((s) => s.append('rect')))
-        .call((s) => s.transition().duration(transitionDuration).attr('id', clipId))
+        .join((enter) =>
+          enter
+            .append('clipPath')
+            .attr('id', (clipId = uuidv4()))
+            .call((s) => s.append('rect'))
+        )
+
         .select('rect')
         .transition()
         .duration(transitionDuration)
@@ -194,13 +200,12 @@ export function renderClippedRect(
     .call((s: any) =>
       (s.selectChildren('rect') as Selection<SVGRectElement, unknown, BaseType, unknown>)
         .data([null])
-        .join('rect')
+        .join((enter) => enter.append('rect').attr('clip-path', `url(#${clipId})`))
         .transition()
         .duration(transitionDuration)
         .attr('x', rect.x)
         .attr('y', rect.y)
         .attr('height', rect.height)
         .attr('width', rect.width)
-        .attr('clip-path', `url(#${clipId})`)
     );
 }
