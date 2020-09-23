@@ -58,7 +58,26 @@
             .classed('left-axis')
             .rows('auto')
             .columns('auto 5px auto')
-            .child(1, 1, respVis.text().text('Population').classed('title', true))
+            .child(
+              1,
+              1,
+              respVis
+                .text()
+                .text('Population')
+                // Applies letter-spacing, font-size & font-weight
+                .classed('title', true)
+                // Sets transform & text-anchor
+                .rotate(-90)
+                .justfySelf(respVis.Alignment.Center)
+            )
+            .child(
+              1,
+              3,
+              respVis
+                .ticks()
+                // Sets transform & text-anchor
+                .labelPosition(respVis.Position.Left)
+            )
         )
         .child(1, 2, bars)
         .child(2, 2, categoriesAxis);
