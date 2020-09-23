@@ -2,7 +2,7 @@ import { IComponent } from '../component';
 import { Size } from '../utils';
 import { ILayout } from '../layout/layout';
 import { Bar, BarPositioner, Orientation, IBarPositioner } from './bar-positioner';
-import { Selection, BaseType } from 'd3-selection';
+import { select, Selection, BaseType } from 'd3-selection';
 import { scaleBand, scaleLinear, ScaleBand, ScaleLinear } from 'd3-scale';
 import { max, merge, Primitive } from 'd3-array';
 import 'd3-transition';
@@ -79,17 +79,11 @@ export class Bars implements IBars {
     const layoutRect = layout.layoutOfElement(this._containerSelection.node()!)!;
     this.fitInSize(layoutRect);
 
-    const clipRect: Bar = Object.assign(layoutRect, { x: 0, y: 0 });
-    this._containerSelection.call(renderClipRect, clipRect, 'bar-clip-rect');
-
     return this;
   }
 
   render(transitionDuration: number): this {
-    this._containerSelection
-      .call(renderBars, this._barPositioner.bars(), transitionDuration)
-      .selectAll('.bar rect')
-      .attr('clip-path', 'url(#bar-clip-rect)');
+    this._containerSelection.call(renderBars, this._barPositioner.bars(), transitionDuration);
     return this;
   }
 
@@ -168,40 +162,45 @@ export function renderBars(
   bars: Bar[],
   transitionDuration: number
 ): Selection<SVGGElement, Bar, SVGGElement, unknown> {
-  const barsSelection = selection
+  return selection
     .selectAll<SVGGElement, Bar>('.bar')
     .data(bars)
-    .join((enter) => enter.append('g').classed('bar', true));
-
-  barsSelection
-    .selectAll('rect')
-    .data((d) => [d])
-    .join('rect')
-    .transition()
-    .duration(transitionDuration)
-    .attr('x', (d) => d.x)
-    .attr('y', (d) => d.y)
-    .attr('height', (d) => d.height)
-    .attr('width', (d) => d.width);
-
-  return barsSelection;
+    .join('g')
+    .classed('bar', true)
+    .each((d, i, nodes) => select(nodes[i]).call(renderClippedRect, d, transitionDuration));
 }
 
-export function renderClipRect(
-  selection: Selection<SVGElement, unknown, BaseType, unknown>,
-  rect: Bar,
-  id: string
-) {
+export function renderClippedRect(
+  selection: Selection<SVGGElement, unknown, BaseType, unknown>,
+  rect: DOMRect,
+  transitionDuration: number
+): void {
+  const clipId = `bar-clip-${rect.x}-${rect.y}`;
   selection
-    .selectAll(`#${id}`)
-    .data([null])
-    .join('clipPath')
-    .attr('id', id)
-    .selectAll('rect')
-    .data([null])
-    .join('rect')
-    .attr('x', rect.x)
-    .attr('y', rect.y)
-    .attr('height', rect.height)
-    .attr('width', rect.width);
+    // Casting to disable type checking as the latest d3-selection types don't contain selectChildren yet.
+    .call((s: any) =>
+      (s.selectChildren('clipPath') as Selection<SVGClipPathElement, unknown, BaseType, unknown>)
+        .data([null])
+        .join((enter) => enter.append('clipPath').call((s) => s.append('rect')))
+        .call((s) => s.transition().duration(transitionDuration).attr('id', clipId))
+        .select('rect')
+        .transition()
+        .duration(transitionDuration)
+        .attr('x', rect.x)
+        .attr('y', rect.y)
+        .attr('height', rect.height)
+        .attr('width', rect.width)
+    )
+    .call((s: any) =>
+      (s.selectChildren('rect') as Selection<SVGRectElement, unknown, BaseType, unknown>)
+        .data([null])
+        .join('rect')
+        .transition()
+        .duration(transitionDuration)
+        .attr('x', rect.x)
+        .attr('y', rect.y)
+        .attr('height', rect.height)
+        .attr('width', rect.width)
+        .attr('clip-path', `url(#${clipId})`)
+    );
 }

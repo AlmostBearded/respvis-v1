@@ -4,6 +4,7 @@ import { ILayout, ILayoutElement } from '../layout/layout';
 import { Primitive } from 'd3-array';
 import { CustomGrid, ICustomGrid } from '../containers/custom-grid';
 import { Alignment, IAlignable } from '../layout/utils';
+import { renderClippedRect } from '../bars/bars';
 
 export interface ILegend extends IComponent {
   categories(categories: Primitive[]): this;
@@ -60,7 +61,7 @@ export class Legend implements ILegend {
         const swatch = new CustomGrid()
           .rows('auto')
           .columns('5px auto 5px auto 5px')
-          .child(1, 2, new Square().size(12).alignSelf(Alignment.Center).justifySelf(Alignment.End))
+          .child(1, 2, new Square().size(15).alignSelf(Alignment.Center).justifySelf(Alignment.End))
           .child(
             1,
             4,
@@ -121,6 +122,9 @@ class Square implements ISquare, IAlignable {
   size(size?: number): any {
     if (size === undefined) return this._size;
     this._size = size;
+    if (this._selection) {
+      this.render(0);
+    }
     return this;
   }
 
@@ -141,8 +145,7 @@ class Square implements ISquare, IAlignable {
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
-    this._selection = selection.append('rect');
-    this._selection.node()!.layoutStyle = { width: 'min-content', height: 'min-content' };
+    this._selection = selection.append('g');
     this._aligner.apply(this._selection);
     this.render(0);
     return this;
@@ -153,21 +156,18 @@ class Square implements ISquare, IAlignable {
   }
 
   render(transitionDuration: number): this {
-    if (transitionDuration > 0) {
-      this._selection
-        .transition()
-        .duration(transitionDuration)
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', this._size)
-        .attr('height', this._size);
-    } else {
-      this._selection
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', this._size)
-        .attr('height', this._size);
-    }
+    this._selection.call(
+      renderClippedRect,
+      {
+        x: 0,
+        y: 0,
+        width: this._size,
+        height: this._size,
+      },
+      0
+    );
+    // TODO: This could potentially override other layoutStyle properties and could lead to nasty bugs.
+    this._selection.node()!.layoutStyle = { width: this._size, height: this._size };
     return this;
   }
 

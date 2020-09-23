@@ -166,7 +166,7 @@ function parseDOMHierarchyRecursive(
 
   for (var i = 0; i < element.children.length; ++i) {
     var childElement = element.children[i] as SVGElement;
-    if (!parseLayoutStyle(childElement)) break;
+    if (!parseLayoutStyle(childElement)) continue;
     var childHierarchyNode = parseDOMHierarchyRecursive(
       childElement,
       laidOutElements,

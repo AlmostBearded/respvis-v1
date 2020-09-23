@@ -33,6 +33,7 @@ export class Chart implements IChart {
     this._gridLayout.layout(this._layout).mount(this._selection);
 
     const resize = () => {
+      this._selection.classed('transition', false);
       const boundingRect = this._selection.node()!.getBoundingClientRect();
       this._selection.attr('viewBox', `0, 0, ${boundingRect.width}, ${boundingRect.height}`);
       this._gridLayout.resize();
