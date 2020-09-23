@@ -15,20 +15,23 @@
 
 .axis {
   opacity: 1;
-  transition: opacity 0.5s;
+  // Fade in after transitions
+  transition: opacity 0.5s; 
 }
 
+// Hide axes during transitions
 .transition .axis {
   opacity: 0;
   transition: opacity 0s;
 }
 
 .axis .ticks text {
-  transition: transform 1s;
+  transition: transform $transitionDuration;
 }
 
 .transition .axis .ticks text {
-  transition: transform 0s;
+  // Snap text to correct positions during transitions
+  transition: transform 0s;  
 }
 
 .left-axis {
@@ -43,11 +46,13 @@
 }
 
 .left-axis .ticks text {
+  // Rotate labels on narrow screens
   transform: translate(0, -0.3em) rotate(-45deg);
   text-anchor: end;
 }
 
 .left-axis .title {
+  // Rotate title 
   transform: translate(0.7em, 0) rotate(-90deg);
   text-anchor: end;
 
