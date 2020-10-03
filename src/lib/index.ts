@@ -1,5 +1,6 @@
 export { chart, Chart, IChart } from './chart/chart';
-export { layout, Layout, ILayout } from './layout/layout';
+export { layout, Layout, ILayout, Alignment } from './layout/layout';
+export { group, Group, IGroup, IGroupConfig } from './containers/group';
 export { customGrid, CustomGrid, ICustomGrid } from './containers/custom-grid';
 export {
   ninePatch,
@@ -9,11 +10,21 @@ export {
   Column as NinePatchColumn,
 } from './containers/nine-patch';
 export { stack, Stack, IStack } from './containers/stack';
+export { text, Text, IText } from './components/text';
 export { bars, Bars, IBars } from './bars/bars';
 export { groupedBars, GroupedBars, IGroupedBars } from './bars/grouped-bars';
 export { axis, Axis, IAxis, Position as AxisPosition } from './axis/axis';
+export {
+  leftTicks,
+  bottomTicks,
+  rightTicks,
+  topTicks,
+  Ticks,
+  ITicks,
+  Position,
+} from './axis/ticks';
 export { barLabels, BarLabels, IBarLabels } from './bars/bar-labels';
-export {legend, Legend, ILegend} from './legend/legend'
+export { legend, Legend, ILegend } from './legend/legend';
 
 export {
   barPositioner,

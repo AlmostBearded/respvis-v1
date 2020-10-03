@@ -1,14 +1,28 @@
-import { IComponent } from '../component';
+import { Component, IComponent, IComponentConfig } from '../component';
 import { Size } from '../utils';
 import { ILayout } from '../layout/layout';
-import { Bar, BarPositioner, Orientation, IBarPositioner } from './bar-positioner';
-import { select, Selection, BaseType } from 'd3-selection';
+import {
+  Bar,
+  BarPositioner,
+  Orientation,
+  IBarPositioner,
+} from './bar-positioner';
+import { select, Selection, BaseType, create } from 'd3-selection';
 import { scaleBand, scaleLinear, ScaleBand, ScaleLinear } from 'd3-scale';
 import { max, merge, Primitive } from 'd3-array';
 import 'd3-transition';
 import { v4 as uuidv4 } from 'uuid';
 
-export interface IBars extends IComponent, IBarPositioner {
+export interface IBarsConfig extends IComponentConfig {
+  categories: string[];
+  values: number[];
+  orientation: Orientation;
+  flipCategories: boolean;
+  flipValues: boolean;
+  categoryPadding: number;
+}
+
+export interface IBars extends IComponent<IBarsConfig>, IBarPositioner {
   // on(
   //   eventType: string,
   //   listener:
@@ -17,7 +31,7 @@ export interface IBars extends IComponent, IBarPositioner {
   // ): Bars;
 }
 
-export class Bars implements IBars {
+export class Bars extends Component<IBarsConfig> implements IBars {
   private _barPositioner: IBarPositioner = new BarPositioner();
 
   // private _eventListeners = new Map<
@@ -32,9 +46,28 @@ export class Bars implements IBars {
   //     | null
   // ): void => {};
 
-  private _containerSelection: Selection<SVGGElement, unknown, BaseType, unknown>;
+  constructor() {
+    super(create<SVGElement>('svg:g').classed('bars', true), {
+      categories: [],
+      values: [],
+      flipCategories: false,
+      flipValues: false,
+      orientation: Orientation.Vertical,
+      categoryPadding: 0.1,
+      attributes: {},
+      responsiveConfigs: [],
+    });
+  }
 
-  constructor() {}
+  protected _applyConfig(config: IBarsConfig): void {
+    this._barPositioner
+      .categories(this._config.categories)
+      .values(this._config.values)
+      .flipCategories(this._config.flipCategories)
+      .flipValues(this._config.flipValues)
+      .orientation(this._config.orientation)
+      .categoryPadding(this._config.categoryPadding);
+  }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
     //   _on = function (
@@ -57,11 +90,8 @@ export class Bars implements IBars {
     //       });
     //     }
     //   };
-    this._containerSelection = selection
-      .selectAll<SVGGElement, unknown>('.bars')
-      .data([null])
-      .join('g')
-      .classed('bars', true);
+
+    selection.append(() => this.selection().node());
 
     // var boundingRect = selection.node()!.getBoundingClientRect();
     // this.fitInSize(boundingRect);
@@ -77,19 +107,18 @@ export class Bars implements IBars {
   }
 
   fitInLayout(layout: ILayout): this {
-    const layoutRect = layout.layoutOfElement(this._containerSelection.node()!)!;
+    const layoutRect = layout.layoutOfElement(this.selection().node()!)!;
     this.fitInSize(layoutRect);
-
     return this;
   }
 
   render(transitionDuration: number): this {
-    this._containerSelection.call(renderBars, this._barPositioner.bars(), transitionDuration);
+    this.selection().call(
+      renderBars,
+      this._barPositioner.bars(),
+      transitionDuration
+    );
     return this;
-  }
-
-  selection(): Selection<SVGElement, unknown, BaseType, unknown> {
-    return this._containerSelection;
   }
 
   renderOrder(): number {
@@ -168,7 +197,9 @@ export function renderBars(
     .data(bars)
     .join('g')
     .classed('bar', true)
-    .each((d, i, nodes) => select(nodes[i]).call(renderClippedRect, d, transitionDuration));
+    .each((d, i, nodes) =>
+      select(nodes[i]).call(renderClippedRect, d, transitionDuration)
+    );
 }
 
 export function renderClippedRect(
@@ -180,7 +211,12 @@ export function renderClippedRect(
   selection
     // Casting to disable type checking as the latest d3-selection types don't contain selectChildren yet.
     .call((s: any) =>
-      (s.selectChildren('clipPath') as Selection<SVGClipPathElement, unknown, BaseType, unknown>)
+      (s.selectChildren('clipPath') as Selection<
+        SVGClipPathElement,
+        unknown,
+        BaseType,
+        unknown
+      >)
         .data([null])
         .join((enter) =>
           enter
@@ -198,9 +234,16 @@ export function renderClippedRect(
         .attr('width', rect.width)
     )
     .call((s: any) =>
-      (s.selectChildren('rect') as Selection<SVGRectElement, unknown, BaseType, unknown>)
+      (s.selectChildren('rect') as Selection<
+        SVGRectElement,
+        unknown,
+        BaseType,
+        unknown
+      >)
         .data([null])
-        .join((enter) => enter.append('rect').attr('clip-path', `url(#${clipId})`))
+        .join((enter) =>
+          enter.append('rect').attr('clip-path', `url(#${clipId})`)
+        )
         .transition()
         .duration(transitionDuration)
         .attr('x', rect.x)

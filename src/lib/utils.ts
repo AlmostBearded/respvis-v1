@@ -1,4 +1,5 @@
 import { Primitive } from 'd3-array';
+import { BaseType, Selection } from 'd3-selection';
 
 export function nullFunction() {}
 
@@ -30,6 +31,25 @@ export function getComputedStyleWithoutDefaults(
   dummy.remove();
 
   return diffObj;
+}
+
+export type Attributes = {
+  [name: string]: string | number | boolean | Attributes | null;
+};
+
+export function applyAttributes(
+  selection: Selection<BaseType, unknown, BaseType, unknown>,
+  attributes: Attributes
+) {
+  for (const name in attributes) {
+    const value = attributes[name];
+    if (value === null) selection.attr(name, null);
+    else if (typeof value === 'object') {
+      // → name = child selector, value = child attributes
+      selection.selectAll(name).call(applyAttributes, value);
+      continue;
+    } else selection.attr(name, value);
+  }
 }
 
 export type PrimitiveObject = { [key: string]: Primitive };

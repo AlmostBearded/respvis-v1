@@ -1,26 +1,31 @@
-import { IComponent, NullComponent } from '../component';
+import { IComponent, IComponentConfig } from '../component';
 import { select, Selection, BaseType } from 'd3-selection';
-import { nullFunction, getComputedStyleWithoutDefaults, PrimitiveObject } from '../utils';
+import {
+  nullFunction,
+  getComputedStyleWithoutDefaults,
+  PrimitiveObject,
+} from '../utils';
 import { computeLayout as faberComputeLayout } from './faberjs';
 import { Bar } from '../bars/bar-positioner';
+import { stringify } from 'uuid';
 
 export interface ILayout {
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this;
-  layout(layout: IComponent): this;
-  layout(): IComponent;
+  layout(layout: IComponent<IComponentConfig>): this;
+  layout(): IComponent<IComponentConfig>;
   resize(): this;
   transition(): this;
   layoutOfElement(element: SVGElement): Bar | null;
 }
 
 export class Layout implements ILayout {
-  private _layout: IComponent;
+  private _layout: IComponent<IComponentConfig>;
   private _onTransition = nullFunction;
 
   private _selection: Selection<SVGElement, unknown, BaseType, unknown>;
-  private _laidOutElements: SVGElement[] = [];
+  private _laidOutElements: Element[] = [];
   private _layoutHierarchyNodes: LayoutHierarchyNode[] = [];
-  private _layoutGroupElements: SVGElement[] = [];
+  // private _layoutGroupElements: Element[] = [];
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
     this._selection = selection;
@@ -30,35 +35,53 @@ export class Layout implements ILayout {
       layoutHierarchyNodes: this._layoutHierarchyNodes,
     } = parseDOMHierarchy(this._layout.selection().node()!));
 
-    this._layoutGroupElements = createLayoutGroups(this._laidOutElements);
+    // this._layoutGroupElements = createLayoutGroups(this._laidOutElements);
 
     return this;
   }
 
   resize(): this {
-    console.assert(this._selection, 'Method must only be called on mounted component!');
+    console.assert(
+      this._selection,
+      'Method must only be called on mounted component!'
+    );
     let boundingRect = this._selection.node()!.getBoundingClientRect();
-    computeLayout(this._laidOutElements, this._layoutHierarchyNodes, boundingRect);
-    applyLayout(this._layoutGroupElements, this._layoutHierarchyNodes);
+    computeLayout(
+      this._laidOutElements,
+      this._layoutHierarchyNodes,
+      boundingRect
+    );
+    // applyLayout(this._layoutGroupElements, this._layoutHierarchyNodes);
 
     this._layout.fitInLayout(this).render(0);
+
+    applyLayout(this._laidOutElements, this._layoutHierarchyNodes);
 
     return this;
   }
 
   transition(): this {
-    console.assert(this._selection, 'Method must only be called on mounted component!');
+    console.assert(
+      this._selection,
+      'Method must only be called on mounted component!'
+    );
 
     let boundingRect = this._selection.node()!.getBoundingClientRect();
-    computeLayout(this._laidOutElements, this._layoutHierarchyNodes, boundingRect);
-    applyLayout(this._layoutGroupElements, this._layoutHierarchyNodes);
+    computeLayout(
+      this._laidOutElements,
+      this._layoutHierarchyNodes,
+      boundingRect
+    );
+    // applyLayout(this._layoutGroupElements, this._layoutHierarchyNodes);
 
     this._layout.fitInLayout(this).render(1000);
+
+    applyLayout(this._laidOutElements, this._layoutHierarchyNodes);
 
     return this;
   }
 
-  layout(layout?: IComponent): any {
+  layout(layout?: IComponent<IComponentConfig>): any {
     if (layout === undefined) return this._layout;
     this._layout = layout;
     // TODO: update components if called after mount
@@ -66,7 +89,10 @@ export class Layout implements ILayout {
   }
 
   layoutOfElement(element: SVGElement): Bar | null {
-    console.assert(this._selection, 'Method must only be called on mounted component!');
+    console.assert(
+      this._selection,
+      'Method must only be called on mounted component!'
+    );
     const index = this._laidOutElements.indexOf(element);
     if (index < 0) {
       return null;
@@ -79,71 +105,68 @@ export function layout(): Layout {
   return new Layout();
 }
 
-// The CSS properties that are needed for layouting
-var layoutProperties = [
-  'width',
-  'height',
-  'display',
-  'gridTemplateColumns',
-  'gridTemplateRows',
-  'gridColumnStart',
-  'gridColumnEnd',
-  'gridRowStart',
-  'gridRowEnd',
-  'justifyItems',
-  'alignItems',
-  'justifySelf',
-  'alignSelf',
-];
-
-// Parse the required CSS properties for layouting from the elements computed style
-function parseLayoutStyle(element: ILayoutElement): PrimitiveObject | null {
-  // Get the computed style for the needed properties
-  var computedStyle = getComputedStyleWithoutDefaults(element, layoutProperties);
-
-  // Merge with layoutStyle property if it is set
-  if (element.layoutStyle) {
-    computedStyle = Object.assign(computedStyle, element.layoutStyle);
-  }
-
-  // Post-process the computed styles for FaberJS
-  for (var i = 0; i < layoutProperties.length; ++i) {
-    var value = computedStyle[layoutProperties[i]];
-    if (value && typeof value === 'string') {
-      // For some reason FaberJS behaves VERY oddly when some values (especially inside gridTemplateColumns/Rows)
-      // have a specified absolute unit so we just remove all units.
-      value = value.replace(/px/g, '');
-
-      computedStyle[layoutProperties[i]] = value;
-    }
-  }
-
-  // For some reason some browsers (confirmed with Firefox 79.0) report the width and height of some elements
-  // (maybe it relates to the 'display: grid' property) as 0 which messes up the layouting. For now, there's
-  // no known use case where an actual set width/height is useful so we just delete all of them that are 0.
-  if (computedStyle.height == 0) delete computedStyle.height;
-  if (computedStyle.width == 0) delete computedStyle.width;
-
-  if (Object.keys(computedStyle).length === 0) {
-    return null;
-  }
-
-  return computedStyle;
-}
-
 type LayoutHierarchyNode = {
-  style: PrimitiveObject;
+  style: ILayoutStyle;
   layout: Bar;
   children: LayoutHierarchyNode[];
 };
 
+function parseLayoutStyle(element: Element): ILayoutStyle | null {
+  const attr = element.getAttribute.bind(element);
+  const trim = (s: string) => s.trim();
+  const template = attr('grid-template')?.split('/').map(trim),
+    templateRows = attr('grid-template-rows'),
+    templateColumns = attr('grid-template-columns'),
+    area = attr('grid-area')?.split('/').map(trim),
+    row = attr('grid-row')?.split('/').map(trim),
+    column = attr('grid-column')?.split('/').map(trim),
+    rowStart = attr('grid-row-start'),
+    rowEnd = attr('grid-row-end'),
+    columnStart = attr('grid-column-start'),
+    columnEnd = attr('grid-column-end'),
+    placeItems = attr('place-items')?.split(' '),
+    alignItems = attr('align-items'),
+    justifyItems = attr('justify-items'),
+    placeSelf = attr('place-self')?.split(' '),
+    alignSelf = attr('align-self'),
+    justifySelf = attr('justify-self'),
+    width = attr('width'),
+    height = attr('height');
+
+  const style: ILayoutStyle = {
+    gridTemplateRows: templateRows || template?.[0],
+    gridTemplateColumns: templateColumns || template?.[1],
+
+    gridRowStart: rowStart || row?.[0] || area?.[0],
+    gridRowEnd: rowEnd || row?.[1] || area?.[2],
+    gridColumnStart: columnStart || column?.[0] || area?.[1],
+    gridColumnEnd: columnEnd || column?.[1] || area?.[3],
+
+    alignItems: alignItems || placeItems?.[0],
+    justifyItems: justifyItems || placeItems?.[1] || placeItems?.[0],
+    alignSelf: alignSelf || placeSelf?.[0],
+    justifySelf: justifySelf || placeSelf?.[1] || placeSelf?.[0],
+
+    width: width || undefined,
+    height: height || undefined,
+  };
+
+  if (style.gridTemplateRows || style.gridTemplateColumns)
+    style.display = 'grid';
+
+  if (!style.display && !style.gridRowStart && !style.gridColumnStart)
+    return null;
+
+  return style;
+}
+
 function parseDOMHierarchy(
-  element: SVGElement
+  element: Element
 ): {
-  laidOutElements: SVGElement[];
+  laidOutElements: Element[];
   layoutHierarchyNodes: LayoutHierarchyNode[];
 } {
-  var laidOutElements: SVGElement[] = [];
+  var laidOutElements: Element[] = [];
   var layoutHierarchyNodes: LayoutHierarchyNode[] = [];
   parseDOMHierarchyRecursive(element, laidOutElements, layoutHierarchyNodes);
   return { laidOutElements, layoutHierarchyNodes };
@@ -151,8 +174,8 @@ function parseDOMHierarchy(
 
 // Parse the DOM hierarchy recursively and create the layout hierarchy needed for FaberJS
 function parseDOMHierarchyRecursive(
-  element: SVGElement,
-  laidOutElements: SVGElement[],
+  element: Element,
+  laidOutElements: Element[],
   layoutHierarchyNodes: LayoutHierarchyNode[]
 ) {
   var hierarchyNode: LayoutHierarchyNode = {
@@ -165,7 +188,7 @@ function parseDOMHierarchyRecursive(
   laidOutElements.push(element);
 
   for (var i = 0; i < element.children.length; ++i) {
-    var childElement = element.children[i] as SVGElement;
+    var childElement = element.children[i];
     if (!parseLayoutStyle(childElement)) continue;
     var childHierarchyNode = parseDOMHierarchyRecursive(
       childElement,
@@ -179,12 +202,15 @@ function parseDOMHierarchyRecursive(
 }
 
 // Create group elements to encapsulate laid out elements
-function createLayoutGroups(laidOutElements: SVGElement[]): SVGElement[] {
+function createLayoutGroups(laidOutElements: Element[]): Element[] {
   // The root element does not to be laid out so we don't need to create a group for it.
-  var groupElements: SVGElement[] = [laidOutElements[0]];
+  var groupElements: Element[] = [laidOutElements[0]];
 
   for (var i = 1; i < laidOutElements.length; ++i) {
-    var groupElement = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    var groupElement = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'g'
+    );
     groupElement.setAttribute('class', 'layout-group');
     laidOutElements[i].parentNode!.append(groupElement);
     groupElement.append(laidOutElements[i]);
@@ -195,7 +221,7 @@ function createLayoutGroups(laidOutElements: SVGElement[]): SVGElement[] {
 
 // Cache CSS layout properties in the FaberJS layout hierarchy
 function cacheLayoutStyles(
-  laidOutElements: SVGElement[],
+  laidOutElements: Element[],
   layoutHierarchyNodes: LayoutHierarchyNode[]
 ) {
   for (var i = 0; i < laidOutElements.length; ++i) {
@@ -205,7 +231,7 @@ function cacheLayoutStyles(
 
 // Set dimensions of layout nodes whose CSS dimensions property is specified as 'min-content'
 function setMinContentDimensions(
-  laidOutElements: SVGElement[],
+  laidOutElements: Element[],
   layoutHierarchyNodes: LayoutHierarchyNode[]
 ) {
   for (var i = 0; i < laidOutElements.length; ++i) {
@@ -225,18 +251,20 @@ function setMinContentDimensions(
 function setLayoutDimensions(layoutHierarchyNodes: LayoutHierarchyNode[]) {
   for (var i = 0; i < layoutHierarchyNodes.length; ++i) {
     if (!layoutHierarchyNodes[i].style.width) {
-      layoutHierarchyNodes[i].style.width = layoutHierarchyNodes[i].layout.width;
+      layoutHierarchyNodes[i].style.width =
+        layoutHierarchyNodes[i].layout.width;
     }
 
     if (!layoutHierarchyNodes[i].style.height) {
-      layoutHierarchyNodes[i].style.height = layoutHierarchyNodes[i].layout.height;
+      layoutHierarchyNodes[i].style.height =
+        layoutHierarchyNodes[i].layout.height;
     }
   }
 }
 
 // Compute the layout to fit into the specified size
 function computeLayout(
-  laidOutElements: SVGElement[],
+  laidOutElements: Element[],
   layoutHierarchyNodes: LayoutHierarchyNode[],
   size: { width: number; height: number }
 ) {
@@ -256,29 +284,41 @@ function computeLayout(
 
 // Apply the computed layout on the layout group elements
 function applyLayout(
-  layoutGroupElements: SVGElement[],
+  // layoutGroupElements: Element[],
+  laidOutElements: Element[],
   layoutHierarchyNodes: LayoutHierarchyNode[]
 ) {
   for (let i = 0; i < layoutHierarchyNodes.length; ++i) {
-    const newTransform = `translate(${Math.round(layoutHierarchyNodes[i].layout.x * 10) / 10}px, ${
-      Math.round(layoutHierarchyNodes[i].layout.y * 10) / 10
-    }px)`;
+    const layoutTransform = `translate(${
+      Math.round(layoutHierarchyNodes[i].layout.x * 10) / 10
+    }, ${Math.round(layoutHierarchyNodes[i].layout.y * 10) / 10})`;
 
-    const groupSelection = select(layoutGroupElements[i]);
-    groupSelection.style('transform', newTransform);
+    const previousTransform =
+      laidOutElements[i].getAttribute('previous-transform') || '';
 
-    layoutGroupElements[i].setAttribute(
-      'debugLayout',
-      `${layoutHierarchyNodes[i].layout.x}, ${layoutHierarchyNodes[i].layout.y}, ${layoutHierarchyNodes[i].layout.width}, ${layoutHierarchyNodes[i].layout.height}`
-    );
+    let transform = laidOutElements[i].getAttribute('transform') || '';
 
-    layoutGroupElements[i].setAttribute(
-      'debugLayoutStyle',
-      `${JSON.stringify(layoutHierarchyNodes[i].style)
-        .replace(/\"/g, '')
-        .replace(/,/g, ', ')
-        .replace(/:/g, ': ')}`
-    );
+    if (previousTransform === transform) {
+      transform = transform.substring(transform.indexOf(')') + 1);
+    }
+
+    transform = layoutTransform.concat(transform);
+
+    laidOutElements[i].setAttribute('transform', transform);
+    laidOutElements[i].setAttribute('previous-transform', transform);
+
+    // layoutGroupElements[i].setAttribute(
+    //   'debugLayout',
+    //   `${layoutHierarchyNodes[i].layout.x}, ${layoutHierarchyNodes[i].layout.y}, ${layoutHierarchyNodes[i].layout.width}, ${layoutHierarchyNodes[i].layout.height}`
+    // );
+
+    // layoutGroupElements[i].setAttribute(
+    //   'debugLayoutStyle',
+    //   `${JSON.stringify(layoutHierarchyNodes[i].style)
+    //     .replace(/\"/g, '')
+    //     .replace(/,/g, ', ')
+    //     .replace(/:/g, ': ')}`
+    // );
   }
 }
 
@@ -288,16 +328,19 @@ export interface ILayoutStyle {
   display?: 'grid';
   gridTemplateColumns?: string;
   gridTemplateRows?: string;
-  gridColumnStart?: number | string;
-  gridColumnEnd?: number | string;
-  gridRowStart?: number | string;
-  gridRowEnd?: number | string;
-  justifyItems?: 'start' | 'center' | 'end' | 'stretch';
-  alignItems?: 'start' | 'center' | 'end' | 'stretch';
-  justifySelf?: 'start' | 'center' | 'end' | 'stretch';
-  alignSelf?: 'start' | 'center' | 'end' | 'stretch';
+  gridRowStart?: number;
+  gridRowEnd?: number;
+  gridColumnStart?: number;
+  gridColumnEnd?: number;
+  justifyItems?: string;
+  alignItems?: string;
+  justifySelf?: string;
+  alignSelf?: string;
 }
 
-export interface ILayoutElement extends SVGElement {
-  layoutStyle?: ILayoutStyle;
+export enum Alignment {
+  Start = 'start',
+  Center = 'center',
+  End = 'end',
+  Stretch = 'stretch',
 }

@@ -67,7 +67,9 @@ export class NinePatch implements INinePatch {
     return this;
   }
   render(transitionDuration: number): this {
-    this._children.forEach((child, position) => child.render(transitionDuration));
+    this._children.forEach((child, position) =>
+      child.render(transitionDuration)
+    );
     return this;
   }
   selection(): Selection<SVGElement, unknown, BaseType, unknown> {
@@ -85,13 +87,13 @@ export function ninePatch(): NinePatch {
 
 // TODO: This function should better be moved into a grid-utils.ts file or something along those lines.
 export function setSingleCellGridPosition(
-  selection: Selection<SVGElement, unknown, BaseType, unknown>,
+  component: IComponent,
   row: number,
   column: number
 ) {
-  selection
-    .style('grid-row-start', row)
-    .style('grid-row-end', row + 1)
-    .style('grid-column-start', column)
-    .style('grid-column-end', column + 1);
+  component
+    .layout('gridRowStart', row)
+    .layout('gridRowEnd', row + 1)
+    .layout('gridColumnStart', column)
+    .layout('gridColumnEnd', column + 1);
 }
