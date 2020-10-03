@@ -21,15 +21,7 @@
     <div id="chart"></div>
     <script src="../respvis.js"></script>
     <script>
-      var categories = [
-        'Vienna',
-        'Graz',
-        'Linz',
-        'Salzburg',
-        'Innsbruck',
-        'Klagenfurt',
-        'Villach',
-      ];
+      var categories = ['Vienna', 'Graz', 'Linz', 'Salzburg', 'Innsbruck', 'Klagenfurt', 'Villach'];
       var values = [1691000, 222000, 205000, 153000, 132000, 91000, 59000];
 
       var bars;
@@ -49,6 +41,15 @@
                 },
                 categories: categories,
                 values: values,
+                orientation: respVis.BarOrientation.Horizontal,
+                responsiveConfigs: [
+                  [
+                    'screen and (min-width: 40rem)',
+                    {
+                      orientation: respVis.BarOrientation.Vertical,
+                    },
+                  ],
+                ],
               })),
               // Left axis
               respVis.group().config({
@@ -59,7 +60,7 @@
                 children: [
                   // Title
                   respVis.text().config({
-                    text: 'Population',
+                    text: 'Cities',
                     attributes: {
                       'grid-area': '1 / 1 / 2 / 2',
                       'place-self': 'center',
@@ -71,13 +72,17 @@
                       'dominant-baseline': 'hanging',
                       'text-anchor': 'end',
                     },
+                    responsiveConfigs: [['screen and (min-width: 40rem)', { text: 'Population' }]],
                   }),
                   // Ticks
                   respVis.leftTicks().config({
-                    scale: bars.valuesScale(),
+                    scale: bars.categoriesScale(),
                     attributes: {
                       'grid-area': '1 / 3 / 2 / 4',
                     },
+                    responsiveConfigs: [
+                      ['screen and (min-width: 40rem)', { scale: bars.valuesScale() }],
+                    ],
                   }),
                 ],
               }),
@@ -90,7 +95,7 @@
                 children: [
                   // Ticks
                   respVis.bottomTicks().config({
-                    scale: bars.categoriesScale(),
+                    scale: bars.valuesScale(),
                     attributes: {
                       'grid-area': '1 / 1 / 2 / 2',
                       '.tick text': {
@@ -103,6 +108,7 @@
                       [
                         'screen and (min-width: 40rem)',
                         {
+                          scale: bars.categoriesScale(),
                           attributes: {
                             '.tick text': {
                               transform: 'translate(0, 7)',
@@ -115,7 +121,7 @@
                   }),
                   // Title
                   respVis.text().config({
-                    text: 'Cities',
+                    text: 'Population',
                     attributes: {
                       'grid-area': '3 / 1 / 4 / 2',
                       'place-self': 'center',
@@ -123,6 +129,14 @@
                       'letter-spacing': '0.5em',
                       'font-weight': 'bold',
                     },
+                    responsiveConfigs: [
+                      [
+                        'screen and (min-width: 40rem)',
+                        {
+                          text: 'Cities',
+                        },
+                      ],
+                    ],
                   }),
                 ],
               }),

@@ -1,12 +1,7 @@
 import { Component, IComponent, IComponentConfig } from '../component';
 import { Size } from '../utils';
 import { ILayout } from '../layout/layout';
-import {
-  Bar,
-  BarPositioner,
-  Orientation,
-  IBarPositioner,
-} from './bar-positioner';
+import { Bar, BarPositioner, Orientation, IBarPositioner } from './bar-positioner';
 import { select, Selection, BaseType, create } from 'd3-selection';
 import { scaleBand, scaleLinear, ScaleBand, ScaleLinear } from 'd3-scale';
 import { max, merge, Primitive } from 'd3-array';
@@ -61,12 +56,12 @@ export class Bars extends Component<IBarsConfig> implements IBars {
 
   protected _applyConfig(config: IBarsConfig): void {
     this._barPositioner
-      .categories(this._config.categories)
-      .values(this._config.values)
-      .flipCategories(this._config.flipCategories)
-      .flipValues(this._config.flipValues)
-      .orientation(this._config.orientation)
-      .categoryPadding(this._config.categoryPadding);
+      .categories(this._activeConfig.categories)
+      .values(this._activeConfig.values)
+      .flipCategories(this._activeConfig.flipCategories)
+      .flipValues(this._activeConfig.flipValues)
+      .orientation(this._activeConfig.orientation)
+      .categoryPadding(this._activeConfig.categoryPadding);
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
@@ -113,11 +108,7 @@ export class Bars extends Component<IBarsConfig> implements IBars {
   }
 
   render(transitionDuration: number): this {
-    this.selection().call(
-      renderBars,
-      this._barPositioner.bars(),
-      transitionDuration
-    );
+    this.selection().call(renderBars, this._barPositioner.bars(), transitionDuration);
     return this;
   }
 
@@ -197,9 +188,7 @@ export function renderBars(
     .data(bars)
     .join('g')
     .classed('bar', true)
-    .each((d, i, nodes) =>
-      select(nodes[i]).call(renderClippedRect, d, transitionDuration)
-    );
+    .each((d, i, nodes) => select(nodes[i]).call(renderClippedRect, d, transitionDuration));
 }
 
 export function renderClippedRect(
@@ -211,12 +200,7 @@ export function renderClippedRect(
   selection
     // Casting to disable type checking as the latest d3-selection types don't contain selectChildren yet.
     .call((s: any) =>
-      (s.selectChildren('clipPath') as Selection<
-        SVGClipPathElement,
-        unknown,
-        BaseType,
-        unknown
-      >)
+      (s.selectChildren('clipPath') as Selection<SVGClipPathElement, unknown, BaseType, unknown>)
         .data([null])
         .join((enter) =>
           enter
@@ -234,16 +218,9 @@ export function renderClippedRect(
         .attr('width', rect.width)
     )
     .call((s: any) =>
-      (s.selectChildren('rect') as Selection<
-        SVGRectElement,
-        unknown,
-        BaseType,
-        unknown
-      >)
+      (s.selectChildren('rect') as Selection<SVGRectElement, unknown, BaseType, unknown>)
         .data([null])
-        .join((enter) =>
-          enter.append('rect').attr('clip-path', `url(#${clipId})`)
-        )
+        .join((enter) => enter.append('rect').attr('clip-path', `url(#${clipId})`))
         .transition()
         .duration(transitionDuration)
         .attr('x', rect.x)

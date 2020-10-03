@@ -52,6 +52,10 @@ export function applyAttributes(
   }
 }
 
+export interface IDictionary<TValue> {
+  [id: string]: TValue;
+}
+
 export type PrimitiveObject = { [key: string]: Primitive };
 
 export type Size = { width: number; height: number };
