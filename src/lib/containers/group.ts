@@ -17,7 +17,7 @@ export class Group extends Component<IGroupConfig> implements IGroup {
       attributes: {
         'grid-template': 'auto / auto',
       },
-      responsiveConfigs: [],
+      conditionalConfigs: [],
     });
   }
 
@@ -39,8 +39,8 @@ export class Group extends Component<IGroupConfig> implements IGroup {
     return this;
   }
 
-  render(transitionDuration: number): this {
-    this.config().children.forEach((child) => child.render(transitionDuration));
+  render(): this {
+    this.config().children.forEach((child) => child.render());
     return this;
   }
 

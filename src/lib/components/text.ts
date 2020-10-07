@@ -18,7 +18,7 @@ export class Text extends Component<ITextConfig> implements IText {
         'dominant-baseline': 'hanging',
         'text-anchor': 'start',
       },
-      responsiveConfigs: [],
+      conditionalConfigs: [],
     });
   }
 

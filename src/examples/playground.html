@@ -42,104 +42,111 @@
                 categories: categories,
                 values: values,
                 orientation: respVis.BarOrientation.Horizontal,
-                responsiveConfigs: [
-                  [
-                    'screen and (min-width: 40rem)',
-                    {
+                transitionDuration: 1000,
+                conditionalConfigs: [
+                  {
+                    media: 'screen and (min-width: 40rem)',
+                    config: {
                       orientation: respVis.BarOrientation.Vertical,
                     },
-                  ],
+                  },
                 ],
               })),
-              // Left axis
-              respVis.group().config({
-                attributes: {
-                  'grid-template': 'auto / auto 5 auto',
-                  'grid-area': '1 / 1 / 2 / 2',
-                },
-                children: [
-                  // Title
-                  respVis.text().config({
-                    text: 'Cities',
-                    attributes: {
-                      'grid-area': '1 / 1 / 2 / 2',
-                      'place-self': 'center',
-                      // Title styling
-                      'letter-spacing': '0.5em',
-                      'font-weight': 'bold',
-                      // Vertical text styling
-                      transform: 'rotate(-90)',
-                      'dominant-baseline': 'hanging',
-                      'text-anchor': 'end',
-                    },
-                    responsiveConfigs: [['screen and (min-width: 40rem)', { text: 'Population' }]],
-                  }),
-                  // Ticks
-                  respVis.leftTicks().config({
-                    scale: bars.categoriesScale(),
-                    attributes: {
-                      'grid-area': '1 / 3 / 2 / 4',
-                    },
-                    responsiveConfigs: [
-                      ['screen and (min-width: 40rem)', { scale: bars.valuesScale() }],
-                    ],
-                  }),
-                ],
-              }),
+              // // Left axis
+              // respVis.group().config({
+              //   attributes: {
+              //     'grid-template': 'auto / auto 5 auto',
+              //     'grid-area': '1 / 1 / 2 / 2',
+              //   },
+              //   children: [
+              //     // Title
+              //     respVis.text().config({
+              //       text: 'Cities',
+              //       attributes: {
+              //         'grid-area': '1 / 1 / 2 / 2',
+              //         'place-self': 'center',
+              //         // Title styling
+              //         'letter-spacing': '0.5em',
+              //         'font-weight': 'bold',
+              //         // Vertical text styling
+              //         transform: 'rotate(-90)',
+              //         'dominant-baseline': 'hanging',
+              //         'text-anchor': 'end',
+              //       },
+              //       responsiveConfigs: [['screen and (min-width: 40rem)', { text: 'Population' }]],
+              //     }),
+              //     // Ticks
+              //     respVis.leftTicks().config({
+              //       scale: bars.categoriesScale(),
+              //       attributes: {
+              //         'grid-area': '1 / 3 / 2 / 4',
+              //       },
+              //       responsiveConfigs: [
+              //         ['screen and (min-width: 40rem)', { scale: bars.valuesScale() }],
+              //       ],
+              //     }),
+              //   ],
+              // }),
               // Bottom axis
-              respVis.group().config({
-                attributes: {
-                  'grid-template': 'auto 5 auto / auto',
-                  'grid-area': '2 / 2 / 3 / 3',
-                },
-                children: [
-                  // Ticks
-                  respVis.bottomTicks().config({
-                    scale: bars.valuesScale(),
-                    attributes: {
-                      'grid-area': '1 / 1 / 2 / 2',
-                      '.tick text': {
-                        'dominant-baseline': 'hanging',
-                        transform: 'translate(0, 7) rotate(-45)',
-                        'text-anchor': 'end',
-                      },
-                    },
-                    responsiveConfigs: [
-                      [
-                        'screen and (min-width: 40rem)',
-                        {
-                          scale: bars.categoriesScale(),
-                          attributes: {
-                            '.tick text': {
-                              transform: 'translate(0, 7)',
-                              'text-anchor': 'middle',
-                            },
-                          },
-                        },
-                      ],
-                    ],
-                  }),
-                  // Title
-                  respVis.text().config({
-                    text: 'Population',
-                    attributes: {
-                      'grid-area': '3 / 1 / 4 / 2',
-                      'place-self': 'center',
-                      // Title styling
-                      'letter-spacing': '0.5em',
-                      'font-weight': 'bold',
-                    },
-                    responsiveConfigs: [
-                      [
-                        'screen and (min-width: 40rem)',
-                        {
-                          text: 'Cities',
-                        },
-                      ],
-                    ],
-                  }),
-                ],
-              }),
+              // respVis.group().config({
+              //   attributes: {
+              //     'grid-template': 'auto 5 auto / auto',
+              //     'grid-area': '2 / 2 / 3 / 3',
+              //   },
+              //   children: [
+              //     // Ticks
+              //     respVis.bottomTicks().config({
+              //       scale: bars.valuesScale(),
+              //       attributes: {
+              //         'grid-area': '1 / 1 / 2 / 2',
+              //         '.tick text': {
+              //           'dominant-baseline': 'hanging',
+              //           transform: 'translate(0, 7) rotate(-45)',
+              //           'text-anchor': 'end',
+              //         },
+              //       },
+              //       conditionals: [
+              //         {
+              //           media: 'screen and (min-width: 40rem)',
+              //           config: {
+              //             scale: bars.categoriesScale(),
+              //             attributes: {
+              //               '.tick text': {
+              //                 transform: 'translate(0, 7)',
+              //                 'text-anchor': 'middle',
+              //               },
+              //             },
+              //           },
+              //         },
+              //       ],
+              //       transitions: [
+              //         {
+              //           duration: 500,
+              //           properties: [''],
+              //         },
+              //       ],
+              //     }),
+              //     // Title
+              //     respVis.text().config({
+              //       text: 'Population',
+              //       attributes: {
+              //         'grid-area': '3 / 1 / 4 / 2',
+              //         'place-self': 'center',
+              //         // Title styling
+              //         'letter-spacing': '0.5em',
+              //         'font-weight': 'bold',
+              //       },
+              //       responsiveConfigs: [
+              //         [
+              //           'screen and (min-width: 40rem)',
+              //           {
+              //             text: 'Cities',
+              //           },
+              //         ],
+              //       ],
+              //     }),
+              //   ],
+              // }),
             ],
           })
         )

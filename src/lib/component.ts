@@ -2,71 +2,62 @@ import { Selection, BaseType, select, create, selection } from 'd3-selection';
 import { ITextConfig } from './components/text';
 import { ILayout, ILayoutStyle } from './layout/layout';
 import { applyAttributes, Attributes } from './utils';
-import merge from 'lodash.merge';
+import deepDiff from 'deep-diff';
+
+export interface IConditionalComponentConfig<TConfig> {
+  media: string;
+  config: TConfig;
+}
 
 export interface IComponentConfig {
   attributes: Attributes;
-  responsiveConfigs: [string, this][];
+  conditionalConfigs: IConditionalComponentConfig<this>[];
 }
 
 export interface IComponent<TConfig extends IComponentConfig> {
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this;
   fitInLayout(layout: ILayout): this;
-  render(transitionDuration: number): this;
+  render(): this;
   selection(): Selection<SVGElement, unknown, BaseType, unknown>;
   renderOrder(): number;
-  config(config: TConfig): this;
+  config(config: Partial<TConfig>): this;
   config(): TConfig;
-  // attr(name: string, value: string | number | boolean | null): this;
-  // attr(name: string): string;
-  // attributes(attributes: Attributes): this;
-  // layout(name: string, value: string | number | null): this;
-  // layout(name: string): string;
-  // layout(): ILayoutStyle;
-  // mediaQuery(
-  //   query: string,
-  //   callback: ((component: IComponent<TConfig>) => void) | null
-  // ): this;
 }
 
-export abstract class Component<TConfig extends IComponentConfig>
-  implements IComponent<TConfig> {
+export abstract class Component<TConfig extends IComponentConfig> implements IComponent<TConfig> {
   private _selection: Selection<SVGElement, unknown, BaseType, unknown>;
   protected _config: TConfig;
   protected _activeConfig: TConfig;
 
   protected _mediaQueries: { [query: string]: MediaQueryList } = {};
-  // protected _mediaQueryCallbacks: {
-  //   [query: string]: (component: IComponent<TConfig>) => void;
-  // } = {};
 
-  constructor(
-    selection: Selection<SVGElement, unknown, BaseType, unknown>,
-    config: TConfig
-  ) {
+  constructor(selection: Selection<SVGElement, unknown, BaseType, unknown>, config: TConfig) {
     this._selection = selection;
     this._config = config;
   }
 
-  abstract mount(
-    selection: Selection<SVGElement, unknown, BaseType, unknown>
-  ): this;
+  abstract mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this;
   abstract fitInLayout(layout: ILayout): this;
-  abstract render(transitionDuration: number): this;
+  abstract render(): this;
   abstract renderOrder(): number;
 
-  config(config: TConfig): this;
+  config(config: Partial<TConfig>): this;
   config(): TConfig;
-  config(config?: TConfig): any {
+  config(config?: Partial<TConfig>): any {
     if (config === undefined) return this._config;
-    merge(this._config, config);
-    for (let i = 0; i < this._config.responsiveConfigs.length; ++i) {
-      const responsiveConfig = this._config.responsiveConfigs[i];
-      if (this._mediaQueries[responsiveConfig[0]] === undefined) {
-        this._mediaQueries[responsiveConfig[0]] = window.matchMedia(
-          responsiveConfig[0]
-        );
-        this._mediaQueries[responsiveConfig[0]].addEventListener('change', () =>
+    deepDiff.observableDiff(this._config, config, (change) => {
+      // TODO: Allow components to apply their own config changes?
+      // TODO: Special case for applying conditionalConfig changes?
+      if (change.kind !== 'D') {
+        deepDiff.applyChange(this._config, config, change);
+      }
+    });
+    // merge(this._config, config);
+    for (let i = 0; i < this._config.conditionalConfigs.length; ++i) {
+      const mediaQuery = this._config.conditionalConfigs[i].media;
+      if (this._mediaQueries[mediaQuery] === undefined) {
+        this._mediaQueries[mediaQuery] = window.matchMedia(mediaQuery);
+        this._mediaQueries[mediaQuery].addEventListener('change', () =>
           this._onMediaQueryChanged()
         );
       }
@@ -75,81 +66,39 @@ export abstract class Component<TConfig extends IComponentConfig>
     return this;
   }
 
-  protected abstract _applyConfig(config: TConfig): void;
+  protected abstract _applyConfig(config: TConfig, diff: deepDiff.Diff<TConfig, TConfig>[]): void;
 
   private _onMediaQueryChanged(): void {
     console.log('onMediaQueryChanged');
-    this._activeConfig = this._config;
+    const newConfig = Object.assign({}, this._config);
+    console.log(newConfig);
 
-    this._config.responsiveConfigs.forEach((responsiveConfig) => {
+    this._config.conditionalConfigs.forEach((conditionalConfig) => {
       console.log(
-        `${responsiveConfig[0]} ${
-          this._mediaQueries[responsiveConfig[0]].matches
-        }`
+        `${conditionalConfig.media} ${this._mediaQueries[conditionalConfig.media].matches}`
       );
-      if (this._mediaQueries[responsiveConfig[0]].matches) {
-        this._activeConfig = merge({}, this._activeConfig, responsiveConfig[1]);
+      if (this._mediaQueries[conditionalConfig.media].matches) {
+        console.log(conditionalConfig.config);
+        deepDiff.observableDiff(newConfig, conditionalConfig.config, (change) => {
+          // TODO: Allow components to apply their own config changes?
+          // TODO: Special case for applying conditionalConfig changes?
+          if (change.kind !== 'D') {
+            deepDiff.applyChange(newConfig, conditionalConfig.config, change);
+          }
+        });
+        // merge(newConfig, conditionalConfig.config);
       }
     });
 
-    this._selection.call(applyAttributes, this._activeConfig.attributes);
-    this._applyConfig(this._activeConfig);
+    console.log(this._activeConfig);
+    console.log(newConfig);
+    const changes = deepDiff.diff(this._activeConfig, newConfig);
+    if (changes) {
+      this._activeConfig = newConfig;
+      this._selection.call(applyAttributes, this._activeConfig.attributes);
+      this._applyConfig(this._activeConfig, changes);
+    }
   }
-
-  // attr(name: string, value: string | number | boolean | null): this;
-  // attr(name: string): string;
-  // attr(name: any, value?: string | number | boolean | null): any {
-  //   if (value === undefined) return this.selection().attr(name);
-  //   if (value === null) this.selection().attr(name, null);
-  //   else this.selection().attr(name, value);
-  //   return this;
-  // }
-
-  // attributes(attributes: Attributes): this {
-  //   this._attributes = Object.assign(this._attributes, attributes);
-  //   this.selection().call(applyAttributes, attributes);
-  //   return this;
-  // }
-
-  // layout(name: string, value: string | number | null): this;
-  // layout(name: string): string;
-  // layout(): ILayoutStyle;
-  // layout(name?: string, value?: string | number | null): any {
-  //   if (name === undefined) return this._layout;
-  //   if (value === undefined) return this._layout[name];
-  //   if (value === null) delete this._layout[name];
-  //   else this._layout[name] = value;
-  //   return this;
-  // }
-
-  // mediaQuery(
-  //   query: string,
-  //   callback: ((component: IComponent) => void) | null
-  // ): this {
-  //   if (callback === null) {
-  //     this._mediaQueries[query].removeEventListener(
-  //       'change',
-  //       this._onMediaQueryChanged
-  //     );
-  //     delete this._mediaQueries[query];
-  //     delete this._mediaQueryCallbacks[query];
-  //   } else {
-  //     const mediaQuery = this._mediaQueries[query] || window.matchMedia(query);
-  //     this._mediaQueries[query] = mediaQuery;
-  //     this._mediaQueryCallbacks[query] = callback;
-  //     mediaQuery.addEventListener('change', this._onMediaQueryChanged);
-  //   }
-  //   return this;
-  // }
-
-  // private _onMediaQueryChanged(): void {
-  //   debugger;
-  //   for (let query in this._mediaQueries) {
-  //     if (this._mediaQueries[query].matches) {
-  //       this._mediaQueryCallbacks[query](this);
-  //     }
-  //   }
-  // }
 
   selection(): Selection<SVGElement, unknown, BaseType, unknown> {
     return this._selection;

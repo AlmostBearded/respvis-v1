@@ -49,7 +49,7 @@ export class Ticks extends Component<ITicksConfig> implements ITicks {
       attributes: {
         ...(vertical ? { width: 'min-content' } : { height: 'min-content' }),
       },
-      responsiveConfigs: [],
+      conditionalConfigs: [],
     });
     this._labelPosition = labelPosition;
   }

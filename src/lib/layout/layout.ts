@@ -53,7 +53,7 @@ export class Layout implements ILayout {
     );
     // applyLayout(this._layoutGroupElements, this._layoutHierarchyNodes);
 
-    this._layout.fitInLayout(this).render(0);
+    this._layout.fitInLayout(this).render();
 
     applyLayout(this._laidOutElements, this._layoutHierarchyNodes);
 
@@ -74,7 +74,7 @@ export class Layout implements ILayout {
     );
     // applyLayout(this._layoutGroupElements, this._layoutHierarchyNodes);
 
-    this._layout.fitInLayout(this).render(1000);
+    this._layout.fitInLayout(this).render();
 
     applyLayout(this._laidOutElements, this._layoutHierarchyNodes);
 

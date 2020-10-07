@@ -52,7 +52,7 @@ async function bundleJSLibWithSettings(minify, zip) {
 
   const bundle = await rollup.rollup({
     input: 'src/lib/index.ts',
-    plugins: [rollupCommonJs(), rollupNodeResolve({ browser: true }), rollupTypescript()],
+    plugins: [rollupNodeResolve({ browser: true }), rollupCommonJs(), rollupTypescript()],
   });
   return bundle.write({
     file: `dist/respvis${minify ? '.min' : ''}.js`,

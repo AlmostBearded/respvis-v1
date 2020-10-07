@@ -7,6 +7,8 @@ import { scaleBand, scaleLinear, ScaleBand, ScaleLinear } from 'd3-scale';
 import { max, merge, Primitive } from 'd3-array';
 import 'd3-transition';
 import { v4 as uuidv4 } from 'uuid';
+import { active, transition } from 'd3-transition';
+import { Diff } from 'deep-diff';
 
 export interface IBarsConfig extends IComponentConfig {
   categories: string[];
@@ -15,6 +17,7 @@ export interface IBarsConfig extends IComponentConfig {
   flipCategories: boolean;
   flipValues: boolean;
   categoryPadding: number;
+  transitionDuration: number;
 }
 
 export interface IBars extends IComponent<IBarsConfig>, IBarPositioner {
@@ -28,6 +31,7 @@ export interface IBars extends IComponent<IBarsConfig>, IBarPositioner {
 
 export class Bars extends Component<IBarsConfig> implements IBars {
   private _barPositioner: IBarPositioner = new BarPositioner();
+  private _transitionDuration: number = 0;
 
   // private _eventListeners = new Map<
   //   string,
@@ -50,18 +54,21 @@ export class Bars extends Component<IBarsConfig> implements IBars {
       orientation: Orientation.Vertical,
       categoryPadding: 0.1,
       attributes: {},
-      responsiveConfigs: [],
+      conditionalConfigs: [],
+      transitionDuration: 0,
     });
   }
 
-  protected _applyConfig(config: IBarsConfig): void {
+  protected _applyConfig(config: IBarsConfig, diff: Diff<IBarsConfig, IBarsConfig>[]): void {
     this._barPositioner
-      .categories(this._activeConfig.categories)
-      .values(this._activeConfig.values)
-      .flipCategories(this._activeConfig.flipCategories)
-      .flipValues(this._activeConfig.flipValues)
-      .orientation(this._activeConfig.orientation)
-      .categoryPadding(this._activeConfig.categoryPadding);
+      .categories(config.categories)
+      .values(config.values)
+      .flipCategories(config.flipCategories)
+      .flipValues(config.flipValues)
+      .orientation(config.orientation)
+      .categoryPadding(config.categoryPadding);
+
+    this._transitionDuration = config.transitionDuration;
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
@@ -91,7 +98,7 @@ export class Bars extends Component<IBarsConfig> implements IBars {
     // var boundingRect = selection.node()!.getBoundingClientRect();
     // this.fitInSize(boundingRect);
     this.fitInSize({ width: 600, height: 400 });
-    this.render(0);
+    this.render();
 
     //   console.log(_eventListeners);
     //   _eventListeners.forEach((listener, eventType) => {
@@ -107,8 +114,9 @@ export class Bars extends Component<IBarsConfig> implements IBars {
     return this;
   }
 
-  render(transitionDuration: number): this {
-    this.selection().call(renderBars, this._barPositioner.bars(), transitionDuration);
+  render(): this {
+    this.selection().call(renderBars, this._barPositioner.bars(), this._transitionDuration);
+    this._transitionDuration = 0;
     return this;
   }
 
@@ -210,22 +218,39 @@ export function renderClippedRect(
         )
 
         .select('rect')
-        .transition()
-        .duration(transitionDuration)
-        .attr('x', rect.x)
-        .attr('y', rect.y)
-        .attr('height', rect.height)
-        .attr('width', rect.width)
+        // .transition()
+        // .duration(transitionDuration)
+        // .attr('x', rect.x)
+        // .attr('y', rect.y)
+        // .attr('height', rect.height)
+        // .attr('width', rect.width)
+        .each(function () {
+          console.log(transitionDuration);
+          (active(this)?.transition() || select(this).transition())
+            .duration(transitionDuration)
+            .attr('x', rect.x)
+            .attr('y', rect.y)
+            .attr('height', rect.height)
+            .attr('width', rect.width);
+        })
     )
     .call((s: any) =>
       (s.selectChildren('rect') as Selection<SVGRectElement, unknown, BaseType, unknown>)
         .data([null])
         .join((enter) => enter.append('rect').attr('clip-path', `url(#${clipId})`))
-        .transition()
-        .duration(transitionDuration)
-        .attr('x', rect.x)
-        .attr('y', rect.y)
-        .attr('height', rect.height)
-        .attr('width', rect.width)
+        // .transition()
+        // .duration(transitionDuration)
+        // .attr('x', rect.x)
+        // .attr('y', rect.y)
+        // .attr('height', rect.height)
+        // .attr('width', rect.width)
+        .each(function () {
+          (active(this)?.transition() || select(this).transition())
+            .duration(transitionDuration)
+            .attr('x', rect.x)
+            .attr('y', rect.y)
+            .attr('height', rect.height)
+            .attr('width', rect.width);
+        })
     );
 }
