@@ -1,6 +1,5 @@
 import { Selection, BaseType, create } from 'd3-selection';
 import { Component, IComponent, IComponentConfig } from '../component';
-import { ILayout, ILayoutStyle } from '../layout/layout';
 
 export interface ITextConfig extends IComponentConfig {
   text: string;
@@ -31,11 +30,13 @@ export class Text extends Component<ITextConfig> implements IText {
     return this;
   }
 
-  fitInLayout(layout: ILayout): this {
+  resize(): this {
     return this;
   }
 
-  render(transitionDuration: number): this {
+  protected _afterResize(): void {}
+
+  render(animated: boolean): this {
     return this;
   }
 

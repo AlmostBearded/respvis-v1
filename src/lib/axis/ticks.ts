@@ -1,16 +1,9 @@
 import { Component, IComponent, IComponentConfig } from '../component';
 import { Selection, BaseType, select, create } from 'd3-selection';
-import { ILayout } from '../layout/layout';
-import {
-  Axis,
-  axisBottom,
-  axisLeft,
-  axisRight,
-  AxisScale,
-  axisTop,
-} from 'd3-axis';
+import { Axis, axisBottom, axisLeft, axisRight, AxisScale, axisTop } from 'd3-axis';
 import { scaleLinear } from 'd3-scale';
 import { applyAttributes, Attributes } from '../utils';
+import { Diff } from 'deep-diff';
 
 export enum Position {
   Left,
@@ -42,8 +35,7 @@ export class Ticks extends Component<ITicksConfig> implements ITicks {
   ]);
 
   constructor(labelPosition: Position) {
-    const vertical =
-      labelPosition === Position.Left || labelPosition === Position.Right;
+    const vertical = labelPosition === Position.Left || labelPosition === Position.Right;
     super(create<SVGElement>('svg:g').classed('ticks', true), {
       scale: scaleLinear().domain([0, 1]).range([0, 100]),
       attributes: {
@@ -54,40 +46,27 @@ export class Ticks extends Component<ITicksConfig> implements ITicks {
     this._labelPosition = labelPosition;
   }
 
-  protected _applyConfig(config: ITicksConfig): void {
-    this.render(0);
+  protected _applyConfig(config: ITicksConfig, diff: Diff<ITicksConfig, ITicksConfig>[]): void {
+    this.render(false);
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
     selection.append(() => this.selection().node());
-    this.render(0);
+    this.render(false);
     return this;
   }
 
-  fitInLayout(layout: ILayout): this {
+  resize(): this {
+    this.render(false);
     return this;
   }
 
-  render(transitionDuration: number): this {
+  protected _afterResize(): void {}
+
+  render(animated: boolean): this {
     this.selection()
-      .call(
-        Ticks._renderFunctionByPosition.get(this._labelPosition)!,
-        this._activeConfig.scale
-      )
+      .call(Ticks._renderFunctionByPosition.get(this._labelPosition)!, this._activeConfig.scale)
       .call(applyAttributes, this._activeConfig.attributes);
-    //   .call((s) =>
-    //     s.select('.domain').call(applyAttributes, this._domainAttributes)
-    //   )
-    //   .call((s) =>
-    //     s
-    //       .selectAll('.tick line')
-    //       .call(applyAttributes, this._tickLineAttributes)
-    //   )
-    //   .call((s) =>
-    //     s
-    //       .selectAll('.tick text')
-    //       .call(applyAttributes, this._tickLabelAttributes)
-    //   );
     return this;
   }
 
@@ -113,10 +92,7 @@ export function bottomTicks(): Ticks {
   return new Ticks(Position.Bottom);
 }
 
-const axisFunctionByPosition = new Map<
-  Position,
-  (scale: AxisScale<unknown>) => Axis<unknown>
->();
+const axisFunctionByPosition = new Map<Position, (scale: AxisScale<unknown>) => Axis<unknown>>();
 axisFunctionByPosition.set(Position.Left, axisLeft);
 axisFunctionByPosition.set(Position.Bottom, axisBottom);
 axisFunctionByPosition.set(Position.Top, axisTop);
@@ -131,18 +107,16 @@ function renderTicks(
     .call(axisFunctionByPosition.get(position)!(scale))
     .attr('font-size', '0.7em')
     .call((ticksSelection) =>
-      ticksSelection
-        .selectAll<SVGTextElement, never>('.tick text')
-        .each((d, i, groups) => {
-          const x = groups[i].getAttribute('x') || '0';
-          const y = groups[i].getAttribute('y') || '0';
-          select(groups[i])
-            .attr('x', null)
-            .attr('y', null)
-            .attr('dx', null)
-            .attr('dy', null)
-            .attr('transform', `translate(${x}, ${y})`);
-        })
+      ticksSelection.selectAll<SVGTextElement, never>('.tick text').each((d, i, groups) => {
+        const x = groups[i].getAttribute('x') || '0';
+        const y = groups[i].getAttribute('y') || '0';
+        select(groups[i])
+          .attr('x', null)
+          .attr('y', null)
+          .attr('dx', null)
+          .attr('dy', null)
+          .attr('transform', `translate(${x}, ${y})`);
+      })
     );
 }
 
@@ -153,9 +127,7 @@ function renderLeftTicks(
   selection
     .call(renderTicks, Position.Left, scale)
     .call((s) => s.selectAll('.tick text').attr('dominant-baseline', 'middle'))
-    .call(function (
-      ticksSelection: Selection<SVGGElement, unknown, SVGElement, unknown>
-    ) {
+    .call(function (ticksSelection: Selection<SVGGElement, unknown, SVGElement, unknown>) {
       var boundingRect = ticksSelection.node()!.getBoundingClientRect();
       ticksSelection.attr('transform', `translate(${boundingRect.width}, 0)`);
     });
@@ -167,9 +139,7 @@ function renderBottomTicks(
 ): void {
   selection
     .call(renderTicks, Position.Bottom, scale)
-    .call((s) =>
-      s.selectAll('.tick text').attr('dominant-baseline', 'hanging')
-    );
+    .call((s) => s.selectAll('.tick text').attr('dominant-baseline', 'hanging'));
 }
 
 function renderTopTicks(
@@ -178,9 +148,7 @@ function renderTopTicks(
 ): void {
   selection
     .call(renderTicks, Position.Top, scale)
-    .call(function (
-      ticksSelection: Selection<SVGGElement, unknown, SVGElement, unknown>
-    ) {
+    .call(function (ticksSelection: Selection<SVGGElement, unknown, SVGElement, unknown>) {
       var boundingRect = ticksSelection.node()!.getBoundingClientRect();
       ticksSelection.attr('transform', `translate(0, ${boundingRect.height})`);
     });

@@ -1,6 +1,6 @@
 import { IComponent, NULL_COMPONENT } from '../component';
 import { Selection, BaseType } from 'd3-selection';
-import { ILayout } from '../layout/layout';
+import { ILayouter } from '../layout/layout';
 
 export enum Row {
   Top = 1,
@@ -62,7 +62,7 @@ export class NinePatch implements INinePatch {
 
     return this;
   }
-  fitInLayout(layout: ILayout): this {
+  fitInLayout(layout: ILayouter): this {
     this._children.forEach((child) => child.fitInLayout(layout));
     return this;
   }

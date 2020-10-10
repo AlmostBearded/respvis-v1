@@ -1,9 +1,7 @@
 import { IComponent } from '../component';
 import { Selection, BaseType, select } from 'd3-selection';
-import { ILayout, ILayoutElement } from '../layout/layout';
 import { Primitive } from 'd3-array';
 import { CustomGrid, ICustomGrid } from '../containers/custom-grid';
-import { Alignment, IAlignable } from '../layout/utils';
 import { renderClippedRect } from '../bars/bars';
 import { Text } from '../components/text';
 
@@ -85,7 +83,7 @@ export class Legend implements ILegend {
     return this;
   }
 
-  fitInLayout(layout: ILayout): this {
+  fitInLayout(layout: ILayouter): this {
     this._customGrid.fitInLayout(layout);
     return this;
   }
@@ -152,7 +150,7 @@ class Square implements ISquare, IAlignable {
     return this;
   }
 
-  fitInLayout(layout: ILayout): this {
+  fitInLayout(layout: ILayouter): this {
     return this;
   }
 

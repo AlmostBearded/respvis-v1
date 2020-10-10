@@ -8,7 +8,7 @@ import {
 } from './bar-point-positioner';
 import { IStringable, Size } from '../utils';
 import { Selection, BaseType } from 'd3-selection';
-import { ILayout } from '../layout/layout';
+import { ILayouter } from '../layout/layout';
 import { IBarPositioner } from './bar-positioner';
 
 export interface IBarLabels extends IComponent, IBarPointPositioner {
@@ -38,7 +38,7 @@ export class BarLabels implements IBarLabels {
     this.render(0);
     return this;
   }
-  fitInLayout(layout: ILayout): this {
+  fitInLayout(layout: ILayouter): this {
     var layoutRect = layout.layoutOfElement(this._containerSelection.node()!)!;
     this.fitInSize(layoutRect);
     return this;

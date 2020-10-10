@@ -1,8 +1,6 @@
 import { Component, IComponent, IComponentConfig } from '../component';
 import { Selection, BaseType, select, create } from 'd3-selection';
-import { ILayout } from '../layout/layout';
-import { setSingleCellGridPosition } from './nine-patch';
-import { IChart } from '../chart/chart';
+import { Diff } from 'deep-diff';
 
 export interface IGroupConfig extends IComponentConfig {
   children: IComponent<IComponentConfig>[];
@@ -21,26 +19,35 @@ export class Group extends Component<IGroupConfig> implements IGroup {
     });
   }
 
-  protected _applyConfig(config: IGroupConfig): void {
+  protected _applyConfig(config: IGroupConfig, diff: Diff<IGroupConfig, IGroupConfig>[]): void {
     // TODO: Handle mounting/unmounting of children after group has been mounted
-    this._config.children = this._config.children.sort(
-      (a, b) => a.renderOrder() - b.renderOrder()
-    );
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
     selection.append(() => this.selection().node());
-    this.config().children.forEach((child) => child.mount(this.selection()));
+    this._activeConfig.children
+      .sort((a, b) => a.renderOrder() - b.renderOrder())
+      .forEach((child) => child.mount(this.selection()));
     return this;
   }
 
-  fitInLayout(layout: ILayout): this {
-    this.config().children.forEach((child) => child.fitInLayout(layout));
+  resize(): this {
+    this._activeConfig.children
+      .sort((a, b) => a.renderOrder() - b.renderOrder())
+      .forEach((child) => child.resize());
     return this;
   }
 
-  render(): this {
-    this.config().children.forEach((child) => child.render());
+  protected _afterResize(): void {
+    this._activeConfig.children
+      .sort((a, b) => a.renderOrder() - b.renderOrder())
+      .forEach((child) => child.afterResize());
+  }
+
+  render(animated: boolean): this {
+    this._activeConfig.children
+      .sort((a, b) => a.renderOrder() - b.renderOrder())
+      .forEach((child) => child.render(animated));
     return this;
   }
 

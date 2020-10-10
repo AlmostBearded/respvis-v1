@@ -1,14 +1,14 @@
 import { Component, IComponent, IComponentConfig } from '../component';
 import { Size } from '../utils';
-import { ILayout } from '../layout/layout';
 import { Bar, BarPositioner, Orientation, IBarPositioner } from './bar-positioner';
 import { select, Selection, BaseType, create } from 'd3-selection';
 import { scaleBand, scaleLinear, ScaleBand, ScaleLinear } from 'd3-scale';
-import { max, merge, Primitive } from 'd3-array';
+import { Primitive } from 'd3-array';
 import 'd3-transition';
 import { v4 as uuidv4 } from 'uuid';
-import { active, transition } from 'd3-transition';
+import { Transition } from 'd3-transition';
 import { Diff } from 'deep-diff';
+import { IRect, Rect } from '../rect';
 
 export interface IBarsConfig extends IComponentConfig {
   categories: string[];
@@ -20,30 +20,10 @@ export interface IBarsConfig extends IComponentConfig {
   transitionDuration: number;
 }
 
-export interface IBars extends IComponent<IBarsConfig>, IBarPositioner {
-  // on(
-  //   eventType: string,
-  //   listener:
-  //     | ((evnt: Event, barElement: SVGElement, index: number) => void)
-  //     | null
-  // ): Bars;
-}
+export interface IBars extends IComponent<IBarsConfig>, IBarPositioner {}
 
 export class Bars extends Component<IBarsConfig> implements IBars {
   private _barPositioner: IBarPositioner = new BarPositioner();
-  private _transitionDuration: number = 0;
-
-  // private _eventListeners = new Map<
-  //   string,
-  //   (evnt: Event, barElement: SVGRectElement, index: number) => void
-  // >();
-
-  // private _on = (
-  //   eventType: string,
-  //   listener:
-  //     | ((evnt: Event, barElement: SVGRectElement, index: number) => void)
-  //     | null
-  // ): void => {};
 
   constructor() {
     super(create<SVGElement>('svg:g').classed('bars', true), {
@@ -67,74 +47,39 @@ export class Bars extends Component<IBarsConfig> implements IBars {
       .flipValues(config.flipValues)
       .orientation(config.orientation)
       .categoryPadding(config.categoryPadding);
-
-    this._transitionDuration = config.transitionDuration;
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
-    //   _on = function (
-    //     eventType: string,
-    //     listener:
-    //       | ((evnt: Event, barElement: SVGRectElement, index: number) => void)
-    //       | null
-    //   ): void {
-    //     if (!listener) {
-    //       _barsContainerSelection.on(eventType, null);
-    //     } else {
-    //       _barsContainerSelection.on(eventType, function (e: Event) {
-    //         const barElement: SVGRectElement = e.target as SVGRectElement;
-    //         const index = Array.prototype.indexOf.call(
-    //           barElement.parentNode!.children,
-    //           e.target
-    //         );
-
-    //         listener(e, barElement, index);
-    //       });
-    //     }
-    //   };
-
     selection.append(() => this.selection().node());
 
     // var boundingRect = selection.node()!.getBoundingClientRect();
     // this.fitInSize(boundingRect);
     this.fitInSize({ width: 600, height: 400 });
-    this.render();
-
-    //   console.log(_eventListeners);
-    //   _eventListeners.forEach((listener, eventType) => {
-    //     _on(eventType, listener);
-    //   });
+    this.render(false);
 
     return this;
   }
 
-  fitInLayout(layout: ILayout): this {
-    const layoutRect = layout.layoutOfElement(this.selection().node()!)!;
+  resize(): this {
+    const layoutRect = Rect.fromString(this.selection().attr('layout'));
     this.fitInSize(layoutRect);
     return this;
   }
 
-  render(): this {
-    this.selection().call(renderBars, this._barPositioner.bars(), this._transitionDuration);
-    this._transitionDuration = 0;
+  protected _afterResize(): void {}
+
+  render(animated: boolean): this {
+    this.selection().call(
+      renderBars,
+      this._barPositioner.bars(),
+      animated ? this._activeConfig.transitionDuration : 0
+    );
     return this;
   }
 
   renderOrder(): number {
     return 0;
   }
-
-  // renderedBars.on = function on(
-  //   eventType: string,
-  //   listener:
-  //     | ((evnt: Event, barElement: SVGElement, index: number) => void)
-  //     | null
-  // ): Bars {
-  //   if (listener) _eventListeners.set(eventType, listener);
-  //   else _eventListeners.delete(eventType);
-  //   _on(eventType, listener);
-  //   return renderedBars;
-  // };
 
   // # BarPositioner
   categories(categories?: Primitive[]): any {
@@ -201,10 +146,17 @@ export function renderBars(
 
 export function renderClippedRect(
   selection: Selection<SVGGElement, unknown, BaseType, unknown>,
-  rect: DOMRect,
+  rect: IRect,
   transitionDuration: number
 ): void {
   let clipId: string;
+
+  const applyRectAttributes = (
+    s:
+      | Selection<BaseType, unknown, BaseType, unknown>
+      | Transition<BaseType, unknown, BaseType, unknown>
+  ) => s.attr('x', rect.x).attr('y', rect.y).attr('height', rect.height).attr('width', rect.width);
+
   selection
     // Casting to disable type checking as the latest d3-selection types don't contain selectChildren yet.
     .call((s: any) =>
@@ -214,43 +166,22 @@ export function renderClippedRect(
           enter
             .append('clipPath')
             .attr('id', (clipId = uuidv4()))
-            .call((s) => s.append('rect'))
+            .call((s) => s.append('rect').call(applyRectAttributes))
         )
 
         .select('rect')
-        // .transition()
-        // .duration(transitionDuration)
-        // .attr('x', rect.x)
-        // .attr('y', rect.y)
-        // .attr('height', rect.height)
-        // .attr('width', rect.width)
-        .each(function () {
-          console.log(transitionDuration);
-          (active(this)?.transition() || select(this).transition())
-            .duration(transitionDuration)
-            .attr('x', rect.x)
-            .attr('y', rect.y)
-            .attr('height', rect.height)
-            .attr('width', rect.width);
-        })
+        .transition()
+        .duration(transitionDuration)
+        .call(applyRectAttributes)
     )
     .call((s: any) =>
       (s.selectChildren('rect') as Selection<SVGRectElement, unknown, BaseType, unknown>)
         .data([null])
-        .join((enter) => enter.append('rect').attr('clip-path', `url(#${clipId})`))
-        // .transition()
-        // .duration(transitionDuration)
-        // .attr('x', rect.x)
-        // .attr('y', rect.y)
-        // .attr('height', rect.height)
-        // .attr('width', rect.width)
-        .each(function () {
-          (active(this)?.transition() || select(this).transition())
-            .duration(transitionDuration)
-            .attr('x', rect.x)
-            .attr('y', rect.y)
-            .attr('height', rect.height)
-            .attr('width', rect.width);
-        })
+        .join((enter) =>
+          enter.append('rect').attr('clip-path', `url(#${clipId})`).call(applyRectAttributes)
+        )
+        .transition()
+        .duration(transitionDuration)
+        .call(applyRectAttributes)
     );
 }

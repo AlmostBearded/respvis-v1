@@ -1,6 +1,6 @@
 import { IComponent } from '../component';
 import { Selection, BaseType, select } from 'd3-selection';
-import { ILayout } from '../layout/layout';
+import { ILayouter } from '../layout/layout';
 import { setSingleCellGridPosition } from './nine-patch';
 
 export interface IStack extends IComponent {
@@ -41,7 +41,7 @@ export class Stack implements IStack {
     );
     return this;
   }
-  fitInLayout(layout: ILayout): this {
+  fitInLayout(layout: ILayouter): this {
     this._children.forEach((child) => child.fitInLayout(layout));
     return this;
   }

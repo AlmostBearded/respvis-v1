@@ -1,6 +1,6 @@
 import { Component, IComponent } from '../component';
 import { Selection, BaseType, select, create } from 'd3-selection';
-import { ILayout, ILayoutElement } from '../layout/layout';
+import { ILayouter, ILayoutElement } from '../layout/layout';
 import { setSingleCellGridPosition } from './nine-patch';
 
 export interface ICustomGrid extends IComponent {
@@ -68,7 +68,7 @@ export class CustomGrid extends Component implements ICustomGrid {
     return this;
   }
 
-  fitInLayout(layout: ILayout): this {
+  fitInLayout(layout: ILayouter): this {
     this._children.forEach((child) => child.fitInLayout(layout));
     return this;
   }

@@ -1,6 +1,4 @@
 import { Selection, BaseType, select, create, selection } from 'd3-selection';
-import { ITextConfig } from './components/text';
-import { ILayout, ILayoutStyle } from './layout/layout';
 import { applyAttributes, Attributes } from './utils';
 import deepDiff from 'deep-diff';
 
@@ -16,8 +14,9 @@ export interface IComponentConfig {
 
 export interface IComponent<TConfig extends IComponentConfig> {
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this;
-  fitInLayout(layout: ILayout): this;
-  render(): this;
+  resize(): this;
+  afterResize(): this;
+  render(animated: boolean): this;
   selection(): Selection<SVGElement, unknown, BaseType, unknown>;
   renderOrder(): number;
   config(config: Partial<TConfig>): this;
@@ -29,17 +28,24 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
   protected _config: TConfig;
   protected _activeConfig: TConfig;
 
-  protected _mediaQueries: { [query: string]: MediaQueryList } = {};
-
   constructor(selection: Selection<SVGElement, unknown, BaseType, unknown>, config: TConfig) {
     this._selection = selection;
     this._config = config;
   }
 
   abstract mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this;
-  abstract fitInLayout(layout: ILayout): this;
-  abstract render(): this;
+  abstract render(animated: boolean): this;
   abstract renderOrder(): number;
+
+  abstract resize(): this;
+
+  afterResize(): this {
+    this._applyConditionalConfigs();
+    this._afterResize();
+    return this;
+  }
+
+  protected abstract _afterResize(): void;
 
   config(config: Partial<TConfig>): this;
   config(): TConfig;
@@ -52,33 +58,17 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
         deepDiff.applyChange(this._config, config, change);
       }
     });
-    // merge(this._config, config);
-    for (let i = 0; i < this._config.conditionalConfigs.length; ++i) {
-      const mediaQuery = this._config.conditionalConfigs[i].media;
-      if (this._mediaQueries[mediaQuery] === undefined) {
-        this._mediaQueries[mediaQuery] = window.matchMedia(mediaQuery);
-        this._mediaQueries[mediaQuery].addEventListener('change', () =>
-          this._onMediaQueryChanged()
-        );
-      }
-    }
-    this._onMediaQueryChanged();
+    this._applyConditionalConfigs();
     return this;
   }
 
-  protected abstract _applyConfig(config: TConfig, diff: deepDiff.Diff<TConfig, TConfig>[]): void;
-
-  private _onMediaQueryChanged(): void {
-    console.log('onMediaQueryChanged');
-    const newConfig = Object.assign({}, this._config);
-    console.log(newConfig);
+  private _applyConditionalConfigs(): this {
+    const newConfig = Object.assign({}, this._config, {
+      attributes: JSON.parse(JSON.stringify(this._config.attributes)),
+    });
 
     this._config.conditionalConfigs.forEach((conditionalConfig) => {
-      console.log(
-        `${conditionalConfig.media} ${this._mediaQueries[conditionalConfig.media].matches}`
-      );
-      if (this._mediaQueries[conditionalConfig.media].matches) {
-        console.log(conditionalConfig.config);
+      if (window.matchMedia(conditionalConfig.media).matches) {
         deepDiff.observableDiff(newConfig, conditionalConfig.config, (change) => {
           // TODO: Allow components to apply their own config changes?
           // TODO: Special case for applying conditionalConfig changes?
@@ -86,19 +76,20 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
             deepDiff.applyChange(newConfig, conditionalConfig.config, change);
           }
         });
-        // merge(newConfig, conditionalConfig.config);
       }
     });
 
-    console.log(this._activeConfig);
-    console.log(newConfig);
     const changes = deepDiff.diff(this._activeConfig, newConfig);
     if (changes) {
       this._activeConfig = newConfig;
       this._selection.call(applyAttributes, this._activeConfig.attributes);
       this._applyConfig(this._activeConfig, changes);
     }
+
+    return this;
   }
+
+  protected abstract _applyConfig(config: TConfig, diff: deepDiff.Diff<TConfig, TConfig>[]): void;
 
   selection(): Selection<SVGElement, unknown, BaseType, unknown> {
     return this._selection;

@@ -1,91 +1,64 @@
 import { BaseType, select, Selection } from 'd3-selection';
 import debounce from 'debounce';
-import { IComponent } from '../component';
-import { ILayout, Layout } from '../layout/layout';
-import { nullFunction } from '../utils';
+import { IComponent, IComponentConfig } from '../component';
+import { applyLayoutTransforms, computeLayout } from '../layout/layout';
 
 export interface IChart {
   mount(containerSelector: string): this;
-  layout(layout: IComponent): this;
-  layout(): IComponent;
-  onTransition(callback: () => void): this;
-  onTransition(): () => void;
+  root(root: IComponent<IComponentConfig>): this;
+  root(): IComponent<IComponentConfig>;
 }
 
 export class Chart implements IChart {
-  private _gridLayout: ILayout;
-  private _layout: IComponent;
+  private _root: IComponent<IComponentConfig>;
   private _selection: Selection<SVGElement, unknown, BaseType, unknown>;
-  private _onTransition = nullFunction;
-
-  constructor() {
-    this._gridLayout = new Layout();
-  }
 
   mount(containerSelector: string): this {
-    this._selection = select(containerSelector)
-      .append('svg')
-      .classed('chart', true);
+    this._selection = select(containerSelector).append('svg').classed('chart', true);
 
     console.assert(
       !this._selection.empty(),
       `Couldn't mount chart under selector '${containerSelector}'`
     );
 
-    this._gridLayout.layout(this._layout).mount(this._selection);
+    this._root.mount(this._selection);
 
     const resize = () => {
-      this._selection.classed('transition', false);
-      const boundingRect = this._selection.node()!.getBoundingClientRect();
-      this._selection.attr(
-        'viewBox',
-        `0, 0, ${boundingRect.width}, ${boundingRect.height}`
-      );
-      this._gridLayout.resize();
+      const bbox = this._selection.node()!.getBoundingClientRect();
+      this._selection.attr('viewBox', `0, 0, ${bbox.width}, ${bbox.height}`);
+
+      computeLayout(this._root.selection().node()!, bbox);
+
+      this._root.resize().render(false);
+
+      applyLayoutTransforms(this._root.selection().node()!);
+    };
+
+    const afterResize = () => {
+      this._root.afterResize();
+
+      let bbox = this._selection.node()!.getBoundingClientRect();
+      computeLayout(this._root.selection().node()!, bbox);
+
+      this._root.resize().render(true);
+
+      applyLayoutTransforms(this._root.selection().node()!);
     };
 
     resize();
 
-    let resizing = false;
-    let resizeIntervalHandle: number;
-    window.addEventListener('resize', () => {
-      if (!resizing) {
-        resizing = true;
-        resizeIntervalHandle = window.setInterval(resize, 10);
-      }
-    });
-
-    window.addEventListener(
-      'resize',
-      debounce(() => {
-        resizing = false;
-        window.clearInterval(resizeIntervalHandle);
-
-        this._selection.classed('transition', true);
-        this._onTransition();
-
-        this._gridLayout.transition();
-
-        window.setTimeout(
-          () => this._selection.classed('transition', false),
-          1000
-        );
-      }, 1000)
-    );
+    window.addEventListener('resize', resize);
+    window.addEventListener('resize', debounce(afterResize, 250));
 
     return this;
   }
 
-  layout(layout?: IComponent): any {
-    if (layout === undefined) return this._layout;
-    this._layout = layout;
+  root(root: IComponent<IComponentConfig>): this;
+  root(): IComponent<IComponentConfig>;
+  root(root?: IComponent<IComponentConfig>): any {
+    if (root === undefined) return this._root;
+    this._root = root;
     // TODO: Handle changing after mount.
-    return this;
-  }
-
-  onTransition(callback?: () => void): any {
-    if (callback === undefined) return this._onTransition;
-    this._onTransition = callback;
     return this;
   }
 }

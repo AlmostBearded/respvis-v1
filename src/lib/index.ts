@@ -1,5 +1,5 @@
 export { chart, Chart, IChart } from './chart/chart';
-export { layout, Layout, ILayout, Alignment } from './layout/layout';
+export { computeLayout, applyLayoutTransforms, ILayoutStyle } from './layout/layout';
 export { group, Group, IGroup, IGroupConfig } from './containers/group';
 export { customGrid, CustomGrid, ICustomGrid } from './containers/custom-grid';
 export {

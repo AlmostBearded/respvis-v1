@@ -1,7 +1,7 @@
 import { Selection, select, BaseType } from 'd3-selection';
 import { axisLeft, axisBottom, axisTop, axisRight, AxisScale, Axis as D3Axis } from 'd3-axis';
 import { IComponent } from '../component';
-import { ILayout } from '../layout/layout';
+import { ILayouter } from '../layout/layout';
 
 export enum Position {
   Left,
@@ -96,7 +96,7 @@ export class Axis implements IAxis {
     return this;
   }
 
-  fitInLayout(layout: ILayout): this {
+  fitInLayout(layout: ILayouter): this {
     // TODO: Maybe this should be refactored somehow?
     // Possibly a separate IDynamicSizedComponent component?
     return this;

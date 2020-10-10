@@ -2,7 +2,7 @@ import { IComponent } from '../component';
 import { IGroupedBarPositioner, GroupedBarPositioner } from './grouped-bar-positioner';
 import { BaseType, Selection, select } from 'd3-selection';
 import { Bar, Orientation } from './bar-positioner';
-import { ILayout } from '../layout/layout';
+import { ILayouter } from '../layout/layout';
 import { renderBars } from './bars';
 import { ScaleBand, ScaleLinear } from 'd3-scale';
 import { Primitive } from 'd3-array';
@@ -31,7 +31,7 @@ export class GroupedBars implements IGroupedBars {
     return this;
   }
 
-  fitInLayout(layout: ILayout): this {
+  fitInLayout(layout: ILayouter): this {
     var layoutRect = layout.layoutOfElement(this._containerSelection.node()!)!;
     this.fitInSize(layoutRect);
     return this;
