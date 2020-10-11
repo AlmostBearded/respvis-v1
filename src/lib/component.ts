@@ -20,6 +20,7 @@ export interface IComponent<TConfig extends IComponentConfig> {
   selection(): Selection<SVGElement, unknown, BaseType, unknown>;
   renderOrder(): number;
   config(config: Partial<TConfig>): this;
+  // TODO: This method should probably return the active config
   config(): TConfig;
 }
 

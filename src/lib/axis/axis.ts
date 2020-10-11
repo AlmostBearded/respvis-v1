@@ -2,7 +2,7 @@ import { Selection, select, BaseType, create } from 'd3-selection';
 import { axisLeft, axisBottom, axisTop, axisRight, AxisScale, Axis as D3Axis } from 'd3-axis';
 import { Component, IComponent, IComponentConfig } from '../component';
 import { ITicks, ITicksConfig, Position, Ticks } from './ticks';
-import { Group, IGroup, IGroupConfig } from '../containers/group';
+import { Group, IGroup, IGroupConfig } from '../components/group';
 import {
   Text,
   IText,

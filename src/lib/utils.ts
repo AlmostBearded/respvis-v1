@@ -58,7 +58,10 @@ export interface IDictionary<TValue> {
 
 export type PrimitiveObject = { [key: string]: Primitive };
 
-export type Size = { width: number; height: number };
+export interface ISize {
+  width: number;
+  height: number;
+}
 
 export interface IStringable {
   toString(): string;

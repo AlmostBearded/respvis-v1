@@ -1,9 +1,15 @@
-import { IComponent } from '../component';
+import { IComponent, IComponentConfig } from '../component';
 import { Selection, BaseType, select } from 'd3-selection';
 import { Primitive } from 'd3-array';
-import { CustomGrid, ICustomGrid } from '../containers/custom-grid';
 import { renderClippedRect } from '../bars/bars';
 import { Text } from '../components/text';
+import { IStringable } from '../utils';
+
+export interface ILegendConfig extends IComponentConfig {
+  categories: IStringable[],
+  
+}
+
 
 export interface ILegend extends IComponent {
   categories(categories: Primitive[]): this;
@@ -104,101 +110,4 @@ export class Legend implements ILegend {
 
 export function legend(): Legend {
   return new Legend();
-}
-
-interface ISquare extends IComponent {
-  size(size: number): this;
-  size(): number;
-}
-
-class Square implements ISquare, IAlignable {
-  private _selection: Selection<ILayoutElement, unknown, BaseType, unknown>;
-  private _size: number = 10;
-  private _aligner: IAligner = new Aligner();
-
-  size(size: number): this;
-  size(): number;
-  size(size?: number): any {
-    if (size === undefined) return this._size;
-    this._size = size;
-    if (this._selection) {
-      this.render(0);
-    }
-    return this;
-  }
-
-  alignSelf(alignment: Alignment): this {
-    this._aligner.alignSelf(alignment);
-    if (this._selection) {
-      this._aligner.apply(this._selection);
-    }
-    return this;
-  }
-
-  justifySelf(alignment: Alignment): this {
-    this._aligner.justifySelf(alignment);
-    if (this._selection) {
-      this._aligner.apply(this._selection);
-    }
-    return this;
-  }
-
-  mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
-    this._selection = selection.append('g');
-    this._aligner.apply(this._selection);
-    this.render(0);
-    return this;
-  }
-
-  fitInLayout(layout: ILayouter): this {
-    return this;
-  }
-
-  render(transitionDuration: number): this {
-    this._selection.call(
-      renderClippedRect,
-      {
-        x: 0,
-        y: 0,
-        width: this._size,
-        height: this._size,
-      },
-      0
-    );
-    // TODO: This could potentially override other layoutStyle properties and could lead to nasty bugs.
-    this._selection.node()!.layoutStyle = { width: this._size, height: this._size };
-    return this;
-  }
-
-  selection(): Selection<SVGElement, unknown, BaseType, unknown> {
-    return this._selection;
-  }
-
-  renderOrder(): number {
-    return 0;
-  }
-}
-
-export interface IAligner extends IAlignable {
-  apply(selection: Selection<SVGElement, unknown, BaseType, unknown>): this;
-}
-
-export class Aligner implements IAligner {
-  private _alignSelf: Alignment;
-  private _justifySelf: Alignment;
-
-  alignSelf(alignment: Alignment): this {
-    this._alignSelf = alignment;
-    return this;
-  }
-
-  justifySelf(alignment: Alignment): this {
-    this._justifySelf = alignment;
-    return this;
-  }
-
-  apply(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
-    selection.style('align-self', this._alignSelf).style('justify-self', this._justifySelf);
-    return this;
-  }
 }

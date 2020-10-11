@@ -1,46 +1,87 @@
-import { IComponent } from '../component';
+import { Component, IComponent, IComponentConfig } from '../component';
 import { IGroupedBarPositioner, GroupedBarPositioner } from './grouped-bar-positioner';
-import { BaseType, Selection, select } from 'd3-selection';
+import { BaseType, Selection, select, create } from 'd3-selection';
 import { Bar, Orientation } from './bar-positioner';
-import { ILayouter } from '../layout/layout';
 import { renderBars } from './bars';
 import { ScaleBand, ScaleLinear } from 'd3-scale';
 import { Primitive } from 'd3-array';
-import { Size } from '../utils';
+import { Rect } from '../rect';
+import { ISize } from '../utils';
+import { categorical as categoricalColors } from '../colors';
 
-export interface IGroupedBars extends IComponent, IGroupedBarPositioner {}
+export interface IGroupedBarsConfig extends IComponentConfig {
+  categories: string[];
+  values: number[][];
+  colors: string[];
+  orientation: Orientation;
+  flipCategories: boolean;
+  flipSubcategories: boolean;
+  flipValues: boolean;
+  categoryPadding: number;
+  subcategoryPadding: number;
+  transitionDuration: number;
+}
 
-export class GroupedBars implements IGroupedBars {
+export interface IGroupedBars extends IComponent<IGroupedBarsConfig>, IGroupedBarPositioner {}
+
+export class GroupedBars extends Component<IGroupedBarsConfig> implements IGroupedBars {
   private _barPositioner: IGroupedBarPositioner = new GroupedBarPositioner();
 
-  private _containerSelection: Selection<SVGGElement, unknown, BaseType, unknown>;
+  constructor() {
+    super(create<SVGElement>('svg:g').classed('bars', true), {
+      categories: [],
+      values: [],
+      colors: categoricalColors,
+      flipCategories: false,
+      flipSubcategories: false,
+      flipValues: false,
+      orientation: Orientation.Vertical,
+      categoryPadding: 0.1,
+      subcategoryPadding: 0.1,
+      transitionDuration: 0,
+      attributes: {},
+      conditionalConfigs: [],
+    });
+  }
 
-  constructor() {}
+  protected _applyConfig(config: IGroupedBarsConfig): void {
+    this._barPositioner
+      .categories(config.categories)
+      .values(config.values)
+      .flipCategories(config.flipCategories)
+      .flipSubcategories(config.flipSubcategories)
+      .flipValues(config.flipValues)
+      .orientation(config.orientation)
+      .categoryPadding(config.categoryPadding)
+      .subcategoryPadding(config.categoryPadding);
+
+    const subcategoryCount = config.values?.[0].length || 0;
+    config.colors = config.colors.slice(0, subcategoryCount);
+  }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
-    this._containerSelection = selection
-      .selectAll<SVGGElement, unknown>('.bars')
-      .data([null])
-      .join('g')
-      .classed('bars', true);
+    selection.append(() => this.selection().node());
 
-    var boundingRect = selection.node()!.getBoundingClientRect();
-    this.fitInSize(boundingRect);
-    this.render(0);
+    // var boundingRect = selection.node()!.getBoundingClientRect();
+    // this.fitInSize(boundingRect);
+    this.fitInSize({ width: 600, height: 400 });
+    this.render(false);
 
     return this;
   }
 
-  fitInLayout(layout: ILayouter): this {
-    var layoutRect = layout.layoutOfElement(this._containerSelection.node()!)!;
+  resize(): this {
+    const layoutRect = Rect.fromString(this.selection().attr('layout'));
     this.fitInSize(layoutRect);
     return this;
   }
 
-  render(transitionDuration: number): this {
+  protected _afterResize(): void {}
+
+  render(animated: boolean): this {
     const values = this._barPositioner.values();
     const bars = this._barPositioner.bars();
-    this._containerSelection
+    this.selection()
       .selectAll<SVGGElement, number[][]>('.bar-group')
       .data(values)
       .join('g')
@@ -50,15 +91,12 @@ export class GroupedBars implements IGroupedBars {
         renderBars(
           select(groups[i]),
           bars.slice(i * barsPerGroup, i * barsPerGroup + barsPerGroup),
-          transitionDuration
+          this._activeConfig.colors,
+          animated ? this._activeConfig.transitionDuration : 0
         );
       });
 
     return this;
-  }
-
-  selection(): Selection<SVGElement, unknown, BaseType, unknown> {
-    return this._containerSelection;
   }
 
   renderOrder(): number {
@@ -106,7 +144,7 @@ export class GroupedBars implements IGroupedBars {
     this._barPositioner.subcategoryPadding(padding);
     return this;
   }
-  fitInSize(size: Size): this {
+  fitInSize(size: ISize): this {
     this._barPositioner.fitInSize(size);
     return this;
   }

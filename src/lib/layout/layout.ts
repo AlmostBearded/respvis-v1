@@ -1,4 +1,4 @@
-import { Size } from '../utils';
+import { ISize } from '../utils';
 import { computeLayout as faberComputeLayout } from './faberjs';
 import { IRect, Rect } from '../rect';
 
@@ -24,7 +24,7 @@ export interface ILayoutStyle {
   alignSelf?: string;
 }
 
-export function computeLayout(element: Element, size: Size) {
+export function computeLayout(element: Element, size: ISize) {
   // 1st Phase
   const rootLayoutNode = parseElementHierarchy(element);
   rootLayoutNode.style.width = size.width;

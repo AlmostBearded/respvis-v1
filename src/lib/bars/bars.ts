@@ -1,5 +1,5 @@
 import { Component, IComponent, IComponentConfig } from '../component';
-import { Size } from '../utils';
+import { ISize } from '../utils';
 import { Bar, BarPositioner, Orientation, IBarPositioner } from './bar-positioner';
 import { select, Selection, BaseType, create } from 'd3-selection';
 import { scaleBand, scaleLinear, ScaleBand, ScaleLinear } from 'd3-scale';
@@ -7,12 +7,14 @@ import { Primitive } from 'd3-array';
 import 'd3-transition';
 import { v4 as uuidv4 } from 'uuid';
 import { Transition } from 'd3-transition';
-import { Diff } from 'deep-diff';
 import { IRect, Rect } from '../rect';
+import { categorical as categoricalColors } from '../colors';
+import chroma from 'chroma-js';
 
 export interface IBarsConfig extends IComponentConfig {
   categories: string[];
   values: number[];
+  color: string;
   orientation: Orientation;
   flipCategories: boolean;
   flipValues: boolean;
@@ -29,13 +31,14 @@ export class Bars extends Component<IBarsConfig> implements IBars {
     super(create<SVGElement>('svg:g').classed('bars', true), {
       categories: [],
       values: [],
+      color: categoricalColors[0],
       flipCategories: false,
       flipValues: false,
       orientation: Orientation.Vertical,
       categoryPadding: 0.1,
+      transitionDuration: 0,
       attributes: {},
       conditionalConfigs: [],
-      transitionDuration: 0,
     });
   }
 
@@ -72,6 +75,7 @@ export class Bars extends Component<IBarsConfig> implements IBars {
     this.selection().call(
       renderBars,
       this._barPositioner.bars(),
+      this._activeConfig.values.map(() => this._activeConfig.color),
       animated ? this._activeConfig.transitionDuration : 0
     );
     return this;
@@ -112,7 +116,7 @@ export class Bars extends Component<IBarsConfig> implements IBars {
     this._barPositioner.categoryPadding(padding);
     return this;
   }
-  fitInSize(size: Size): this {
+  fitInSize(size: ISize): this {
     this._barPositioner.fitInSize(size);
     return this;
   }
@@ -134,6 +138,7 @@ export function bars(): Bars {
 export function renderBars(
   selection: Selection<SVGGElement, unknown, BaseType, unknown>,
   bars: Bar[],
+  fills: string[],
   transitionDuration: number
 ): Selection<SVGGElement, Bar, SVGGElement, unknown> {
   return selection
@@ -141,12 +146,16 @@ export function renderBars(
     .data(bars)
     .join('g')
     .classed('bar', true)
-    .each((d, i, nodes) => select(nodes[i]).call(renderClippedRect, d, transitionDuration));
+    .each((d, i, nodes) =>
+      select(nodes[i]).call(renderClippedRect, d, fills[i], transitionDuration)
+    );
 }
 
 export function renderClippedRect(
   selection: Selection<SVGGElement, unknown, BaseType, unknown>,
   rect: IRect,
+  fill: string,
+  // TODO: Support stroke and stroke width
   transitionDuration: number
 ): void {
   let clipId: string;
@@ -183,5 +192,7 @@ export function renderClippedRect(
         .transition()
         .duration(transitionDuration)
         .call(applyRectAttributes)
+        .attr('fill', fill)
+        .attr('stroke', chroma.hex(fill).darken(1.5).hex())
     );
 }

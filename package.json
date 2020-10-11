@@ -30,6 +30,7 @@
     "@rollup/plugin-commonjs": "^11.0.2",
     "@rollup/plugin-node-resolve": "^7.1.1",
     "@rollup/plugin-typescript": "^4.1.1",
+    "@types/chroma-js": "^2.1.0",
     "@types/d3-array": "^2.0.0",
     "@types/d3-axis": "^1.0.12",
     "@types/d3-scale": "^2.2.0",
@@ -52,6 +53,7 @@
     "typescript": "^3.8.3"
   },
   "dependencies": {
+    "chroma-js": "^2.1.0",
     "d3-array": "^2.7.1",
     "d3-axis": "^2.0.0",
     "d3-scale": "^3.2.2",

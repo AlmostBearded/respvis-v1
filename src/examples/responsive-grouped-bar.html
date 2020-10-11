@@ -97,7 +97,16 @@
                     },
                     categories: categories,
                     values: values,
-                    orientation: respVis.BarOrientation.Vertical,
+                    orientation: respVis.BarOrientation.Horizontal,
+                    transitionDuration: 1000,
+                    conditionalConfigs: [
+                      {
+                        media: 'screen and (min-width: 40rem)',
+                        config: {
+                          orientation: respVis.BarOrientation.Vertical,
+                        },
+                      },
+                    ],
                   })),
                   // Left axis
                   respVis.leftAxis().config({
@@ -105,10 +114,19 @@
                       'grid-area': '1 / 1 / 2 / 2',
                     },
                     ticks: {
-                      scale: bars.valuesScale(),
+                      scale: bars.categoriesScale(),
+                      conditionalConfigs: [
+                        {
+                          media: 'screen and (min-width: 40rem)',
+                          config: { scale: bars.valuesScale() },
+                        },
+                      ],
                     },
                     title: {
-                      text: 'Revenue',
+                      text: 'Locations',
+                      conditionalConfigs: [
+                        { media: 'screen and (min-width: 40rem)', config: { text: 'Revenue' } },
+                      ],
                     },
                   }),
                   // Bottom axis
@@ -117,10 +135,39 @@
                       'grid-area': '2 / 2 / 3 / 3',
                     },
                     ticks: {
-                      scale: bars.categoriesScale(),
+                      scale: bars.valuesScale(),
+                      attributes: {
+                        '.tick text': {
+                          'dominant-baseline': 'hanging',
+                          transform: 'translate(0, 7) rotate(-45)',
+                          'text-anchor': 'end',
+                        },
+                      },
+                      conditionalConfigs: [
+                        {
+                          media: 'screen and (min-width: 40rem)',
+                          config: {
+                            scale: bars.categoriesScale(),
+                            attributes: {
+                              '.tick text': {
+                                transform: 'translate(0, 7)',
+                                'text-anchor': 'middle',
+                              },
+                            },
+                          },
+                        },
+                      ],
                     },
                     title: {
-                      text: 'Locations',
+                      text: 'Revenue',
+                      conditionalConfigs: [
+                        {
+                          media: 'screen and (min-width: 40rem)',
+                          config: {
+                            text: 'Locations',
+                          },
+                        },
+                      ],
                     },
                   }),
                 ],

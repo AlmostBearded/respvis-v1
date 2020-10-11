@@ -13,6 +13,10 @@ export class Text extends Component<ITextConfig> implements IText {
       text: '',
       attributes: {
         width: 'min-content',
+        // TODO: The height returned by the bounding box of text elements is too high
+        // (see https://stackoverflow.com/questions/26290134/is-it-possible-to-more-accurately-measure-svg-text-height)
+        // Maybe it is possible to use a package suck as https://www.npmjs.com/package/font-measure
+        // to accurately determine the size of text elements.
         height: 'min-content',
         'dominant-baseline': 'hanging',
         'text-anchor': 'start',
