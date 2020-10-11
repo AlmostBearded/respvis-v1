@@ -48,3 +48,14 @@ export class Text extends Component<ITextConfig> implements IText {
 export function text(): Text {
   return new Text();
 }
+
+export const titleAttributes = {
+  'letter-spacing': '0.5em',
+  'font-weight': 'bold',
+};
+
+export const verticalTextAttributes = {
+  transform: 'rotate(-90)',
+  'dominant-baseline': 'hanging',
+  'text-anchor': 'end',
+};

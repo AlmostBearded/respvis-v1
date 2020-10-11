@@ -10,11 +10,21 @@ export {
   Column as NinePatchColumn,
 } from './containers/nine-patch';
 export { stack, Stack, IStack } from './containers/stack';
-export { text, Text, IText } from './components/text';
+export { text, Text, IText, titleAttributes, verticalTextAttributes } from './components/text';
 export { bars, Bars, IBars } from './bars/bars';
 export { groupedBars, GroupedBars, IGroupedBars } from './bars/grouped-bars';
-export { axis, Axis, IAxis, Position as AxisPosition } from './axis/axis';
 export {
+  axis,
+  leftAxis,
+  bottomAxis,
+  rightAxis,
+  topAxis,
+  Axis,
+  IAxis,
+  IAxisConfig,
+} from './axis/axis';
+export {
+  ticks,
   leftTicks,
   bottomTicks,
   rightTicks,

@@ -39,7 +39,7 @@ export class Bars extends Component<IBarsConfig> implements IBars {
     });
   }
 
-  protected _applyConfig(config: IBarsConfig, diff: Diff<IBarsConfig, IBarsConfig>[]): void {
+  protected _applyConfig(config: IBarsConfig): void {
     this._barPositioner
       .categories(config.categories)
       .values(config.values)

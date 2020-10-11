@@ -1,109 +1,104 @@
-import { Selection, select, BaseType } from 'd3-selection';
+import { Selection, select, BaseType, create } from 'd3-selection';
 import { axisLeft, axisBottom, axisTop, axisRight, AxisScale, Axis as D3Axis } from 'd3-axis';
-import { IComponent } from '../component';
-import { ILayouter } from '../layout/layout';
+import { Component, IComponent, IComponentConfig } from '../component';
+import { ITicks, ITicksConfig, Position, Ticks } from './ticks';
+import { Group, IGroup, IGroupConfig } from '../containers/group';
+import {
+  Text,
+  IText,
+  ITextConfig,
+  verticalTextAttributes,
+  titleAttributes,
+} from '../components/text';
 
-export enum Position {
-  Left,
-  Bottom,
-  Top,
-  Right,
+export interface IAxisConfig extends IComponentConfig {
+  ticks: ITicksConfig;
+  title: ITextConfig;
 }
 
-const classByPosition = new Map<Position, string>();
-classByPosition.set(Position.Left, 'left-axis');
-classByPosition.set(Position.Bottom, 'bottom-axis');
-classByPosition.set(Position.Top, 'top-axis');
-classByPosition.set(Position.Right, 'right-axis');
+export interface IAxis extends IComponent<IAxisConfig> {}
 
-const axisFunctionByPosition = new Map<Position, (scale: AxisScale<unknown>) => D3Axis<unknown>>();
-axisFunctionByPosition.set(Position.Left, axisLeft);
-axisFunctionByPosition.set(Position.Bottom, axisBottom);
-axisFunctionByPosition.set(Position.Top, axisTop);
-axisFunctionByPosition.set(Position.Right, axisRight);
+const ticksGridAreaByPosition = new Map([
+  [Position.Left, { 'grid-area': '1 / 3 / 2 / 4' }],
+  [Position.Bottom, { 'grid-area': '1 / 1 / 2 / 2' }],
+  [Position.Right, { 'grid-area': '1 / 1 / 2 / 2' }],
+  [Position.Top, { 'grid-area': '3 / 1 / 4 / 2' }],
+]);
 
-export interface IAxis extends IComponent {
-  title(title: string): this;
-  title(): string;
-  position(position: Position): this;
-  position(): Position;
-  scale(scale: AxisScale<unknown>): this;
-  scale(): AxisScale<unknown>;
-}
+const titleAttributesByPosition = new Map([
+  [Position.Left, { 'grid-area': '1 / 1 / 2 / 2', ...verticalTextAttributes }],
+  [Position.Bottom, { 'grid-area': '3 / 1 / 4 / 2' }],
+  [Position.Right, { 'grid-area': '1 / 3 / 2 / 4', ...verticalTextAttributes }],
+  [Position.Top, { 'grid-area': '1 / 1 / 2 / 2' }],
+]);
 
-export class Axis implements IAxis {
-  private _scale: AxisScale<unknown>;
-  private _position: Position = Position.Left;
-  private _title: string = '';
-  private _axisSelection: Selection<SVGElement, unknown, BaseType, unknown>;
+const groupAttributesByPosition = new Map([
+  [Position.Left, { 'grid-template': 'auto / auto 5 auto' }],
+  [Position.Bottom, { 'grid-template': 'auto 5 auto / auto' }],
+  [Position.Right, { 'grid-template': 'auto / auto 5 auto' }],
+  [Position.Top, { 'grid-template': 'auto 5 auto / auto' }],
+]);
+
+export class Axis extends Component<IAxisConfig> implements IAxis {
+  private _group: IGroup;
+  private _ticks: ITicks;
+  private _title: IText;
+
+  constructor(axisPosition: Position) {
+    const ticks = new Ticks(axisPosition).config({
+      attributes: { ...ticksGridAreaByPosition.get(axisPosition)! },
+    });
+
+    const title = new Text().config({
+      attributes: {
+        'place-self': 'center',
+        ...titleAttributes,
+        ...titleAttributesByPosition.get(axisPosition)!,
+      },
+    });
+
+    const group = new Group().config({
+      attributes: {
+        ...groupAttributesByPosition.get(axisPosition),
+      },
+      children: [ticks, title],
+    });
+
+    super(group.selection(), {
+      ticks: ticks.config(),
+      title: title.config(),
+      attributes: group.config().attributes,
+      conditionalConfigs: [],
+    });
+
+    this._group = group;
+    this._ticks = ticks;
+    this._title = title;
+  }
+
+  protected _applyConfig(config: IAxisConfig): void {
+    this._title.config(config.title);
+    this._ticks.config(config.ticks);
+    this._group.config({ attributes: config.attributes });
+  }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
-    this._axisSelection = selection
-      .append('g')
-      .classed('axis', true)
-      .classed(classByPosition.get(this._position)!, true);
-    this.render(0);
+    this._group.mount(selection);
     return this;
   }
 
-  scale(scale?: AxisScale<unknown>): any {
-    if (scale === undefined) return this._scale;
-    this._scale = scale;
-    // TODO: Update scale if called after creation
+  render(animated: boolean): this {
+    this._group.render(animated);
     return this;
   }
 
-  position(position?: Position): any {
-    if (position === undefined) return this._position;
-    const newPosition = position;
-
-    if (this._axisSelection) {
-      this._axisSelection
-        .classed(classByPosition.get(this._position)!, false)
-        .classed(classByPosition.get(newPosition)!, true)
-        .call(clearTickAttributes);
-    }
-
-    this._position = newPosition;
-
+  resize(): this {
+    this._group.resize();
     return this;
   }
 
-  title(title?: string): any {
-    if (title === undefined) return this._title;
-    this._title = title;
-    // TODO: Update title if called after creation
-    return this;
-  }
-
-  render(transitionDuration: number): this {
-    this._axisSelection.call(renderTitle, this._title);
-    switch (this._position) {
-      case Position.Bottom:
-        this._axisSelection.call(renderBottomTicks, this._scale);
-        break;
-      case Position.Left:
-        this._axisSelection.call(renderLeftTicks, this._scale);
-        break;
-      case Position.Top:
-        this._axisSelection.call(renderTopTicks, this._scale);
-        break;
-      case Position.Right:
-        this._axisSelection.call(renderRightTicks, this._scale);
-        break;
-    }
-
-    return this;
-  }
-
-  fitInLayout(layout: ILayouter): this {
-    // TODO: Maybe this should be refactored somehow?
-    // Possibly a separate IDynamicSizedComponent component?
-    return this;
-  }
-
-  selection(): Selection<SVGElement, unknown, BaseType, unknown> {
-    return this._axisSelection;
+  protected _afterResize(): void {
+    this._group.afterResize();
   }
 
   renderOrder(): number {
@@ -111,88 +106,22 @@ export class Axis implements IAxis {
   }
 }
 
-export function axis(): Axis {
-  return new Axis();
+export function axis(axisPosition: Position): Axis {
+  return new Axis(axisPosition);
 }
 
-function renderTicks(
-  selection: Selection<SVGElement, unknown, BaseType, unknown>,
-  position: Position,
-  scale: AxisScale<unknown>
-): void {
-  selection
-    .selectAll('.ticks')
-    .data([null])
-    .join('g')
-    .classed('ticks', true)
-    .call(axisFunctionByPosition.get(position)!(scale))
-    .attr('font-size', null)
-    .attr('font-family', null)
-    .attr('text-anchor', null)
-    .attr('fill', null)
-    .call((ticksSelection) => ticksSelection.selectAll('text').attr('dy', null))
-    .call((ticksSelection) => ticksSelection.select('.domain').attr('stroke', null))
-    .call((ticksSelection) =>
-      ticksSelection
-        .selectAll('.tick')
-        .attr('opacity', null)
-        .call((tick) => tick.select('line').attr('stroke', null))
-        .call((tick) => tick.select('text').attr('fill', null))
-    );
+export function leftAxis(): Axis {
+  return new Axis(Position.Left);
 }
 
-function renderLeftTicks(
-  selection: Selection<SVGElement, unknown, BaseType, unknown>,
-  scale: AxisScale<unknown>
-): void {
-  selection
-    .call(renderTicks, Position.Left, scale)
-    .selectAll('.ticks')
-    .call(function (ticksSelection: Selection<SVGGElement, unknown, SVGElement, unknown>) {
-      var boundingRect = ticksSelection.node()!.getBoundingClientRect();
-      ticksSelection.attr('transform', `translate(${boundingRect.width}, 0)`);
-    });
+export function bottomAxis(): Axis {
+  return new Axis(Position.Bottom);
 }
 
-function renderBottomTicks(
-  selection: Selection<SVGElement, unknown, BaseType, unknown>,
-  scale: AxisScale<unknown>
-): void {
-  selection.call(renderTicks, Position.Bottom, scale);
+export function rightAxis(): Axis {
+  return new Axis(Position.Right);
 }
 
-function renderTopTicks(
-  selection: Selection<SVGElement, unknown, BaseType, unknown>,
-  scale: AxisScale<unknown>
-): void {
-  selection
-    .call(renderTicks, Position.Top, scale)
-    .selectAll('.ticks')
-    .call(function (ticksSelection: Selection<SVGGElement, unknown, SVGElement, unknown>) {
-      var boundingRect = ticksSelection.node()!.getBoundingClientRect();
-      ticksSelection.attr('transform', `translate(0, ${boundingRect.height})`);
-    });
-}
-
-function renderRightTicks(
-  selection: Selection<SVGElement, unknown, BaseType, unknown>,
-  scale: AxisScale<unknown>
-): void {
-  selection.call(renderTicks, Position.Right, scale);
-}
-
-function clearTickAttributes(selection: Selection<SVGElement, unknown, BaseType, unknown>): void {
-  selection
-    .select('.ticks')
-    .attr('transform', 'translate(0, 0)')
-    .call(function (ticksSelection) {
-      ticksSelection.selectAll('line').attr('x2', 0).attr('y2', 0);
-    })
-    .call(function (ticksSelection) {
-      ticksSelection.selectAll('text').attr('x', 0).attr('y', 0);
-    });
-}
-
-function renderTitle(selection: Selection<SVGElement, unknown, BaseType, unknown>, title: string) {
-  selection.selectAll('.title').data([null]).join('text').classed('title', true).text(title);
+export function topAxis(): Axis {
+  return new Axis(Position.Top);
 }

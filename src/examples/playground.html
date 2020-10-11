@@ -53,99 +53,161 @@
                 ],
               })),
               // Left axis
-              respVis.group().config({
+              respVis.leftAxis().config({
                 attributes: {
-                  'grid-template': 'auto / auto 5 auto',
                   'grid-area': '2 / 2 / 3 / 3',
                 },
-                children: [
-                  // Title
-                  respVis.text().config({
-                    text: 'Cities',
-                    attributes: {
-                      'grid-area': '1 / 1 / 2 / 2',
-                      'place-self': 'center',
-                      // Title styling
-                      'letter-spacing': '0.5em',
-                      'font-weight': 'bold',
-                      // Vertical text styling
-                      transform: 'rotate(-90)',
-                      'dominant-baseline': 'hanging',
-                      'text-anchor': 'end',
+                ticks: {
+                  scale: bars.categoriesScale(),
+                  conditionalConfigs: [
+                    {
+                      media: 'screen and (min-width: 40rem)',
+                      config: { scale: bars.valuesScale() },
                     },
-                    conditionalConfigs: [
-                      { media: 'screen and (min-width: 40rem)', config: { text: 'Population' } },
-                    ],
-                  }),
-                  // Ticks
-                  respVis.leftTicks().config({
-                    scale: bars.categoriesScale(),
-                    attributes: {
-                      'grid-area': '1 / 3 / 2 / 4',
-                    },
-                    conditionalConfigs: [
-                      {
-                        media: 'screen and (min-width: 40rem)',
-                        config: { scale: bars.valuesScale() },
-                      },
-                    ],
-                  }),
-                ],
+                  ],
+                },
+                title: {
+                  text: 'Cities',
+                  conditionalConfigs: [
+                    { media: 'screen and (min-width: 40rem)', config: { text: 'Population' } },
+                  ],
+                },
               }),
               // Bottom axis
-              respVis.group().config({
+              respVis.bottomAxis().config({
                 attributes: {
-                  'grid-template': 'auto 5 auto / auto',
                   'grid-area': '3 / 3 / 4 / 4',
                 },
-                children: [
-                  // Ticks
-                  respVis.bottomTicks().config({
-                    scale: bars.valuesScale(),
-                    attributes: {
-                      'grid-area': '1 / 1 / 2 / 2',
-                      '.tick text': {
-                        'dominant-baseline': 'hanging',
-                        transform: 'translate(0, 7) rotate(-45)',
-                        'text-anchor': 'end',
-                      },
+                ticks: {
+                  scale: bars.valuesScale(),
+                  attributes: {
+                    '.tick text': {
+                      'dominant-baseline': 'hanging',
+                      transform: 'translate(0, 7) rotate(-45)',
+                      'text-anchor': 'end',
                     },
-                    conditionalConfigs: [
-                      {
-                        media: 'screen and (min-width: 40rem)',
-                        config: {
-                          scale: bars.categoriesScale(),
-                          attributes: {
-                            '.tick text': {
-                              transform: 'translate(0, 7)',
-                              'text-anchor': 'middle',
-                            },
+                  },
+                  conditionalConfigs: [
+                    {
+                      media: 'screen and (min-width: 40rem)',
+                      config: {
+                        scale: bars.categoriesScale(),
+                        attributes: {
+                          '.tick text': {
+                            transform: 'translate(0, 7)',
+                            'text-anchor': 'middle',
                           },
                         },
                       },
-                    ],
-                  }),
-                  // Title
-                  respVis.text().config({
-                    text: 'Population',
-                    attributes: {
-                      'grid-area': '3 / 1 / 4 / 2',
-                      'place-self': 'center',
-                      // Title styling
-                      'letter-spacing': '0.5em',
-                      'font-weight': 'bold',
                     },
-                    conditionalConfigs: [
-                      {
-                        media: 'screen and (min-width: 40rem)',
-                        config: {
-                          text: 'Cities',
-                        },
+                  ],
+                },
+                title: {
+                  text: 'Population',
+                  conditionalConfigs: [
+                    {
+                      media: 'screen and (min-width: 40rem)',
+                      config: {
+                        text: 'Cities',
                       },
-                    ],
-                  }),
-                ],
+                    },
+                  ],
+                },
               }),
+
+              // respVis.group().config({
+              //   attributes: {
+              //     'grid-template': 'auto / auto 5 auto',
+              //     'grid-area': '2 / 2 / 3 / 3',
+              //   },
+              //   children: [
+              //     // Title
+              //     respVis.text().config({
+              //       text: 'Cities',
+              //       attributes: {
+              //         'grid-area': '1 / 1 / 2 / 2',
+              //         'place-self': 'center',
+              //         // Title styling
+              //         'letter-spacing': '0.5em',
+              //         'font-weight': 'bold',
+              //         // Vertical text styling
+              //         transform: 'rotate(-90)',
+              //         'dominant-baseline': 'hanging',
+              //         'text-anchor': 'end',
+              //       },
+              //       conditionalConfigs: [
+              //         { media: 'screen and (min-width: 40rem)', config: { text: 'Population' } },
+              //       ],
+              //     }),
+              //     // Ticks
+              //     respVis.leftTicks().config({
+              //       scale: bars.categoriesScale(),
+              //       attributes: {
+              //         'grid-area': '1 / 3 / 2 / 4',
+              //       },
+              //       conditionalConfigs: [
+              //         {
+              //           media: 'screen and (min-width: 40rem)',
+              //           config: { scale: bars.valuesScale() },
+              //         },
+              //       ],
+              //     }),
+              //   ],
+              // }),
+              // Bottom axis
+              // respVis.group().config({
+              //   attributes: {
+              //     'grid-template': 'auto 5 auto / auto',
+              //     'grid-area': '3 / 3 / 4 / 4',
+              //   },
+              //   children: [
+              //     // Ticks
+              //     respVis.bottomTicks().config({
+              //       scale: bars.valuesScale(),
+              //       attributes: {
+              //         'grid-area': '1 / 1 / 2 / 2',
+              //         '.tick text': {
+              //           'dominant-baseline': 'hanging',
+              //           transform: 'translate(0, 7) rotate(-45)',
+              //           'text-anchor': 'end',
+              //         },
+              //       },
+              //       conditionalConfigs: [
+              //         {
+              //           media: 'screen and (min-width: 40rem)',
+              //           config: {
+              //             scale: bars.categoriesScale(),
+              //             attributes: {
+              //               '.tick text': {
+              //                 transform: 'translate(0, 7)',
+              //                 'text-anchor': 'middle',
+              //               },
+              //             },
+              //           },
+              //         },
+              //       ],
+              //     }),
+              //     // Title
+              //     respVis.text().config({
+              //       text: 'Population',
+              //       attributes: {
+              //         'grid-area': '3 / 1 / 4 / 2',
+              //         'place-self': 'center',
+              //         // Title styling
+              //         'letter-spacing': '0.5em',
+              //         'font-weight': 'bold',
+              //       },
+              //       conditionalConfigs: [
+              //         {
+              //           media: 'screen and (min-width: 40rem)',
+              //           config: {
+              //             text: 'Cities',
+              //           },
+              //         },
+              //       ],
+              //     }),
+              //   ],
+              // }),
             ],
           })
         )

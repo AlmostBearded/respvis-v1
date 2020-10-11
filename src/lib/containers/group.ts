@@ -1,6 +1,5 @@
 import { Component, IComponent, IComponentConfig } from '../component';
 import { Selection, BaseType, select, create } from 'd3-selection';
-import { Diff } from 'deep-diff';
 
 export interface IGroupConfig extends IComponentConfig {
   children: IComponent<IComponentConfig>[];
@@ -19,7 +18,7 @@ export class Group extends Component<IGroupConfig> implements IGroup {
     });
   }
 
-  protected _applyConfig(config: IGroupConfig, diff: Diff<IGroupConfig, IGroupConfig>[]): void {
+  protected _applyConfig(config: IGroupConfig): void {
     // TODO: Handle mounting/unmounting of children after group has been mounted
   }
 

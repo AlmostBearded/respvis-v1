@@ -3,7 +3,6 @@ import { Selection, BaseType, select, create } from 'd3-selection';
 import { Axis, axisBottom, axisLeft, axisRight, AxisScale, axisTop } from 'd3-axis';
 import { scaleLinear } from 'd3-scale';
 import { applyAttributes, Attributes } from '../utils';
-import { Diff } from 'deep-diff';
 
 export enum Position {
   Left,
@@ -46,9 +45,7 @@ export class Ticks extends Component<ITicksConfig> implements ITicks {
     this._labelPosition = labelPosition;
   }
 
-  protected _applyConfig(config: ITicksConfig, diff: Diff<ITicksConfig, ITicksConfig>[]): void {
-    this.render(false);
-  }
+  protected _applyConfig(config: ITicksConfig): void {}
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
     selection.append(() => this.selection().node());
@@ -61,7 +58,9 @@ export class Ticks extends Component<ITicksConfig> implements ITicks {
     return this;
   }
 
-  protected _afterResize(): void {}
+  protected _afterResize(): void {
+    this.render(false);
+  }
 
   render(animated: boolean): this {
     this.selection()
@@ -71,9 +70,13 @@ export class Ticks extends Component<ITicksConfig> implements ITicks {
   }
 
   renderOrder(): number {
-    // It is important that ticks render after the component which sets up its scale
+    // It is important that ticks render after the component which set up their scale
     return 10;
   }
+}
+
+export function ticks(position: Position): Ticks {
+  return new Ticks(position);
 }
 
 export function leftTicks(): Ticks {
