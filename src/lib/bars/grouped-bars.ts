@@ -8,6 +8,7 @@ import { Primitive } from 'd3-array';
 import { Rect } from '../rect';
 import { ISize } from '../utils';
 import { categorical as categoricalColors } from '../colors';
+import chroma from 'chroma-js';
 
 export interface IGroupedBarsConfig extends IComponentConfig {
   categories: string[];
@@ -91,7 +92,11 @@ export class GroupedBars extends Component<IGroupedBarsConfig> implements IGroup
         renderBars(
           select(groups[i]),
           bars.slice(i * barsPerGroup, i * barsPerGroup + barsPerGroup),
-          this._activeConfig.colors,
+          this._activeConfig.colors.map((c) => ({
+            fill: c,
+            stroke: chroma.hex(c).darken(2).hex(),
+            'stroke-width': 4,
+          })),
           animated ? this._activeConfig.transitionDuration : 0
         );
       });

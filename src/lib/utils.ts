@@ -1,5 +1,6 @@
 import { Primitive } from 'd3-array';
 import { BaseType, Selection } from 'd3-selection';
+import { Transition } from 'd3-transition';
 
 export function nullFunction() {}
 
@@ -38,7 +39,7 @@ export type Attributes = {
 };
 
 export function applyAttributes(
-  selection: Selection<BaseType, unknown, BaseType, unknown>,
+  selection: Selection<BaseType, unknown, BaseType, unknown> | Transition<BaseType, unknown, BaseType, unknown>,
   attributes: Attributes
 ) {
   for (const name in attributes) {
@@ -46,7 +47,7 @@ export function applyAttributes(
     if (value === null) selection.attr(name, null);
     else if (typeof value === 'object') {
       // → name = child selector, value = child attributes
-      selection.selectAll(name).call(applyAttributes, value);
+      selection.selectAll<BaseType, unknown>(name).call(applyAttributes, value);
       continue;
     } else selection.attr(name, value);
   }

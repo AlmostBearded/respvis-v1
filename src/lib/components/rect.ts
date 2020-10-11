@@ -4,6 +4,7 @@ import { renderClippedRect } from '../bars/bars';
 import { Component, IComponent, IComponentConfig } from '../component';
 import { applyLayoutTransforms } from '../layout/layout';
 import { applyAttributes, ISize } from '../utils';
+import chroma from 'chroma-js';
 
 // TODO: Maybe this component should be called ClippedRect?
 
@@ -50,8 +51,10 @@ export class Rect extends Component<IRectConfig> implements IRect {
           x: 0,
           y: 0,
           ...this._activeConfig.size,
+          fill: this._activeConfig.fill,
+          stroke: chroma.hex(this._activeConfig.fill).darken(2).hex(),
+          'stroke-width': 4,
         },
-        this._activeConfig.fill,
         0
       )
       .call(applyAttributes, this._activeConfig.attributes);

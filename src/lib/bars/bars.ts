@@ -1,5 +1,5 @@
 import { Component, IComponent, IComponentConfig } from '../component';
-import { ISize } from '../utils';
+import { applyAttributes, Attributes, ISize } from '../utils';
 import { Bar, BarPositioner, Orientation, IBarPositioner } from './bar-positioner';
 import { select, Selection, BaseType, create } from 'd3-selection';
 import { scaleBand, scaleLinear, ScaleBand, ScaleLinear } from 'd3-scale';
@@ -75,7 +75,11 @@ export class Bars extends Component<IBarsConfig> implements IBars {
     this.selection().call(
       renderBars,
       this._barPositioner.bars(),
-      this._activeConfig.values.map(() => this._activeConfig.color),
+      this._activeConfig.values.map(() => ({
+        fill: this._activeConfig.color,
+        stroke: chroma.hex(this._activeConfig.color).darken(2).hex(),
+        'stroke-width': 4,
+      })),
       animated ? this._activeConfig.transitionDuration : 0
     );
     return this;
@@ -138,7 +142,7 @@ export function bars(): Bars {
 export function renderBars(
   selection: Selection<SVGGElement, unknown, BaseType, unknown>,
   bars: Bar[],
-  fills: string[],
+  attributes: Attributes[],
   transitionDuration: number
 ): Selection<SVGGElement, Bar, SVGGElement, unknown> {
   return selection
@@ -147,24 +151,16 @@ export function renderBars(
     .join('g')
     .classed('bar', true)
     .each((d, i, nodes) =>
-      select(nodes[i]).call(renderClippedRect, d, fills[i], transitionDuration)
+      select(nodes[i]).call(renderClippedRect, { ...attributes[i], ...d }, transitionDuration)
     );
 }
 
 export function renderClippedRect(
   selection: Selection<SVGGElement, unknown, BaseType, unknown>,
-  rect: IRect,
-  fill: string,
-  // TODO: Support stroke and stroke width
+  attributes: Attributes,
   transitionDuration: number
 ): void {
   let clipId: string;
-
-  const applyRectAttributes = (
-    s:
-      | Selection<BaseType, unknown, BaseType, unknown>
-      | Transition<BaseType, unknown, BaseType, unknown>
-  ) => s.attr('x', rect.x).attr('y', rect.y).attr('height', rect.height).attr('width', rect.width);
 
   selection
     // Casting to disable type checking as the latest d3-selection types don't contain selectChildren yet.
@@ -175,24 +171,25 @@ export function renderClippedRect(
           enter
             .append('clipPath')
             .attr('id', (clipId = uuidv4()))
-            .call((s) => s.append('rect').call(applyRectAttributes))
+            .call((s) => s.append('rect').call(applyAttributes, attributes))
         )
 
         .select('rect')
         .transition()
         .duration(transitionDuration)
-        .call(applyRectAttributes)
+        .call(applyAttributes, attributes)
     )
     .call((s: any) =>
       (s.selectChildren('rect') as Selection<SVGRectElement, unknown, BaseType, unknown>)
         .data([null])
         .join((enter) =>
-          enter.append('rect').attr('clip-path', `url(#${clipId})`).call(applyRectAttributes)
+          enter
+            .append('rect')
+            .attr('clip-path', `url(#${clipId})`)
+            .call(applyAttributes, attributes)
         )
         .transition()
         .duration(transitionDuration)
-        .call(applyRectAttributes)
-        .attr('fill', fill)
-        .attr('stroke', chroma.hex(fill).darken(1.5).hex())
+        .call(applyAttributes, attributes)
     );
 }
