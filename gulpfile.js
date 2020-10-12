@@ -11,13 +11,6 @@ const rollupTypescript = require('@rollup/plugin-typescript');
 const rollupTerser = require('rollup-plugin-terser').terser;
 const rollupGzip = require('rollup-plugin-gzip').default;
 
-// ## Sass
-
-const gulpSass = require('gulp-sass');
-const nodeSass = require('node-sass');
-const chromaticSass = require('chromatic-sass');
-gulpSass.compiler = nodeSass;
-
 // ## BrowserSync
 
 const browserSync = require('browser-sync').create();
@@ -28,16 +21,6 @@ const del = require('del');
 const rename = require('gulp-rename');
 
 // # Private tasks
-
-// ## Compile sass files
-
-function compileSass() {
-  return gulp
-    .src('./src/lib/index.scss')
-    .pipe(gulpSass({ functions: chromaticSass }).on('error', gulpSass.logError))
-    .pipe(rename('respvis.css'))
-    .pipe(gulp.dest('./dist'));
-}
 
 // ## Bundle JS
 
@@ -97,7 +80,6 @@ exports.clean = function clean() {
 exports.build = gulp.series([
   exports.clean,
   gulp.parallel([
-    compileSass,
     bundleJSLib,
     /*bundleJSLibMin, bundleJSLibMinZipped,*/ copyHTMLFiles,
   ]),
