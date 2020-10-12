@@ -14,7 +14,11 @@ export class Chart implements IChart {
   private _selection: Selection<SVGElement, unknown, BaseType, unknown>;
 
   mount(containerSelector: string): this {
-    this._selection = select(containerSelector).append('svg').classed('chart', true);
+    this._selection = select(containerSelector)
+      .append('svg')
+      .classed('chart', true)
+      .style('width', '100%')
+      .style('height', '100%');
 
     console.assert(
       !this._selection.empty(),
