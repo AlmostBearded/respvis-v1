@@ -74,6 +74,8 @@ export class Axis extends Component<IAxisConfig> implements IAxis {
     this._group = group;
     this._ticks = ticks;
     this._title = title;
+    
+    this._applyConditionalConfigs();
   }
 
   protected _applyConfig(config: IAxisConfig): void {

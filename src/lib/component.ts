@@ -20,21 +20,27 @@ export interface IComponent<TConfig extends IComponentConfig> {
   selection(): Selection<SVGElement, unknown, BaseType, unknown>;
   renderOrder(): number;
   config(config: Partial<TConfig>): this;
-  // TODO: This method should probably return the active config
   config(): TConfig;
+  activeConfig(): TConfig;
 }
 
-export abstract class Component<TConfig extends IComponentConfig> implements IComponent<TConfig> {
+export abstract class Component<TConfig extends IComponentConfig>
+  implements IComponent<TConfig> {
   private _selection: Selection<SVGElement, unknown, BaseType, unknown>;
-  protected _config: TConfig;
-  protected _activeConfig: TConfig;
+  private _config: TConfig;
+  private _activeConfig: TConfig;
 
-  constructor(selection: Selection<SVGElement, unknown, BaseType, unknown>, config: TConfig) {
+  constructor(
+    selection: Selection<SVGElement, unknown, BaseType, unknown>,
+    config: TConfig
+  ) {
     this._selection = selection;
     this._config = config;
   }
 
-  abstract mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this;
+  abstract mount(
+    selection: Selection<SVGElement, unknown, BaseType, unknown>
+  ): this;
   abstract render(animated: boolean): this;
   abstract renderOrder(): number;
 
@@ -57,7 +63,11 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
     return this;
   }
 
-  private _applyConditionalConfigs(): this {
+  activeConfig(): TConfig {
+    return this._activeConfig;
+  }
+
+  protected _applyConditionalConfigs(): this {
     const newConfig = extend(true, {}, this._config);
 
     this._config.conditionalConfigs.forEach((conditionalConfig) => {

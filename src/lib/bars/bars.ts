@@ -40,6 +40,7 @@ export class Bars extends Component<IBarsConfig> implements IBars {
       attributes: {},
       conditionalConfigs: [],
     });
+    this._applyConditionalConfigs();
   }
 
   protected _applyConfig(config: IBarsConfig): void {
@@ -75,12 +76,12 @@ export class Bars extends Component<IBarsConfig> implements IBars {
     this.selection().call(
       renderBars,
       this._barPositioner.bars(),
-      this._activeConfig.values.map(() => ({
-        fill: this._activeConfig.color,
-        stroke: chroma.hex(this._activeConfig.color).darken(2).hex(),
+      this.activeConfig().values.map(() => ({
+        fill: this.activeConfig().color,
+        stroke: chroma.hex(this.activeConfig().color).darken(2).hex(),
         'stroke-width': 4,
       })),
-      animated ? this._activeConfig.transitionDuration : 0
+      animated ? this.activeConfig().transitionDuration : 0
     );
     return this;
   }

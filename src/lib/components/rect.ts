@@ -23,6 +23,7 @@ export class Rect extends Component<IRectConfig> implements IRect {
       attributes: {},
       conditionalConfigs: [],
     });
+    this._applyConditionalConfigs();
   }
 
   protected _applyConfig(config: IRectConfig): void {
@@ -50,14 +51,14 @@ export class Rect extends Component<IRectConfig> implements IRect {
         {
           x: 0,
           y: 0,
-          ...this._activeConfig.size,
-          fill: this._activeConfig.fill,
-          stroke: chroma.hex(this._activeConfig.fill).darken(2).hex(),
+          ...this.activeConfig().size,
+          fill: this.activeConfig().fill,
+          stroke: chroma.hex(this.activeConfig().fill).darken(2).hex(),
           'stroke-width': 4,
         },
         0
       )
-      .call(applyAttributes, this._activeConfig.attributes);
+      .call(applyAttributes, this.activeConfig().attributes);
     return this;
   }
 

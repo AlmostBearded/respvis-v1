@@ -16,6 +16,7 @@ export class Group extends Component<IGroupConfig> implements IGroup {
       },
       conditionalConfigs: [],
     });
+    this._applyConditionalConfigs();
   }
 
   protected _applyConfig(config: IGroupConfig): void {
@@ -24,27 +25,27 @@ export class Group extends Component<IGroupConfig> implements IGroup {
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
     selection.append(() => this.selection().node());
-    this._activeConfig.children
+    this.activeConfig().children
       .sort((a, b) => a.renderOrder() - b.renderOrder())
       .forEach((child) => child.mount(this.selection()));
     return this;
   }
 
   resize(): this {
-    this._activeConfig.children
+    this.activeConfig().children
       .sort((a, b) => a.renderOrder() - b.renderOrder())
       .forEach((child) => child.resize());
     return this;
   }
 
   protected _afterResize(): void {
-    this._activeConfig.children
+    this.activeConfig().children
       .sort((a, b) => a.renderOrder() - b.renderOrder())
       .forEach((child) => child.afterResize());
   }
 
   render(animated: boolean): this {
-    this._activeConfig.children
+    this.activeConfig().children
       .sort((a, b) => a.renderOrder() - b.renderOrder())
       .forEach((child) => child.render(animated));
     return this;

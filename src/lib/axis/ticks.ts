@@ -43,6 +43,7 @@ export class Ticks extends Component<ITicksConfig> implements ITicks {
       conditionalConfigs: [],
     });
     this._labelPosition = labelPosition;
+    this._applyConditionalConfigs();
   }
 
   protected _applyConfig(config: ITicksConfig): void {}
@@ -64,8 +65,8 @@ export class Ticks extends Component<ITicksConfig> implements ITicks {
 
   render(animated: boolean): this {
     this.selection()
-      .call(Ticks._renderFunctionByPosition.get(this._labelPosition)!, this._activeConfig.scale)
-      .call(applyAttributes, this._activeConfig.attributes);
+      .call(Ticks._renderFunctionByPosition.get(this._labelPosition)!, this.activeConfig().scale)
+      .call(applyAttributes, this.activeConfig().attributes);
     return this;
   }
 

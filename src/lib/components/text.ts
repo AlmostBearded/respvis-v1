@@ -24,6 +24,7 @@ export class Text extends Component<ITextConfig> implements IText {
       },
       conditionalConfigs: [],
     });
+    this._applyConditionalConfigs();
   }
 
   _applyConfig(config: ITextConfig): void {

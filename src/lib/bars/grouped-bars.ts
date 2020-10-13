@@ -43,6 +43,7 @@ export class GroupedBars extends Component<IGroupedBarsConfig> implements IGroup
       attributes: {},
       conditionalConfigs: [],
     });
+    this._applyConditionalConfigs();
   }
 
   protected _applyConfig(config: IGroupedBarsConfig): void {
@@ -56,7 +57,7 @@ export class GroupedBars extends Component<IGroupedBarsConfig> implements IGroup
       .categoryPadding(config.categoryPadding)
       .subcategoryPadding(config.categoryPadding);
 
-    const subcategoryCount = config.values?.[0].length || 0;
+    const subcategoryCount = config.values?.[0]?.length || 0;
     config.colors = config.colors.slice(0, subcategoryCount);
   }
 
@@ -92,12 +93,12 @@ export class GroupedBars extends Component<IGroupedBarsConfig> implements IGroup
         renderBars(
           select(groups[i]),
           bars.slice(i * barsPerGroup, i * barsPerGroup + barsPerGroup),
-          this._activeConfig.colors.map((c) => ({
+          this.activeConfig().colors.map((c) => ({
             fill: c,
             stroke: chroma.hex(c).darken(2).hex(),
             'stroke-width': 4,
           })),
-          animated ? this._activeConfig.transitionDuration : 0
+          animated ? this.activeConfig().transitionDuration : 0
         );
       });
 
