@@ -20,43 +20,78 @@
     <div id="chart"></div>
     <script src="../respvis.js"></script>
     <script>
-      var categories = ['Vienna', 'Graz', 'Linz', 'Salzburg', 'Innsbruck', 'Klagenfurt', 'Villach'];
+      var categories = [
+        'Vienna',
+        'Graz',
+        'Linz',
+        'Salzburg',
+        'Innsbruck',
+        'Klagenfurt',
+        'Villach',
+      ];
       var values = [1691000, 222000, 205000, 153000, 132000, 91000, 59000];
 
-      var bars = respVis.bars().categories(categories).values(values);
+      var bars;
 
-      var labels = respVis
-        .barLabels()
-        .bars(bars)
-        .horizontalPosition(respVis.HorizontalPosition.Center)
-        .verticalPosition(respVis.VerticalPosition.Center)
-        .labels(values);
-
-      var categoriesAxis = respVis
-        .axis()
-        .scale(bars.categoriesScale())
-        .position(respVis.AxisPosition.Bottom)
-        .title('Cities');
-
-      var valuesAxis = respVis
-        .axis()
-        .scale(bars.valuesScale())
-        .position(respVis.AxisPosition.Left)
-        .title('Population');
-
-      var stack = respVis.stack().children([bars, labels]);
-
-      var customGrid = respVis
-        .customGrid()
-        .rows('1fr auto')
-        .columns('auto 1fr')
-        .child(1, 1, valuesAxis)
-        .child(1, 2, stack)
-        .child(2, 2, categoriesAxis);
-
-      var chart = respVis.chart().layout(customGrid);
-
-      chart.mount('#chart');
+      respVis
+        .chart()
+        .root(
+          respVis.group().config({
+            attributes: {
+              'grid-template': '20 1fr auto 10 / 10 auto 1fr 10',
+            },
+            children: [
+              // Bars
+              (bars = respVis.bars().config({
+                attributes: {
+                  'grid-area': '2 / 3 / 3 / 4',
+                },
+                categories: categories,
+                values: values,
+                orientation: respVis.BarOrientation.Vertical,
+              })),
+              // Bar Labels
+              respVis.barLabels().config({
+                attributes: {
+                  'grid-area': '2 / 3 / 3 / 4',
+                  text: {
+                    'dominant-baseline': 'auto',
+                    transform: 'translate(0, -2)',
+                  },
+                },
+                bars: bars,
+                labels: values,
+                horizontalPosition: respVis.HorizontalPosition.Center,
+                verticalPosition: respVis.VerticalPosition.Top,
+              }),
+              // Left axis
+              respVis.leftAxis().config({
+                attributes: {
+                  'grid-area': '2 / 2 / 3 / 3',
+                },
+                ticks: {
+                  scale: bars.valuesScale(),
+                },
+                title: {
+                  text: 'Population',
+                },
+              }),
+              // Bottom axis
+              respVis.bottomAxis().config({
+                attributes: {
+                  'grid-area': '3 / 3 / 4 / 4',
+                },
+                ticks: {
+                  scale: bars.categoriesScale(),
+                },
+                title: {
+                  text: 'Cities',
+                },
+              }),
+            ],
+          })
+        )
+        .mount('#chart');
     </script>
   </body>
 </html>

@@ -1,6 +1,12 @@
 import { Component, IComponent, IComponentConfig } from '../component';
 import { applyAttributes, Attributes, ISize } from '../utils';
-import { Bar, BarPositioner, Orientation, IBarPositioner } from './bar-positioner';
+import {
+  BarPositioner,
+  Orientation,
+  IBarPositioner,
+  IBars,
+  IBarPositionerConfig,
+} from './bar-positioner';
 import { select, Selection, BaseType, create } from 'd3-selection';
 import { scaleBand, scaleLinear, ScaleBand, ScaleLinear } from 'd3-scale';
 import { Primitive } from 'd3-array';
@@ -11,20 +17,20 @@ import { IRect, Rect } from '../rect';
 import { categorical as categoricalColors } from '../colors';
 import chroma from 'chroma-js';
 
-export interface IBarsConfig extends IComponentConfig {
-  categories: string[];
-  values: number[];
+export interface IBarsComponentConfig
+  extends IComponentConfig,
+    IBarPositionerConfig {
   color: string;
-  orientation: Orientation;
-  flipCategories: boolean;
-  flipValues: boolean;
-  categoryPadding: number;
   transitionDuration: number;
 }
 
-export interface IBars extends IComponent<IBarsConfig>, IBarPositioner {}
+export interface IBarsComponent
+  extends IComponent<IBarsComponentConfig>,
+    IBars {}
 
-export class Bars extends Component<IBarsConfig> implements IBars {
+export class BarsComponent
+  extends Component<IBarsComponentConfig>
+  implements IBarsComponent {
   private _barPositioner: IBarPositioner = new BarPositioner();
 
   constructor() {
@@ -43,14 +49,8 @@ export class Bars extends Component<IBarsConfig> implements IBars {
     this._applyConditionalConfigs();
   }
 
-  protected _applyConfig(config: IBarsConfig): void {
-    this._barPositioner
-      .categories(config.categories)
-      .values(config.values)
-      .flipCategories(config.flipCategories)
-      .flipValues(config.flipValues)
-      .orientation(config.orientation)
-      .categoryPadding(config.categoryPadding);
+  protected _applyConfig(config: IBarsComponentConfig): void {
+    this._barPositioner.config(config);
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
@@ -58,7 +58,7 @@ export class Bars extends Component<IBarsConfig> implements IBars {
 
     // var boundingRect = selection.node()!.getBoundingClientRect();
     // this.fitInSize(boundingRect);
-    this.fitInSize({ width: 600, height: 400 });
+    this._barPositioner.fitInSize({ width: 600, height: 400 });
     this.render(false);
 
     return this;
@@ -66,7 +66,7 @@ export class Bars extends Component<IBarsConfig> implements IBars {
 
   resize(): this {
     const layoutRect = Rect.fromString(this.selection().attr('layout'));
-    this.fitInSize(layoutRect);
+    this._barPositioner.fitInSize(layoutRect);
     return this;
   }
 
@@ -90,69 +90,40 @@ export class Bars extends Component<IBarsConfig> implements IBars {
     return 0;
   }
 
-  // # BarPositioner
-  categories(categories?: Primitive[]): any {
-    if (categories === undefined) return this._barPositioner.categories();
-    this._barPositioner.categories(categories);
-    return this;
-  }
-  values(values?: number[]): any {
-    if (values === undefined) return this._barPositioner.values();
-    this._barPositioner.values(values);
-    return this;
-  }
-  orientation(orientation?: Orientation): any {
-    if (orientation === undefined) return this._barPositioner.orientation();
-    this._barPositioner.orientation(orientation);
-    return this;
-  }
-  flipCategories(flip?: boolean): any {
-    if (flip === undefined) return this._barPositioner.flipCategories();
-    this._barPositioner.flipCategories(flip);
-    return this;
-  }
-  flipValues(flip?: boolean): any {
-    if (flip === undefined) return this._barPositioner.flipValues();
-    this._barPositioner.flipValues(flip);
-    return this;
-  }
-  categoryPadding(padding?: number): any {
-    if (padding === undefined) return this._barPositioner.categoryPadding();
-    this._barPositioner.categoryPadding(padding);
-    return this;
-  }
-  fitInSize(size: ISize): this {
-    this._barPositioner.fitInSize(size);
-    return this;
-  }
-  bars(): Bar[] {
+  bars(): Rect[] {
     return this._barPositioner.bars();
   }
+
   categoriesScale(): ScaleBand<Primitive> {
     return this._barPositioner.categoriesScale();
   }
+
   valuesScale(): ScaleLinear<number, number> {
     return this._barPositioner.valuesScale();
   }
 }
 
-export function bars(): Bars {
-  return new Bars();
+export function bars(): BarsComponent {
+  return new BarsComponent();
 }
 
 export function renderBars(
   selection: Selection<SVGGElement, unknown, BaseType, unknown>,
-  bars: Bar[],
+  bars: Rect[],
   attributes: Attributes[],
   transitionDuration: number
-): Selection<SVGGElement, Bar, SVGGElement, unknown> {
+): Selection<SVGGElement, Rect, SVGGElement, unknown> {
   return selection
-    .selectAll<SVGGElement, Bar>('.bar')
+    .selectAll<SVGGElement, Rect>('.bar')
     .data(bars)
     .join('g')
     .classed('bar', true)
     .each((d, i, nodes) =>
-      select(nodes[i]).call(renderClippedRect, { ...attributes[i], ...d }, transitionDuration)
+      select(nodes[i]).call(
+        renderClippedRect,
+        { ...attributes[i], ...d },
+        transitionDuration
+      )
     );
 }
 
@@ -166,7 +137,12 @@ export function renderClippedRect(
   selection
     // Casting to disable type checking as the latest d3-selection types don't contain selectChildren yet.
     .call((s: any) =>
-      (s.selectChildren('clipPath') as Selection<SVGClipPathElement, unknown, BaseType, unknown>)
+      (s.selectChildren('clipPath') as Selection<
+        SVGClipPathElement,
+        unknown,
+        BaseType,
+        unknown
+      >)
         .data([null])
         .join((enter) =>
           enter
@@ -181,7 +157,12 @@ export function renderClippedRect(
         .call(applyAttributes, attributes)
     )
     .call((s: any) =>
-      (s.selectChildren('rect') as Selection<SVGRectElement, unknown, BaseType, unknown>)
+      (s.selectChildren('rect') as Selection<
+        SVGRectElement,
+        unknown,
+        BaseType,
+        unknown
+      >)
         .data([null])
         .join((enter) =>
           enter

@@ -1,9 +1,19 @@
 export { chart, Chart, IChart } from './chart/chart';
-export { computeLayout, applyLayoutTransforms, ILayoutStyle } from './layout/layout';
+export {
+  computeLayout,
+  applyLayoutTransforms,
+  ILayoutStyle,
+} from './layout/layout';
 export { group, Group, IGroup, IGroupConfig } from './components/group';
-export { text, Text, IText, titleAttributes, verticalTextAttributes } from './components/text';
+export {
+  text,
+  Text,
+  IText,
+  titleAttributes,
+  verticalTextAttributes,
+} from './components/text';
 export { rect, Rect, IRect, IRectConfig } from './components/rect';
-export { bars, Bars, IBars } from './bars/bars';
+export { bars, BarsComponent, IBarsComponent } from './bars/bars';
 export { groupedBars, GroupedBars, IGroupedBars } from './bars/grouped-bars';
 
 export {
@@ -28,14 +38,20 @@ export {
   Position,
 } from './axis/ticks';
 
-export { barLabels, BarLabels, IBarLabels } from './bars/bar-labels';
+export {
+  barLabels,
+  renderBarLabels,
+  BarLabelsComponent,
+  IBarLabelsComponent,
+  IBarLabelsConfig,
+} from './bars/bar-labels';
+
 export { legend, Legend, ILegend } from './legend/legend';
 
 export {
   barPositioner,
   IBarPositioner,
   BarPositioner,
-  Bar,
   Orientation as BarOrientation,
 } from './bars/bar-positioner';
 
@@ -51,6 +67,4 @@ export {
   HorizontalPosition,
   VerticalPosition,
   IBarPointPositioner,
-  IPointPositioner,
-  Point,
 } from './bars/bar-point-positioner';

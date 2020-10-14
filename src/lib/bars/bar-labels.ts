@@ -1,118 +1,116 @@
-import { IComponent } from '../component';
+import { Component, IComponent, IComponentConfig } from '../component';
 import {
   BarPointPositioner,
   HorizontalPosition,
   IBarPointPositioner,
-  Point,
+  IBarPointPositionerConfig,
+  IPoints,
+  Position,
   VerticalPosition,
 } from './bar-point-positioner';
-import { IStringable, Size } from '../utils';
-import { Selection, BaseType } from 'd3-selection';
-import { ILayouter } from '../layout/layout';
+import { IStringable, ISize, applyAttributes } from '../utils';
+import { Selection, BaseType, create } from 'd3-selection';
 import { IBarPositioner } from './bar-positioner';
+import extend from 'extend';
 
-export interface IBarLabels extends IComponent, IBarPointPositioner {
-  labels(labels?: IStringable[]): IStringable[] | this;
+export interface IBarLabelsConfig
+  extends IComponentConfig,
+    IBarPointPositionerConfig {
+  labels: IStringable[];
+  transitionDuration: number;
 }
 
-export class BarLabels implements IBarLabels {
+export interface IBarLabelsComponent
+  extends IComponent<IBarLabelsConfig>,
+    IPoints {}
+
+export class BarLabelsComponent
+  extends Component<IBarLabelsConfig>
+  implements IBarLabelsComponent {
   private _barPointPositioner: IBarPointPositioner = new BarPointPositioner();
-  private _labels: IStringable[] = [];
-  private _containerSelection: Selection<SVGGElement, unknown, BaseType, unknown>;
-  private _labelsSelection: Selection<SVGGElement, unknown, BaseType, unknown>;
 
-  constructor() {}
+  constructor() {
+    super(create<SVGElement>('svg:g').classed('labels', true), {
+      labels: [],
+      horizontalPosition: HorizontalPosition.Center,
+      verticalPosition: VerticalPosition.Center,
+      transitionDuration: 0,
+      attributes: {
+        text: {
+          'text-anchor': 'middle',
+          'dominant-baseline': 'middle',
+        },
+      },
+      conditionalConfigs: [],
+    });
+  }
 
-  // # IComponent
+  protected _applyConfig(config: IBarLabelsConfig): void {
+    if (!config.bars)
+      throw Error('Bar labels require an associated bars config property');
+    this._barPointPositioner.config(config);
+  }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
-    this._containerSelection = selection
-      .selectAll<SVGGElement, unknown>('.bars')
-      .data([null])
-      .join('g')
-      .classed('bars', true);
+    selection.append(() => this.selection().node());
 
-    var boundingRect = selection.node()!.getBoundingClientRect();
-    this.fitInSize(boundingRect);
+    // var boundingRect = selection.node()!.getBoundingClientRect();
+    // this.fitInSize(boundingRect);
 
-    this.render(0);
+    this.render(false);
+
     return this;
   }
-  fitInLayout(layout: ILayouter): this {
-    var layoutRect = layout.layoutOfElement(this._containerSelection.node()!)!;
-    this.fitInSize(layoutRect);
+
+  protected _afterResize(): void {}
+
+  resize(): this {
     return this;
   }
-  render(transitionDuration: number): this {
-    this._labelsSelection = renderBarLabels(this._containerSelection, this.points(), this._labels);
+
+  render(animated: boolean): this {
+    this.selection()
+      .call(
+        renderBarLabels,
+        this._barPointPositioner.points(),
+        this.activeConfig().labels,
+        animated ? this.activeConfig().transitionDuration : 0
+      )
+      .call(applyAttributes, this.activeConfig().attributes);
     return this;
   }
-  selection(): Selection<SVGElement, unknown, BaseType, unknown> {
-    return this._containerSelection;
-  }
+
   renderOrder(): number {
     return 1;
   }
 
-  // # IBarPointPositioner
-
-  fitInSize(size: Size): this {
-    this._barPointPositioner.fitInSize(size);
-    return this;
-  }
-  points(): Point[] {
+  points(): Position[] {
     return this._barPointPositioner.points();
-  }
-  bars(bars?: IBarPositioner): any {
-    if (bars === undefined) return this._barPointPositioner.bars();
-    this._barPointPositioner.bars(bars);
-    return this;
-  }
-  horizontalPosition(position?: HorizontalPosition): any {
-    if (position === undefined) return this._barPointPositioner.horizontalPosition();
-    this._barPointPositioner.horizontalPosition(position);
-    return this;
-  }
-  verticalPosition(position?: VerticalPosition): any {
-    if (position === undefined) return this._barPointPositioner.verticalPosition();
-    this._barPointPositioner.verticalPosition(position);
-    return this;
-  }
-
-  // # IBarLabels
-
-  labels(labels?: IStringable[]): IStringable[] | this {
-    if (!arguments.length) return this._labels;
-    this._labels = labels || [];
-    return this;
   }
 }
 
-export function barLabels(): BarLabels {
-  return new BarLabels();
+export function barLabels(): BarLabelsComponent {
+  return new BarLabelsComponent();
 }
 
 export function renderBarLabels(
   selection: Selection<SVGGElement, unknown, BaseType, unknown>,
-  points: Point[],
-  labels: IStringable[]
-): Selection<SVGGElement, unknown, BaseType, unknown> {
-  return selection
-    .selectAll<SVGGElement, Point>('.bar')
+  points: Position[],
+  labels: IStringable[],
+  transitionDuration: number
+): void {
+  selection
+    .selectAll<SVGGElement, Position>('.label')
     .data(points)
-    .join((enter) => enter.append('g').classed('bar', true))
-    .call((s) =>
-      s
-        .selectAll<SVGGElement, Point>('.label')
-        .data((d, i) => [{ point: d, label: labels[i] }])
-        .join((enter) =>
-          enter
-            .append('g')
-            .classed('label', true)
-            .call((groupSelection) => groupSelection.append('text'))
-        )
-        .style('transform', (d) => `translate(${d.point.x}px, ${d.point.y}px)`)
-        .call((s) => s.select('text').text((d) => d.label.toString()))
-        .raise()
-    );
+    .join((enter) =>
+      enter
+        .append('g')
+        .classed('label', true)
+        .call((groupSelection) => groupSelection.append('text'))
+    )
+    .transition()
+    .duration(transitionDuration)
+    .attr('transform', (d) => `translate(${d.x}, ${d.y})`)
+    .select('text')
+    .text((d, i) => labels[i].toString());
 }

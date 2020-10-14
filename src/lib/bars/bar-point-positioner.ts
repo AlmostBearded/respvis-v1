@@ -1,5 +1,6 @@
-import { IBarPositioner } from './bar-positioner';
+import { IBarPositioner, IBars } from './bar-positioner';
 import { Size } from '../utils';
+import extend from 'extend';
 
 export enum HorizontalPosition {
   Left = 0,
@@ -13,64 +14,52 @@ export enum VerticalPosition {
   Bottom = 2,
 }
 
-export type Point = { x: number; y: number };
+export interface IPosition { x: number; y: number };
 
-export interface IPointPositioner {
-  fitInSize(size: Size): this;
-  points(): Point[];
+export interface IPoints {
+  points(): IPosition[];
 }
 
-export interface IBarPointPositioner extends IPointPositioner {
-  bars(bars: IBarPositioner): this;
-  bars(): IBarPositioner;
-  horizontalPosition(position: HorizontalPosition): this;
-  horizontalPosition(): HorizontalPosition;
-  verticalPosition(position: VerticalPosition): this;
-  verticalPosition(): VerticalPosition;
+export interface IBarPointPositionerConfig {
+  bars?: IBars;
+  horizontalPosition: HorizontalPosition;
+  verticalPosition: VerticalPosition;
+}
+
+export interface IBarPointPositioner extends IPoints {
+  config(config: IBarPointPositionerConfig): this;
+  config(): IBarPointPositionerConfig;
 }
 
 export class BarPointPositioner implements IBarPointPositioner {
-  private _bars: IBarPositioner;
-  private _horizontalPosition: HorizontalPosition = HorizontalPosition.Center;
-  private _verticalPosition: VerticalPosition = VerticalPosition.Center;
-  private _points: Point[] = [];
+  private _config: IBarPointPositionerConfig;
 
-  bars(bars?: IBarPositioner): any {
-    if (bars === undefined) return this._bars;
-    this._bars = bars;
+  constructor() {
+    this._config = {
+      horizontalPosition: HorizontalPosition.Center,
+      verticalPosition: VerticalPosition.Center
+    }
+  }
+
+  config(config: IBarPointPositionerConfig): this;
+  config(): IBarPointPositionerConfig;
+  config(config?: IBarPointPositionerConfig): any {
+    if (config === undefined) return this._config;
+    extend(true, this._config, config);
     return this;
   }
 
-  horizontalPosition(position?: HorizontalPosition): any {
-    if (position === undefined) return this._horizontalPosition;
-    this._horizontalPosition = position;
-    return this;
-  }
-
-  verticalPosition(position?: VerticalPosition): any {
-    if (position === undefined) return this._verticalPosition;
-    this._verticalPosition = position;
-    return this;
-  }
-
-  fitInSize(size: Size): this {
-    // TODO: Does/should this be done all the time?
-    this._bars.fitInSize(size);
-
-    this._points = [];
-    const rects = this._bars.bars();
+  points(): IPosition[] {
+    const bars = this._config.bars?.bars() || [];
     const sizePercents = [0, 0.5, 1];
-    for (let i = 0; i < rects.length; ++i) {
-      this._points.push({
-        x: rects[i].x + rects[i].width * sizePercents[this._horizontalPosition],
-        y: rects[i].y + rects[i].height * sizePercents[this._verticalPosition],
+    const points: IPosition[] = [];
+    for (let i = 0; i < bars.length; ++i) {
+      points.push({
+        x: bars[i].x + bars[i].width * sizePercents[this._config.horizontalPosition],
+        y: bars[i].y + bars[i].height * sizePercents[this._config.verticalPosition],
       });
     }
-    return this;
-  }
-
-  points(): Point[] {
-    return this._points;
+    return points;
   }
 }
 
