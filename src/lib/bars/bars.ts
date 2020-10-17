@@ -17,20 +17,21 @@ import { IRect, Rect } from '../rect';
 import { categorical as categoricalColors } from '../colors';
 import chroma from 'chroma-js';
 
-export interface IBarsComponentConfig
-  extends IComponentConfig,
-    IBarPositionerConfig {
+export interface IBarsComponentConfig extends IComponentConfig, IBarPositionerConfig {
   color: string;
   transitionDuration: number;
+  events: { typenames: string; callback: (event: Event, data: IBarsEventData) => void }[];
 }
 
-export interface IBarsComponent
-  extends IComponent<IBarsComponentConfig>,
-    IBars {}
+export interface IBarsComponent extends IComponent<IBarsComponentConfig>, IBars {}
 
-export class BarsComponent
-  extends Component<IBarsComponentConfig>
-  implements IBarsComponent {
+export interface IBarsEventData {
+  index: number;
+  rectElement: SVGRectElement;
+  barElement: SVGGElement;
+}
+
+export class BarsComponent extends Component<IBarsComponentConfig> implements IBarsComponent {
   private _barPositioner: IBarPositioner = new BarPositioner();
 
   constructor() {
@@ -45,6 +46,7 @@ export class BarsComponent
       transitionDuration: 0,
       attributes: {},
       conditionalConfigs: [],
+      events: [],
     });
     this._applyConditionalConfigs();
   }
@@ -83,6 +85,20 @@ export class BarsComponent
       })),
       animated ? this.activeConfig().transitionDuration : 0
     );
+
+    const barsSelection = this.selection().selectAll<SVGGElement, unknown>('.bar');
+
+    this.activeConfig().events.forEach((eventConfig) =>
+      barsSelection.on(eventConfig.typenames, function (e: Event) {
+        const index = Array.prototype.indexOf.call(this.parentNode!.children, this);
+        eventConfig.callback(e, {
+          index: index,
+          rectElement: e.target as SVGRectElement,
+          barElement: this,
+        });
+      })
+    );
+
     return this;
   }
 
@@ -119,11 +135,7 @@ export function renderBars(
     .join('g')
     .classed('bar', true)
     .each((d, i, nodes) =>
-      select(nodes[i]).call(
-        renderClippedRect,
-        { ...attributes[i], ...d },
-        transitionDuration
-      )
+      select(nodes[i]).call(renderClippedRect, { ...attributes[i], ...d }, transitionDuration)
     );
 }
 
@@ -137,12 +149,7 @@ export function renderClippedRect(
   selection
     // Casting to disable type checking as the latest d3-selection types don't contain selectChildren yet.
     .call((s: any) =>
-      (s.selectChildren('clipPath') as Selection<
-        SVGClipPathElement,
-        unknown,
-        BaseType,
-        unknown
-      >)
+      (s.selectChildren('clipPath') as Selection<SVGClipPathElement, unknown, BaseType, unknown>)
         .data([null])
         .join((enter) =>
           enter
@@ -157,12 +164,7 @@ export function renderClippedRect(
         .call(applyAttributes, attributes)
     )
     .call((s: any) =>
-      (s.selectChildren('rect') as Selection<
-        SVGRectElement,
-        unknown,
-        BaseType,
-        unknown
-      >)
+      (s.selectChildren('rect') as Selection<SVGRectElement, unknown, BaseType, unknown>)
         .data([null])
         .join((enter) =>
           enter

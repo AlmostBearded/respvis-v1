@@ -41,6 +41,15 @@
                 categories: categories,
                 values: values,
                 orientation: respVis.BarOrientation.Vertical,
+                events: [
+                  {
+                    typenames: 'mouseover',
+                    callback: (e, d) => {
+                      console.log(e);
+                      console.log(d);
+                    },
+                  },
+                ],
               })),
               // Left axis
               respVis.leftAxis().config({
