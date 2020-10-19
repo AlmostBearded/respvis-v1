@@ -74,7 +74,7 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
   config(): TConfig;
   config(c?: Partial<TConfig> | ((config: TConfig) => Partial<TConfig>)): any {
     if (c === undefined) return this._config;
-    const config = c instanceof Function ? c(this._config) : c;
+    const config = c instanceof Function ? c(this._activeConfig) : c;
     this._mergeConfigsFn(this._config, config);
     this._applyConditionalConfigs();
     return this;
