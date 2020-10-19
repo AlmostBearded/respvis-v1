@@ -45,29 +45,21 @@
                   {
                     typenames: 'mouseover',
                     callback: (e, d) => {
-                      bars.config((c) => ({
-                        attributes: {
-                          [`.bar:nth-child(${d.index + 1}) > rect`]: {
-                            fill: respVis.chroma.hex(c.color).brighten(0.5).hex(),
-                          },
-                        },
-                      }));
-                      // const hovered = bars.activeConfig().hovered;
-                      // hovered[d.index] = true;
-                      // bars.config({ hovered: hovered }).render(false);
+                      bars.config((c) => {
+                        const colors = c.colors;
+                        colors[d.index] = respVis.chroma.hex(c.color).brighten(0.5).hex();
+                        return { colors: colors };
+                      });
                     },
                   },
                   {
                     typenames: 'mouseout',
                     callback: (e, d) => {
-                      bars.config({
-                        attributes: {
-                          [`.bar:nth-child(${d.index + 1}) > rect`]: null,
-                        },
+                      bars.config((c) => {
+                        const colors = c.colors;
+                        colors[d.index] = c.color;
+                        return { colors: colors };
                       });
-                      // const hovered = bars.activeConfig().hovered;
-                      // hovered[d.index] = false;
-                      // bars.config({ hovered: hovered }).render(false);
                     },
                   },
                 ],

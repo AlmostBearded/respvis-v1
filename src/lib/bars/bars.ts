@@ -19,6 +19,7 @@ import chroma from 'chroma-js';
 
 export interface IBarsComponentConfig extends IComponentConfig, IBarPositionerConfig {
   color: string;
+  colors: string[];
   transitionDuration: number;
   events: { typenames: string; callback: (event: Event, data: IBarsEventData) => void }[];
 }
@@ -41,6 +42,7 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
         categories: [],
         values: [],
         color: categoricalColors[0],
+        colors: [],
         flipCategories: false,
         flipValues: false,
         orientation: Orientation.Vertical,
@@ -56,6 +58,9 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
   }
 
   protected _applyConfig(config: IBarsComponentConfig): void {
+    if (config.colors.length !== config.values.length) {
+      config.colors = config.values.map(() => config.color);
+    }
     this._barPositioner.config(config);
     this._applyBarColors();
   }
@@ -109,8 +114,8 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
       .selectAll<SVGRectElement, unknown>('.bar > rect')
       .each((d, i, nodes) => {
         select(nodes[i]).call(applyAttributes, {
-          fill: this.activeConfig().color,
-          stroke: chroma.hex(this.activeConfig().color).darken(2).hex(),
+          fill: this.activeConfig().colors[i],
+          stroke: chroma.hex(this.activeConfig().colors[i]).darken(2).hex(),
           'stroke-width': 4,
         });
       });
