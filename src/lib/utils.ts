@@ -34,6 +34,33 @@ export function getComputedStyleWithoutDefaults(
   return diffObj;
 }
 
+// TODO: Write unit tests for this function
+// TODO: This function would do well as its own npm module
+export function calculateSpecificity(selector: string): number {
+  // Calculates the specificity of a selector according to
+  // https://www.w3.org/TR/2018/REC-selectors-3-20181106/#specificity
+
+  selector = selector || '';
+
+  function numMatches(regex) {
+    return (selector.match(regex) || []).length;
+  }
+
+  const identifier = '[a-zA-Z][a-zA-Z0-9-_]+';
+  const numIds = numMatches(new RegExp(`#${identifier}`, 'g'));
+  const numClasses = numMatches(new RegExp(`\\.${identifier}`, 'g'));
+  const numAttributes = numMatches(new RegExp(`\\[.+=.+\\]`, 'g'));
+  const numPseudoClasses = numMatches(new RegExp(`:(?!not)${identifier}`, 'g'));
+  const numTypes = numMatches(new RegExp(`(?![^\\[]*\\])(^|[ +~>,]|:not\\()${identifier}`, 'g'));
+  const numPseudoElements = numMatches(new RegExp(`::${identifier}`, 'g'));
+
+  const a = numIds;
+  const b = numClasses + numAttributes + numPseudoClasses;
+  const c = numTypes + numPseudoElements;
+
+  return 100 * a + 10 * b + c;
+}
+
 export type Attributes = {
   [name: string]: string | number | boolean | Attributes | null;
 };
@@ -44,15 +71,22 @@ export function applyAttributes(
     | Transition<BaseType, unknown, BaseType, unknown>,
   attributes: Attributes
 ) {
+  const selectors: string[] = [];
+
   for (const name in attributes) {
     const value = attributes[name];
     if (value === null) selection.attr(name, null);
     else if (typeof value === 'object') {
       // → name = child selector, value = child attributes
-      selection.selectAll<BaseType, unknown>(name).call(applyAttributes, value);
-      continue;
+      selectors.push(name);
     } else selection.attr(name, value);
   }
+
+  selectors
+    .sort((a, b) => calculateSpecificity(a) - calculateSpecificity(b))
+    .forEach((selector) =>
+      selection.selectAll<BaseType, unknown>(selector).call(applyAttributes, attributes[selector])
+    );
 }
 
 export function deepExtend(target: any, ...args: any[]) {
