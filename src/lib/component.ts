@@ -1,16 +1,21 @@
 import { Selection, BaseType, select, create, selection } from 'd3-selection';
 import { applyAttributes, Attributes } from './utils';
-import extend from 'extend';
+import { deepExtend } from './utils';
 
 export interface IConditionalComponentConfig<TConfig> {
   media: string;
-  config: TConfig;
+  config: Partial<TConfig>;
 }
 
 export interface IComponentConfig {
   attributes: Attributes;
   conditionalConfigs: IConditionalComponentConfig<this>[];
 }
+
+export type MergeConfigsFn = <TConfig extends IComponentConfig>(
+  target: Partial<TConfig>,
+  source: Partial<TConfig>
+) => Partial<TConfig>;
 
 export interface IComponent<TConfig extends IComponentConfig> {
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this;
@@ -24,23 +29,32 @@ export interface IComponent<TConfig extends IComponentConfig> {
   activeConfig(): TConfig;
 }
 
-export abstract class Component<TConfig extends IComponentConfig>
-  implements IComponent<TConfig> {
+export abstract class Component<TConfig extends IComponentConfig> implements IComponent<TConfig> {
   private _selection: Selection<SVGElement, unknown, BaseType, unknown>;
   private _config: TConfig;
   private _activeConfig: TConfig;
+  private _mergeConfigsFn: MergeConfigsFn;
+
+  static mergeConfigs<TConfig extends IComponentConfig>(
+    target: Partial<TConfig>,
+    source: Partial<TConfig>
+  ): Partial<TConfig> {
+    return Object.assign(target, source, {
+      attributes: deepExtend(target.attributes || {}, source.attributes || {}),
+    });
+  }
 
   constructor(
     selection: Selection<SVGElement, unknown, BaseType, unknown>,
-    config: TConfig
+    config: TConfig,
+    mergeConfigsFn: MergeConfigsFn
   ) {
     this._selection = selection;
     this._config = config;
+    this._mergeConfigsFn = mergeConfigsFn;
   }
 
-  abstract mount(
-    selection: Selection<SVGElement, unknown, BaseType, unknown>
-  ): this;
+  abstract mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this;
   abstract render(animated: boolean): this;
   abstract renderOrder(): number;
 
@@ -58,7 +72,7 @@ export abstract class Component<TConfig extends IComponentConfig>
   config(): TConfig;
   config(config?: Partial<TConfig>): any {
     if (config === undefined) return this._config;
-    extend(true, this._config, config);
+    this._mergeConfigsFn(this._config, config);
     this._applyConditionalConfigs();
     return this;
   }
@@ -68,16 +82,17 @@ export abstract class Component<TConfig extends IComponentConfig>
   }
 
   protected _applyConditionalConfigs(): this {
-    const newConfig = extend(true, {}, this._config);
+    const newConfig = this._mergeConfigsFn({}, this._config) as TConfig;
 
     this._config.conditionalConfigs.forEach((conditionalConfig) => {
       if (window.matchMedia(conditionalConfig.media).matches) {
-        extend(true, newConfig, conditionalConfig.config);
+        this._mergeConfigsFn(newConfig, conditionalConfig.config);
       }
     });
 
-    this._selection.call(applyAttributes, newConfig.attributes);
     this._applyConfig(newConfig);
+
+    this._selection.call(applyAttributes, newConfig.attributes);
 
     this._activeConfig = newConfig;
 

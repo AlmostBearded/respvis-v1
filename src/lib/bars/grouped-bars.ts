@@ -1,14 +1,15 @@
 import { Component, IComponent, IComponentConfig } from '../component';
 import { IGroupedBarPositioner, GroupedBarPositioner } from './grouped-bar-positioner';
 import { BaseType, Selection, select, create } from 'd3-selection';
-import { Bar, Orientation } from './bar-positioner';
+import { Orientation } from './bar-positioner';
 import { renderBars } from './bars';
 import { ScaleBand, ScaleLinear } from 'd3-scale';
 import { Primitive } from 'd3-array';
 import { Rect } from '../rect';
-import { ISize } from '../utils';
+import { applyAttributes, deepExtend, ISize } from '../utils';
 import { categorical as categoricalColors } from '../colors';
 import chroma from 'chroma-js';
+import { applyLayoutTransforms } from '../layout/layout';
 
 export interface IGroupedBarsConfig extends IComponentConfig {
   categories: string[];
@@ -29,24 +30,42 @@ export class GroupedBars extends Component<IGroupedBarsConfig> implements IGroup
   private _barPositioner: IGroupedBarPositioner = new GroupedBarPositioner();
 
   constructor() {
-    super(create<SVGElement>('svg:g').classed('bars', true), {
-      categories: [],
-      values: [],
-      colors: categoricalColors,
-      flipCategories: false,
-      flipSubcategories: false,
-      flipValues: false,
-      orientation: Orientation.Vertical,
-      categoryPadding: 0.1,
-      subcategoryPadding: 0.1,
-      transitionDuration: 0,
-      attributes: {},
-      conditionalConfigs: [],
-    });
+    super(
+      create<SVGElement>('svg:g').classed('bars', true),
+      {
+        categories: [],
+        values: [],
+        colors: categoricalColors,
+        flipCategories: false,
+        flipSubcategories: false,
+        flipValues: false,
+        orientation: Orientation.Vertical,
+        categoryPadding: 0.1,
+        subcategoryPadding: 0.1,
+        transitionDuration: 0,
+        attributes: {},
+        conditionalConfigs: [],
+      },
+      Component.mergeConfigs
+    );
     this._applyConditionalConfigs();
   }
 
   protected _applyConfig(config: IGroupedBarsConfig): void {
+    const subcategoryCount = config.values?.[0]?.length || 0;
+    config.colors = config.colors.slice(0, subcategoryCount);
+
+    deepExtend(
+      config.attributes,
+      ...config.colors.map((c, i) => ({
+        [`.bar:nth-child(${i + 1}) > rect`]: {
+          fill: c,
+          stroke: chroma.hex(c).darken(2).hex(),
+          'stroke-width': 4,
+        },
+      }))
+    );
+
     this._barPositioner
       .categories(config.categories)
       .values(config.values)
@@ -56,9 +75,6 @@ export class GroupedBars extends Component<IGroupedBarsConfig> implements IGroup
       .orientation(config.orientation)
       .categoryPadding(config.categoryPadding)
       .subcategoryPadding(config.categoryPadding);
-
-    const subcategoryCount = config.values?.[0]?.length || 0;
-    config.colors = config.colors.slice(0, subcategoryCount);
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
@@ -93,14 +109,11 @@ export class GroupedBars extends Component<IGroupedBarsConfig> implements IGroup
         renderBars(
           select(groups[i]),
           bars.slice(i * barsPerGroup, i * barsPerGroup + barsPerGroup),
-          this.activeConfig().colors.map((c) => ({
-            fill: c,
-            stroke: chroma.hex(c).darken(2).hex(),
-            'stroke-width': 4,
-          })),
           animated ? this.activeConfig().transitionDuration : 0
         );
       });
+
+    this.selection().call(applyAttributes, this.activeConfig().attributes);
 
     return this;
   }

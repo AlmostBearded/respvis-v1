@@ -17,12 +17,16 @@ export interface IRect extends IComponent<IRectConfig> {}
 
 export class Rect extends Component<IRectConfig> implements IRect {
   constructor() {
-    super(create<SVGElement>('svg:g'), {
-      size: { width: 10, height: 10 },
-      fill: '#000000',
-      attributes: {},
-      conditionalConfigs: [],
-    });
+    super(
+      create<SVGElement>('svg:g'),
+      {
+        size: { width: 10, height: 10 },
+        fill: '#000000',
+        attributes: {},
+        conditionalConfigs: [],
+      },
+      Component.mergeConfigs
+    );
     this._applyConditionalConfigs();
   }
 

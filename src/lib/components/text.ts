@@ -9,21 +9,25 @@ export interface IText extends IComponent<ITextConfig> {}
 
 export class Text extends Component<ITextConfig> implements IText {
   constructor() {
-    super(create<SVGElement>('svg:text'), {
-      text: '',
-      attributes: {
-        width: 'min-content',
-        // TODO: The height returned by the bounding box of text elements 
-        // is too high (see [1]). Maybe it is possible to use a package 
-        // such as [2] to accurately determine the size of text elements.
-        // [1] https://stackoverflow.com/questions/26290134/is-it-possible-to-more-accurately-measure-svg-text-height
-        // [2]https://www.npmjs.com/package/font-measure
-        height: 'min-content',
-        'dominant-baseline': 'hanging',
-        'text-anchor': 'start',
+    super(
+      create<SVGElement>('svg:text'),
+      {
+        text: '',
+        attributes: {
+          width: 'min-content',
+          // TODO: The height returned by the bounding box of text elements
+          // is too high (see [1]). Maybe it is possible to use a package
+          // such as [2] to accurately determine the size of text elements.
+          // [1] https://stackoverflow.com/questions/26290134/is-it-possible-to-more-accurately-measure-svg-text-height
+          // [2]https://www.npmjs.com/package/font-measure
+          height: 'min-content',
+          'dominant-baseline': 'hanging',
+          'text-anchor': 'start',
+        },
+        conditionalConfigs: [],
       },
-      conditionalConfigs: [],
-    });
+      Component.mergeConfigs
+    );
     this._applyConditionalConfigs();
   }
 

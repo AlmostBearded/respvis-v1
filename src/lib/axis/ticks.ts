@@ -35,13 +35,17 @@ export class Ticks extends Component<ITicksConfig> implements ITicks {
 
   constructor(labelPosition: Position) {
     const vertical = labelPosition === Position.Left || labelPosition === Position.Right;
-    super(create<SVGElement>('svg:g').classed('ticks', true), {
-      scale: scaleLinear().domain([0, 1]).range([0, 100]),
-      attributes: {
-        ...(vertical ? { width: 'min-content' } : { height: 'min-content' }),
+    super(
+      create<SVGElement>('svg:g').classed('ticks', true),
+      {
+        scale: scaleLinear().domain([0, 1]).range([0, 100]),
+        attributes: {
+          ...(vertical ? { width: 'min-content' } : { height: 'min-content' }),
+        },
+        conditionalConfigs: [],
       },
-      conditionalConfigs: [],
-    });
+      Component.mergeConfigs
+    );
     this._labelPosition = labelPosition;
     this._applyConditionalConfigs();
   }

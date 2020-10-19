@@ -1,5 +1,5 @@
 import { Component, IComponent, IComponentConfig } from '../component';
-import { applyAttributes, Attributes, ISize } from '../utils';
+import { applyAttributes, Attributes, deepExtend, ISize } from '../utils';
 import {
   BarPositioner,
   Orientation,
@@ -19,6 +19,8 @@ import chroma from 'chroma-js';
 
 export interface IBarsComponentConfig extends IComponentConfig, IBarPositionerConfig {
   color: string;
+  hoverColor?: string;
+  hovered: boolean[];
   transitionDuration: number;
   events: { typenames: string; callback: (event: Event, data: IBarsEventData) => void }[];
 }
@@ -35,31 +37,42 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
   private _barPositioner: IBarPositioner = new BarPositioner();
 
   constructor() {
-    super(create<SVGElement>('svg:g').classed('bars', true), {
-      categories: [],
-      values: [],
-      color: categoricalColors[0],
-      flipCategories: false,
-      flipValues: false,
-      orientation: Orientation.Vertical,
-      categoryPadding: 0.1,
-      transitionDuration: 0,
-      attributes: {},
-      conditionalConfigs: [],
-      events: [],
-    });
+    super(
+      create<SVGElement>('svg:g').classed('bars', true),
+      {
+        categories: [],
+        values: [],
+        color: categoricalColors[0],
+        hovered: [],
+        flipCategories: false,
+        flipValues: false,
+        orientation: Orientation.Vertical,
+        categoryPadding: 0.1,
+        transitionDuration: 0,
+        attributes: {},
+        conditionalConfigs: [],
+        events: [],
+      },
+      Component.mergeConfigs
+    );
     this._applyConditionalConfigs();
   }
 
   protected _applyConfig(config: IBarsComponentConfig): void {
+    if (config.hovered.length !== config.values.length) {
+      config.hovered = config.values.map(() => false);
+    }
+
+    config.hoverColor = config.hoverColor || chroma.hex(config.color).brighten(0.5).hex();
+
     this._barPositioner.config(config);
+
+    this._applyBarColors();
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
     selection.append(() => this.selection().node());
 
-    // var boundingRect = selection.node()!.getBoundingClientRect();
-    // this.fitInSize(boundingRect);
     this._barPositioner.fitInSize({ width: 600, height: 400 });
     this.render(false);
 
@@ -75,16 +88,15 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
   protected _afterResize(): void {}
 
   render(animated: boolean): this {
-    this.selection().call(
-      renderBars,
-      this._barPositioner.bars(),
-      this.activeConfig().values.map(() => ({
-        fill: this.activeConfig().color,
-        stroke: chroma.hex(this.activeConfig().color).darken(2).hex(),
-        'stroke-width': 4,
-      })),
-      animated ? this.activeConfig().transitionDuration : 0
-    );
+    this.selection()
+      .call(
+        renderBars,
+        this._barPositioner.bars(),
+        animated ? this.activeConfig().transitionDuration : 0
+      )
+      .call(applyAttributes, this.activeConfig().attributes);
+
+    this._applyBarColors();
 
     const barsSelection = this.selection().selectAll<SVGGElement, unknown>('.bar');
 
@@ -100,6 +112,22 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
     );
 
     return this;
+  }
+
+  private _applyBarColors(): void {
+    this.selection()
+      .selectAll<SVGRectElement, unknown>('.bar > rect')
+      .each((d, i, nodes) => {
+        const color = this.activeConfig().hovered[i]
+          ? this.activeConfig().hoverColor!
+          : this.activeConfig().color;
+
+        select(nodes[i]).call(applyAttributes, {
+          fill: color,
+          stroke: chroma.hex(color).darken(2).hex(),
+          'stroke-width': 4,
+        });
+      });
   }
 
   renderOrder(): number {
@@ -126,7 +154,6 @@ export function bars(): BarsComponent {
 export function renderBars(
   selection: Selection<SVGGElement, unknown, BaseType, unknown>,
   bars: Rect[],
-  attributes: Attributes[],
   transitionDuration: number
 ): Selection<SVGGElement, Rect, SVGGElement, unknown> {
   return selection
@@ -134,9 +161,7 @@ export function renderBars(
     .data(bars)
     .join('g')
     .classed('bar', true)
-    .each((d, i, nodes) =>
-      select(nodes[i]).call(renderClippedRect, { ...attributes[i], ...d }, transitionDuration)
-    );
+    .each((d, i, nodes) => select(nodes[i]).call(renderClippedRect, { ...d }, transitionDuration));
 }
 
 export function renderClippedRect(

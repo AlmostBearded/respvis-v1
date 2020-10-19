@@ -13,45 +13,45 @@ import { Selection, BaseType, create } from 'd3-selection';
 import { IBarPositioner } from './bar-positioner';
 import extend from 'extend';
 
-export interface IBarLabelsConfig
-  extends IComponentConfig,
-    IBarPointPositionerConfig {
+export interface IBarLabelsConfig extends IComponentConfig, IBarPointPositionerConfig {
   labels: IStringable[];
   transitionDuration: number;
 }
 
-export interface IBarLabelsComponent
-  extends IComponent<IBarLabelsConfig>,
-    IPoints {}
+export interface IBarLabelsComponent extends IComponent<IBarLabelsConfig>, IPoints {}
 
-export class BarLabelsComponent
-  extends Component<IBarLabelsConfig>
-  implements IBarLabelsComponent {
+export class BarLabelsComponent extends Component<IBarLabelsConfig> implements IBarLabelsComponent {
   private _barPointPositioner: IBarPointPositioner = new BarPointPositioner();
 
   constructor() {
-    super(create<SVGElement>('svg:g').classed('labels', true), {
-      labels: [],
-      horizontalPosition: HorizontalPosition.Center,
-      verticalPosition: VerticalPosition.Center,
-      transitionDuration: 0,
-      attributes: {
-        text: {
-          'text-anchor': 'middle',
-          'dominant-baseline': 'middle',
+    super(
+      create<SVGElement>('svg:g').classed('labels', true),
+      {
+        labels: [],
+        horizontalPosition: HorizontalPosition.Center,
+        verticalPosition: VerticalPosition.Center,
+        transitionDuration: 0,
+        attributes: {
+          text: {
+            'text-anchor': 'middle',
+            'dominant-baseline': 'middle',
+          },
         },
+        conditionalConfigs: [],
       },
-      conditionalConfigs: [],
-    });
+      Component.mergeConfigs
+    );
+    this._applyConditionalConfigs();
   }
 
   protected _applyConfig(config: IBarLabelsConfig): void {
-    if (!config.bars)
-      throw Error('Bar labels require an associated bars config property');
     this._barPointPositioner.config(config);
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
+    if (!this.activeConfig().bars)
+      throw Error('Bar labels require an associated bars config property');
+
     selection.append(() => this.selection().node());
 
     // var boundingRect = selection.node()!.getBoundingClientRect();

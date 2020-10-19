@@ -9,14 +9,25 @@ export interface IGroup extends IComponent<IGroupConfig> {}
 
 export class Group extends Component<IGroupConfig> implements IGroup {
   constructor() {
-    super(create<SVGElement>('svg:g'), {
-      children: [],
-      attributes: {
-        'grid-template': 'auto / auto',
+    super(
+      create<SVGElement>('svg:g'),
+      {
+        children: [],
+        attributes: {
+          'grid-template': 'auto / auto',
+        },
+        conditionalConfigs: [],
       },
-      conditionalConfigs: [],
-    });
+      Component.mergeConfigs
+    );
     this._applyConditionalConfigs();
+  }
+
+  protected _mergeConfig(
+    target: Partial<IGroupConfig>,
+    source: Partial<IGroupConfig>
+  ): Partial<IGroupConfig> {
+    return Object.assign(target, source);
   }
 
   protected _applyConfig(config: IGroupConfig): void {
@@ -25,28 +36,28 @@ export class Group extends Component<IGroupConfig> implements IGroup {
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
     selection.append(() => this.selection().node());
-    this.activeConfig().children
-      .sort((a, b) => a.renderOrder() - b.renderOrder())
+    this.activeConfig()
+      .children.sort((a, b) => a.renderOrder() - b.renderOrder())
       .forEach((child) => child.mount(this.selection()));
     return this;
   }
 
   resize(): this {
-    this.activeConfig().children
-      .sort((a, b) => a.renderOrder() - b.renderOrder())
+    this.activeConfig()
+      .children.sort((a, b) => a.renderOrder() - b.renderOrder())
       .forEach((child) => child.resize());
     return this;
   }
 
   protected _afterResize(): void {
-    this.activeConfig().children
-      .sort((a, b) => a.renderOrder() - b.renderOrder())
+    this.activeConfig()
+      .children.sort((a, b) => a.renderOrder() - b.renderOrder())
       .forEach((child) => child.afterResize());
   }
 
   render(animated: boolean): this {
-    this.activeConfig().children
-      .sort((a, b) => a.renderOrder() - b.renderOrder())
+    this.activeConfig()
+      .children.sort((a, b) => a.renderOrder() - b.renderOrder())
       .forEach((child) => child.render(animated));
     return this;
   }

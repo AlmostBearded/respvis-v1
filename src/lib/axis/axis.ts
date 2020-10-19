@@ -1,6 +1,6 @@
 import { Selection, select, BaseType, create } from 'd3-selection';
 import { axisLeft, axisBottom, axisTop, axisRight, AxisScale, Axis as D3Axis } from 'd3-axis';
-import { Component, IComponent, IComponentConfig } from '../component';
+import { Component, IComponent, IComponentConfig, MergeConfigsFn } from '../component';
 import { ITicks, ITicksConfig, Position, Ticks } from './ticks';
 import { Group, IGroup, IGroupConfig } from '../components/group';
 import {
@@ -10,6 +10,7 @@ import {
   verticalTextAttributes,
   titleAttributes,
 } from '../components/text';
+import { deepExtend } from '../utils';
 
 export interface IAxisConfig extends IComponentConfig {
   ticks: ITicksConfig;
@@ -44,6 +45,17 @@ export class Axis extends Component<IAxisConfig> implements IAxis {
   private _ticks: ITicks;
   private _title: IText;
 
+  static mergeConfigs = function mergeConfigs(
+    target: Partial<IAxisConfig>,
+    source: Partial<IAxisConfig>
+  ): Partial<IAxisConfig> {
+    return Object.assign(target, source, {
+      attributes: deepExtend(target.attributes || {}, source.attributes || {}),
+      ticks: Ticks.mergeConfigs(target.ticks || {}, source.ticks || {}),
+      title: Text.mergeConfigs(target.title || {}, source.title || {}),
+    });
+  } as MergeConfigsFn;
+
   constructor(axisPosition: Position) {
     const ticks = new Ticks(axisPosition).config({
       attributes: { ...ticksGridAreaByPosition.get(axisPosition)! },
@@ -64,17 +76,21 @@ export class Axis extends Component<IAxisConfig> implements IAxis {
       children: [ticks, title],
     });
 
-    super(group.selection(), {
-      ticks: ticks.config(),
-      title: title.config(),
-      attributes: group.config().attributes,
-      conditionalConfigs: [],
-    });
+    super(
+      group.selection(),
+      {
+        ticks: ticks.config(),
+        title: title.config(),
+        attributes: group.config().attributes,
+        conditionalConfigs: [],
+      },
+      Axis.mergeConfigs
+    );
 
     this._group = group;
     this._ticks = ticks;
     this._title = title;
-    
+
     this._applyConditionalConfigs();
   }
 
