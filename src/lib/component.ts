@@ -25,6 +25,7 @@ export interface IComponent<TConfig extends IComponentConfig> {
   selection(): Selection<SVGElement, unknown, BaseType, unknown>;
   renderOrder(): number;
   config(config: Partial<TConfig>): this;
+  config(configFn: (config: TConfig) => Partial<TConfig>): this;
   config(): TConfig;
   activeConfig(): TConfig;
 }
@@ -69,9 +70,11 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
   protected abstract _afterResize(): void;
 
   config(config: Partial<TConfig>): this;
+  config(configFn: (config: TConfig) => Partial<TConfig>): this;
   config(): TConfig;
-  config(config?: Partial<TConfig>): any {
-    if (config === undefined) return this._config;
+  config(c?: Partial<TConfig> | ((config: TConfig) => Partial<TConfig>)): any {
+    if (c === undefined) return this._config;
+    const config = c instanceof Function ? c(this._config) : c;
     this._mergeConfigsFn(this._config, config);
     this._applyConditionalConfigs();
     return this;
