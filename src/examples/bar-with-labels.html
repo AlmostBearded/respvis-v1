@@ -50,6 +50,13 @@
                         colors[d.index] = respVis.chroma.hex(c.color).brighten(0.5).hex();
                         return { colors: colors };
                       });
+                      barLabels.config({
+                        attributes: {
+                          [`.label:nth-child(${d.index + 1}) > text`]: {
+                            'font-weight': 'bold',
+                          },
+                        },
+                      });
                     },
                   },
                   {
@@ -60,48 +67,54 @@
                         colors[d.index] = c.color;
                         return { colors: colors };
                       });
+                      barLabels.config({
+                        attributes: {
+                          [`.label:nth-child(${d.index + 1}) > text`]: null,
+                        },
+                      });
                     },
                   },
                 ],
               })),
-              // // Bar Labels
-              // (barLabels = respVis.barLabels().config({
-              //   attributes: {
-              //     'grid-area': '2 / 3 / 3 / 4',
-              //     text: {
-              //       'dominant-baseline': 'auto',
-              //       transform: 'translate(0, -2)',
-              //     },
-              //   },
-              //   bars: bars,
-              //   labels: values,
-              //   horizontalPosition: respVis.HorizontalPosition.Center,
-              //   verticalPosition: respVis.VerticalPosition.Top,
-              // })),
-              // // Left axis
-              // respVis.leftAxis().config({
-              //   attributes: {
-              //     'grid-area': '2 / 2 / 3 / 3',
-              //   },
-              //   ticks: {
-              //     scale: bars.valuesScale(),
-              //   },
-              //   title: {
-              //     text: 'Population',
-              //   },
-              // }),
-              // // Bottom axis
-              // respVis.bottomAxis().config({
-              //   attributes: {
-              //     'grid-area': '3 / 3 / 4 / 4',
-              //   },
-              //   ticks: {
-              //     scale: bars.categoriesScale(),
-              //   },
-              //   title: {
-              //     text: 'Cities',
-              //   },
-              // }),
+              // Bar Labels
+              (barLabels = respVis.barLabels().config({
+                attributes: {
+                  'grid-area': '2 / 3 / 3 / 4',
+                  text: {
+                    'dominant-baseline': 'auto',
+                    transform: 'translate(0, -2)',
+                    'font-weight': 'normal',
+                  },
+                },
+                bars: bars,
+                labels: values,
+                horizontalPosition: respVis.HorizontalPosition.Center,
+                verticalPosition: respVis.VerticalPosition.Top,
+              })),
+              // Left axis
+              respVis.leftAxis().config({
+                attributes: {
+                  'grid-area': '2 / 2 / 3 / 3',
+                },
+                ticks: {
+                  scale: bars.valuesScale(),
+                },
+                title: {
+                  text: 'Population',
+                },
+              }),
+              // Bottom axis
+              respVis.bottomAxis().config({
+                attributes: {
+                  'grid-area': '3 / 3 / 4 / 4',
+                },
+                ticks: {
+                  scale: bars.categoriesScale(),
+                },
+                title: {
+                  text: 'Cities',
+                },
+              }),
             ],
           })
         )
