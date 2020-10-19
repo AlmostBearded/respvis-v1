@@ -19,8 +19,6 @@ import chroma from 'chroma-js';
 
 export interface IBarsComponentConfig extends IComponentConfig, IBarPositionerConfig {
   color: string;
-  hoverColor?: string;
-  hovered: boolean[];
   transitionDuration: number;
   events: { typenames: string; callback: (event: Event, data: IBarsEventData) => void }[];
 }
@@ -43,7 +41,6 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
         categories: [],
         values: [],
         color: categoricalColors[0],
-        hovered: [],
         flipCategories: false,
         flipValues: false,
         orientation: Orientation.Vertical,
@@ -59,14 +56,7 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
   }
 
   protected _applyConfig(config: IBarsComponentConfig): void {
-    if (config.hovered.length !== config.values.length) {
-      config.hovered = config.values.map(() => false);
-    }
-
-    config.hoverColor = config.hoverColor || chroma.hex(config.color).brighten(0.5).hex();
-
     this._barPositioner.config(config);
-
     this._applyBarColors();
   }
 
@@ -88,15 +78,15 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
   protected _afterResize(): void {}
 
   render(animated: boolean): this {
-    this.selection()
-      .call(
-        renderBars,
-        this._barPositioner.bars(),
-        animated ? this.activeConfig().transitionDuration : 0
-      )
-      .call(applyAttributes, this.activeConfig().attributes);
+    this.selection().call(
+      renderBars,
+      this._barPositioner.bars(),
+      animated ? this.activeConfig().transitionDuration : 0
+    );
 
     this._applyBarColors();
+
+    this.selection().call(applyAttributes, this.activeConfig().attributes);
 
     const barsSelection = this.selection().selectAll<SVGGElement, unknown>('.bar');
 
@@ -118,13 +108,9 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
     this.selection()
       .selectAll<SVGRectElement, unknown>('.bar > rect')
       .each((d, i, nodes) => {
-        const color = this.activeConfig().hovered[i]
-          ? this.activeConfig().hoverColor!
-          : this.activeConfig().color;
-
         select(nodes[i]).call(applyAttributes, {
-          fill: color,
-          stroke: chroma.hex(color).darken(2).hex(),
+          fill: this.activeConfig().color,
+          stroke: chroma.hex(this.activeConfig().color).darken(2).hex(),
           'stroke-width': 4,
         });
       });
