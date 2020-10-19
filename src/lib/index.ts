@@ -1,17 +1,10 @@
+import chroma from 'chroma-js';
+export { chroma };
+
 export { chart, Chart, IChart } from './chart/chart';
-export {
-  computeLayout,
-  applyLayoutTransforms,
-  ILayoutStyle,
-} from './layout/layout';
+export { computeLayout, applyLayoutTransforms, ILayoutStyle } from './layout/layout';
 export { group, Group, IGroup, IGroupConfig } from './components/group';
-export {
-  text,
-  Text,
-  IText,
-  titleAttributes,
-  verticalTextAttributes,
-} from './components/text';
+export { text, Text, IText, titleAttributes, verticalTextAttributes } from './components/text';
 export { rect, Rect, IRect, IRectConfig } from './components/rect';
 export { bars, BarsComponent, IBarsComponent } from './bars/bars';
 export { groupedBars, GroupedBars, IGroupedBars } from './bars/grouped-bars';

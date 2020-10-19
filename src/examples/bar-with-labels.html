@@ -45,13 +45,13 @@
                   {
                     typenames: 'mouseover',
                     callback: (e, d) => {
-                      bars.config({
+                      bars.config((c) => ({
                         attributes: {
                           [`.bar:nth-child(${d.index + 1}) > rect`]: {
-                            fill: '#ffffff',
+                            fill: respVis.chroma.hex(c.color).brighten(0.5).hex(),
                           },
                         },
-                      });
+                      }));
                       // const hovered = bars.activeConfig().hovered;
                       // hovered[d.index] = true;
                       // bars.config({ hovered: hovered }).render(false);
