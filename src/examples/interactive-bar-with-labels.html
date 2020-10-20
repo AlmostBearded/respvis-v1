@@ -37,6 +37,10 @@
               (bars = respVis.bars().config({
                 attributes: {
                   'grid-area': '2 / 3 / 3 / 4',
+                  '.bar > rect': { fill: respVis.colors.categorical[0] },
+                  '.bar:hover > rect': {
+                    fill: respVis.chroma.hex(respVis.colors.categorical[0]).brighten(0.5).hex(),
+                  },
                 },
                 categories: categories,
                 values: values,
@@ -47,16 +51,11 @@
                     callback: (e, d) => {
                       console.log('# mouseover');
                       console.log(d);
-                      bars.config({
-                        attributes: {
-                          [`.bar:nth-child(${d.index + 1}) > rect`]: {
-                            fill: respVis.chroma
-                              .hex(d.rectElement.getAttribute('fill'))
-                              .brighten(0.5)
-                              .hex(),
-                          },
-                        },
-                      });
+
+                      // Reapply current config without any changes
+                      bars.config({});
+                      
+                      // Highlight corresponding bar label
                       barLabels.config({
                         attributes: {
                           [`.label:nth-child(${d.index + 1}) > text`]: {
@@ -71,9 +70,11 @@
                     callback: (e, d) => {
                       console.log('# mouseout');
                       console.log(d);
-                      bars.config({
-                        attributes: { [`.bar:nth-child(${d.index + 1}) > rect`]: null },
-                      });
+
+                      // Reapply current config without any changes
+                      bars.config({});
+                      
+                      // Remove highlight of corresponding bar label
                       barLabels.config({
                         attributes: { [`.label:nth-child(${d.index + 1}) > text`]: null },
                       });
@@ -88,7 +89,6 @@
                   text: {
                     'dominant-baseline': 'auto',
                     transform: 'translate(0, -2)',
-                    'font-weight': 'normal',
                   },
                 },
                 bars: bars,

@@ -37,38 +37,19 @@
               (bars = respVis.bars().config({
                 attributes: {
                   'grid-area': '2 / 3 / 3 / 4',
+                  '.bar > rect': { fill: respVis.colors.categorical[0] },
+                  // Highlight hovered bars
+                  '.bar:hover > rect': {
+                    fill: respVis.chroma.hex(respVis.colors.categorical[0]).brighten(0.5).hex(),
+                  },
                 },
                 categories: categories,
                 values: values,
                 orientation: respVis.BarOrientation.Vertical,
                 events: [
-                  {
-                    typenames: 'mouseover',
-                    callback: (e, d) => {
-                      console.log('# mouseover');
-                      console.log(d);
-                      bars.config({
-                        attributes: {
-                          [`.bar:nth-child(${d.index + 1}) > rect`]: {
-                            fill: respVis.chroma
-                              .hex(d.rectElement.getAttribute('fill'))
-                              .brighten(0.5)
-                              .hex(),
-                          },
-                        },
-                      });
-                    },
-                  },
-                  {
-                    typenames: 'mouseout',
-                    callback: (e, d) => {
-                      console.log('# mouseout');
-                      console.log(d);
-                      bars.config({
-                        attributes: { [`.bar:nth-child(${d.index + 1}) > rect`]: null },
-                      });
-                    },
-                  },
+                  // Call config with an empty object to reapply the current config 
+                  { typenames: 'mouseover', callback: () => bars.config({}) },
+                  { typenames: 'mouseout', callback: () => bars.config({}) },
                 ],
               })),
               // Left axis

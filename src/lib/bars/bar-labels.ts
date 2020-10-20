@@ -35,6 +35,7 @@ export class BarLabelsComponent extends Component<IBarLabelsConfig> implements I
           text: {
             'text-anchor': 'middle',
             'dominant-baseline': 'middle',
+            'font-weight': 'normal',
           },
         },
         conditionalConfigs: [],
