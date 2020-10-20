@@ -92,7 +92,6 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
       .call(applyAttributes, this.activeConfig().attributes);
 
     const barsSelection = this.selection().selectAll<SVGGElement, unknown>('.bar');
-
     this.activeConfig().events.forEach((eventConfig) =>
       barsSelection.on(eventConfig.typenames, function (e: Event) {
         const index = Array.prototype.indexOf.call(this.parentNode!.children, this);

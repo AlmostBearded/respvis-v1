@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <title>RespVis - Interactive Grouped Bar Chart</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      #chart {
+        width: 100%;
+        height: 50vh;
+        min-height: 25rem;
+      }
+
+      body {
+        background-color: floralwhite;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Interactive Grouped Bar Chart</h1>
+    <div id="chart"></div>
+    <script src="../respvis.js"></script>
+    <script>
+      function generateLegend(categories, colors) {
+        function generateSwatch(color, text) {
+          return respVis.group().config({
+            attributes: {
+              'grid-template': 'auto / 5 auto 5 auto 5',
+            },
+            children: [
+              respVis.rect().config({
+                attributes: {
+                  'grid-area': '1 / 2 / 2 / 3',
+                  'place-self': 'center end',
+                },
+                size: { width: 15, height: 15 },
+                fill: color,
+              }),
+              respVis.text().config({
+                attributes: {
+                  'grid-area': '1 / 4 / 2 / 5',
+                  'place-self': 'center start',
+                },
+                text: text,
+              }),
+            ],
+          });
+        }
+
+        return respVis.group().config({
+          attributes: {
+            'grid-template': `auto / ${categories.map(() => 'auto').join(' ')}`,
+          },
+          children: categories.map((category, i) =>
+            generateSwatch(colors[i], category).config({
+              attributes: { 'grid-area': `1 / ${i + 1} / 2 / ${i + 2}` },
+            })
+          ),
+        });
+      }
+
+      var categories = ['Vienna', 'Rome', 'Paris', 'Berlin', 'Amsterdam'];
+      var years = ['2018', '2019', '2020'];
+      var values = [
+        [23, 27, 29],
+        [15, 13, 16],
+        [43, 55, 70],
+        [30, 24, 28],
+        [12, 14, 18],
+      ];
+
+      var bars;
+
+      respVis
+        .chart()
+        .root(
+          respVis.group().config({
+            attributes: {
+              'grid-template': '10 auto 1fr 10 / 10 auto 10',
+            },
+            children: [
+              respVis.group().config({
+                attributes: {
+                  'grid-area': '3 / 2 / 4 / 3',
+                  'grid-template': '1fr auto / auto 1fr',
+                },
+                children: [
+                  // Bars
+                  (bars = respVis.groupedBars().config({
+                    attributes: Object.assign(
+                      { 'grid-area': '1 / 2 / 2 / 3' },
+                      ...years.map((v, i) => ({
+                        [`.bar:nth-child(${i + 1}):hover > rect`]: {
+                          fill: respVis.chroma
+                            .hex(respVis.GroupedBarsComponent.defaultColors[i])
+                            .brighten(0.5)
+                            .hex(),
+                        },
+                      }))
+                    ),
+                    categories: categories,
+                    values: values,
+                    orientation: respVis.BarOrientation.Vertical,
+                    events: [
+                      // Call config with an empty object to reapply the current config
+                      { typenames: 'mouseover', callback: (e, d) => bars.config({}) },
+                      { typenames: 'mouseout', callback: (e, d) => bars.config({}) },
+                    ],
+                  })),
+                  // Left axis
+                  respVis.leftAxis().config({
+                    attributes: {
+                      'grid-area': '1 / 1 / 2 / 2',
+                    },
+                    ticks: {
+                      scale: bars.valuesScale(),
+                    },
+                    title: {
+                      text: 'Revenue',
+                    },
+                  }),
+                  // Bottom axis
+                  respVis.bottomAxis().config({
+                    attributes: {
+                      'grid-area': '2 / 2 / 3 / 3',
+                    },
+                    ticks: {
+                      scale: bars.categoriesScale(),
+                    },
+                    title: {
+                      text: 'Locations',
+                    },
+                  }),
+                ],
+              }),
+              generateLegend(years, respVis.GroupedBarsComponent.defaultColors).config({
+                attributes: { 'grid-area': '2 / 2 / 3 / 3' },
+              }),
+            ],
+          })
+        )
+        .mount('#chart');
+    </script>
+  </body>
+</html>

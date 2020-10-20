@@ -5,7 +5,7 @@ import {
   IGroupedBarPositionerConfig,
   IGroupedBars,
 } from './grouped-bar-positioner';
-import { BaseType, Selection, select, create } from 'd3-selection';
+import { BaseType, Selection, select, create, selection } from 'd3-selection';
 import { IBarPositionerConfig, Orientation } from './bar-positioner';
 import { renderBars } from './bars';
 import { ScaleBand, ScaleLinear } from 'd3-scale';
@@ -17,6 +17,15 @@ import chroma from 'chroma-js';
 
 export interface IGroupedBarsConfig extends IComponentConfig, IGroupedBarPositionerConfig {
   transitionDuration: number;
+  events: { typenames: string; callback: (event: Event, data: IGroupedBarsEventData) => void }[];
+}
+
+export interface IGroupedBarsEventData {
+  groupIndex: number;
+  barIndex: number;
+  barGroupElement: SVGGElement;
+  barElement: SVGGElement;
+  rectElement: SVGRectElement;
 }
 
 export interface IGroupedBarsComponent extends IComponent<IGroupedBarsConfig>, IGroupedBars {}
@@ -52,6 +61,7 @@ export class GroupedBarsComponent
           }))
         ),
         conditionalConfigs: [],
+        events: [],
       },
       Component.mergeConfigs
     );
@@ -98,6 +108,26 @@ export class GroupedBarsComponent
       });
 
     this.selection().call(applyAttributes, this.activeConfig().attributes);
+
+    const rectsSelection = this.selection().selectAll<SVGRectElement, unknown>('.bar > rect');
+    this.activeConfig().events.forEach((eventConfig) =>
+      rectsSelection.on(eventConfig.typenames, function (e: Event) {
+        const barElement = this.parentNode!;
+        const barGroupElement = barElement.parentNode!;
+
+        const indexOf = Array.prototype.indexOf;
+        const groupIndex = indexOf.call(barGroupElement.parentNode!.children, barGroupElement);
+        const barIndex = indexOf.call(barGroupElement.children, barElement);
+
+        eventConfig.callback(e, {
+          groupIndex: groupIndex,
+          barIndex: barIndex,
+          barGroupElement: barGroupElement as SVGGElement,
+          barElement: barElement as SVGGElement,
+          rectElement: this,
+        });
+      })
+    );
 
     return this;
   }
