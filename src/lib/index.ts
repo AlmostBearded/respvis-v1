@@ -1,6 +1,8 @@
 import chroma from 'chroma-js';
 export { chroma };
 
+export * as colors from './colors';
+
 export { chart, Chart, IChart } from './chart/chart';
 export { computeLayout, applyLayoutTransforms, ILayoutStyle } from './layout/layout';
 export { group, Group, IGroup, IGroupConfig } from './components/group';
