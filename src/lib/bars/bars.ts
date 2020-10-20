@@ -18,8 +18,6 @@ import { categorical as categoricalColors } from '../colors';
 import chroma from 'chroma-js';
 
 export interface IBarsComponentConfig extends IComponentConfig, IBarPositionerConfig {
-  color: string;
-  colors: string[];
   transitionDuration: number;
   events: { typenames: string; callback: (event: Event, data: IBarsEventData) => void }[];
 }
@@ -41,14 +39,18 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
       {
         categories: [],
         values: [],
-        color: categoricalColors[0],
-        colors: [],
         flipCategories: false,
         flipValues: false,
         orientation: Orientation.Vertical,
         categoryPadding: 0.1,
         transitionDuration: 0,
-        attributes: {},
+        attributes: {
+          '.bar > rect': {
+            fill: categoricalColors[0],
+            stroke: chroma.hex(categoricalColors[0]).darken(2).hex(),
+            'stroke-width': 4,
+          },
+        },
         conditionalConfigs: [],
         events: [],
       },
@@ -58,11 +60,7 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
   }
 
   protected _applyConfig(config: IBarsComponentConfig): void {
-    if (config.colors.length !== config.values.length) {
-      config.colors = config.values.map(() => config.color);
-    }
     this._barPositioner.config(config);
-    this._applyBarColors();
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
@@ -83,15 +81,13 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
   protected _afterResize(): void {}
 
   render(animated: boolean): this {
-    this.selection().call(
-      renderBars,
-      this._barPositioner.bars(),
-      animated ? this.activeConfig().transitionDuration : 0
-    );
-
-    this._applyBarColors();
-
-    this.selection().call(applyAttributes, this.activeConfig().attributes);
+    this.selection()
+      .call(
+        renderBars,
+        this._barPositioner.bars(),
+        animated ? this.activeConfig().transitionDuration : 0
+      )
+      .call(applyAttributes, this.activeConfig().attributes);
 
     const barsSelection = this.selection().selectAll<SVGGElement, unknown>('.bar');
 
@@ -107,18 +103,6 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
     );
 
     return this;
-  }
-
-  private _applyBarColors(): void {
-    this.selection()
-      .selectAll<SVGRectElement, unknown>('.bar > rect')
-      .each((d, i, nodes) => {
-        select(nodes[i]).call(applyAttributes, {
-          fill: this.activeConfig().colors[i],
-          stroke: chroma.hex(this.activeConfig().colors[i]).darken(2).hex(),
-          'stroke-width': 4,
-        });
-      });
   }
 
   renderOrder(): number {

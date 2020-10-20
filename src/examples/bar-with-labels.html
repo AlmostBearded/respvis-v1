@@ -45,10 +45,15 @@
                   {
                     typenames: 'mouseover',
                     callback: (e, d) => {
-                      bars.config((c) => {
-                        const colors = c.colors;
-                        colors[d.index] = respVis.chroma.hex(c.color).brighten(0.5).hex();
-                        return { colors: colors };
+                      bars.config({
+                        attributes: {
+                          [`.bar:nth-child(${d.index + 1}) > rect`]: {
+                            fill: respVis.chroma
+                              .hex(d.rectElement.getAttribute('fill'))
+                              .brighten(0.5)
+                              .hex(),
+                          },
+                        },
                       });
                       barLabels.config({
                         attributes: {
@@ -62,15 +67,11 @@
                   {
                     typenames: 'mouseout',
                     callback: (e, d) => {
-                      bars.config((c) => {
-                        const colors = c.colors;
-                        colors[d.index] = c.color;
-                        return { colors: colors };
+                      bars.config({
+                        attributes: { [`.bar:nth-child(${d.index + 1}) > rect`]: null },
                       });
                       barLabels.config({
-                        attributes: {
-                          [`.label:nth-child(${d.index + 1}) > text`]: null,
-                        },
+                        attributes: { [`.label:nth-child(${d.index + 1}) > text`]: null },
                       });
                     },
                   },
