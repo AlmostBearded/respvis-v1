@@ -96,7 +96,7 @@ export function deepExtend(target: any, ...args: any[]) {
     if (!obj) continue;
     for (const key in obj) {
       if (obj.hasOwnProperty(key)) {
-        if (!obj[key]) {
+        if (obj[key] === null) {
           delete target[key];
         } else if (typeof obj[key] === 'object') {
           if (obj[key] instanceof Array == true) {

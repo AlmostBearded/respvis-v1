@@ -9,7 +9,7 @@ export { group, Group, IGroup, IGroupConfig } from './components/group';
 export { text, Text, IText, titleAttributes, verticalTextAttributes } from './components/text';
 export { rect, Rect, IRect, IRectConfig } from './components/rect';
 export { bars, BarsComponent, IBarsComponent } from './bars/bars';
-export { groupedBars, GroupedBars, IGroupedBars } from './bars/grouped-bars';
+export { groupedBars, GroupedBarsComponent, IGroupedBarsComponent } from './bars/grouped-bars';
 
 export {
   axis,

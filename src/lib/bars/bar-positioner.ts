@@ -1,8 +1,7 @@
 import { scaleBand, ScaleBand, scaleLinear, ScaleLinear } from 'd3-scale';
 import { max, Primitive } from 'd3-array';
-import { ISize } from '../utils';
+import { deepExtend, ISize } from '../utils';
 import { Rect } from '../rect';
-import extend from 'extend';
 
 export enum Orientation {
   Vertical,
@@ -51,7 +50,7 @@ export class BarPositioner implements IBarPositioner {
   config(): IBarPositionerConfig;
   config(config?: IBarPositionerConfig): any {
     if (config === undefined) return this._config;
-    extend(true, this._config, config);
+    deepExtend(this._config, config);
     return this;
   }
 
