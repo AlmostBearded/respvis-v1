@@ -9,12 +9,10 @@ import { Rect } from '../rect';
 import { applyAttributes, deepExtend, ISize } from '../utils';
 import { categorical as categoricalColors } from '../colors';
 import chroma from 'chroma-js';
-import { applyLayoutTransforms } from '../layout/layout';
 
 export interface IGroupedBarsConfig extends IComponentConfig {
   categories: string[];
   values: number[][];
-  colors: string[];
   orientation: Orientation;
   flipCategories: boolean;
   flipSubcategories: boolean;
@@ -29,13 +27,14 @@ export interface IGroupedBars extends IComponent<IGroupedBarsConfig>, IGroupedBa
 export class GroupedBars extends Component<IGroupedBarsConfig> implements IGroupedBars {
   private _barPositioner: IGroupedBarPositioner = new GroupedBarPositioner();
 
+  static defaultColors = categoricalColors;
+
   constructor() {
     super(
       create<SVGElement>('svg:g').classed('bars', true),
       {
         categories: [],
         values: [],
-        colors: categoricalColors,
         flipCategories: false,
         flipSubcategories: false,
         flipValues: false,
@@ -43,29 +42,25 @@ export class GroupedBars extends Component<IGroupedBarsConfig> implements IGroup
         categoryPadding: 0.1,
         subcategoryPadding: 0.1,
         transitionDuration: 0,
-        attributes: {},
+        attributes: Object.assign(
+          {},
+          ...GroupedBars.defaultColors.map((c, i) => ({
+            [`.bar:nth-child(${i + 1}) > rect`]: {
+              fill: c,
+              stroke: chroma.hex(c).darken(2).hex(),
+              'stroke-width': 4,
+            },
+          }))
+        ),
         conditionalConfigs: [],
       },
       Component.mergeConfigs
     );
+
     this._applyConditionalConfigs();
   }
 
   protected _applyConfig(config: IGroupedBarsConfig): void {
-    const subcategoryCount = config.values?.[0]?.length || 0;
-    config.colors = config.colors.slice(0, subcategoryCount);
-
-    deepExtend(
-      config.attributes,
-      ...config.colors.map((c, i) => ({
-        [`.bar:nth-child(${i + 1}) > rect`]: {
-          fill: c,
-          stroke: chroma.hex(c).darken(2).hex(),
-          'stroke-width': 4,
-        },
-      }))
-    );
-
     this._barPositioner
       .categories(config.categories)
       .values(config.values)
