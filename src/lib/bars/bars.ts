@@ -33,6 +33,8 @@ export interface IBarsEventData {
 export class BarsComponent extends Component<IBarsComponentConfig> implements IBarsComponent {
   private _barPositioner: IBarPositioner = new BarPositioner();
 
+  static defaultColor = categoricalColors[0];
+
   constructor() {
     super(
       create<SVGElement>('svg:g').classed('bars', true),
@@ -46,8 +48,8 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
         transitionDuration: 0,
         attributes: {
           '.bar > rect': {
-            fill: categoricalColors[0],
-            stroke: chroma.hex(categoricalColors[0]).darken(2).hex(),
+            fill: BarsComponent.defaultColor,
+            stroke: chroma.hex(BarsComponent.defaultColor).darken(2).hex(),
             'stroke-width': 4,
           },
         },

@@ -37,9 +37,11 @@
               (bars = respVis.bars().config({
                 attributes: {
                   'grid-area': '2 / 3 / 3 / 4',
-                  '.bar > rect': { fill: respVis.colors.categorical[0] },
                   '.bar:hover > rect': {
-                    fill: respVis.chroma.hex(respVis.colors.categorical[0]).brighten(0.5).hex(),
+                    fill: respVis.chroma
+                      .hex(respVis.BarsComponent.defaultColor)
+                      .brighten(0.5)
+                      .hex(),
                   },
                 },
                 categories: categories,
@@ -54,7 +56,7 @@
 
                       // Reapply current config without any changes
                       bars.config({});
-                      
+
                       // Highlight corresponding bar label
                       barLabels.config({
                         attributes: {
@@ -73,7 +75,7 @@
 
                       // Reapply current config without any changes
                       bars.config({});
-                      
+
                       // Remove highlight of corresponding bar label
                       barLabels.config({
                         attributes: { [`.label:nth-child(${d.index + 1}) > text`]: null },
