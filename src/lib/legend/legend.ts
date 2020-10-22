@@ -1,7 +1,7 @@
 import { IComponent, IComponentConfig } from '../component';
 import { Selection, BaseType, select } from 'd3-selection';
 import { Primitive } from 'd3-array';
-import { renderClippedRect } from '../bars/bars';
+import { renderClippedRect } from '../components/bars/bars';
 import { Text } from '../components/text';
 import { IStringable } from '../utils';
 

@@ -1,7 +1,7 @@
 import { BaseType, select, Selection } from 'd3-selection';
 import debounce from 'debounce';
-import { IComponent, IComponentConfig } from '../component';
-import { applyLayoutTransforms, computeLayout } from '../layout/layout';
+import { IComponent, IComponentConfig } from './component';
+import { applyLayoutTransforms, computeLayout } from './layout/layout';
 
 export interface IChart {
   mount(containerSelector: string): this;

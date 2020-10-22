@@ -3,13 +3,13 @@ export { chroma };
 
 export * as colors from './colors';
 
-export { chart, Chart, IChart } from './chart/chart';
+export { chart, Chart, IChart } from './chart';
 export { computeLayout, applyLayoutTransforms, ILayoutStyle } from './layout/layout';
 export { group, Group, IGroup, IGroupConfig } from './components/group';
 export { text, Text, IText, titleAttributes, verticalTextAttributes } from './components/text';
 export { rect, Rect, IRect, IRectConfig } from './components/rect';
-export { bars, BarsComponent, IBarsComponent } from './bars/bars';
-export { groupedBars, GroupedBarsComponent, IGroupedBarsComponent } from './bars/grouped-bars';
+export { bars, BarsComponent, IBarsComponent } from './components/bars/bars';
+export { groupedBars, GroupedBarsComponent, IGroupedBarsComponent } from './components/bars/grouped-bars';
 
 export {
   axis,
@@ -20,7 +20,7 @@ export {
   Axis,
   IAxis,
   IAxisConfig,
-} from './axis/axis';
+} from './components/axis';
 
 export {
   ticks,
@@ -31,7 +31,7 @@ export {
   Ticks,
   ITicks,
   Position,
-} from './axis/ticks';
+} from './components/ticks';
 
 export {
   barLabels,
@@ -39,7 +39,7 @@ export {
   BarLabelsComponent,
   IBarLabelsComponent,
   IBarLabelsConfig,
-} from './bars/bar-labels';
+} from './components/bars/bar-labels';
 
 export { legend, Legend, ILegend } from './legend/legend';
 
@@ -48,13 +48,13 @@ export {
   IBarPositioner,
   BarPositioner,
   Orientation as BarOrientation,
-} from './bars/bar-positioner';
+} from './components/bars/bar-positioner';
 
 export {
   groupedBarPositioner,
   IGroupedBarPositioner,
   GroupedBarPositioner,
-} from './bars/grouped-bar-positioner';
+} from './components/bars/grouped-bar-positioner';
 
 export {
   barPointPositioner,
@@ -62,4 +62,4 @@ export {
   HorizontalPosition,
   VerticalPosition,
   IBarPointPositioner,
-} from './bars/bar-point-positioner';
+} from './components/bars/bar-point-positioner';

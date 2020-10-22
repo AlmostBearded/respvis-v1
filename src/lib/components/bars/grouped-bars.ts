@@ -1,4 +1,4 @@
-import { Component, IComponent, IComponentConfig } from '../component';
+import { Component, IComponent, IComponentConfig } from '../../component';
 import {
   IGroupedBarPositioner,
   GroupedBarPositioner,
@@ -10,9 +10,9 @@ import { IBarPositionerConfig, Orientation } from './bar-positioner';
 import { renderBars } from './bars';
 import { ScaleBand, ScaleLinear } from 'd3-scale';
 import { Primitive } from 'd3-array';
-import { Rect } from '../rect';
-import { applyAttributes, deepExtend, ISize } from '../utils';
-import { categorical as categoricalColors } from '../colors';
+import { Rect } from '../../rect';
+import { applyAttributes, deepExtend, ISize } from '../../utils';
+import { categorical as categoricalColors } from '../../colors';
 import chroma from 'chroma-js';
 
 export interface IGroupedBarsConfig extends IComponentConfig, IGroupedBarPositionerConfig {

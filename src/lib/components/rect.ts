@@ -1,6 +1,6 @@
 import { Selection, BaseType, create } from 'd3-selection';
 import { stringify } from 'uuid';
-import { renderClippedRect } from '../bars/bars';
+import { renderClippedRect } from './bars/bars';
 import { Component, IComponent, IComponentConfig } from '../component';
 import { applyLayoutTransforms } from '../layout/layout';
 import { applyAttributes, ISize } from '../utils';

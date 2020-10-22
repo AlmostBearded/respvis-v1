@@ -1,8 +1,8 @@
 import { IBarPositioner, Orientation, IBars } from './bar-positioner';
-import { deepExtend, ISize } from '../utils';
+import { deepExtend, ISize } from '../../utils';
 import { ScaleBand, ScaleLinear, scaleBand, scaleLinear } from 'd3-scale';
 import { Primitive, max, range } from 'd3-array';
-import { Rect } from '../rect';
+import { Rect } from '../../rect';
 
 export interface IGroupedBars extends IBars {
   subcategoriesScale(): ScaleBand<Primitive>;

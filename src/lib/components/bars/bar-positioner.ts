@@ -1,7 +1,7 @@
 import { scaleBand, ScaleBand, scaleLinear, ScaleLinear } from 'd3-scale';
 import { max, Primitive } from 'd3-array';
-import { deepExtend, ISize } from '../utils';
-import { Rect } from '../rect';
+import { deepExtend, ISize } from '../../utils';
+import { Rect } from '../../rect';
 
 export enum Orientation {
   Vertical,

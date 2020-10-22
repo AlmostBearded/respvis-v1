@@ -1,5 +1,5 @@
-import { Component, IComponent, IComponentConfig } from '../component';
-import { applyAttributes, Attributes, deepExtend, ISize } from '../utils';
+import { Component, IComponent, IComponentConfig } from '../../component';
+import { applyAttributes, Attributes, deepExtend, ISize } from '../../utils';
 import {
   BarPositioner,
   Orientation,
@@ -13,8 +13,8 @@ import { Primitive } from 'd3-array';
 import 'd3-transition';
 import { v4 as uuidv4 } from 'uuid';
 import { Transition } from 'd3-transition';
-import { IRect, Rect } from '../rect';
-import { categorical as categoricalColors } from '../colors';
+import { IRect, Rect } from '../../rect';
+import { categorical as categoricalColors } from '../../colors';
 import chroma from 'chroma-js';
 
 export interface IBarsComponentConfig extends IComponentConfig, IBarPositionerConfig {

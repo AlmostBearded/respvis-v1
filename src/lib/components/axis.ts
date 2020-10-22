@@ -2,14 +2,14 @@ import { Selection, select, BaseType, create } from 'd3-selection';
 import { axisLeft, axisBottom, axisTop, axisRight, AxisScale, Axis as D3Axis } from 'd3-axis';
 import { Component, IComponent, IComponentConfig, MergeConfigsFn } from '../component';
 import { ITicks, ITicksConfig, Position, Ticks } from './ticks';
-import { Group, IGroup, IGroupConfig } from '../components/group';
+import { Group, IGroup, IGroupConfig } from './group';
 import {
   Text,
   IText,
   ITextConfig,
   verticalTextAttributes,
   titleAttributes,
-} from '../components/text';
+} from './text';
 import { deepExtend } from '../utils';
 
 export interface IAxisConfig extends IComponentConfig {

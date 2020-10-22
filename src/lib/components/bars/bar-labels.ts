@@ -1,4 +1,4 @@
-import { Component, IComponent, IComponentConfig } from '../component';
+import { Component, IComponent, IComponentConfig } from '../../component';
 import {
   BarPointPositioner,
   HorizontalPosition,
@@ -8,7 +8,7 @@ import {
   Position,
   VerticalPosition,
 } from './bar-point-positioner';
-import { IStringable, ISize, applyAttributes } from '../utils';
+import { IStringable, ISize, applyAttributes } from '../../utils';
 import { Selection, BaseType, create } from 'd3-selection';
 import { IBarPositioner } from './bar-positioner';
 import extend from 'extend';

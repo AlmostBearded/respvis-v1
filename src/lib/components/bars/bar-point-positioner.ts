@@ -1,5 +1,5 @@
 import { IBarPositioner, IBars } from './bar-positioner';
-import { Size } from '../utils';
+import { Size } from '../../utils';
 import extend from 'extend';
 
 export enum HorizontalPosition {
