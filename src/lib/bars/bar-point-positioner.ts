@@ -1,6 +1,5 @@
-import { IBarPositioner, IBars } from './bar-positioner';
-import { Size } from '../../utils';
-import extend from 'extend';
+import { utils } from '../core';
+import { IBars } from './bar-positioner';
 
 export enum HorizontalPosition {
   Left = 0,
@@ -14,10 +13,8 @@ export enum VerticalPosition {
   Bottom = 2,
 }
 
-export interface IPosition { x: number; y: number };
-
 export interface IPoints {
-  points(): IPosition[];
+  points(): utils.IPosition[];
 }
 
 export interface IBarPointPositionerConfig {
@@ -37,22 +34,24 @@ export class BarPointPositioner implements IBarPointPositioner {
   constructor() {
     this._config = {
       horizontalPosition: HorizontalPosition.Center,
-      verticalPosition: VerticalPosition.Center
-    }
+      verticalPosition: VerticalPosition.Center,
+    };
   }
 
   config(config: IBarPointPositionerConfig): this;
   config(): IBarPointPositionerConfig;
   config(config?: IBarPointPositionerConfig): any {
     if (config === undefined) return this._config;
-    extend(true, this._config, config);
+    const bars = config.bars || this._config.bars;
+    utils.deepExtend(this._config, config);
+    this._config.bars = bars;
     return this;
   }
 
-  points(): IPosition[] {
+  points(): utils.IPosition[] {
     const bars = this._config.bars?.bars() || [];
     const sizePercents = [0, 0.5, 1];
-    const points: IPosition[] = [];
+    const points: utils.IPosition[] = [];
     for (let i = 0; i < bars.length; ++i) {
       points.push({
         x: bars[i].x + bars[i].width * sizePercents[this._config.horizontalPosition],

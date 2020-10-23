@@ -1,8 +1,7 @@
-import { Component, IComponent, IComponentConfig } from '../component';
-import { Selection, BaseType, select, create } from 'd3-selection';
-import { Axis, axisBottom, axisLeft, axisRight, AxisScale, axisTop } from 'd3-axis';
+import { AxisScale, Axis, axisLeft, axisBottom, axisTop, axisRight } from 'd3-axis';
 import { scaleLinear } from 'd3-scale';
-import { applyAttributes, Attributes } from '../utils';
+import { BaseType, create, select, Selection } from 'd3-selection';
+import { Component, IComponent, IComponentConfig, utils } from '../core';
 
 export enum Position {
   Left,
@@ -70,7 +69,7 @@ export class Ticks extends Component<ITicksConfig> implements ITicks {
   render(animated: boolean): this {
     this.selection()
       .call(Ticks._renderFunctionByPosition.get(this._labelPosition)!, this.activeConfig().scale)
-      .call(applyAttributes, this.activeConfig().attributes);
+      .call(utils.applyAttributes, this.activeConfig().attributes);
     return this;
   }
 

@@ -19,45 +19,9 @@
     <h1>Interactive Grouped Bar Chart</h1>
     <div id="chart"></div>
     <script src="../respvis.js"></script>
+    <script src="./components/axis.js"></script>
+    <script src="./components/swatch-legend.js"></script>
     <script>
-      function generateLegend(categories, colors) {
-        function generateSwatch(color, text) {
-          return respVis.group().config({
-            attributes: {
-              'grid-template': 'auto / 5 auto 5 auto 5',
-            },
-            children: [
-              respVis.rect().config({
-                attributes: {
-                  'grid-area': '1 / 2 / 2 / 3',
-                  'place-self': 'center end',
-                },
-                size: { width: 15, height: 15 },
-                fill: color,
-              }),
-              respVis.text().config({
-                attributes: {
-                  'grid-area': '1 / 4 / 2 / 5',
-                  'place-self': 'center start',
-                },
-                text: text,
-              }),
-            ],
-          });
-        }
-
-        return respVis.group().config({
-          attributes: {
-            'grid-template': `auto / ${categories.map(() => 'auto').join(' ')}`,
-          },
-          children: categories.map((category, i) =>
-            generateSwatch(colors[i], category).config({
-              attributes: { 'grid-area': `1 / ${i + 1} / 2 / ${i + 2}` },
-            })
-          ),
-        });
-      }
-
       var categories = ['Vienna', 'Rome', 'Paris', 'Berlin', 'Amsterdam'];
       var years = ['2018', '2019', '2020'];
       var values = [
@@ -107,32 +71,23 @@
                     ],
                   })),
                   // Left axis
-                  respVis.leftAxis().config({
-                    attributes: {
-                      'grid-area': '1 / 1 / 2 / 2',
-                    },
-                    ticks: {
-                      scale: bars.valuesScale(),
-                    },
-                    title: {
-                      text: 'Revenue',
-                    },
-                  }),
+                  leftAxis()
+                    .config({ attributes: { 'grid-area': '1 / 1 / 2 / 2' } })
+                    .call((c) => c.ticks.config({ scale: bars.valuesScale() }))
+                    .call((c) => c.title.config({ text: 'Revenue' })),
                   // Bottom axis
-                  respVis.bottomAxis().config({
-                    attributes: {
-                      'grid-area': '2 / 2 / 3 / 3',
-                    },
-                    ticks: {
-                      scale: bars.categoriesScale(),
-                    },
-                    title: {
-                      text: 'Locations',
-                    },
-                  }),
+                  bottomAxis()
+                    .config({ attributes: { 'grid-area': '2 / 2 / 3 / 3' } })
+                    .call((c) => c.ticks.config({ scale: bars.categoriesScale() }))
+                    .call((c) => c.title.config({ text: 'Locations' })),
                 ],
               }),
-              generateLegend(years, respVis.GroupedBarsComponent.defaultColors).config({
+              swatchLegend(
+                years,
+                respVis.GroupedBarsComponent.defaultColors,
+                1,
+                years.length
+              ).config({
                 attributes: { 'grid-area': '2 / 2 / 3 / 3' },
               }),
             ],

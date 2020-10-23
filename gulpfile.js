@@ -19,6 +19,7 @@ const browserSync = require('browser-sync').create();
 
 const del = require('del');
 const rename = require('gulp-rename');
+const path = require('path');
 
 // # Private tasks
 
@@ -64,6 +65,10 @@ function copyHTMLFiles() {
   return gulp.src('./src/**/*.html').pipe(gulp.dest('./dist'));
 }
 
+function copyExampleScripts() {
+  return gulp.src('./src/examples/**/*.js').pipe(gulp.dest('./dist/examples'));
+}
+
 // ## Reload browser
 
 function reloadBrowser(cb) {
@@ -79,10 +84,7 @@ exports.clean = function clean() {
 
 exports.build = gulp.series([
   exports.clean,
-  gulp.parallel([
-    bundleJSLib,
-    /*bundleJSLibMin, bundleJSLibMinZipped,*/ copyHTMLFiles,
-  ]),
+  gulp.parallel([bundleJSLib, /*bundleJSLibMin, bundleJSLibMinZipped,*/ copyHTMLFiles, copyExampleScripts]),
 ]);
 
 exports.serve = function serve() {

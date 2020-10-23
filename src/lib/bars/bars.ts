@@ -1,21 +1,24 @@
-import { Component, IComponent, IComponentConfig } from '../../component';
-import { applyAttributes, Attributes, deepExtend, ISize } from '../../utils';
+import {
+  Rect,
+  renderClippedRect,
+  colors,
+  utils,
+  Component,
+  IComponent,
+  IComponentConfig,
+  chroma,
+} from '../core';
 import {
   BarPositioner,
-  Orientation,
+  BarOrientation,
   IBarPositioner,
   IBars,
   IBarPositionerConfig,
 } from './bar-positioner';
 import { select, Selection, BaseType, create } from 'd3-selection';
-import { scaleBand, scaleLinear, ScaleBand, ScaleLinear } from 'd3-scale';
+import { ScaleBand, ScaleLinear } from 'd3-scale';
 import { Primitive } from 'd3-array';
 import 'd3-transition';
-import { v4 as uuidv4 } from 'uuid';
-import { Transition } from 'd3-transition';
-import { IRect, Rect } from '../../rect';
-import { categorical as categoricalColors } from '../../colors';
-import chroma from 'chroma-js';
 
 export interface IBarsComponentConfig extends IComponentConfig, IBarPositionerConfig {
   transitionDuration: number;
@@ -33,7 +36,7 @@ export interface IBarsEventData {
 export class BarsComponent extends Component<IBarsComponentConfig> implements IBarsComponent {
   private _barPositioner: IBarPositioner = new BarPositioner();
 
-  static defaultColor = categoricalColors[0];
+  static defaultColor = colors.categorical[0];
 
   constructor() {
     super(
@@ -43,7 +46,7 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
         values: [],
         flipCategories: false,
         flipValues: false,
-        orientation: Orientation.Vertical,
+        orientation: BarOrientation.Vertical,
         categoryPadding: 0.1,
         transitionDuration: 0,
         attributes: {
@@ -89,7 +92,7 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
         this._barPositioner.bars(),
         animated ? this.activeConfig().transitionDuration : 0
       )
-      .call(applyAttributes, this.activeConfig().attributes);
+      .call(utils.applyAttributes, this.activeConfig().attributes);
 
     const barsSelection = this.selection().selectAll<SVGGElement, unknown>('.bar');
     this.activeConfig().events.forEach((eventConfig) =>
@@ -138,43 +141,4 @@ export function renderBars(
     .join('g')
     .classed('bar', true)
     .each((d, i, nodes) => select(nodes[i]).call(renderClippedRect, { ...d }, transitionDuration));
-}
-
-export function renderClippedRect(
-  selection: Selection<SVGGElement, unknown, BaseType, unknown>,
-  attributes: Attributes,
-  transitionDuration: number
-): void {
-  let clipId: string;
-
-  selection
-    // Casting to disable type checking as the latest d3-selection types don't contain selectChildren yet.
-    .call((s: any) =>
-      (s.selectChildren('clipPath') as Selection<SVGClipPathElement, unknown, BaseType, unknown>)
-        .data([null])
-        .join((enter) =>
-          enter
-            .append('clipPath')
-            .attr('id', (clipId = uuidv4()))
-            .call((s) => s.append('rect').call(applyAttributes, attributes))
-        )
-
-        .select('rect')
-        .transition()
-        .duration(transitionDuration)
-        .call(applyAttributes, attributes)
-    )
-    .call((s: any) =>
-      (s.selectChildren('rect') as Selection<SVGRectElement, unknown, BaseType, unknown>)
-        .data([null])
-        .join((enter) =>
-          enter
-            .append('rect')
-            .attr('clip-path', `url(#${clipId})`)
-            .call(applyAttributes, attributes)
-        )
-        .transition()
-        .duration(transitionDuration)
-        .call(applyAttributes, attributes)
-    );
 }

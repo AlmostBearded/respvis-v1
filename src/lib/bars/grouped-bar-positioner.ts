@@ -1,8 +1,7 @@
-import { IBarPositioner, Orientation, IBars } from './bar-positioner';
-import { deepExtend, ISize } from '../../utils';
+import { Rect, utils } from '../core';
+import { IBarPositioner, BarOrientation, IBars } from './bar-positioner';
 import { ScaleBand, ScaleLinear, scaleBand, scaleLinear } from 'd3-scale';
 import { Primitive, max, range } from 'd3-array';
-import { Rect } from '../../rect';
 
 export interface IGroupedBars extends IBars {
   subcategoriesScale(): ScaleBand<Primitive>;
@@ -11,7 +10,7 @@ export interface IGroupedBars extends IBars {
 export interface IGroupedBarPositionerConfig {
   categories: string[];
   values: number[][];
-  orientation: Orientation;
+  orientation: BarOrientation;
   flipCategories: boolean;
   flipSubcategories: boolean;
   flipValues: boolean;
@@ -22,7 +21,7 @@ export interface IGroupedBarPositionerConfig {
 export interface IGroupedBarPositioner extends IGroupedBars {
   config(config: IGroupedBarPositionerConfig): this;
   config(): IGroupedBarPositionerConfig;
-  fitInSize(size: ISize): this;
+  fitInSize(size: utils.ISize): this;
 }
 
 export class GroupedBarPositioner implements IGroupedBarPositioner {
@@ -36,7 +35,7 @@ export class GroupedBarPositioner implements IGroupedBarPositioner {
     this._config = {
       categories: [],
       values: [],
-      orientation: Orientation.Vertical,
+      orientation: BarOrientation.Vertical,
       categoryPadding: 0.1,
       subcategoryPadding: 0.1,
       flipCategories: false,
@@ -49,21 +48,21 @@ export class GroupedBarPositioner implements IGroupedBarPositioner {
   config(): IGroupedBarPositionerConfig;
   config(config?: IGroupedBarPositionerConfig): any {
     if (config === undefined) return this._config;
-    deepExtend(this._config, config);
+    utils.deepExtend(this._config, config);
     return this;
   }
 
-  fitInSize(size: ISize): this {
+  fitInSize(size: utils.ISize): this {
     this._categoriesScale.domain(this._config.categories).padding(this._config.categoryPadding);
     this._subcategoriesScale
       .domain(range(this._config.values[0]?.length))
       .padding(this._config.subcategoryPadding);
     this._valuesScale.domain([0, max(this._config.values.map((v) => max(v)!))!]);
 
-    if (this._config.orientation === Orientation.Vertical) {
+    if (this._config.orientation === BarOrientation.Vertical) {
       this._categoriesScale.range(this._config.flipCategories ? [size.width, 0] : [0, size.width]);
       this._valuesScale.range(this._config.flipValues ? [0, size.height] : [size.height, 0]);
-    } else if (this._config.orientation === Orientation.Horizontal) {
+    } else if (this._config.orientation === BarOrientation.Horizontal) {
       this._categoriesScale.range(
         this._config.flipCategories ? [size.height, 0] : [0, size.height]
       );
@@ -81,14 +80,14 @@ export class GroupedBarPositioner implements IGroupedBarPositioner {
         const c = this._config.categories[i];
         const v = subcategoryValues[j];
 
-        if (this._config.orientation === Orientation.Vertical) {
+        if (this._config.orientation === BarOrientation.Vertical) {
           this._bars.push({
             x: this._categoriesScale(c)! + this._subcategoriesScale(j)!,
             y: Math.min(this._valuesScale(0), this._valuesScale(v)),
             width: this._subcategoriesScale.bandwidth(),
             height: Math.abs(this._valuesScale(0) - this._valuesScale(v)),
           });
-        } else if (this._config.orientation === Orientation.Horizontal) {
+        } else if (this._config.orientation === BarOrientation.Horizontal) {
           this._bars.push({
             x: Math.min(this._valuesScale(0), this._valuesScale(v)),
             y: this._categoriesScale(c)! + this._subcategoriesScale(j)!,

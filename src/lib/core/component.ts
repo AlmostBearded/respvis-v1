@@ -1,4 +1,4 @@
-import { Selection, BaseType, select, create, selection } from 'd3-selection';
+import { Selection, BaseType } from 'd3-selection';
 import { applyAttributes, Attributes } from './utils';
 import { deepExtend } from './utils';
 
@@ -28,6 +28,7 @@ export interface IComponent<TConfig extends IComponentConfig> {
   config(configFn: (config: TConfig) => Partial<TConfig>): this;
   config(): TConfig;
   activeConfig(): TConfig;
+  call(componentFn: (component: this) => void): this;
 }
 
 export abstract class Component<TConfig extends IComponentConfig> implements IComponent<TConfig> {
@@ -103,6 +104,11 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
   }
 
   protected abstract _applyConfig(config: TConfig): void;
+
+  call(componentFn: (component: this) => void): this {
+    componentFn(this);
+    return this;
+  }
 
   selection(): Selection<SVGElement, unknown, BaseType, unknown> {
     return this._selection;

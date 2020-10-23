@@ -19,6 +19,7 @@
     <h1>Interactive Bar Chart With Labels</h1>
     <div id="chart"></div>
     <script src="../respvis.js"></script>
+    <script src="./components/axis.js"></script>
     <script>
       var categories = ['Vienna', 'Graz', 'Linz', 'Salzburg', 'Innsbruck', 'Klagenfurt', 'Villach'];
       var values = [1691000, 222000, 205000, 153000, 132000, 91000, 59000];
@@ -99,29 +100,15 @@
                 verticalPosition: respVis.VerticalPosition.Top,
               })),
               // Left axis
-              respVis.leftAxis().config({
-                attributes: {
-                  'grid-area': '2 / 2 / 3 / 3',
-                },
-                ticks: {
-                  scale: bars.valuesScale(),
-                },
-                title: {
-                  text: 'Population',
-                },
-              }),
+              leftAxis()
+                .config({ attributes: { 'grid-area': '2 / 2 / 3 / 3' } })
+                .call((c) => c.ticks.config({ scale: bars.valuesScale() }))
+                .call((c) => c.title.config({ text: 'Population' })),
               // Bottom axis
-              respVis.bottomAxis().config({
-                attributes: {
-                  'grid-area': '3 / 3 / 4 / 4',
-                },
-                ticks: {
-                  scale: bars.categoriesScale(),
-                },
-                title: {
-                  text: 'Cities',
-                },
-              }),
+              bottomAxis()
+                .config({ attributes: { 'grid-area': '3 / 3 / 4 / 4' } })
+                .call((c) => c.ticks.config({ scale: bars.categoriesScale() }))
+                .call((c) => c.title.config({ text: 'Cities' })),
             ],
           })
         )

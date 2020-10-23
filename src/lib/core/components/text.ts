@@ -1,13 +1,13 @@
 import { Selection, BaseType, create } from 'd3-selection';
 import { Component, IComponent, IComponentConfig } from '../component';
 
-export interface ITextConfig extends IComponentConfig {
+export interface ITextComponentConfig extends IComponentConfig {
   text: string;
 }
 
-export interface IText extends IComponent<ITextConfig> {}
+export interface ITextComponent extends IComponent<ITextComponentConfig> {}
 
-export class Text extends Component<ITextConfig> implements IText {
+export class TextComponent extends Component<ITextComponentConfig> implements ITextComponent {
   constructor() {
     super(
       create<SVGElement>('svg:text'),
@@ -31,7 +31,7 @@ export class Text extends Component<ITextConfig> implements IText {
     this._applyConditionalConfigs();
   }
 
-  _applyConfig(config: ITextConfig): void {
+  _applyConfig(config: ITextComponentConfig): void {
     this.selection().text(config.text);
   }
 
@@ -55,8 +55,8 @@ export class Text extends Component<ITextConfig> implements IText {
   }
 }
 
-export function text(): Text {
-  return new Text();
+export function text(): TextComponent {
+  return new TextComponent();
 }
 
 export const titleAttributes = {

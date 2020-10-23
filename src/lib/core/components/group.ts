@@ -1,13 +1,13 @@
 import { Component, IComponent, IComponentConfig } from '../component';
-import { Selection, BaseType, select, create } from 'd3-selection';
+import { Selection, BaseType, create } from 'd3-selection';
 
-export interface IGroupConfig extends IComponentConfig {
+export interface IGroupComponentConfig extends IComponentConfig {
   children: IComponent<IComponentConfig>[];
 }
 
-export interface IGroup extends IComponent<IGroupConfig> {}
+export interface IGroupComponent extends IComponent<IGroupComponentConfig> {}
 
-export class Group extends Component<IGroupConfig> implements IGroup {
+export class GroupComponent extends Component<IGroupComponentConfig> implements IGroupComponent {
   constructor() {
     super(
       create<SVGElement>('svg:g'),
@@ -24,13 +24,13 @@ export class Group extends Component<IGroupConfig> implements IGroup {
   }
 
   protected _mergeConfig(
-    target: Partial<IGroupConfig>,
-    source: Partial<IGroupConfig>
-  ): Partial<IGroupConfig> {
+    target: Partial<IGroupComponentConfig>,
+    source: Partial<IGroupComponentConfig>
+  ): Partial<IGroupComponentConfig> {
     return Object.assign(target, source);
   }
 
-  protected _applyConfig(config: IGroupConfig): void {
+  protected _applyConfig(config: IGroupComponentConfig): void {
     // TODO: Handle mounting/unmounting of children after group has been mounted
   }
 
@@ -68,6 +68,6 @@ export class Group extends Component<IGroupConfig> implements IGroup {
   }
 }
 
-export function group(): Group {
-  return new Group();
+export function group(): GroupComponent {
+  return new GroupComponent();
 }

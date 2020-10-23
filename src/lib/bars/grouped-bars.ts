@@ -1,4 +1,4 @@
-import { Component, IComponent, IComponentConfig } from '../../component';
+import { Component, IComponent, IComponentConfig, utils, colors, Rect, chroma } from '../core';
 import {
   IGroupedBarPositioner,
   GroupedBarPositioner,
@@ -6,14 +6,10 @@ import {
   IGroupedBars,
 } from './grouped-bar-positioner';
 import { BaseType, Selection, select, create, selection } from 'd3-selection';
-import { IBarPositionerConfig, Orientation } from './bar-positioner';
+import { IBarPositionerConfig, BarOrientation } from './bar-positioner';
 import { renderBars } from './bars';
 import { ScaleBand, ScaleLinear } from 'd3-scale';
 import { Primitive } from 'd3-array';
-import { Rect } from '../../rect';
-import { applyAttributes, deepExtend, ISize } from '../../utils';
-import { categorical as categoricalColors } from '../../colors';
-import chroma from 'chroma-js';
 
 export interface IGroupedBarsConfig extends IComponentConfig, IGroupedBarPositionerConfig {
   transitionDuration: number;
@@ -35,7 +31,7 @@ export class GroupedBarsComponent
   implements IGroupedBarsComponent {
   private _barPositioner: IGroupedBarPositioner = new GroupedBarPositioner();
 
-  static defaultColors = categoricalColors;
+  static defaultColors = colors.categorical;
 
   constructor() {
     super(
@@ -46,7 +42,7 @@ export class GroupedBarsComponent
         flipCategories: false,
         flipSubcategories: false,
         flipValues: false,
-        orientation: Orientation.Vertical,
+        orientation: BarOrientation.Vertical,
         categoryPadding: 0.1,
         subcategoryPadding: 0.1,
         transitionDuration: 0,
@@ -107,7 +103,7 @@ export class GroupedBarsComponent
         );
       });
 
-    this.selection().call(applyAttributes, this.activeConfig().attributes);
+    this.selection().call(utils.applyAttributes, this.activeConfig().attributes);
 
     const rectsSelection = this.selection().selectAll<SVGRectElement, unknown>('.bar > rect');
     this.activeConfig().events.forEach((eventConfig) =>

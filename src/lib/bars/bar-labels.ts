@@ -1,20 +1,17 @@
-import { Component, IComponent, IComponentConfig } from '../../component';
+import { Component, IComponent, IComponentConfig, utils } from '../core';
 import {
   BarPointPositioner,
   HorizontalPosition,
   IBarPointPositioner,
   IBarPointPositionerConfig,
   IPoints,
-  Position,
   VerticalPosition,
 } from './bar-point-positioner';
-import { IStringable, ISize, applyAttributes } from '../../utils';
 import { Selection, BaseType, create } from 'd3-selection';
 import { IBarPositioner } from './bar-positioner';
-import extend from 'extend';
 
 export interface IBarLabelsConfig extends IComponentConfig, IBarPointPositionerConfig {
-  labels: IStringable[];
+  labels: utils.IStringable[];
   transitionDuration: number;
 }
 
@@ -77,7 +74,7 @@ export class BarLabelsComponent extends Component<IBarLabelsConfig> implements I
         this.activeConfig().labels,
         animated ? this.activeConfig().transitionDuration : 0
       )
-      .call(applyAttributes, this.activeConfig().attributes);
+      .call(utils.applyAttributes, this.activeConfig().attributes);
     return this;
   }
 
@@ -85,7 +82,7 @@ export class BarLabelsComponent extends Component<IBarLabelsConfig> implements I
     return 1;
   }
 
-  points(): Position[] {
+  points(): utils.IPosition[] {
     return this._barPointPositioner.points();
   }
 }
@@ -96,12 +93,12 @@ export function barLabels(): BarLabelsComponent {
 
 export function renderBarLabels(
   selection: Selection<SVGGElement, unknown, BaseType, unknown>,
-  points: Position[],
-  labels: IStringable[],
+  points: utils.IPosition[],
+  labels: utils.IStringable[],
   transitionDuration: number
 ): void {
   selection
-    .selectAll<SVGGElement, Position>('.label')
+    .selectAll<SVGGElement, utils.IPosition>('.label')
     .data(points)
     .join((enter) =>
       enter

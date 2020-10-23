@@ -124,6 +124,11 @@ export interface ISize {
   height: number;
 }
 
+export interface IPosition {
+  x: number;
+  y: number;
+}
+
 export interface IStringable {
   toString(): string;
 }
