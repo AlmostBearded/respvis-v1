@@ -35,7 +35,7 @@
       const colors = respVis.GroupedBarsComponent.defaultColors;
       const brighten = (color) => respVis.chroma.hex(color).brighten(0.5).hex();
 
-      var bars, barLabels, legend;
+      var bars, barLabels, legend, xAxis;
 
       respVis
         .chart()
@@ -85,6 +85,14 @@
                               [`.label:nth-child(${labelIndex + 1}) text`]: { opacity: 1 },
                             },
                           });
+
+                          xAxis.config({
+                            attributes: {
+                              [`.tick:nth-of-type(${d.groupIndex + 1}) text`]: {
+                                'font-weight': 'bold',
+                              },
+                            },
+                          });
                         },
                       },
                       {
@@ -107,6 +115,10 @@
                           const labelIndex = d.groupIndex * years.length + d.barIndex;
                           barLabels.config({
                             attributes: { [`.label:nth-child(${labelIndex + 1}) text`]: null },
+                          });
+
+                          xAxis.config({
+                            attributes: { [`.tick:nth-of-type(${d.groupIndex + 1}) text`]: null },
                           });
                         },
                       },
@@ -133,10 +145,15 @@
                     .call((c) => c.ticks.config({ scale: bars.valuesScale() }))
                     .call((c) => c.title.config({ text: 'Revenue' })),
                   // Bottom axis
-                  bottomAxis()
-                    .config({ attributes: { 'grid-area': '2 / 2 / 3 / 3' } })
+                  (xAxis = bottomAxis()
+                    .config({
+                      attributes: {
+                        'grid-area': '2 / 2 / 3 / 3',
+                        '.tick text': { 'font-weight': 'normal' },
+                      },
+                    })
                     .call((c) => c.ticks.config({ scale: bars.categoriesScale() }))
-                    .call((c) => c.title.config({ text: 'Locations' })),
+                    .call((c) => c.title.config({ text: 'Locations' }))),
                 ],
               }),
               (legend = swatchLegend(
