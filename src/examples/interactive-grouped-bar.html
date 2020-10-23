@@ -56,7 +56,10 @@
                     attributes: Object.assign(
                       { 'grid-area': '1 / 2 / 2 / 3' },
                       ...years.map((v, i) => ({
-                        [`.bar:nth-child(${i + 1}):hover > rect`]: { fill: brighten(colors[i]) },
+                        [`.bar:nth-child(${i + 1}):hover > rect`]: {
+                          fill: brighten(colors[i]),
+                          'stroke-width': 6,
+                        },
                       }))
                     ),
                     categories: categories,
