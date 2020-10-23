@@ -4,9 +4,9 @@ function swatchLegend(labels, colors, rowCount, columnCount) {
       attributes: {
         'grid-area': '1 / 2 / 2 / 3',
         'place-self': 'center end',
+        fill: colors[i],
       },
       size: { width: 15, height: 15 },
-      fill: colors[i],
     });
 
     const text = respVis.text().config({

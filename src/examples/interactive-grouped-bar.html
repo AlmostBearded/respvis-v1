@@ -32,7 +32,7 @@
         [12, 14, 18],
       ];
 
-      var bars;
+      var bars, legend;
 
       respVis
         .chart()
@@ -66,8 +66,43 @@
                     orientation: respVis.BarOrientation.Vertical,
                     events: [
                       // Call config with an empty object to reapply the current config
-                      { typenames: 'mouseover', callback: (e, d) => bars.config({}) },
-                      { typenames: 'mouseout', callback: (e, d) => bars.config({}) },
+                      {
+                        typenames: 'mouseover',
+                        callback: (e, d) => {
+                          bars.config({});
+                          legend.swatches[d.barIndex]
+                            .call((swatch) =>
+                              swatch.rect.config({
+                                attributes: {
+                                  fill: respVis.chroma
+                                    .hex(respVis.GroupedBarsComponent.defaultColors[d.barIndex])
+                                    .brighten(0.5)
+                                    .hex(),
+                                },
+                              })
+                            )
+                            .call((swatch) =>
+                              swatch.text.config({ attributes: { 'font-weight': 'bold' } })
+                            );
+                        },
+                      },
+                      {
+                        typenames: 'mouseout',
+                        callback: (e, d) => {
+                          bars.config({});
+                          legend.swatches[d.barIndex]
+                            .call((swatch) =>
+                              swatch.rect.config({
+                                attributes: {
+                                  fill: respVis.GroupedBarsComponent.defaultColors[d.barIndex],
+                                },
+                              })
+                            )
+                            .call((swatch) =>
+                              swatch.text.config({ attributes: { 'font-weight': 'normal' } })
+                            );
+                        },
+                      },
                     ],
                   })),
                   // Left axis
@@ -82,14 +117,14 @@
                     .call((c) => c.title.config({ text: 'Locations' })),
                 ],
               }),
-              swatchLegend(
+              (legend = swatchLegend(
                 years,
                 respVis.GroupedBarsComponent.defaultColors,
                 1,
                 years.length
               ).config({
                 attributes: { 'grid-area': '2 / 2 / 3 / 3' },
-              }),
+              })),
             ],
           })
         )

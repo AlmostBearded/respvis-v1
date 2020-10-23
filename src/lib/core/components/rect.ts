@@ -8,7 +8,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 export interface IRectComponentConfig extends IComponentConfig {
   size: ISize;
-  fill: string;
 }
 
 export interface IRectComponent extends IComponent<IRectComponentConfig> {}
@@ -19,7 +18,6 @@ export class RectComponent extends Component<IRectComponentConfig> implements IR
       create<SVGElement>('svg:g'),
       {
         size: { width: 10, height: 10 },
-        fill: '#000000',
         attributes: {},
         conditionalConfigs: [],
       },
@@ -31,7 +29,12 @@ export class RectComponent extends Component<IRectComponentConfig> implements IR
   protected _applyConfig(config: IRectComponentConfig): void {
     config.attributes.width = config.size.width;
     config.attributes.height = config.size.height;
-    this.selection().call(applyAttributes, config.attributes);
+
+    const fill = (config.attributes?.fill as string) || '#333333';
+    const stroke = (config.attributes?.stroke as string) || chroma.hex(fill).darken(2).hex();
+    const strokeWidth = config.attributes?.strokeWidth || 4;
+
+    Object.assign(config.attributes, { fill: fill, stroke: stroke, 'stroke-width': strokeWidth });
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
@@ -54,9 +57,6 @@ export class RectComponent extends Component<IRectComponentConfig> implements IR
           x: 0,
           y: 0,
           ...this.activeConfig().size,
-          fill: this.activeConfig().fill,
-          stroke: chroma.hex(this.activeConfig().fill).darken(2).hex(),
-          'stroke-width': 4,
         },
         0
       )
