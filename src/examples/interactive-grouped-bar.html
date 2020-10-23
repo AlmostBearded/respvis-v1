@@ -32,14 +32,17 @@
         [12, 14, 18],
       ];
 
-      var bars, legend;
+      const colors = respVis.GroupedBarsComponent.defaultColors;
+      const brighten = (color) => respVis.chroma.hex(color).brighten(0.5).hex();
+
+      var bars, barLabels, legend;
 
       respVis
         .chart()
         .root(
           respVis.group().config({
             attributes: {
-              'grid-template': '10 auto 1fr 10 / 10 auto 10',
+              'grid-template': 'auto 20 1fr 10 / 10 auto 10',
             },
             children: [
               respVis.group().config({
@@ -53,43 +56,42 @@
                     attributes: Object.assign(
                       { 'grid-area': '1 / 2 / 2 / 3' },
                       ...years.map((v, i) => ({
-                        [`.bar:nth-child(${i + 1}):hover > rect`]: {
-                          fill: respVis.chroma
-                            .hex(respVis.GroupedBarsComponent.defaultColors[i])
-                            .brighten(0.5)
-                            .hex(),
-                        },
+                        [`.bar:nth-child(${i + 1}):hover > rect`]: { fill: brighten(colors[i]) },
                       }))
                     ),
                     categories: categories,
                     values: values,
                     orientation: respVis.BarOrientation.Vertical,
                     events: [
-                      // Call config with an empty object to reapply the current config
                       {
                         typenames: 'mouseover',
                         callback: (e, d) => {
+                          // Call config with an empty object to reapply the current config
                           bars.config({});
+
                           legend.swatches[d.barIndex]
                             .call((swatch) =>
                               swatch.rect.config({
-                                attributes: {
-                                  fill: respVis.chroma
-                                    .hex(respVis.GroupedBarsComponent.defaultColors[d.barIndex])
-                                    .brighten(0.5)
-                                    .hex(),
-                                },
+                                attributes: { fill: brighten(colors[d.barIndex]) },
                               })
                             )
                             .call((swatch) =>
                               swatch.text.config({ attributes: { 'font-weight': 'bold' } })
                             );
+
+                          const labelIndex = d.groupIndex * years.length + d.barIndex;
+                          barLabels.config({
+                            attributes: {
+                              [`.label:nth-child(${labelIndex + 1}) text`]: { opacity: 1 },
+                            },
+                          });
                         },
                       },
                       {
                         typenames: 'mouseout',
                         callback: (e, d) => {
                           bars.config({});
+
                           legend.swatches[d.barIndex]
                             .call((swatch) =>
                               swatch.rect.config({
@@ -101,9 +103,29 @@
                             .call((swatch) =>
                               swatch.text.config({ attributes: { 'font-weight': 'normal' } })
                             );
+
+                          const labelIndex = d.groupIndex * years.length + d.barIndex;
+                          barLabels.config({
+                            attributes: { [`.label:nth-child(${labelIndex + 1}) text`]: null },
+                          });
                         },
                       },
                     ],
+                  })),
+                  (barLabels = respVis.barLabels().config({
+                    attributes: {
+                      'grid-area': '1 / 2 / 2 / 3',
+                      text: {
+                        'dominant-baseline': 'auto',
+                        transform: 'translate(0, -2)',
+                        'font-weight': 'bold',
+                        opacity: 0,
+                      },
+                    },
+                    bars: bars,
+                    labels: values.flat(),
+                    horizontalPosition: respVis.HorizontalPosition.Center,
+                    verticalPosition: respVis.VerticalPosition.Top,
                   })),
                   // Left axis
                   leftAxis()
@@ -123,7 +145,7 @@
                 1,
                 years.length
               ).config({
-                attributes: { 'grid-area': '2 / 2 / 3 / 3' },
+                attributes: { 'grid-area': '1 / 2 / 2 / 3' },
               })),
             ],
           })
