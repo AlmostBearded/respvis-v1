@@ -19,7 +19,7 @@ export class TextComponent extends Component<ITextComponentConfig> implements IT
           // is too high (see [1]). Maybe it is possible to use a package
           // such as [2] to accurately determine the size of text elements.
           // [1] https://stackoverflow.com/questions/26290134/is-it-possible-to-more-accurately-measure-svg-text-height
-          // [2]https://www.npmjs.com/package/font-measure
+          // [2] https://www.npmjs.com/package/font-measure
           height: 'min-content',
           'dominant-baseline': 'hanging',
           'text-anchor': 'start',

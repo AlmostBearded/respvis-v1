@@ -39,9 +39,6 @@ export class GroupedBarsComponent
       {
         categories: [],
         values: [],
-        flipCategories: false,
-        flipSubcategories: false,
-        flipValues: false,
         orientation: BarOrientation.Vertical,
         categoryPadding: 0.1,
         subcategoryPadding: 0.1,

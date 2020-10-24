@@ -17,9 +17,6 @@ export interface IBarPositionerConfig {
   categories: string[];
   values: number[];
   orientation: BarOrientation;
-  // TODO: Get rid of those properties
-  flipCategories: boolean;
-  flipValues: boolean;
   categoryPadding: number;
 }
 
@@ -41,8 +38,6 @@ export class BarPositioner implements IBarPositioner {
       values: [],
       orientation: BarOrientation.Vertical,
       categoryPadding: 0.1,
-      flipCategories: false,
-      flipValues: false,
     };
   }
 
@@ -59,13 +54,11 @@ export class BarPositioner implements IBarPositioner {
     this._valuesScale.domain([0, max(this._config.values)!]);
 
     if (this._config.orientation === BarOrientation.Vertical) {
-      this._categoriesScale.range(this._config.flipCategories ? [size.width, 0] : [0, size.width]);
-      this._valuesScale.range(this._config.flipValues ? [0, size.height] : [size.height, 0]);
+      this._categoriesScale.range([0, size.width]);
+      this._valuesScale.range([size.height, 0]);
     } else if (this._config.orientation === BarOrientation.Horizontal) {
-      this._categoriesScale.range(
-        this._config.flipCategories ? [size.height, 0] : [0, size.height]
-      );
-      this._valuesScale.range(this._config.flipValues ? [size.width, 0] : [0, size.width]);
+      this._categoriesScale.range([0, size.height]);
+      this._valuesScale.range([0, size.width]);
     }
 
     this._bars = [];
@@ -76,15 +69,15 @@ export class BarPositioner implements IBarPositioner {
       if (this._config.orientation === BarOrientation.Vertical) {
         this._bars.push({
           x: this._categoriesScale(c)!,
-          y: Math.min(this._valuesScale(0), this._valuesScale(v)),
+          y: Math.min(this._valuesScale(0)!, this._valuesScale(v)!),
           width: this._categoriesScale.bandwidth(),
-          height: Math.abs(this._valuesScale(0) - this._valuesScale(v)),
+          height: Math.abs(this._valuesScale(0)! - this._valuesScale(v)!),
         });
       } else if (this._config.orientation === BarOrientation.Horizontal) {
         this._bars.push({
-          x: Math.min(this._valuesScale(0), this._valuesScale(v)),
+          x: Math.min(this._valuesScale(0)!, this._valuesScale(v)!),
           y: this._categoriesScale(c)!,
-          width: Math.abs(this._valuesScale(0) - this._valuesScale(v)),
+          width: Math.abs(this._valuesScale(0)! - this._valuesScale(v)!),
           height: this._categoriesScale.bandwidth(),
         });
       }

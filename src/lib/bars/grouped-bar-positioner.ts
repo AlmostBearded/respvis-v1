@@ -11,10 +11,6 @@ export interface IGroupedBarPositionerConfig {
   categories: string[];
   values: number[][];
   orientation: BarOrientation;
-  // TODO: Get rid of those properties
-  flipCategories: boolean;
-  flipSubcategories: boolean;
-  flipValues: boolean;
   categoryPadding: number;
   subcategoryPadding: number;
 }
@@ -39,9 +35,6 @@ export class GroupedBarPositioner implements IGroupedBarPositioner {
       orientation: BarOrientation.Vertical,
       categoryPadding: 0.1,
       subcategoryPadding: 0.1,
-      flipCategories: false,
-      flipSubcategories: false,
-      flipValues: false,
     };
   }
 
@@ -61,18 +54,14 @@ export class GroupedBarPositioner implements IGroupedBarPositioner {
     this._valuesScale.domain([0, max(this._config.values.map((v) => max(v)!))!]);
 
     if (this._config.orientation === BarOrientation.Vertical) {
-      this._categoriesScale.range(this._config.flipCategories ? [size.width, 0] : [0, size.width]);
-      this._valuesScale.range(this._config.flipValues ? [0, size.height] : [size.height, 0]);
+      this._categoriesScale.range([0, size.width]);
+      this._valuesScale.range([size.height, 0]);
     } else if (this._config.orientation === BarOrientation.Horizontal) {
-      this._categoriesScale.range(
-        this._config.flipCategories ? [size.height, 0] : [0, size.height]
-      );
-      this._valuesScale.range(this._config.flipValues ? [size.width, 0] : [0, size.width]);
+      this._categoriesScale.range([0, size.height]);
+      this._valuesScale.range([0, size.width]);
     }
     const categoryBandwidth = this._categoriesScale.bandwidth();
-    this._subcategoriesScale.range(
-      this._config.flipSubcategories ? [categoryBandwidth, 0] : [0, categoryBandwidth]
-    );
+    this._subcategoriesScale.range([0, categoryBandwidth]);
 
     this._bars = [];
     for (let i = 0; i < this._config.values.length; ++i) {
@@ -84,15 +73,15 @@ export class GroupedBarPositioner implements IGroupedBarPositioner {
         if (this._config.orientation === BarOrientation.Vertical) {
           this._bars.push({
             x: this._categoriesScale(c)! + this._subcategoriesScale(j)!,
-            y: Math.min(this._valuesScale(0), this._valuesScale(v)),
+            y: Math.min(this._valuesScale(0)!, this._valuesScale(v)!),
             width: this._subcategoriesScale.bandwidth(),
-            height: Math.abs(this._valuesScale(0) - this._valuesScale(v)),
+            height: Math.abs(this._valuesScale(0)! - this._valuesScale(v)!),
           });
         } else if (this._config.orientation === BarOrientation.Horizontal) {
           this._bars.push({
-            x: Math.min(this._valuesScale(0), this._valuesScale(v)),
+            x: Math.min(this._valuesScale(0)!, this._valuesScale(v)!),
             y: this._categoriesScale(c)! + this._subcategoriesScale(j)!,
-            width: Math.abs(this._valuesScale(0) - this._valuesScale(v)),
+            width: Math.abs(this._valuesScale(0)! - this._valuesScale(v)!),
             height: this._subcategoriesScale.bandwidth(),
           });
         }

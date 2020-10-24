@@ -44,8 +44,6 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
       {
         categories: [],
         values: [],
-        flipCategories: false,
-        flipValues: false,
         orientation: BarOrientation.Vertical,
         categoryPadding: 0.1,
         transitionDuration: 0,
