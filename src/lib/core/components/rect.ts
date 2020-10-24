@@ -3,6 +3,7 @@ import { Component, IComponent, IComponentConfig } from '../component';
 import { applyAttributes, Attributes, ISize } from '../utils';
 import chroma from 'chroma-js';
 import { v4 as uuidv4 } from 'uuid';
+import { utils } from '..';
 
 // TODO: Maybe this component should be called ClippedRect?
 
@@ -18,7 +19,11 @@ export class RectComponent extends Component<IRectComponentConfig> implements IR
       create<SVGElement>('svg:g'),
       {
         size: { width: 10, height: 10 },
-        attributes: {},
+        attributes: {
+          fill: '#999999',
+          stroke: '#232323',
+          'stroke-width': 4,
+        },
         conditionalConfigs: [],
       },
       Component.mergeConfigs
@@ -29,12 +34,7 @@ export class RectComponent extends Component<IRectComponentConfig> implements IR
   protected _applyConfig(config: IRectComponentConfig): void {
     config.attributes.width = config.size.width;
     config.attributes.height = config.size.height;
-
-    const fill = (config.attributes?.fill as string) || '#333333';
-    const stroke = (config.attributes?.stroke as string) || chroma.hex(fill).darken(2).hex();
-    const strokeWidth = config.attributes?.strokeWidth || 4;
-
-    Object.assign(config.attributes, { fill: fill, stroke: stroke, 'stroke-width': strokeWidth });
+    // TODO: Rerender if size changed?
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {

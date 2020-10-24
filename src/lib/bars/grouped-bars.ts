@@ -48,7 +48,7 @@ export class GroupedBarsComponent
           ...GroupedBarsComponent.defaultColors.map((c, i) => ({
             [`.bar:nth-child(${i + 1}) > rect`]: {
               fill: c,
-              stroke: chroma.hex(c).darken(2).hex(),
+              stroke: '#232323',
               'stroke-width': 4,
             },
           }))

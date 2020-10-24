@@ -50,7 +50,7 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
         attributes: {
           '.bar > rect': {
             fill: BarsComponent.defaultColor,
-            stroke: chroma.hex(BarsComponent.defaultColor).darken(2).hex(),
+            stroke: '#232323',
             'stroke-width': 4,
           },
         },
