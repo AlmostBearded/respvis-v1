@@ -47,13 +47,9 @@ export class StackedBarsComponent
         orientation: BarOrientation.Vertical,
         transitionDuration: 0,
         attributes: Object.assign(
-          {},
+          { '.bar': { stroke: '#232323', 'stroke-width': 3 } },
           ...StackedBarsComponent.defaultColors.map((c, i) => ({
-            [`.bar:nth-child(${i + 1}) > rect`]: {
-              fill: c,
-              stroke: '#232323',
-              'stroke-width': 3,
-            },
+            [`.bar:nth-child(${i + 1})`]: { fill: c },
           }))
         ),
         conditionalConfigs: [],

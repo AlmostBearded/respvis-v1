@@ -56,7 +56,7 @@
                     attributes: Object.assign(
                       { 'grid-area': '1 / 2 / 2 / 3' },
                       ...years.map((v, i) => ({
-                        [`.bar:nth-child(${i + 1}):hover > rect`]: {
+                        [`.bar:nth-child(${i + 1}):hover`]: {
                           fill: brighten(colors[i]),
                           'stroke-width': 6,
                         },
@@ -84,13 +84,13 @@
                           const labelIndex = d.groupIndex * years.length + d.barIndex;
                           barLabels.config({
                             attributes: {
-                              [`.label:nth-child(${labelIndex + 1}) text`]: { opacity: 1 },
+                              [`.label:nth-child(${labelIndex + 1})`]: { opacity: 1 },
                             },
                           });
 
                           xAxis.config({
                             attributes: {
-                              [`.tick:nth-of-type(${d.groupIndex + 1}) text`]: {
+                              [`.tick:nth-of-type(${d.groupIndex + 1}) > text`]: {
                                 'font-weight': 'bold',
                               },
                             },
@@ -116,11 +116,11 @@
 
                           const labelIndex = d.groupIndex * years.length + d.barIndex;
                           barLabels.config({
-                            attributes: { [`.label:nth-child(${labelIndex + 1}) text`]: null },
+                            attributes: { [`.label:nth-child(${labelIndex + 1})`]: null },
                           });
 
                           xAxis.config({
-                            attributes: { [`.tick:nth-of-type(${d.groupIndex + 1}) text`]: null },
+                            attributes: { [`.tick:nth-of-type(${d.groupIndex + 1}) > text`]: null },
                           });
                         },
                       },
@@ -129,11 +129,13 @@
                   (barLabels = respVis.barLabels().config({
                     attributes: {
                       'grid-area': '1 / 2 / 2 / 3',
+                      '.label': {
+                        opacity: 0,
+                      },
                       text: {
                         'dominant-baseline': 'auto',
                         transform: 'translate(0, -2)',
                         'font-weight': 'bold',
-                        opacity: 0,
                       },
                     },
                     bars: bars,

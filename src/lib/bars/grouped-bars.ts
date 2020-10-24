@@ -44,13 +44,9 @@ export class GroupedBarsComponent
         subcategoryPadding: 0.1,
         transitionDuration: 0,
         attributes: Object.assign(
-          {},
+          { '.bar': { stroke: '#232323', 'stroke-width': 3 } },
           ...GroupedBarsComponent.defaultColors.map((c, i) => ({
-            [`.bar:nth-child(${i + 1}) > rect`]: {
-              fill: c,
-              stroke: '#232323',
-              'stroke-width': 4,
-            },
+            [`.bar:nth-child(${i + 1}) > rect`]: { fill: c },
           }))
         ),
         conditionalConfigs: [],

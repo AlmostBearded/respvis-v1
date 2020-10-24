@@ -48,10 +48,10 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
         categoryPadding: 0.1,
         transitionDuration: 0,
         attributes: {
-          '.bar > rect': {
+          '.bar': {
             fill: BarsComponent.defaultColor,
             stroke: '#232323',
-            'stroke-width': 4,
+            'stroke-width': 3,
           },
         },
         conditionalConfigs: [],
