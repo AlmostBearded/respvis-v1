@@ -11,6 +11,7 @@ export interface IGroupedBarPositionerConfig {
   categories: string[];
   values: number[][];
   orientation: BarOrientation;
+  // TODO: Get rid of those properties
   flipCategories: boolean;
   flipSubcategories: boolean;
   flipValues: boolean;

@@ -66,6 +66,7 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
 
   protected _applyConfig(config: IBarsComponentConfig): void {
     this._barPositioner.config(config);
+    // TODO: Set event handlers here.
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {

@@ -1,58 +1,58 @@
-import { Component, IComponent, IComponentConfig, utils, colors, Rect, chroma } from '../core';
+import { colors, Component, IComponent, IComponentConfig, Rect, utils, chroma } from '../core';
 import {
-  IGroupedBarPositioner,
-  GroupedBarPositioner,
-  IGroupedBarPositionerConfig,
-  IGroupedBars,
-} from './grouped-bar-positioner';
-import { BaseType, Selection, select, create, selection } from 'd3-selection';
-import { IBarPositionerConfig, BarOrientation } from './bar-positioner';
+  IStackedBarPositioner,
+  IStackedBars,
+  IStackedBarsPositionerConfig,
+  StackedBarPositioner,
+} from './stacked-bar-positioner';
 import { renderBars } from './bars';
-import { ScaleBand, ScaleLinear } from 'd3-scale';
+import { select, Selection, BaseType, create } from 'd3-selection';
 import { Primitive } from 'd3-array';
+import { ScaleBand, ScaleLinear } from 'd3-scale';
+import { BarOrientation } from './bar-positioner';
 
-export interface IGroupedBarsConfig extends IComponentConfig, IGroupedBarPositionerConfig {
+export interface IStackedBarsComponentConfig
+  extends IComponentConfig,
+    IStackedBarsPositionerConfig {
   transitionDuration: number;
-  events: { typenames: string; callback: (event: Event, data: IGroupedBarsEventData) => void }[];
+  events: { typenames: string; callback: (event: Event, data: IStackedBarsEventData) => void }[];
 }
 
-export interface IGroupedBarsEventData {
-  groupIndex: number;
+export interface IStackedBarsEventData {
+  categoryIndex: number;
   barIndex: number;
-  barGroupElement: SVGGElement;
-  barElement: SVGGElement;
   rectElement: SVGRectElement;
+  barElement: SVGGElement;
+  barStackElement: SVGGElement;
 }
 
-export interface IGroupedBarsComponent extends IComponent<IGroupedBarsConfig>, IGroupedBars {}
+export interface IStackedBarsComponent
+  extends IComponent<IStackedBarsComponentConfig>,
+    IStackedBars {}
 
-export class GroupedBarsComponent
-  extends Component<IGroupedBarsConfig>
-  implements IGroupedBarsComponent {
-  private _barPositioner: IGroupedBarPositioner = new GroupedBarPositioner();
+export class StackedBarsComponent
+  extends Component<IStackedBarsComponentConfig>
+  implements IStackedBarsComponent {
+  private _barPositioner: IStackedBarPositioner = new StackedBarPositioner();
 
   static defaultColors = colors.categorical;
 
   constructor() {
     super(
-      create<SVGElement>('svg:g').classed('bars', true),
+      create<SVGGElement>('svg:g').classed('stacked-bars', true),
       {
         categories: [],
         values: [],
-        flipCategories: false,
-        flipSubcategories: false,
-        flipValues: false,
-        orientation: BarOrientation.Vertical,
         categoryPadding: 0.1,
-        subcategoryPadding: 0.1,
+        orientation: BarOrientation.Vertical,
         transitionDuration: 0,
         attributes: Object.assign(
           {},
-          ...GroupedBarsComponent.defaultColors.map((c, i) => ({
+          ...StackedBarsComponent.defaultColors.map((c, i) => ({
             [`.bar:nth-child(${i + 1}) > rect`]: {
               fill: c,
               stroke: chroma.hex(c).darken(2).hex(),
-              'stroke-width': 4,
+              'stroke-width': 3,
             },
           }))
         ),
@@ -61,11 +61,10 @@ export class GroupedBarsComponent
       },
       Component.mergeConfigs
     );
-
     this._applyConditionalConfigs();
   }
 
-  protected _applyConfig(config: IGroupedBarsConfig): void {
+  protected _applyConfig(config: IStackedBarsComponentConfig): void {
     this._barPositioner.config(config);
     // TODO: Set event handlers here.
   }
@@ -91,15 +90,15 @@ export class GroupedBarsComponent
     const values = this.activeConfig().values;
     const bars = this._barPositioner.bars();
     this.selection()
-      .selectAll<SVGGElement, number[][]>('.bar-group')
+      .selectAll<SVGGElement, number[][]>('.bar-stack')
       .data(values)
       .join('g')
-      .classed('bar-group', true)
+      .classed('bar-stack', true)
       .each((d, i, groups) => {
-        const barsPerGroup = bars.length / values.length;
+        const barsPerStack = bars.length / values.length;
         renderBars(
           select(groups[i]),
-          bars.slice(i * barsPerGroup, i * barsPerGroup + barsPerGroup),
+          bars.slice(i * barsPerStack, i * barsPerStack + barsPerStack),
           animated ? this.activeConfig().transitionDuration : 0
         );
       });
@@ -110,16 +109,16 @@ export class GroupedBarsComponent
     this.activeConfig().events.forEach((eventConfig) =>
       rectsSelection.on(eventConfig.typenames, function (e: Event) {
         const barElement = this.parentNode!;
-        const barGroupElement = barElement.parentNode!;
+        const barStackElement = barElement.parentNode!;
 
         const indexOf = Array.prototype.indexOf;
-        const groupIndex = indexOf.call(barGroupElement.parentNode!.children, barGroupElement);
-        const barIndex = indexOf.call(barGroupElement.children, barElement);
+        const categoryIndex = indexOf.call(barStackElement.parentNode!.children, barStackElement);
+        const barIndex = indexOf.call(barStackElement.children, barElement);
 
         eventConfig.callback(e, {
-          groupIndex: groupIndex,
+          categoryIndex: categoryIndex,
           barIndex: barIndex,
-          barGroupElement: barGroupElement as SVGGElement,
+          barStackElement: barStackElement as SVGGElement,
           barElement: barElement as SVGGElement,
           rectElement: this,
         });
@@ -141,15 +140,11 @@ export class GroupedBarsComponent
     return this._barPositioner.categoriesScale();
   }
 
-  subcategoriesScale(): ScaleBand<Primitive> {
-    return this._barPositioner.subcategoriesScale();
-  }
-
   valuesScale(): ScaleLinear<number, number> {
     return this._barPositioner.valuesScale();
   }
 }
 
-export function groupedBars(): GroupedBarsComponent {
-  return new GroupedBarsComponent();
+export function stackedBars(): StackedBarsComponent {
+  return new StackedBarsComponent();
 }

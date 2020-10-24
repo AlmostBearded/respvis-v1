@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <title>RespVis - Stacked Bar Chart</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      #chart {
+        width: 100%;
+        height: 50vh;
+        min-height: 25rem;
+      }
+
+      body {
+        background-color: floralwhite;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Stacked Bar Chart</h1>
+    <div id="chart"></div>
+    <script src="../respvis.js"></script>
+    <script src="./components/axis.js"></script>
+    <script src="./components/swatch-legend.js"></script>
+    <script>
+      var categories = ['Ken', 'Barbie', 'Hank', 'Fred', 'Susie'];
+      var expenses = ['Rent', 'Food', 'Utilities', 'Fun'];
+      var values = [
+        [600, 150, 50, 20],
+        [500, 125, 80, 50],
+        [700, 200, 25, 25],
+        [550, 175, 75, 100],
+        [650, 160, 60, 30],
+      ];
+
+      var bars;
+
+      respVis
+        .chart()
+        .root(
+          respVis.group().config({
+            attributes: {
+              'grid-template': 'auto 20 1fr 10 / 10 auto 10',
+            },
+            children: [
+              respVis.group().config({
+                attributes: {
+                  'grid-area': '3 / 2 / 4 / 3',
+                  'grid-template': '1fr auto / auto 1fr',
+                },
+                children: [
+                  // Bars
+                  (bars = respVis.stackedBars().config({
+                    attributes: {
+                      'grid-area': '1 / 2 / 2 / 3',
+                    },
+                    categories: categories,
+                    values: values,
+                    orientation: respVis.BarOrientation.Vertical,
+                  })),
+                  // Left axis
+                  leftAxis()
+                    .config({ attributes: { 'grid-area': '1 / 1 / 2 / 2' } })
+                    .call((c) => c.ticks.config({ scale: bars.valuesScale() }))
+                    .call((c) => c.title.config({ text: 'Expenses' })),
+                  // Bottom axis
+                  bottomAxis()
+                    .config({ attributes: { 'grid-area': '2 / 2 / 3 / 3' } })
+                    .call((c) => c.ticks.config({ scale: bars.categoriesScale() }))
+                    .call((c) => c.title.config({ text: 'People' })),
+                ],
+              }),
+              swatchLegend(
+                expenses,
+                respVis.GroupedBarsComponent.defaultColors,
+                1,
+                expenses.length
+              ).config({
+                attributes: { 'grid-area': '1 / 2 / 2 / 3' },
+              }),
+            ],
+          })
+        )
+        .mount('#chart');
+    </script>
+  </body>
+</html>

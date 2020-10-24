@@ -17,6 +17,7 @@ export interface IBarPositionerConfig {
   categories: string[];
   values: number[];
   orientation: BarOrientation;
+  // TODO: Get rid of those properties
   flipCategories: boolean;
   flipValues: boolean;
   categoryPadding: number;
