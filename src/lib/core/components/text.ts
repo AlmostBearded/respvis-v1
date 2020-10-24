@@ -23,6 +23,7 @@ export class TextComponent extends Component<ITextComponentConfig> implements IT
           height: 'min-content',
           'dominant-baseline': 'hanging',
           'text-anchor': 'start',
+          'font-family': 'sans-serif',
         },
         conditionalConfigs: [],
       },
