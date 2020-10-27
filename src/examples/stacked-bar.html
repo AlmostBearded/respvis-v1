@@ -20,6 +20,7 @@
     <div id="chart"></div>
     <script src="../respvis.js"></script>
     <script src="./components/axis.js"></script>
+    <script src="./components/matrix.js"></script>
     <script src="./components/swatch-legend.js"></script>
     <script>
       var categories = ['Ken', 'Barbie', 'Hank', 'Fred', 'Susie'];
@@ -32,7 +33,7 @@
         [650, 160, 60, 30],
       ];
 
-      var bars;
+      var bars, legend;
 
       respVis
         .chart()
@@ -41,12 +42,33 @@
             attributes: {
               'grid-template': '5 auto 20 1fr 10 / 10 auto 10',
             },
+            conditionalConfigs: [
+              {
+                media: 'screen and (min-width: 40rem)',
+                config: {
+                  attributes: {
+                    'grid-template': '20 1fr 10 / 10 1fr 10 auto 10',
+                  },
+                },
+              },
+            ],
+
             children: [
               respVis.group().config({
                 attributes: {
                   'grid-area': '4 / 2 / 5 / 3',
                   'grid-template': '1fr auto / auto 1fr',
                 },
+                conditionalConfigs: [
+                  {
+                    media: 'screen and (min-width: 40rem)',
+                    config: {
+                      attributes: {
+                        'grid-area': '2 / 2 / 3 / 3',
+                      },
+                    },
+                  },
+                ],
                 children: [
                   // Bars
                   (bars = respVis.stackedBars().config({
@@ -58,25 +80,40 @@
                     orientation: respVis.BarOrientation.Vertical,
                   })),
                   // Left axis
-                  leftAxis()
-                    .config({ attributes: { 'grid-area': '1 / 1 / 2 / 2' } })
-                    .call((c) => c.ticks.config({ scale: bars.valuesScale() }))
-                    .call((c) => c.title.config({ text: 'Expenses' })),
+                  leftAxis().config({
+                    attributes: { 'grid-area': '1 / 1 / 2 / 2' },
+                    ticks: { scale: bars.valuesScale() },
+                    title: { text: 'Expenses' },
+                  }),
                   // Bottom axis
-                  bottomAxis()
-                    .config({ attributes: { 'grid-area': '2 / 2 / 3 / 3' } })
-                    .call((c) => c.ticks.config({ scale: bars.categoriesScale() }))
-                    .call((c) => c.title.config({ text: 'People' })),
+                  bottomAxis().config({
+                    attributes: { 'grid-area': '2 / 2 / 3 / 3' },
+                    ticks: { scale: bars.categoriesScale() },
+                    title: { text: 'People' },
+                  }),
                 ],
               }),
-              swatchLegend(
-                expenses,
-                respVis.GroupedBarsComponent.defaultColors,
-                1,
-                expenses.length
-              ).config({
-                attributes: { 'grid-area': '2 / 2 / 3 / 3' },
-              }),
+              (legend = swatchLegend().config({
+                labels: expenses,
+                colors: respVis.GroupedBarsComponent.defaultColors,
+                rowCount: 1,
+                columnCount: expenses.length,
+                attributes: {
+                  'grid-area': '2 / 2 / 3 / 3',
+                },
+                conditionalConfigs: [
+                  {
+                    media: 'screen and (min-width: 40rem)',
+                    config: {
+                      rowCount: expenses.length,
+                      columnCount: 1,
+                      attributes: {
+                        'grid-area': '2 / 4 / 3 / 5',
+                      },
+                    },
+                  },
+                ],
+              })),
             ],
           })
         )

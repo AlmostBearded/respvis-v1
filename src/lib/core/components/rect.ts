@@ -1,6 +1,6 @@
 import { Selection, BaseType, create } from 'd3-selection';
 import { Component, IComponent, IComponentConfig } from '../component';
-import { applyAttributes, Attributes, ISize } from '../utils';
+import { applyAttributes, Attributes, ISize, nullFunction } from '../utils';
 import chroma from 'chroma-js';
 import { v4 as uuidv4 } from 'uuid';
 import { utils } from '..';
@@ -25,6 +25,7 @@ export class RectComponent extends Component<IRectComponentConfig> implements IR
           'stroke-width': 4,
         },
         conditionalConfigs: [],
+        customConfigParser: nullFunction
       },
       Component.mergeConfigs
     );

@@ -36,6 +36,7 @@ export class BarLabelsComponent extends Component<IBarLabelsConfig> implements I
           },
         },
         conditionalConfigs: [],
+        customConfigParser: utils.nullFunction,
       },
       Component.mergeConfigs
     );

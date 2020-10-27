@@ -1,5 +1,6 @@
 import { Component, IComponent, IComponentConfig } from '../component';
 import { Selection, BaseType, create } from 'd3-selection';
+import { nullFunction } from '../utils';
 
 export interface IGroupComponentConfig extends IComponentConfig {
   children: IComponent<IComponentConfig>[];
@@ -17,17 +18,11 @@ export class GroupComponent extends Component<IGroupComponentConfig> implements 
           'grid-template': 'auto / auto',
         },
         conditionalConfigs: [],
+        customConfigParser: nullFunction,
       },
       Component.mergeConfigs
     );
     this._applyConditionalConfigs();
-  }
-
-  protected _mergeConfig(
-    target: Partial<IGroupComponentConfig>,
-    source: Partial<IGroupComponentConfig>
-  ): Partial<IGroupComponentConfig> {
-    return Object.assign(target, source);
   }
 
   protected _applyConfig(config: IGroupComponentConfig): void {

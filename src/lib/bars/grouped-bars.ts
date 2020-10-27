@@ -17,7 +17,7 @@ export interface IGroupedBarsConfig extends IComponentConfig, IGroupedBarPositio
 }
 
 export interface IGroupedBarsEventData {
-  groupIndex: number;
+  categoryIndex: number;
   barIndex: number;
   barGroupElement: SVGGElement;
   barElement: SVGGElement;
@@ -51,6 +51,7 @@ export class GroupedBarsComponent
         ),
         conditionalConfigs: [],
         events: [],
+        customConfigParser: utils.nullFunction,
       },
       Component.mergeConfigs
     );
@@ -106,11 +107,11 @@ export class GroupedBarsComponent
         const barGroupElement = barElement.parentNode!;
 
         const indexOf = Array.prototype.indexOf;
-        const groupIndex = indexOf.call(barGroupElement.parentNode!.children, barGroupElement);
+        const categoryIndex = indexOf.call(barGroupElement.parentNode!.children, barGroupElement);
         const barIndex = indexOf.call(barGroupElement.children, barElement);
 
         eventConfig.callback(e, {
-          groupIndex: groupIndex,
+          categoryIndex: categoryIndex,
           barIndex: barIndex,
           barGroupElement: barGroupElement as SVGGElement,
           barElement: barElement as SVGGElement,

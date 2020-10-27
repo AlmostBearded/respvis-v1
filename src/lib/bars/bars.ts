@@ -56,6 +56,7 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
         },
         conditionalConfigs: [],
         events: [],
+        customConfigParser: utils.nullFunction,
       },
       Component.mergeConfigs
     );

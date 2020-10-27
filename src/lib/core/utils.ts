@@ -1,6 +1,7 @@
 import { Primitive } from 'd3-array';
 import { BaseType, Selection } from 'd3-selection';
 import { Transition } from 'd3-transition';
+import { applyLayoutTransforms } from './layout/layout';
 
 export function nullFunction() {}
 
@@ -80,6 +81,9 @@ export function applyAttributes(
       // → name = child selector, value = child attributes
       selectors.push(name);
     } else selection.attr(name, value);
+    if (name === 'transform') {
+      selection.each((d, i, nodes) => applyLayoutTransforms(nodes[i] as Element));
+    }
   }
 
   selectors

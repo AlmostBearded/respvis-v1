@@ -54,6 +54,7 @@ export class StackedBarsComponent
         ),
         conditionalConfigs: [],
         events: [],
+        customConfigParser: utils.nullFunction,
       },
       Component.mergeConfigs
     );

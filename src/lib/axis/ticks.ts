@@ -42,6 +42,7 @@ export class Ticks extends Component<ITicksConfig> implements ITicks {
           ...(vertical ? { width: 'min-content' } : { height: 'min-content' }),
         },
         conditionalConfigs: [],
+        customConfigParser: utils.nullFunction,
       },
       Component.mergeConfigs
     );

@@ -1,5 +1,6 @@
 import { Selection, BaseType, create } from 'd3-selection';
 import { Component, IComponent, IComponentConfig } from '../component';
+import { nullFunction } from '../utils';
 
 export interface ITextComponentConfig extends IComponentConfig {
   text: string;
@@ -26,6 +27,7 @@ export class TextComponent extends Component<ITextComponentConfig> implements IT
           'font-family': 'sans-serif',
         },
         conditionalConfigs: [],
+        customConfigParser: nullFunction
       },
       Component.mergeConfigs
     );

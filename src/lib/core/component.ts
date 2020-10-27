@@ -1,5 +1,5 @@
 import { Selection, BaseType } from 'd3-selection';
-import { applyAttributes, Attributes } from './utils';
+import { applyAttributes, Attributes, nullFunction } from './utils';
 import { deepExtend } from './utils';
 
 export interface IConditionalComponentConfig<TConfig> {
@@ -10,6 +10,7 @@ export interface IConditionalComponentConfig<TConfig> {
 export interface IComponentConfig {
   attributes: Attributes;
   conditionalConfigs: IConditionalComponentConfig<this>[];
+  customConfigParser: (previousConfig: this, newConfig: this) => void;
 }
 
 export type MergeConfigsFn = <TConfig extends IComponentConfig>(
@@ -95,6 +96,7 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
     });
 
     this._applyConfig(newConfig);
+    newConfig.customConfigParser!(this._activeConfig, newConfig);
 
     this._selection.call(applyAttributes, newConfig.attributes);
 
