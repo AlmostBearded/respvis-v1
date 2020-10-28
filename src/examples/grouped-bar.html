@@ -155,18 +155,32 @@
                               {
                                 typenames: 'mouseover',
                                 callback: (e, d) =>
-                                  highlightBar(d.categoryIndex, d.barIndex, xAxis, yAxis),
+                                  highlightBar(d.categoryIndex, d.barIndex, yAxis, xAxis),
                               },
                               {
                                 typenames: 'mouseout',
                                 callback: (e, d) =>
-                                  unhighlightBar(d.categoryIndex, d.barIndex, xAxis, yAxis),
+                                  unhighlightBar(d.categoryIndex, d.barIndex, yAxis, xAxis),
                               },
                             ],
                             conditionalConfigs: [
                               {
                                 media: wideMediaQuery,
-                                config: { orientation: respVis.BarOrientation.Vertical },
+                                config: {
+                                  orientation: respVis.BarOrientation.Vertical,
+                                  events: [
+                                    {
+                                      typenames: 'mouseover',
+                                      callback: (e, d) =>
+                                        highlightBar(d.categoryIndex, d.barIndex, xAxis, yAxis),
+                                    },
+                                    {
+                                      typenames: 'mouseout',
+                                      callback: (e, d) =>
+                                        unhighlightBar(d.categoryIndex, d.barIndex, xAxis, yAxis),
+                                    },
+                                  ],
+                                },
                               },
                             ],
                           })),

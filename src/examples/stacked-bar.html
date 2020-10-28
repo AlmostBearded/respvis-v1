@@ -34,9 +34,74 @@
         [650, 160, 60, 30],
       ];
 
-      var bars, legend;
+      const colors = respVis.StackedBarsComponent.defaultColors;
+      const brighten = (color) => respVis.chroma.hex(color).brighten(0.5).hex();
+
+      var bars, barLabels, legend, xAxis, yAxis;
 
       const wideMediaQuery = 'screen and (min-width: 40rem)';
+
+      function highlightBar(categoryIndex, barIndex, categoryAxis, valueAxis) {
+        bars
+          .selection()
+          .select(`.bar-stack:nth-of-type(${categoryIndex + 1}) .bar:nth-of-type(${barIndex + 1})`)
+          .attr('highlighted', true);
+        bars.config({});
+
+        const flatBarIndex = categoryIndex * expenses.length + barIndex;
+
+        barLabels
+          .selection()
+          .select(`.label:nth-of-type(${flatBarIndex + 1})`)
+          .attr('highlighted', true);
+        barLabels.config({});
+
+        legend.activeConfig().children[barIndex].config({
+          rect: { attributes: { fill: brighten(colors[barIndex]) } },
+          label: { attributes: { 'font-weight': 'bold' } },
+        });
+
+        // Clear highlights of wrong axis in case unhighlight never got called
+        valueAxis.selection().selectAll('[highlighted]').attr('highlighted', null);
+        valueAxis.config({});
+
+        categoryAxis
+          .selection()
+          .select(`.tick:nth-of-type(${categoryIndex + 1})`)
+          .attr('highlighted', true);
+        categoryAxis.config({});
+      }
+
+      function unhighlightBar(categoryIndex, barIndex, categoryAxis, valueAxis) {
+        bars
+          .selection()
+          .select(`.bar-stack:nth-of-type(${categoryIndex + 1}) .bar:nth-of-type(${barIndex + 1})`)
+          .attr('highlighted', null);
+        bars.config({});
+
+        const flatBarIndex = categoryIndex * expenses.length + barIndex;
+
+        barLabels
+          .selection()
+          .select(`.label:nth-of-type(${flatBarIndex + 1})`)
+          .attr('highlighted', null);
+        barLabels.config({});
+
+        legend.activeConfig().children[barIndex].config({
+          rect: { attributes: { fill: colors[barIndex] } },
+          label: { attributes: { 'font-weight': 'normal' } },
+        });
+
+        // Clear highlights of wrong axis in case unhighlight never got called
+        valueAxis.selection().selectAll('[highlighted]').attr('highlighted', null);
+        valueAxis.config({});
+
+        categoryAxis
+          .selection()
+          .select(`.tick:nth-of-type(${categoryIndex + 1})`)
+          .attr('highlighted', null);
+        categoryAxis.config({});
+      }
 
       respVis
         .chart()
@@ -75,22 +140,82 @@
                             children: [
                               // Bars
                               (bars = respVis.stackedBars().config({
-                                attributes: { 'grid-area': '1 / 2 / 2 / 3' },
+                                attributes: Object.assign(
+                                  { 'grid-area': '1 / 2 / 2 / 3' },
+                                  ...expenses.map((v, i) => ({
+                                    [`.bar:nth-child(${i + 1})[highlighted]`]: {
+                                      fill: brighten(colors[i]),
+                                      'stroke-width': 6,
+                                    },
+                                  }))
+                                ),
                                 categories: categories,
                                 values: values,
                                 orientation: respVis.BarOrientation.Horizontal,
                                 transitionDuration: 1000,
+                                events: [
+                                  {
+                                    typenames: 'mouseover',
+                                    callback: (e, d) =>
+                                      highlightBar(d.categoryIndex, d.barIndex, yAxis, xAxis),
+                                  },
+                                  {
+                                    typenames: 'mouseout',
+                                    callback: (e, d) =>
+                                      unhighlightBar(d.categoryIndex, d.barIndex, yAxis, xAxis),
+                                  },
+                                ],
                                 conditionalConfigs: [
                                   {
                                     media: wideMediaQuery,
-                                    config: { orientation: respVis.BarOrientation.Vertical },
+                                    config: {
+                                      orientation: respVis.BarOrientation.Vertical,
+                                      events: [
+                                        {
+                                          typenames: 'mouseover',
+                                          callback: (e, d) =>
+                                            highlightBar(d.categoryIndex, d.barIndex, xAxis, yAxis),
+                                        },
+                                        {
+                                          typenames: 'mouseout',
+                                          callback: (e, d) =>
+                                            unhighlightBar(
+                                              d.categoryIndex,
+                                              d.barIndex,
+                                              xAxis,
+                                              yAxis
+                                            ),
+                                        },
+                                      ],
+                                    },
                                   },
                                 ],
                               })),
+                              (barLabels = respVis.barLabels().config({
+                                attributes: {
+                                  'grid-area': '1 / 2 / 2 / 3',
+                                  '.label': { opacity: 0 },
+                                  '.label[highlighted]': { opacity: 1 },
+                                  text: {
+                                    'font-weight': 'bold',
+                                    'stroke-width': 0.1,
+                                    stroke: '#ffffff',
+                                  },
+                                },
+                                bars: bars,
+                                labels: values.flat(),
+                                horizontalPosition: respVis.HorizontalPosition.Center,
+                                verticalPosition: respVis.VerticalPosition.Center,
+                                transitionDuration: 1000,
+                              })),
                               // Left axis
-                              leftAxis().config({
+                              (yAxis = leftAxis().config({
                                 attributes: { 'grid-area': '1 / 1 / 2 / 2' },
                                 ticks: {
+                                  attributes: {
+                                    '.tick': { 'font-weight': 'normal' },
+                                    '.tick[highlighted=true]': { 'font-weight': 'bold' },
+                                  },
                                   scale: bars.categoriesScale(),
                                   conditionalConfigs: [
                                     {
@@ -105,11 +230,15 @@
                                     { media: wideMediaQuery, config: { text: 'Expenses' } },
                                   ],
                                 },
-                              }),
+                              })),
                               // Bottom axis
-                              bottomAxis().config({
+                              (xAxis = bottomAxis().config({
                                 attributes: { 'grid-area': '2 / 2 / 3 / 3' },
                                 ticks: {
+                                  attributes: {
+                                    '.tick': { 'font-weight': 'normal' },
+                                    '.tick[highlighted=true]': { 'font-weight': 'bold' },
+                                  },
                                   scale: bars.valuesScale(),
                                   conditionalConfigs: [
                                     {
@@ -124,7 +253,7 @@
                                     { media: wideMediaQuery, config: { text: 'People' } },
                                   ],
                                 },
-                              }),
+                              })),
                             ],
                           }),
                         ],
