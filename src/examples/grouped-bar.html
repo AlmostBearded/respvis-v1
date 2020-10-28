@@ -20,6 +20,7 @@
     <div id="chart"></div>
     <script src="../respvis.js"></script>
     <script src="./components/axis.js"></script>
+    <script src="./components/padding.js"></script>
     <script src="./components/matrix.js"></script>
     <script src="./components/swatch-legend.js"></script>
     <script>
@@ -35,6 +36,10 @@
 
       const colors = respVis.GroupedBarsComponent.defaultColors;
       const brighten = (color) => respVis.chroma.hex(color).brighten(0.5).hex();
+
+      const wideMediaQuery = 'screen and (min-width: 40rem)';
+
+      var bars, barLabels, legend, xAxis, yAxis;
 
       function highlightBar(categoryIndex, barIndex, categoryAxis, valueAxis) {
         bars
@@ -98,183 +103,175 @@
         categoryAxis.config({});
       }
 
-      var bars, barLabels, legend, xAxis, yAxis;
-
       respVis
         .chart()
         .root(
-          respVis.group().config({
-            attributes: { 'grid-template': '5 auto 20 1fr 10 / 10 auto 20' },
-            conditionalConfigs: [
-              {
-                media: 'screen and (min-width: 40rem)',
-                config: {
-                  attributes: { 'grid-template': '20 1fr 10 / 10 1fr 10 auto 10' },
-                },
-              },
-            ],
+          padding().config({
+            all: 10,
             children: [
               respVis.group().config({
-                attributes: {
-                  'grid-area': '4 / 2 / 5 / 3',
-                  'grid-template': '1fr auto / auto 1fr',
-                },
+                attributes: { 'grid-template': 'auto 1fr / auto' },
                 conditionalConfigs: [
                   {
-                    media: 'screen and (min-width: 40rem)',
-                    config: { attributes: { 'grid-area': '2 / 2 / 3 / 3' } },
+                    media: wideMediaQuery,
+                    config: { attributes: { 'grid-template': '1fr / 1fr auto' } },
                   },
                 ],
                 children: [
-                  // Bars
-                  (bars = respVis.groupedBars().config({
-                    attributes: Object.assign(
-                      { 'grid-area': '1 / 2 / 2 / 3' },
-                      ...years.map((v, i) => ({
-                        [`.bar:nth-child(${i + 1})[highlighted]`]: {
-                          fill: brighten(colors[i]),
-                          'stroke-width': 6,
-                        },
-                      }))
-                    ),
-                    categories: categories,
-                    values: values,
-                    orientation: respVis.BarOrientation.Horizontal,
-                    transitionDuration: 1000,
-                    events: [
-                      {
-                        typenames: 'mouseover',
-                        callback: (e, d) => highlightBar(d.categoryIndex, d.barIndex, xAxis, yAxis),
-                      },
-                      {
-                        typenames: 'mouseout',
-                        callback: (e, d) =>
-                          unhighlightBar(d.categoryIndex, d.barIndex, xAxis, yAxis),
-                      },
-                    ],
-                    conditionalConfigs: [
-                      {
-                        media: 'screen and (min-width: 40rem)',
-                        config: { orientation: respVis.BarOrientation.Vertical },
-                      },
-                    ],
-                  })),
-                  (barLabels = respVis.barLabels().config({
+                  padding().config({
+                    top: 5,
+                    right: 20,
                     attributes: {
-                      'grid-area': '1 / 2 / 2 / 3',
-                      '.label': { opacity: 0 },
-                      '.label[highlighted]': { opacity: 1 },
-                      text: {
-                        'dominant-baseline': 'middle',
-                        'text-anchor': 'start',
-                        transform: 'translate(2, 0)',
-                        'font-weight': 'bold',
-                      },
+                      'grid-area': '2 / 1 / 3 / 2',
                     },
-                    bars: bars,
-                    labels: values.flat(),
-                    horizontalPosition: respVis.HorizontalPosition.Right,
-                    verticalPosition: respVis.VerticalPosition.Center,
-                    transitionDuration: 1000,
                     conditionalConfigs: [
                       {
-                        media: 'screen and (min-width: 40rem)',
-                        config: {
-                          horizontalPosition: respVis.HorizontalPosition.Center,
-                          verticalPosition: respVis.VerticalPosition.Top,
-                          attributes: {
-                            text: {
-                              'dominant-baseline': 'auto',
-                              'text-anchor': 'middle',
-                              transform: 'translate(0, -2)',
-                            },
-                          },
-                        },
+                        media: wideMediaQuery,
+                        config: { top: 20, right: 5, attributes: { 'grid-area': '1 / 1 / 2 / 2' } },
                       },
                     ],
-                  })),
-                  // Left axis
-                  (yAxis = leftAxis().config({
-                    attributes: { 'grid-area': '1 / 1 / 2 / 2' },
-                    ticks: {
-                      attributes: {
-                        '.tick': { 'font-weight': 'normal' },
-                        '.tick[highlighted=true]': { 'font-weight': 'bold' },
-                      },
-                      scale: bars.categoriesScale(),
-                      conditionalConfigs: [
-                        {
-                          media: 'screen and (min-width: 40rem)',
-                          config: { scale: bars.valuesScale() },
+                    children: [
+                      respVis.group().config({
+                        attributes: {
+                          'grid-template': '1fr auto / auto 1fr',
                         },
-                      ],
-                    },
-                    title: {
-                      text: 'Locations',
-                      conditionalConfigs: [
-                        { media: 'screen and (min-width: 40rem)', config: { text: 'Revenue' } },
-                      ],
-                    },
-                  })),
-                  // Bottom axis
-                  (xAxis = bottomAxis().config({
-                    attributes: { 'grid-area': '2 / 2 / 3 / 3' },
-                    ticks: {
-                      attributes: {
-                        '.tick': { 'font-weight': 'normal' },
-                        '.tick[highlighted=true]': { 'font-weight': 'bold' },
-                        '.tick text': {
-                          'dominant-baseline': 'hanging',
-                          transform: 'translate(0, 7) rotate(-45)',
-                          'text-anchor': 'end',
-                        },
-                      },
-                      scale: bars.valuesScale(),
-                      conditionalConfigs: [
-                        {
-                          media: 'screen and (min-width: 40rem)',
-                          config: {
-                            scale: bars.categoriesScale(),
+                        children: [
+                          // Bars
+                          (bars = respVis.groupedBars().config({
+                            attributes: Object.assign(
+                              { 'grid-area': '1 / 2 / 2 / 3' },
+                              ...years.map((v, i) => ({
+                                [`.bar:nth-child(${i + 1})[highlighted]`]: {
+                                  fill: brighten(colors[i]),
+                                  'stroke-width': 6,
+                                },
+                              }))
+                            ),
+                            categories: categories,
+                            values: values,
+                            orientation: respVis.BarOrientation.Horizontal,
+                            transitionDuration: 1000,
+                            events: [
+                              {
+                                typenames: 'mouseover',
+                                callback: (e, d) =>
+                                  highlightBar(d.categoryIndex, d.barIndex, xAxis, yAxis),
+                              },
+                              {
+                                typenames: 'mouseout',
+                                callback: (e, d) =>
+                                  unhighlightBar(d.categoryIndex, d.barIndex, xAxis, yAxis),
+                              },
+                            ],
+                            conditionalConfigs: [
+                              {
+                                media: wideMediaQuery,
+                                config: { orientation: respVis.BarOrientation.Vertical },
+                              },
+                            ],
+                          })),
+                          (barLabels = respVis.barLabels().config({
                             attributes: {
-                              '.tick text': {
-                                transform: 'translate(0, 7)',
-                                'text-anchor': 'middle',
+                              'grid-area': '1 / 2 / 2 / 3',
+                              '.label': { opacity: 0 },
+                              '.label[highlighted]': { opacity: 1 },
+                              text: {
+                                'dominant-baseline': 'middle',
+                                'text-anchor': 'start',
+                                transform: 'translate(2, 0)',
+                                'font-weight': 'bold',
                               },
                             },
+                            bars: bars,
+                            labels: values.flat(),
+                            horizontalPosition: respVis.HorizontalPosition.Right,
+                            verticalPosition: respVis.VerticalPosition.Center,
+                            transitionDuration: 1000,
+                            conditionalConfigs: [
+                              {
+                                media: wideMediaQuery,
+                                config: {
+                                  horizontalPosition: respVis.HorizontalPosition.Center,
+                                  verticalPosition: respVis.VerticalPosition.Top,
+                                  attributes: {
+                                    text: {
+                                      'dominant-baseline': 'auto',
+                                      'text-anchor': 'middle',
+                                      transform: 'translate(0, -2)',
+                                    },
+                                  },
+                                },
+                              },
+                            ],
+                          })),
+                          // Left axis
+                          (yAxis = leftAxis().config({
+                            attributes: { 'grid-area': '1 / 1 / 2 / 2' },
+                            ticks: {
+                              attributes: {
+                                '.tick': { 'font-weight': 'normal' },
+                                '.tick[highlighted=true]': { 'font-weight': 'bold' },
+                              },
+                              scale: bars.categoriesScale(),
+                              conditionalConfigs: [
+                                { media: wideMediaQuery, config: { scale: bars.valuesScale() } },
+                              ],
+                            },
+                            title: {
+                              text: 'Locations',
+                              conditionalConfigs: [
+                                { media: wideMediaQuery, config: { text: 'Revenue' } },
+                              ],
+                            },
+                          })),
+                          // Bottom axis
+                          (xAxis = bottomAxis().config({
+                            attributes: { 'grid-area': '2 / 2 / 3 / 3' },
+                            ticks: {
+                              attributes: {
+                                '.tick': { 'font-weight': 'normal' },
+                                '.tick[highlighted=true]': { 'font-weight': 'bold' },
+                              },
+                              scale: bars.valuesScale(),
+                              conditionalConfigs: [
+                                {
+                                  media: wideMediaQuery,
+                                  config: { scale: bars.categoriesScale() },
+                                },
+                              ],
+                            },
+                            title: {
+                              text: 'Revenue',
+                              conditionalConfigs: [
+                                { media: wideMediaQuery, config: { text: 'Locations' } },
+                              ],
+                            },
+                          })),
+                        ],
+                      }),
+                    ],
+                  }),
+                  (legend = swatchLegend().config({
+                    labels: years,
+                    colors: respVis.GroupedBarsComponent.defaultColors,
+                    rowCount: 1,
+                    columnCount: years.length,
+                    attributes: { 'grid-area': '1 / 1 / 2 / 2' },
+                    conditionalConfigs: [
+                      {
+                        media: wideMediaQuery,
+                        config: {
+                          rowCount: years.length,
+                          columnCount: 1,
+                          attributes: {
+                            'grid-area': '1 / 2 / 2 / 3',
                           },
                         },
-                      ],
-                    },
-                    title: {
-                      text: 'Revenue',
-                      conditionalConfigs: [
-                        { media: 'screen and (min-width: 40rem)', config: { text: 'Locations' } },
-                      ],
-                    },
+                      },
+                    ],
                   })),
                 ],
               }),
-              (legend = swatchLegend().config({
-                labels: years,
-                colors: respVis.GroupedBarsComponent.defaultColors,
-                rowCount: 1,
-                columnCount: years.length,
-                attributes: {
-                  'grid-area': '2 / 2 / 3 / 3',
-                },
-                conditionalConfigs: [
-                  {
-                    media: 'screen and (min-width: 40rem)',
-                    config: {
-                      rowCount: years.length,
-                      columnCount: 1,
-                      attributes: {
-                        'grid-area': '2 / 4 / 3 / 5',
-                      },
-                    },
-                  },
-                ],
-              })),
             ],
           })
         )

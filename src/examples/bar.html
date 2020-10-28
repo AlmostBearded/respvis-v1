@@ -19,12 +19,15 @@
     <h1>Bar Chart</h1>
     <div id="chart"></div>
     <script src="../respvis.js"></script>
+    <script src="./components/padding.js"></script>
     <script src="./components/axis.js"></script>
     <script>
       var categories = ['Vienna', 'Graz', 'Linz', 'Salzburg', 'Innsbruck', 'Klagenfurt', 'Villach'];
       var values = [1691000, 222000, 205000, 153000, 132000, 91000, 59000];
 
       var bars, barLabels, xAxis, yAxis;
+
+      const wideMediaQuery = 'screen and (min-width: 40rem)';
 
       function highlightBar(barIndex, categoryAxis, valueAxis) {
         bars
@@ -77,167 +80,161 @@
       respVis
         .chart()
         .root(
-          respVis.group().config({
-            attributes: {
-              'grid-template': '20 1fr auto 10 / 10 auto 1fr 10',
-            },
+          padding().config({
+            all: 10,
+            conditionalConfigs: [{ media: wideMediaQuery, config: { top: 20 } }],
             children: [
-              // Bars
-              (bars = respVis.bars().config({
-                attributes: {
-                  'grid-area': '2 / 3 / 3 / 4',
-                  '.bar[highlighted=true]': {
-                    fill: respVis.chroma
-                      .hex(respVis.BarsComponent.defaultColor)
-                      .brighten(0.5)
-                      .hex(),
-                  },
-                },
-                categories: categories,
-                values: values,
-                orientation: respVis.BarOrientation.Horizontal,
-                transitionDuration: 1000,
-                conditionalConfigs: [
-                  // Config overrides for wider screens
-                  {
-                    media: 'screen and (min-width: 40rem)',
-                    config: {
-                      orientation: respVis.BarOrientation.Vertical,
-                      events: [
-                        {
-                          typenames: 'mouseover',
-                          callback: (e, d) => highlightBar(d.index, xAxis, yAxis),
+              respVis.group().config({
+                attributes: { 'grid-template': '1fr auto / auto 1fr' },
+                children: [
+                  // Bars
+                  (bars = respVis.bars().config({
+                    attributes: {
+                      'grid-area': '1 / 2 / 2 / 3',
+                      '.bar[highlighted=true]': {
+                        fill: respVis.chroma
+                          .hex(respVis.BarsComponent.defaultColor)
+                          .brighten(0.5)
+                          .hex(),
+                      },
+                    },
+                    categories: categories,
+                    values: values,
+                    orientation: respVis.BarOrientation.Horizontal,
+                    transitionDuration: 1000,
+                    conditionalConfigs: [
+                      // Config overrides for wider screens
+                      {
+                        media: wideMediaQuery,
+                        config: {
+                          orientation: respVis.BarOrientation.Vertical,
+                          events: [
+                            {
+                              typenames: 'mouseover',
+                              callback: (e, d) => highlightBar(d.index, xAxis, yAxis),
+                            },
+                            {
+                              typenames: 'mouseout',
+                              callback: (e, d) => unhighlightBar(d.index, xAxis, yAxis),
+                            },
+                          ],
                         },
+                      },
+                    ],
+                    events: [
+                      {
+                        typenames: 'mouseover',
+                        callback: (e, d) => highlightBar(d.index, yAxis, xAxis),
+                      },
+                      {
+                        typenames: 'mouseout',
+                        callback: (e, d) => unhighlightBar(d.index, yAxis, xAxis),
+                      },
+                    ],
+                  })),
+                  // Bar Labels
+                  (barLabels = respVis.barLabels().config({
+                    attributes: {
+                      'grid-area': '1 / 2 / 2 / 3',
+                      '.label': {
+                        opacity: 0,
+                        'pointer-events': 'none',
+                      },
+                      '.label[highlighted=true]': {
+                        opacity: 1,
+                      },
+                      text: {
+                        'dominant-baseline': 'middle',
+                        'text-anchor': 'start',
+                        transform: 'translate(4, 0)',
+                        'font-weight': 'bold',
+                      },
+                    },
+                    bars: bars,
+                    labels: values,
+                    horizontalPosition: respVis.HorizontalPosition.Left,
+                    verticalPosition: respVis.VerticalPosition.Center,
+                    transitionDuration: 1000,
+                    conditionalConfigs: [
+                      // Config overrides for wider screens
+                      {
+                        media: wideMediaQuery,
+                        config: {
+                          attributes: {
+                            text: {
+                              'dominant-baseline': 'auto',
+                              'text-anchor': 'middle',
+                              transform: 'translate(0, -2)',
+                            },
+                          },
+                          horizontalPosition: respVis.HorizontalPosition.Center,
+                          verticalPosition: respVis.VerticalPosition.Top,
+                        },
+                      },
+                    ],
+                  })),
+                  // Left axis
+                  (yAxis = leftAxis().config({
+                    attributes: {
+                      'grid-area': '1 / 1 / 2 / 2',
+                    },
+                    ticks: {
+                      attributes: {
+                        '.tick': { 'font-weight': 'normal' },
+                        '.tick[highlighted=true]': { 'font-weight': 'bold' },
+                      },
+                      scale: bars.categoriesScale(),
+                      conditionalConfigs: [
+                        { media: wideMediaQuery, config: { scale: bars.valuesScale() } },
+                      ],
+                    },
+                    title: {
+                      text: 'Cities',
+                      conditionalConfigs: [
+                        { media: wideMediaQuery, config: { text: 'Population' } },
+                      ],
+                    },
+                  })),
+                  // Bottom axis
+                  (xAxis = bottomAxis().config({
+                    attributes: {
+                      'grid-area': '2 / 2 / 3 / 3',
+                    },
+                    ticks: {
+                      scale: bars.valuesScale(),
+                      attributes: {
+                        '.tick': {
+                          'font-weight': 'normal',
+                        },
+                        '.tick[highlighted=true]': { 'font-weight': 'bold' },
+                        '.tick > text': {
+                          'dominant-baseline': 'hanging',
+                          transform: 'translate(0, 7) rotate(-45)',
+                          'text-anchor': 'end',
+                        },
+                      },
+                      conditionalConfigs: [
                         {
-                          typenames: 'mouseout',
-                          callback: (e, d) => unhighlightBar(d.index, xAxis, yAxis),
+                          media: wideMediaQuery,
+                          config: {
+                            scale: bars.categoriesScale(),
+                            attributes: {
+                              '.tick > text': {
+                                transform: 'translate(0, 7)',
+                                'text-anchor': 'middle',
+                              },
+                            },
+                          },
                         },
                       ],
                     },
-                  },
+                    title: {
+                      text: 'Population',
+                      conditionalConfigs: [{ media: wideMediaQuery, config: { text: 'Cities' } }],
+                    },
+                  })),
                 ],
-                events: [
-                  {
-                    typenames: 'mouseover',
-                    callback: (e, d) => highlightBar(d.index, yAxis, xAxis),
-                  },
-                  {
-                    typenames: 'mouseout',
-                    callback: (e, d) => unhighlightBar(d.index, yAxis, xAxis),
-                  },
-                ],
-              })),
-              // Bar Labels
-              (barLabels = respVis.barLabels().config({
-                attributes: {
-                  'grid-area': '2 / 3 / 3 / 4',
-                  '.label': {
-                    opacity: 0,
-                    'pointer-events': 'none',
-                  },
-                  '.label[highlighted=true]': {
-                    opacity: 1,
-                  },
-                  text: {
-                    'dominant-baseline': 'middle',
-                    'text-anchor': 'start',
-                    transform: 'translate(4, 0)',
-                    'font-weight': 'bold',
-                  },
-                },
-                bars: bars,
-                labels: values,
-                horizontalPosition: respVis.HorizontalPosition.Left,
-                verticalPosition: respVis.VerticalPosition.Center,
-                transitionDuration: 1000,
-                conditionalConfigs: [
-                  // Config overrides for wider screens
-                  {
-                    media: 'screen and (min-width: 40rem)',
-                    config: {
-                      attributes: {
-                        text: {
-                          'dominant-baseline': 'auto',
-                          'text-anchor': 'middle',
-                          transform: 'translate(0, -2)',
-                        },
-                      },
-                      horizontalPosition: respVis.HorizontalPosition.Center,
-                      verticalPosition: respVis.VerticalPosition.Top,
-                    },
-                  },
-                ],
-              })),
-              // Left axis
-              (yAxis = leftAxis().config({
-                attributes: {
-                  'grid-area': '2 / 2 / 3 / 3',
-                },
-                ticks: {
-                  attributes: {
-                    '.tick': { 'font-weight': 'normal' },
-                    '.tick[highlighted=true]': { 'font-weight': 'bold' },
-                  },
-                  scale: bars.categoriesScale(),
-                  conditionalConfigs: [
-                    {
-                      media: 'screen and (min-width: 40rem)',
-                      config: { scale: bars.valuesScale() },
-                    },
-                  ],
-                },
-                title: {
-                  text: 'Cities',
-                  conditionalConfigs: [
-                    { media: 'screen and (min-width: 40rem)', config: { text: 'Population' } },
-                  ],
-                },
-              })),
-              // Bottom axis
-              (xAxis = bottomAxis().config({
-                attributes: {
-                  'grid-area': '3 / 3 / 4 / 4',
-                },
-                ticks: {
-                  scale: bars.valuesScale(),
-                  attributes: {
-                    '.tick': {
-                      'font-weight': 'normal',
-                    },
-                    '.tick[highlighted=true]': { 'font-weight': 'bold' },
-                    '.tick > text': {
-                      'dominant-baseline': 'hanging',
-                      transform: 'translate(0, 7) rotate(-45)',
-                      'text-anchor': 'end',
-                    },
-                  },
-                  conditionalConfigs: [
-                    {
-                      media: 'screen and (min-width: 40rem)',
-                      config: {
-                        scale: bars.categoriesScale(),
-                        attributes: {
-                          '.tick > text': {
-                            transform: 'translate(0, 7)',
-                            'text-anchor': 'middle',
-                          },
-                        },
-                      },
-                    },
-                  ],
-                },
-                title: {
-                  text: 'Population',
-                  conditionalConfigs: [
-                    {
-                      media: 'screen and (min-width: 40rem)',
-                      config: {
-                        text: 'Cities',
-                      },
-                    },
-                  ],
-                },
-              })),
+              }),
             ],
           })
         )
