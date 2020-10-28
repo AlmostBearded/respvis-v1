@@ -41,66 +41,51 @@
 
       var bars, barLabels, legend, xAxis, yAxis;
 
-      function highlightBar(categoryIndex, barIndex, categoryAxis, valueAxis) {
+      function highlightBar(categoryIndex, barIndex, highlight) {
         bars
           .selection()
           .select(`.bar-group:nth-of-type(${categoryIndex + 1}) .bar:nth-of-type(${barIndex + 1})`)
-          .attr('highlighted', true);
+          .attr('highlighted', highlight);
         bars.config({});
-
-        const flatBarIndex = categoryIndex * years.length + barIndex;
-
-        barLabels
-          .selection()
-          .select(`.label:nth-of-type(${flatBarIndex + 1})`)
-          .attr('highlighted', true);
-        barLabels.config({});
-
-        legend.activeConfig().children[barIndex].config({
-          rect: { attributes: { fill: brighten(colors[barIndex]) } },
-          label: { attributes: { 'font-weight': 'bold' } },
-        });
-
-        // Clear highlights of wrong axis in case unhighlight never got called
-        valueAxis.selection().selectAll('[highlighted]').attr('highlighted', null);
-        valueAxis.config({});
-
-        categoryAxis
-          .selection()
-          .select(`.tick:nth-of-type(${categoryIndex + 1})`)
-          .attr('highlighted', true);
-        categoryAxis.config({});
       }
 
-      function unhighlightBar(categoryIndex, barIndex, categoryAxis, valueAxis) {
-        bars
-          .selection()
-          .select(`.bar-group:nth-of-type(${categoryIndex + 1}) .bar:nth-of-type(${barIndex + 1})`)
-          .attr('highlighted', null);
-        bars.config({});
-
-        const flatBarIndex = categoryIndex * years.length + barIndex;
-
+      function highlightBarLabel(labelIndex, highlight) {
         barLabels
           .selection()
-          .select(`.label:nth-of-type(${flatBarIndex + 1})`)
-          .attr('highlighted', null);
+          .select(`.label:nth-of-type(${labelIndex + 1})`)
+          .attr('highlighted', highlight);
         barLabels.config({});
+      }
 
-        legend.activeConfig().children[barIndex].config({
-          rect: { attributes: { fill: colors[barIndex] } },
-          label: { attributes: { 'font-weight': 'normal' } },
+      function highlightLegendSwatch(swatchIndex, highlight) {
+        legend.activeConfig().children[swatchIndex].config({
+          rect: {
+            attributes: { fill: highlight ? brighten(colors[swatchIndex]) : colors[swatchIndex] },
+          },
+          label: { attributes: { 'font-weight': highlight ? 'bold' : 'normal' } },
         });
+      }
 
-        // Clear highlights of wrong axis in case unhighlight never got called
-        valueAxis.selection().selectAll('[highlighted]').attr('highlighted', null);
-        valueAxis.config({});
-
-        categoryAxis
+      function highlightAxisTick(axis, tickIndex, highlight) {
+        axis
           .selection()
-          .select(`.tick:nth-of-type(${categoryIndex + 1})`)
-          .attr('highlighted', null);
-        categoryAxis.config({});
+          .select(`.tick:nth-of-type(${tickIndex + 1})`)
+          .attr('highlighted', highlight);
+        axis.config({});
+      }
+
+      function clearAxisHighlights(axis) {
+        axis.selection().selectAll('[highlighted]').attr('highlighted', null);
+        axis.config({});
+      }
+
+      function hoverBar(categoryIndex, barIndex, categoryAxis, valueAxis, hover) {
+        const flatBarIndex = categoryIndex * years.length + barIndex;
+        highlightBar(categoryIndex, barIndex, hover);
+        highlightBarLabel(flatBarIndex, hover);
+        highlightLegendSwatch(barIndex, hover);
+        clearAxisHighlights(valueAxis);
+        highlightAxisTick(categoryAxis, categoryIndex, hover);
       }
 
       respVis
@@ -141,7 +126,7 @@
                             attributes: Object.assign(
                               { 'grid-area': '1 / 2 / 2 / 3' },
                               ...years.map((v, i) => ({
-                                [`.bar:nth-child(${i + 1})[highlighted]`]: {
+                                [`.bar:nth-child(${i + 1})[highlighted=true]`]: {
                                   fill: brighten(colors[i]),
                                   'stroke-width': 6,
                                 },
@@ -155,12 +140,12 @@
                               {
                                 typenames: 'mouseover',
                                 callback: (e, d) =>
-                                  highlightBar(d.categoryIndex, d.barIndex, yAxis, xAxis),
+                                  hoverBar(d.categoryIndex, d.barIndex, yAxis, xAxis, true),
                               },
                               {
                                 typenames: 'mouseout',
                                 callback: (e, d) =>
-                                  unhighlightBar(d.categoryIndex, d.barIndex, yAxis, xAxis),
+                                  hoverBar(d.categoryIndex, d.barIndex, yAxis, xAxis, false),
                               },
                             ],
                             conditionalConfigs: [
@@ -172,12 +157,12 @@
                                     {
                                       typenames: 'mouseover',
                                       callback: (e, d) =>
-                                        highlightBar(d.categoryIndex, d.barIndex, xAxis, yAxis),
+                                        hoverBar(d.categoryIndex, d.barIndex, xAxis, yAxis, true),
                                     },
                                     {
                                       typenames: 'mouseout',
                                       callback: (e, d) =>
-                                        unhighlightBar(d.categoryIndex, d.barIndex, xAxis, yAxis),
+                                        hoverBar(d.categoryIndex, d.barIndex, xAxis, yAxis, false),
                                     },
                                   ],
                                 },
@@ -188,7 +173,7 @@
                             attributes: {
                               'grid-area': '1 / 2 / 2 / 3',
                               '.label': { opacity: 0 },
-                              '.label[highlighted]': { opacity: 1 },
+                              '.label[highlighted=true]': { opacity: 1 },
                               text: {
                                 'dominant-baseline': 'middle',
                                 'text-anchor': 'start',
