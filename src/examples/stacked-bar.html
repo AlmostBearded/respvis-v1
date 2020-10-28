@@ -44,77 +44,110 @@
           padding().config({
             all: 10,
             children: [
-              respVis.group().config({
-                attributes: { 'grid-template': 'auto 1fr / 1fr ' },
-                conditionalConfigs: [
-                  {
-                    media: wideMediaQuery,
-                    config: { attributes: { 'grid-template': '1fr / 1fr auto' } },
-                  },
-                ],
-
+              padding().config({
+                all: 10,
                 children: [
-                  padding().config({
-                    top: 20,
-                    attributes: { 'grid-area': '2 / 1 / 3 / 2' },
+                  respVis.group().config({
+                    attributes: { 'grid-template': 'auto 1fr / 1fr ' },
                     conditionalConfigs: [
                       {
                         media: wideMediaQuery,
-                        config: { top: 0, right: 20, attributes: { 'grid-area': '1 / 1 / 2 / 2' } },
+                        config: { attributes: { 'grid-template': '1fr / 1fr auto' } },
                       },
                     ],
                     children: [
-                      respVis.group().config({
-                        attributes: {
-                          'grid-template': '1fr auto / auto 1fr',
-                        },
-                        children: [
-                          // Bars
-                          (bars = respVis.stackedBars().config({
-                            attributes: {
-                              'grid-area': '1 / 2 / 2 / 3',
+                      padding().config({
+                        top: 5,
+                        attributes: { 'grid-area': '2 / 1 / 3 / 2' },
+                        conditionalConfigs: [
+                          {
+                            media: wideMediaQuery,
+                            config: {
+                              top: 0,
+                              right: 5,
+                              attributes: { 'grid-area': '1 / 1 / 2 / 2' },
                             },
-                            categories: categories,
-                            values: values,
-                            orientation: respVis.BarOrientation.Vertical,
-                          })),
-                          // Left axis
-                          leftAxis().config({
-                            attributes: { 'grid-area': '1 / 1 / 2 / 2' },
-                            ticks: { scale: bars.valuesScale() },
-                            title: { text: 'Expenses' },
-                          }),
-                          // Bottom axis
-                          bottomAxis().config({
-                            attributes: { 'grid-area': '2 / 2 / 3 / 3' },
-                            ticks: { scale: bars.categoriesScale() },
-                            title: { text: 'People' },
+                          },
+                        ],
+                        children: [
+                          respVis.group().config({
+                            attributes: { 'grid-template': '1fr auto / auto 1fr' },
+                            children: [
+                              // Bars
+                              (bars = respVis.stackedBars().config({
+                                attributes: { 'grid-area': '1 / 2 / 2 / 3' },
+                                categories: categories,
+                                values: values,
+                                orientation: respVis.BarOrientation.Horizontal,
+                                transitionDuration: 1000,
+                                conditionalConfigs: [
+                                  {
+                                    media: wideMediaQuery,
+                                    config: { orientation: respVis.BarOrientation.Vertical },
+                                  },
+                                ],
+                              })),
+                              // Left axis
+                              leftAxis().config({
+                                attributes: { 'grid-area': '1 / 1 / 2 / 2' },
+                                ticks: {
+                                  scale: bars.categoriesScale(),
+                                  conditionalConfigs: [
+                                    {
+                                      media: wideMediaQuery,
+                                      config: { scale: bars.valuesScale() },
+                                    },
+                                  ],
+                                },
+                                title: {
+                                  text: 'People',
+                                  conditionalConfigs: [
+                                    { media: wideMediaQuery, config: { text: 'Expenses' } },
+                                  ],
+                                },
+                              }),
+                              // Bottom axis
+                              bottomAxis().config({
+                                attributes: { 'grid-area': '2 / 2 / 3 / 3' },
+                                ticks: {
+                                  scale: bars.valuesScale(),
+                                  conditionalConfigs: [
+                                    {
+                                      media: wideMediaQuery,
+                                      config: { scale: bars.categoriesScale() },
+                                    },
+                                  ],
+                                },
+                                title: {
+                                  text: 'Expenses',
+                                  conditionalConfigs: [
+                                    { media: wideMediaQuery, config: { text: 'People' } },
+                                  ],
+                                },
+                              }),
+                            ],
                           }),
                         ],
                       }),
+                      (legend = swatchLegend().config({
+                        labels: expenses,
+                        colors: respVis.GroupedBarsComponent.defaultColors,
+                        rowCount: 1,
+                        columnCount: expenses.length,
+                        attributes: { 'grid-area': '1 / 1 / 2 / 2' },
+                        conditionalConfigs: [
+                          {
+                            media: wideMediaQuery,
+                            config: {
+                              rowCount: expenses.length,
+                              columnCount: 1,
+                              attributes: { 'grid-area': '1 / 2 / 2 / 3' },
+                            },
+                          },
+                        ],
+                      })),
                     ],
                   }),
-                  (legend = swatchLegend().config({
-                    labels: expenses,
-                    colors: respVis.GroupedBarsComponent.defaultColors,
-                    rowCount: 1,
-                    columnCount: expenses.length,
-                    attributes: {
-                      'grid-area': '1 / 1 / 2 / 2',
-                    },
-                    conditionalConfigs: [
-                      {
-                        media: wideMediaQuery,
-                        config: {
-                          rowCount: expenses.length,
-                          columnCount: 1,
-                          attributes: {
-                            'grid-area': '1 / 2 / 2 / 3',
-                          },
-                        },
-                      },
-                    ],
-                  })),
                 ],
               }),
             ],
