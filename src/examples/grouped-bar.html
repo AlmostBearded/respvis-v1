@@ -88,6 +88,15 @@
         highlightAxisTick(categoryAxis, categoryIndex, hover);
       }
 
+      function hoverLegendSwatch(swatchIndex, hover) {
+        categories.forEach((category, categoryIndex) => {
+          const flatBarIndex = categoryIndex * years.length + swatchIndex;
+          highlightBar(categoryIndex, swatchIndex, hover);
+          highlightBarLabel(flatBarIndex, hover);
+        });
+        highlightLegendSwatch(swatchIndex, hover);
+      }
+
       respVis
         .chart()
         .root(
@@ -256,6 +265,16 @@
                     rowCount: 1,
                     columnCount: years.length,
                     attributes: { 'grid-area': '1 / 1 / 2 / 2' },
+                    events: [
+                      {
+                        typenames: 'mouseover',
+                        callback: (e, d) => hoverLegendSwatch(d.childIndex, true),
+                      },
+                      {
+                        typenames: 'mouseout',
+                        callback: (e, d) => hoverLegendSwatch(d.childIndex, false),
+                      },
+                    ],
                     conditionalConfigs: [
                       {
                         media: wideMediaQuery,

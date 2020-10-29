@@ -1,14 +1,35 @@
-import { Component, IComponent, IComponentConfig } from '../component';
+import { Component, IComponent, IComponentConfig, IComponentEventData } from '../component';
 import { Selection, BaseType, create } from 'd3-selection';
 import { nullFunction } from '../utils';
 
 export interface IGroupComponentConfig extends IComponentConfig {
   children: IComponent<IComponentConfig>[];
+  events: { typenames: string; callback: (event: Event, data: IGroupEventData) => void }[];
+}
+
+export interface IGroupEventData extends IComponentEventData {
+  childIndex: number;
 }
 
 export interface IGroupComponent extends IComponent<IGroupComponentConfig> {}
 
 export class GroupComponent extends Component<IGroupComponentConfig> implements IGroupComponent {
+  static setEventListeners(component: GroupComponent, config: IGroupComponentConfig) {
+    config.events.forEach((eventConfig) =>
+      component.selection().on(eventConfig.typenames, (e: Event) => {
+        let childElement = e.target as Element;
+        while (childElement.parentNode !== e.currentTarget) {
+          childElement = childElement.parentNode as Element;
+        }
+
+        const indexOf = Array.prototype.indexOf;
+        const childIndex = indexOf.call(childElement.parentNode!.children, childElement);
+
+        eventConfig.callback(e, { component: component, childIndex: childIndex });
+      })
+    );
+  }
+
   constructor() {
     super(
       create<SVGElement>('svg:g'),
@@ -18,12 +39,9 @@ export class GroupComponent extends Component<IGroupComponentConfig> implements 
           'grid-template': 'auto / auto',
         },
         conditionalConfigs: [],
-        configParser: (
-          previousConfig: IGroupComponentConfig,
-          newConfig: IGroupComponentConfig
-        ) => {
-          Component.clearEventListeners(this, previousConfig);
-          Component.setEventListeners(this, newConfig);
+        configParser: (previousConfig: IGroupComponentConfig, newConfig: IGroupComponentConfig) => {
+          GroupComponent.clearEventListeners(this, previousConfig);
+          GroupComponent.setEventListeners(this, newConfig);
         },
         events: [],
       },
