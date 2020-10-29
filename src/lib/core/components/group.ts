@@ -18,15 +18,18 @@ export class GroupComponent extends Component<IGroupComponentConfig> implements 
           'grid-template': 'auto / auto',
         },
         conditionalConfigs: [],
-        customConfigParser: nullFunction,
+        configParser: (
+          previousConfig: IGroupComponentConfig,
+          newConfig: IGroupComponentConfig
+        ) => {
+          Component.clearEventListeners(this, previousConfig);
+          Component.setEventListeners(this, newConfig);
+        },
+        events: [],
       },
       Component.mergeConfigs
     );
     this._applyConditionalConfigs();
-  }
-
-  protected _applyConfig(config: IGroupComponentConfig): void {
-    // TODO: Handle mounting/unmounting of children after group has been mounted
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {

@@ -19,10 +19,10 @@ function swatch() {
           },
         }),
       ],
-      customConfigParser: function parseSwatchConfig(previousConfig, newConfig) {
+      configParser: function parseSwatchConfig(previousConfig, newConfig) {
         newConfig.children[0].config(newConfig.rect);
         newConfig.children[1].config(newConfig.label);
-        c.customConfigParser(previousConfig, newConfig);
+        c.configParser(previousConfig, newConfig);
       },
     };
   });
@@ -33,7 +33,7 @@ function swatchLegend() {
     return {
       labels: [],
       colors: [],
-      customConfigParser: function parseSwatchLegendConfig(previousConfig, newConfig) {
+      configParser: function parseSwatchLegendConfig(previousConfig, newConfig) {
         var swatches = newConfig.labels.map((label, i) => {
           return (previousConfig.children[i] || swatch()).config({
             rect: { attributes: { fill: newConfig.colors[i] } },
@@ -41,7 +41,7 @@ function swatchLegend() {
           });
         });
         newConfig.children = swatches;
-        c.customConfigParser(previousConfig, newConfig);
+        c.configParser(previousConfig, newConfig);
       },
     };
   });

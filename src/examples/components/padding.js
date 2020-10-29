@@ -8,7 +8,7 @@ function padding() {
       right: undefined,
       bottom: undefined,
       left: undefined,
-      customConfigParser: function parseMatrixConfig(previousConfig, newConfig) {
+      configParser: function parseMatrixConfig(previousConfig, newConfig) {
         const top = newConfig.top || newConfig.vertical || newConfig.all;
         const bottom = newConfig.bottom || newConfig.vertical || newConfig.all;
         const left = newConfig.left || newConfig.horizontal || newConfig.all;
@@ -20,7 +20,7 @@ function padding() {
         newConfig.children.forEach((child) => {
           child.config({ attributes: { 'grid-area': `2 / 2 / 3 / 3` } });
         });
-        c.customConfigParser(previousConfig, newConfig);
+        c.configParser(previousConfig, newConfig);
       },
     };
   });

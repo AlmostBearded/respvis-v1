@@ -27,15 +27,19 @@ export class TextComponent extends Component<ITextComponentConfig> implements IT
           'font-family': 'sans-serif',
         },
         conditionalConfigs: [],
-        customConfigParser: nullFunction
+        events: [],
+        configParser: (
+          previousConfig: ITextComponentConfig,
+          newConfig: ITextComponentConfig
+        ) => {
+          Component.clearEventListeners(this, previousConfig);
+          Component.setEventListeners(this, newConfig);
+          this.selection().text(newConfig.text);
+        },
       },
       Component.mergeConfigs
     );
     this._applyConditionalConfigs();
-  }
-
-  _applyConfig(config: ITextComponentConfig): void {
-    this.selection().text(config.text);
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {

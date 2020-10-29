@@ -1,4 +1,13 @@
-import { colors, Component, IComponent, IComponentConfig, Rect, utils, chroma } from '../core';
+import {
+  colors,
+  Component,
+  IComponent,
+  IComponentConfig,
+  Rect,
+  utils,
+  chroma,
+  IComponentEventData,
+} from '../core';
 import {
   IStackedBarPositioner,
   IStackedBars,
@@ -18,7 +27,7 @@ export interface IStackedBarsComponentConfig
   events: { typenames: string; callback: (event: Event, data: IStackedBarsEventData) => void }[];
 }
 
-export interface IStackedBarsEventData {
+export interface IStackedBarsEventData extends IComponentEventData {
   categoryIndex: number;
   barIndex: number;
   rectElement: SVGRectElement;
@@ -37,6 +46,29 @@ export class StackedBarsComponent
 
   static defaultColors = colors.categorical;
 
+  static setEventListeners(component: StackedBarsComponent, config: IStackedBarsComponentConfig) {
+    config.events.forEach((eventConfig) =>
+      component.selection().on(eventConfig.typenames, (e: Event) => {
+        const rectElement = e.target as SVGRectElement;
+        const barElement = rectElement.parentNode!;
+        const barStackElement = barElement.parentNode!;
+
+        const indexOf = Array.prototype.indexOf;
+        const categoryIndex = indexOf.call(barStackElement.parentNode!.children, barStackElement);
+        const barIndex = indexOf.call(barStackElement.children, barElement);
+
+        eventConfig.callback(e, {
+          component: component,
+          categoryIndex: categoryIndex,
+          barIndex: barIndex,
+          barStackElement: barStackElement as SVGGElement,
+          barElement: barElement as SVGGElement,
+          rectElement: rectElement,
+        });
+      })
+    );
+  }
+
   constructor() {
     super(
       create<SVGGElement>('svg:g').classed('stacked-bars', true),
@@ -54,16 +86,18 @@ export class StackedBarsComponent
         ),
         conditionalConfigs: [],
         events: [],
-        customConfigParser: utils.nullFunction,
+        configParser: (
+          previousConfig: IStackedBarsComponentConfig,
+          newConfig: IStackedBarsComponentConfig
+        ) => {
+          StackedBarsComponent.clearEventListeners(this, previousConfig);
+          StackedBarsComponent.setEventListeners(this, newConfig);
+          this._barPositioner.config(newConfig);
+        },
       },
       Component.mergeConfigs
     );
     this._applyConditionalConfigs();
-  }
-
-  protected _applyConfig(config: IStackedBarsComponentConfig): void {
-    this._barPositioner.config(config);
-    // TODO: Set event handlers here.
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
@@ -101,26 +135,6 @@ export class StackedBarsComponent
       });
 
     this.selection().call(utils.applyAttributes, this.activeConfig().attributes);
-
-    const rectsSelection = this.selection().selectAll<SVGRectElement, unknown>('.bar > rect');
-    this.activeConfig().events.forEach((eventConfig) =>
-      rectsSelection.on(eventConfig.typenames, function (e: Event) {
-        const barElement = this.parentNode!;
-        const barStackElement = barElement.parentNode!;
-
-        const indexOf = Array.prototype.indexOf;
-        const categoryIndex = indexOf.call(barStackElement.parentNode!.children, barStackElement);
-        const barIndex = indexOf.call(barStackElement.children, barElement);
-
-        eventConfig.callback(e, {
-          categoryIndex: categoryIndex,
-          barIndex: barIndex,
-          barStackElement: barStackElement as SVGGElement,
-          barElement: barElement as SVGGElement,
-          rectElement: this,
-        });
-      })
-    );
 
     return this;
   }

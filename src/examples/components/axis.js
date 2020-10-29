@@ -16,10 +16,10 @@ function leftAxis() {
           },
         })),
       ],
-      customConfigParser: function parseAxisConfig(previousConfig, newConfig) {
+      configParser: function parseAxisConfig(previousConfig, newConfig) {
         ticks.config(newConfig.ticks);
         title.config(newConfig.title);
-        c.customConfigParser(previousConfig, newConfig);
+        c.configParser(previousConfig, newConfig);
       },
     };
   });
@@ -43,10 +43,10 @@ function rightAxis() {
           },
         })),
       ],
-      customConfigParser: function parseAxisConfig(previousConfig, newConfig) {
+      configParser: function parseAxisConfig(previousConfig, newConfig) {
         ticks.config(newConfig.ticks);
         title.config(newConfig.title);
-        c.customConfigParser(previousConfig, newConfig);
+        c.configParser(previousConfig, newConfig);
       },
     };
   });
@@ -69,10 +69,10 @@ function bottomAxis() {
           },
         })),
       ],
-      customConfigParser: function parseAxisConfig(previousConfig, newConfig) {
+      configParser: function parseAxisConfig(previousConfig, newConfig) {
         ticks.config(newConfig.ticks);
         title.config(newConfig.title);
-        c.customConfigParser(previousConfig, newConfig);
+        c.configParser(previousConfig, newConfig);
       },
     };
   });
@@ -95,10 +95,10 @@ function topAxis() {
           },
         })),
       ],
-      customConfigParser: function parseAxisConfig(previousConfig, newConfig) {
+      configParser: function parseAxisConfig(previousConfig, newConfig) {
         ticks.config(newConfig.ticks);
         title.config(newConfig.title);
-        c.customConfigParser(previousConfig, newConfig);
+        c.configParser(previousConfig, newConfig);
       },
     };
   });

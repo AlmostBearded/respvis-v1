@@ -1,7 +1,7 @@
 import { AxisScale, Axis, axisLeft, axisBottom, axisTop, axisRight } from 'd3-axis';
 import { scaleLinear } from 'd3-scale';
 import { BaseType, create, select, Selection } from 'd3-selection';
-import { Component, IComponent, IComponentConfig, utils } from '../core';
+import { Component, IComponent, IComponentConfig, IComponentEventData, utils } from '../core';
 
 export enum Position {
   Left,
@@ -10,13 +10,18 @@ export enum Position {
   Right,
 }
 
-export interface ITicksConfig extends IComponentConfig {
+export interface ITicksComponentConfig extends IComponentConfig {
   scale: AxisScale<unknown>;
+  events: { typenames: string; callback: (event: Event, data: ITicksEventData) => void }[];
 }
 
-export interface ITicks extends IComponent<ITicksConfig> {}
+export interface ITicksEventData extends IComponentEventData {
+  tickIndex: number;
+}
 
-export class Ticks extends Component<ITicksConfig> implements ITicks {
+export interface ITicksComponent extends IComponent<ITicksComponentConfig> {}
+
+export class TicksComponent extends Component<ITicksComponentConfig> implements ITicksComponent {
   private _labelPosition: Position;
 
   private static _renderFunctionByPosition = new Map<
@@ -32,6 +37,24 @@ export class Ticks extends Component<ITicksConfig> implements ITicks {
     [Position.Left, renderLeftTicks],
   ]);
 
+  static setEventListeners(component: TicksComponent, config: ITicksComponentConfig) {
+    config.events.forEach((eventConfig) =>
+      component.selection().on(eventConfig.typenames, (e: Event) => {
+        if (e.target instanceof SVGPathElement) {
+          // Domain element
+        } else if (e.target instanceof SVGLineElement || e.target instanceof SVGTextElement) {
+          const tickElement = e.target.parentNode!;
+          const indexOf = Array.prototype.indexOf;
+          const tickIndex = indexOf.call(tickElement.parentNode!.children, tickElement);
+          eventConfig.callback(e, {
+            component: component,
+            tickIndex: tickIndex - 1, // -1 because the domain element is always the first child
+          });
+        }
+      })
+    );
+  }
+
   constructor(labelPosition: Position) {
     const vertical = labelPosition === Position.Left || labelPosition === Position.Right;
     super(
@@ -42,15 +65,20 @@ export class Ticks extends Component<ITicksConfig> implements ITicks {
           ...(vertical ? { width: 'min-content' } : { height: 'min-content' }),
         },
         conditionalConfigs: [],
-        customConfigParser: utils.nullFunction,
+        events: [],
+        configParser: (
+          previousConfig: ITicksComponentConfig,
+          newConfig: ITicksComponentConfig
+        ) => {
+          TicksComponent.clearEventListeners(this, previousConfig);
+          TicksComponent.setEventListeners(this, newConfig);
+        },
       },
       Component.mergeConfigs
     );
     this._labelPosition = labelPosition;
     this._applyConditionalConfigs();
   }
-
-  protected _applyConfig(config: ITicksConfig): void {}
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
     selection.append(() => this.selection().node());
@@ -69,7 +97,10 @@ export class Ticks extends Component<ITicksConfig> implements ITicks {
 
   render(animated: boolean): this {
     this.selection()
-      .call(Ticks._renderFunctionByPosition.get(this._labelPosition)!, this.activeConfig().scale)
+      .call(
+        TicksComponent._renderFunctionByPosition.get(this._labelPosition)!,
+        this.activeConfig().scale
+      )
       .call(utils.applyAttributes, this.activeConfig().attributes);
     return this;
   }
@@ -80,24 +111,24 @@ export class Ticks extends Component<ITicksConfig> implements ITicks {
   }
 }
 
-export function ticks(position: Position): Ticks {
-  return new Ticks(position);
+export function ticks(position: Position): TicksComponent {
+  return new TicksComponent(position);
 }
 
-export function leftTicks(): Ticks {
-  return new Ticks(Position.Left);
+export function leftTicks(): TicksComponent {
+  return new TicksComponent(Position.Left);
 }
 
-export function rightTicks(): Ticks {
-  return new Ticks(Position.Right);
+export function rightTicks(): TicksComponent {
+  return new TicksComponent(Position.Right);
 }
 
-export function topTicks(): Ticks {
-  return new Ticks(Position.Top);
+export function topTicks(): TicksComponent {
+  return new TicksComponent(Position.Top);
 }
 
-export function bottomTicks(): Ticks {
-  return new Ticks(Position.Bottom);
+export function bottomTicks(): TicksComponent {
+  return new TicksComponent(Position.Bottom);
 }
 
 const axisFunctionByPosition = new Map<Position, (scale: AxisScale<unknown>) => Axis<unknown>>();

@@ -7,6 +7,7 @@ import {
   IComponent,
   IComponentConfig,
   chroma,
+  IComponentEventData,
 } from '../core';
 import {
   BarPositioner,
@@ -27,7 +28,7 @@ export interface IBarsComponentConfig extends IComponentConfig, IBarPositionerCo
 
 export interface IBarsComponent extends IComponent<IBarsComponentConfig>, IBars {}
 
-export interface IBarsEventData {
+export interface IBarsEventData extends IComponentEventData {
   index: number;
   rectElement: SVGRectElement;
   barElement: SVGGElement;
@@ -37,6 +38,22 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
   private _barPositioner: IBarPositioner = new BarPositioner();
 
   static defaultColor = colors.categorical[0];
+
+  static setEventListeners(component: BarsComponent, config: IBarsComponentConfig) {
+    config.events.forEach((eventConfig) =>
+      component.selection().on(eventConfig.typenames, (e: Event) => {
+        const rectElement = e.target as SVGRectElement;
+        const barElement = rectElement.parentNode as SVGGElement;
+        const index = Array.prototype.indexOf.call(barElement.parentNode!.children, barElement);
+        eventConfig.callback(e, {
+          component: component,
+          index: index,
+          rectElement: e.target as SVGRectElement,
+          barElement: barElement,
+        });
+      })
+    );
+  }
 
   constructor() {
     super(
@@ -56,16 +73,18 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
         },
         conditionalConfigs: [],
         events: [],
-        customConfigParser: utils.nullFunction,
+        configParser: (
+          previousConfig: IBarsComponentConfig,
+          newConfig: IBarsComponentConfig
+        ) => {
+          BarsComponent.clearEventListeners(this, previousConfig);
+          BarsComponent.setEventListeners(this, newConfig);
+          this._barPositioner.config(newConfig);
+        },
       },
       Component.mergeConfigs
     );
     this._applyConditionalConfigs();
-  }
-
-  protected _applyConfig(config: IBarsComponentConfig): void {
-    this._barPositioner.config(config);
-    // TODO: Set event handlers here.
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
@@ -93,18 +112,6 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
         animated ? this.activeConfig().transitionDuration : 0
       )
       .call(utils.applyAttributes, this.activeConfig().attributes);
-
-    const barsSelection = this.selection().selectAll<SVGGElement, unknown>('.bar');
-    this.activeConfig().events.forEach((eventConfig) =>
-      barsSelection.on(eventConfig.typenames, function (e: Event) {
-        const index = Array.prototype.indexOf.call(this.parentNode!.children, this);
-        eventConfig.callback(e, {
-          index: index,
-          rectElement: e.target as SVGRectElement,
-          barElement: this,
-        });
-      })
-    );
 
     return this;
   }

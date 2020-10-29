@@ -7,10 +7,15 @@ export interface IConditionalComponentConfig<TConfig> {
   config: Partial<TConfig>;
 }
 
+export interface IComponentEventData {
+  component: IComponent<IComponentConfig>;
+}
+
 export interface IComponentConfig {
   attributes: Attributes;
   conditionalConfigs: IConditionalComponentConfig<this>[];
-  customConfigParser: (previousConfig: this, newConfig: this) => void;
+  configParser: (previousConfig: this, newConfig: this) => void;
+  events: { typenames: string; callback: (event: Event, data: IComponentEventData) => void }[];
 }
 
 export type MergeConfigsFn = <TConfig extends IComponentConfig>(
@@ -47,6 +52,18 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
     });
   }
 
+  static clearEventListeners(component: IComponent<IComponentConfig>, config: IComponentConfig) {
+    config.events.forEach((eventConfig) => component.selection().on(eventConfig.typenames, null));
+  }
+
+  static setEventListeners(component: IComponent<IComponentConfig>, config: IComponentConfig) {
+    config.events.forEach((eventConfig) =>
+      component.selection().on(eventConfig.typenames, (e: Event) => {
+        eventConfig.callback(e, { component: component });
+      })
+    );
+  }
+
   constructor(
     selection: Selection<SVGElement, unknown, BaseType, unknown>,
     config: TConfig,
@@ -54,6 +71,7 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
   ) {
     this._selection = selection;
     this._config = config;
+    this._activeConfig = config;
     this._mergeConfigsFn = mergeConfigsFn;
   }
 
@@ -95,8 +113,7 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
       }
     });
 
-    this._applyConfig(newConfig);
-    newConfig.customConfigParser!(this._activeConfig, newConfig);
+    newConfig.configParser(this._activeConfig, newConfig);
 
     this._selection.call(applyAttributes, newConfig.attributes);
 
@@ -104,8 +121,6 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
 
     return this;
   }
-
-  protected abstract _applyConfig(config: TConfig): void;
 
   call(componentFn: (component: this) => void): this {
     componentFn(this);

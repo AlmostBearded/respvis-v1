@@ -25,17 +25,21 @@ export class RectComponent extends Component<IRectComponentConfig> implements IR
           'stroke-width': 4,
         },
         conditionalConfigs: [],
-        customConfigParser: nullFunction
+        events: [],
+        configParser: (
+          previousConfig: IRectComponentConfig,
+          newConfig: IRectComponentConfig
+        ) => {
+          Component.clearEventListeners(this, previousConfig);
+          Component.setEventListeners(this, newConfig);
+          newConfig.attributes.width = newConfig.size.width;
+          newConfig.attributes.height = newConfig.size.height;
+          // TODO: Rerender if size changed?
+        },
       },
       Component.mergeConfigs
     );
     this._applyConditionalConfigs();
-  }
-
-  protected _applyConfig(config: IRectComponentConfig): void {
-    config.attributes.width = config.size.width;
-    config.attributes.height = config.size.height;
-    // TODO: Rerender if size changed?
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {

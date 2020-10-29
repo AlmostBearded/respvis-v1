@@ -1,4 +1,13 @@
-import { Component, IComponent, IComponentConfig, utils, colors, Rect, chroma } from '../core';
+import {
+  Component,
+  IComponent,
+  IComponentConfig,
+  utils,
+  colors,
+  Rect,
+  chroma,
+  IComponentEventData,
+} from '../core';
 import {
   IGroupedBarPositioner,
   GroupedBarPositioner,
@@ -11,12 +20,12 @@ import { renderBars } from './bars';
 import { ScaleBand, ScaleLinear } from 'd3-scale';
 import { Primitive } from 'd3-array';
 
-export interface IGroupedBarsConfig extends IComponentConfig, IGroupedBarPositionerConfig {
+export interface IGroupedBarsComponentConfig extends IComponentConfig, IGroupedBarPositionerConfig {
   transitionDuration: number;
   events: { typenames: string; callback: (event: Event, data: IGroupedBarsEventData) => void }[];
 }
 
-export interface IGroupedBarsEventData {
+export interface IGroupedBarsEventData extends IComponentEventData {
   categoryIndex: number;
   barIndex: number;
   barGroupElement: SVGGElement;
@@ -24,14 +33,39 @@ export interface IGroupedBarsEventData {
   rectElement: SVGRectElement;
 }
 
-export interface IGroupedBarsComponent extends IComponent<IGroupedBarsConfig>, IGroupedBars {}
+export interface IGroupedBarsComponent
+  extends IComponent<IGroupedBarsComponentConfig>,
+    IGroupedBars {}
 
 export class GroupedBarsComponent
-  extends Component<IGroupedBarsConfig>
+  extends Component<IGroupedBarsComponentConfig>
   implements IGroupedBarsComponent {
   private _barPositioner: IGroupedBarPositioner = new GroupedBarPositioner();
 
   static defaultColors = colors.categorical;
+
+  static setEventListeners(component: GroupedBarsComponent, config: IGroupedBarsComponentConfig) {
+    config.events.forEach((eventConfig) =>
+      component.selection().on(eventConfig.typenames, (e: Event) => {
+        const rectElement = e.target as SVGRectElement;
+        const barElement = rectElement.parentNode!;
+        const barGroupElement = barElement.parentNode!;
+
+        const indexOf = Array.prototype.indexOf;
+        const categoryIndex = indexOf.call(barGroupElement.parentNode!.children, barGroupElement);
+        const barIndex = indexOf.call(barGroupElement.children, barElement);
+
+        eventConfig.callback(e, {
+          component: component,
+          categoryIndex: categoryIndex,
+          barIndex: barIndex,
+          barGroupElement: barGroupElement as SVGGElement,
+          barElement: barElement as SVGGElement,
+          rectElement: rectElement,
+        });
+      })
+    );
+  }
 
   constructor() {
     super(
@@ -51,17 +85,19 @@ export class GroupedBarsComponent
         ),
         conditionalConfigs: [],
         events: [],
-        customConfigParser: utils.nullFunction,
+        configParser: (
+          previousConfig: IGroupedBarsComponentConfig,
+          newConfig: IGroupedBarsComponentConfig
+        ) => {
+          GroupedBarsComponent.clearEventListeners(this, previousConfig);
+          GroupedBarsComponent.setEventListeners(this, newConfig);
+          this._barPositioner.config(newConfig);
+        },
       },
       Component.mergeConfigs
     );
 
     this._applyConditionalConfigs();
-  }
-
-  protected _applyConfig(config: IGroupedBarsConfig): void {
-    this._barPositioner.config(config);
-    // TODO: Set event handlers here.
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
@@ -99,26 +135,6 @@ export class GroupedBarsComponent
       });
 
     this.selection().call(utils.applyAttributes, this.activeConfig().attributes);
-
-    const rectsSelection = this.selection().selectAll<SVGRectElement, unknown>('.bar > rect');
-    this.activeConfig().events.forEach((eventConfig) =>
-      rectsSelection.on(eventConfig.typenames, function (e: Event) {
-        const barElement = this.parentNode!;
-        const barGroupElement = barElement.parentNode!;
-
-        const indexOf = Array.prototype.indexOf;
-        const categoryIndex = indexOf.call(barGroupElement.parentNode!.children, barGroupElement);
-        const barIndex = indexOf.call(barGroupElement.children, barElement);
-
-        eventConfig.callback(e, {
-          categoryIndex: categoryIndex,
-          barIndex: barIndex,
-          barGroupElement: barGroupElement as SVGGElement,
-          barElement: barElement as SVGGElement,
-          rectElement: this,
-        });
-      })
-    );
 
     return this;
   }

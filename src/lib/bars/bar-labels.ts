@@ -1,4 +1,4 @@
-import { Component, IComponent, IComponentConfig, utils } from '../core';
+import { Component, IComponent, IComponentConfig, IComponentEventData, utils } from '../core';
 import {
   BarPointPositioner,
   HorizontalPosition,
@@ -13,12 +13,29 @@ import { IBarPositioner } from './bar-positioner';
 export interface IBarLabelsConfig extends IComponentConfig, IBarPointPositionerConfig {
   labels: utils.IStringable[];
   transitionDuration: number;
+  events: { typenames: string; callback: (event: Event, data: IBarLabelsEventData) => void }[];
+}
+
+export interface IBarLabelsEventData extends IComponentEventData {
+  labelIndex: number;
 }
 
 export interface IBarLabelsComponent extends IComponent<IBarLabelsConfig>, IPoints {}
 
 export class BarLabelsComponent extends Component<IBarLabelsConfig> implements IBarLabelsComponent {
   private _barPointPositioner: IBarPointPositioner = new BarPointPositioner();
+
+  static setEventListeners(component: BarLabelsComponent, config: IBarLabelsConfig) {
+    config.events.forEach((eventConfig) =>
+      component.selection().on(eventConfig.typenames, (e: Event) => {
+        const textElement = e.target as SVGTextElement;
+        const labelElement = textElement.parentNode!;
+        const indexOf = Array.prototype.indexOf;
+        const labelIndex = indexOf.call(labelElement.parentNode!.children, labelElement);
+        eventConfig.callback(e, { component: component, labelIndex: labelIndex });
+      })
+    );
+  }
 
   constructor() {
     super(
@@ -36,16 +53,19 @@ export class BarLabelsComponent extends Component<IBarLabelsConfig> implements I
           },
         },
         conditionalConfigs: [],
-        customConfigParser: utils.nullFunction,
+        events: [],
+        configParser: (previousConfig: IBarLabelsConfig, newConfig: IBarLabelsConfig) => {
+          BarLabelsComponent.clearEventListeners(this, previousConfig);
+          BarLabelsComponent.setEventListeners(this, newConfig);
+          this._barPointPositioner.config(newConfig);
+        },
       },
       Component.mergeConfigs
     );
     this._applyConditionalConfigs();
   }
 
-  protected _applyConfig(config: IBarLabelsConfig): void {
-    this._barPointPositioner.config(config);
-  }
+  protected _applyConfig(config: IBarLabelsConfig): void {}
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
     if (!this.activeConfig().bars)

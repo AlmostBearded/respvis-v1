@@ -3,7 +3,7 @@ function matrix() {
     return {
       rowCount: 1,
       columnCount: 1,
-      customConfigParser: function parseMatrixConfig(previousConfig, newConfig) {
+      configParser: function parseMatrixConfig(previousConfig, newConfig) {
         const rows = Array(newConfig.rowCount).fill('auto').join(' ');
         const columns = Array(newConfig.columnCount).fill('auto').join(' ');
         respVis.utils.deepExtend(newConfig, {
@@ -17,7 +17,7 @@ function matrix() {
             attributes: { 'grid-area': `${row} / ${column} / ${row + 1} / ${column + 1}` },
           });
         });
-        c.customConfigParser(previousConfig, newConfig);
+        c.configParser(previousConfig, newConfig);
       },
     };
   });
