@@ -230,6 +230,7 @@
                                 attributes: { 'grid-area': '1 / 1 / 2 / 2' },
                                 ticks: {
                                   attributes: {
+                                    cursor: 'default',
                                     '.tick': { 'font-weight': 'normal' },
                                     '.tick[highlighted=true]': { 'font-weight': 'bold' },
                                   },
@@ -249,7 +250,11 @@
                                   conditionalConfigs: [
                                     {
                                       media: wideMediaQuery,
-                                      config: { scale: bars.valuesScale() },
+                                      config: {
+                                        scale: bars.valuesScale(),
+                                        events: [],
+                                        attributes: { cursor: 'auto' },
+                                      },
                                     },
                                   ],
                                 },
@@ -265,6 +270,7 @@
                                 attributes: { 'grid-area': '2 / 2 / 3 / 3' },
                                 ticks: {
                                   attributes: {
+                                    cursor: 'auto',
                                     '.tick': { 'font-weight': 'normal' },
                                     '.tick[highlighted=true]': { 'font-weight': 'bold' },
                                   },
@@ -274,6 +280,7 @@
                                       media: wideMediaQuery,
                                       config: {
                                         scale: bars.categoriesScale(),
+                                        attributes: { cursor: 'default' },
                                         events: [
                                           {
                                             typenames: 'mouseover',
@@ -316,7 +323,7 @@
                         colors: respVis.GroupedBarsComponent.defaultColors,
                         rowCount: 1,
                         columnCount: expenses.length,
-                        attributes: { 'grid-area': '1 / 1 / 2 / 2' },
+                        attributes: { 'grid-area': '1 / 1 / 2 / 2', cursor: 'default' },
                         events: [
                           {
                             typenames: 'mouseover',
