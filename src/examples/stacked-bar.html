@@ -89,13 +89,28 @@
       }
 
       function hoverLegendSwatch(swatchIndex, hover) {
+        highlightLegendSwatch(swatchIndex, hover);
         categories.forEach((category, categoryIndex) => {
           const flatBarIndex = categoryIndex * expenses.length + swatchIndex;
           highlightBar(categoryIndex, swatchIndex, hover);
           highlightBarLabel(flatBarIndex, hover);
         });
-        highlightLegendSwatch(swatchIndex, hover);
       }
+
+      function hoverCategoryAxisTick(categoryAxis, valueAxis, tickIndex, hover) {
+        clearAxisHighlights(valueAxis);
+        highlightAxisTick(categoryAxis, tickIndex, hover);
+        for (let i = 0; i < expenses.length; ++i) {
+          const flatBarIndex = tickIndex * expenses.length + i;
+          highlightBar(tickIndex, i, hover);
+          highlightBarLabel(flatBarIndex, hover);
+        }
+      }
+
+      const categoryAxisEvents = [
+        { typenames: 'mouseover', callback: (e, d) => hoverCategoryAxisTick(d.tickIndex, true) },
+        { typenames: 'mouseout', callback: (e, d) => hoverCategoryAxisTick(d.tickIndex, false) },
+      ];
 
       respVis
         .chart()
@@ -219,6 +234,18 @@
                                     '.tick[highlighted=true]': { 'font-weight': 'bold' },
                                   },
                                   scale: bars.categoriesScale(),
+                                  events: [
+                                    {
+                                      typenames: 'mouseover',
+                                      callback: (e, d) =>
+                                        hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, true),
+                                    },
+                                    {
+                                      typenames: 'mouseout',
+                                      callback: (e, d) =>
+                                        hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, false),
+                                    },
+                                  ],
                                   conditionalConfigs: [
                                     {
                                       media: wideMediaQuery,
@@ -245,7 +272,31 @@
                                   conditionalConfigs: [
                                     {
                                       media: wideMediaQuery,
-                                      config: { scale: bars.categoriesScale() },
+                                      config: {
+                                        scale: bars.categoriesScale(),
+                                        events: [
+                                          {
+                                            typenames: 'mouseover',
+                                            callback: (e, d) =>
+                                              hoverCategoryAxisTick(
+                                                xAxis,
+                                                yAxis,
+                                                d.tickIndex,
+                                                true
+                                              ),
+                                          },
+                                          {
+                                            typenames: 'mouseout',
+                                            callback: (e, d) =>
+                                              hoverCategoryAxisTick(
+                                                xAxis,
+                                                yAxis,
+                                                d.tickIndex,
+                                                false
+                                              ),
+                                          },
+                                        ],
+                                      },
                                     },
                                   ],
                                 },
