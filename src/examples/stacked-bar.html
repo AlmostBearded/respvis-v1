@@ -107,11 +107,6 @@
         }
       }
 
-      const categoryAxisEvents = [
-        { typenames: 'mouseover', callback: (e, d) => hoverCategoryAxisTick(d.tickIndex, true) },
-        { typenames: 'mouseout', callback: (e, d) => hoverCategoryAxisTick(d.tickIndex, false) },
-      ];
-
       respVis
         .chart()
         .root(

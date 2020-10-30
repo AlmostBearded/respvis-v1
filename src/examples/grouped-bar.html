@@ -97,6 +97,16 @@
         highlightLegendSwatch(swatchIndex, hover);
       }
 
+      function hoverCategoryAxisTick(categoryAxis, valueAxis, tickIndex, hover) {
+        clearAxisHighlights(valueAxis);
+        highlightAxisTick(categoryAxis, tickIndex, hover);
+        for (let i = 0; i < years.length; ++i) {
+          const flatBarIndex = tickIndex * years.length + i;
+          highlightBar(tickIndex, i, hover);
+          highlightBarLabel(flatBarIndex, hover);
+        }
+      }
+
       respVis
         .chart()
         .root(
@@ -217,12 +227,32 @@
                             attributes: { 'grid-area': '1 / 1 / 2 / 2' },
                             ticks: {
                               attributes: {
+                                cursor: 'default',
                                 '.tick': { 'font-weight': 'normal' },
                                 '.tick[highlighted=true]': { 'font-weight': 'bold' },
                               },
                               scale: bars.categoriesScale(),
+                              events: [
+                                {
+                                  typenames: 'mouseover',
+                                  callback: (e, d) =>
+                                    hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, true),
+                                },
+                                {
+                                  typenames: 'mouseout',
+                                  callback: (e, d) =>
+                                    hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, false),
+                                },
+                              ],
                               conditionalConfigs: [
-                                { media: wideMediaQuery, config: { scale: bars.valuesScale() } },
+                                {
+                                  media: wideMediaQuery,
+                                  config: {
+                                    scale: bars.valuesScale(),
+                                    events: [],
+                                    attributes: { cursor: 'auto' },
+                                  },
+                                },
                               ],
                             },
                             title: {
@@ -237,6 +267,7 @@
                             attributes: { 'grid-area': '2 / 2 / 3 / 3' },
                             ticks: {
                               attributes: {
+                                cursor: 'auto',
                                 '.tick': { 'font-weight': 'normal' },
                                 '.tick[highlighted=true]': { 'font-weight': 'bold' },
                               },
@@ -244,7 +275,22 @@
                               conditionalConfigs: [
                                 {
                                   media: wideMediaQuery,
-                                  config: { scale: bars.categoriesScale() },
+                                  config: {
+                                    scale: bars.categoriesScale(),
+                                    attributes: { cursor: 'default' },
+                                    events: [
+                                      {
+                                        typenames: 'mouseover',
+                                        callback: (e, d) =>
+                                          hoverCategoryAxisTick(xAxis, yAxis, d.tickIndex, true),
+                                      },
+                                      {
+                                        typenames: 'mouseout',
+                                        callback: (e, d) =>
+                                          hoverCategoryAxisTick(xAxis, yAxis, d.tickIndex, false),
+                                      },
+                                    ],
+                                  },
                                 },
                               ],
                             },
@@ -264,7 +310,7 @@
                     colors: respVis.GroupedBarsComponent.defaultColors,
                     rowCount: 1,
                     columnCount: years.length,
-                    attributes: { 'grid-area': '1 / 1 / 2 / 2' },
+                    attributes: { 'grid-area': '1 / 1 / 2 / 2', cursor: 'default' },
                     events: [
                       {
                         typenames: 'mouseover',
