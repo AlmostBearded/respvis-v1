@@ -37,14 +37,18 @@
       const colors = respVis.StackedBarsComponent.defaultColors;
       const brighten = (color) => respVis.chroma.hex(color).brighten(0.5).hex();
 
-      var bars, barLabels, legend, xAxis, yAxis;
+      var chart, bars, barLabels, legend, xAxis, yAxis;
 
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
       function highlightBar(categoryIndex, barIndex, highlight) {
         bars
           .selection()
-          .select(`.bar-stack:nth-of-type(${categoryIndex + 1}) .bar:nth-of-type(${barIndex + 1})`)
+          .select(
+            `.bar-stack:nth-of-type(${categoryIndex + 1}) .bar:nth-of-type(${
+              barIndex + 1
+            })`
+          )
           .attr('highlighted', highlight);
         bars.config({});
       }
@@ -60,9 +64,15 @@
       function highlightLegendSwatch(swatchIndex, highlight) {
         legend.activeConfig().children[swatchIndex].config({
           rect: {
-            attributes: { fill: highlight ? brighten(colors[swatchIndex]) : colors[swatchIndex] },
+            attributes: {
+              fill: highlight
+                ? brighten(colors[swatchIndex])
+                : colors[swatchIndex],
+            },
           },
-          label: { attributes: { 'font-weight': highlight ? 'bold' : 'normal' } },
+          label: {
+            attributes: { 'font-weight': highlight ? 'bold' : 'normal' },
+          },
         });
       }
 
@@ -79,13 +89,20 @@
         axis.config({});
       }
 
-      function hoverBar(categoryIndex, barIndex, categoryAxis, valueAxis, hover) {
+      function hoverBar(
+        categoryIndex,
+        barIndex,
+        categoryAxis,
+        valueAxis,
+        hover
+      ) {
         const flatBarIndex = categoryIndex * expenses.length + barIndex;
         highlightBar(categoryIndex, barIndex, hover);
         highlightBarLabel(flatBarIndex, hover);
         highlightLegendSwatch(barIndex, hover);
         clearAxisHighlights(valueAxis);
         highlightAxisTick(categoryAxis, categoryIndex, hover);
+        chart.update();
       }
 
       function hoverLegendSwatch(swatchIndex, hover) {
@@ -95,9 +112,15 @@
           highlightBar(categoryIndex, swatchIndex, hover);
           highlightBarLabel(flatBarIndex, hover);
         });
+        chart.update();
       }
 
-      function hoverCategoryAxisTick(categoryAxis, valueAxis, tickIndex, hover) {
+      function hoverCategoryAxisTick(
+        categoryAxis,
+        valueAxis,
+        tickIndex,
+        hover
+      ) {
         clearAxisHighlights(valueAxis);
         highlightAxisTick(categoryAxis, tickIndex, hover);
         for (let i = 0; i < expenses.length; ++i) {
@@ -105,9 +128,10 @@
           highlightBar(tickIndex, i, hover);
           highlightBarLabel(flatBarIndex, hover);
         }
+        chart.update();
       }
 
-      respVis
+      chart = respVis
         .chart()
         .root(
           padding().config({
@@ -121,7 +145,9 @@
                     conditionalConfigs: [
                       {
                         media: wideMediaQuery,
-                        config: { attributes: { 'grid-template': '1fr / 1fr auto' } },
+                        config: {
+                          attributes: { 'grid-template': '1fr / 1fr auto' },
+                        },
                       },
                     ],
                     children: [
@@ -140,14 +166,18 @@
                         ],
                         children: [
                           respVis.group().config({
-                            attributes: { 'grid-template': '1fr auto / auto 1fr' },
+                            attributes: {
+                              'grid-template': '1fr auto / auto 1fr',
+                            },
                             children: [
                               // Bars
                               (bars = respVis.stackedBars().config({
                                 attributes: Object.assign(
                                   { 'grid-area': '1 / 2 / 2 / 3' },
                                   ...expenses.map((v, i) => ({
-                                    [`.bar:nth-child(${i + 1})[highlighted=true]`]: {
+                                    [`.bar:nth-child(${
+                                      i + 1
+                                    })[highlighted=true]`]: {
                                       fill: brighten(colors[i]),
                                       'stroke-width': 6,
                                     },
@@ -161,19 +191,32 @@
                                   {
                                     typenames: 'mouseover',
                                     callback: (e, d) =>
-                                      hoverBar(d.categoryIndex, d.barIndex, yAxis, xAxis, true),
+                                      hoverBar(
+                                        d.categoryIndex,
+                                        d.barIndex,
+                                        yAxis,
+                                        xAxis,
+                                        true
+                                      ),
                                   },
                                   {
                                     typenames: 'mouseout',
                                     callback: (e, d) =>
-                                      hoverBar(d.categoryIndex, d.barIndex, yAxis, xAxis, false),
+                                      hoverBar(
+                                        d.categoryIndex,
+                                        d.barIndex,
+                                        yAxis,
+                                        xAxis,
+                                        false
+                                      ),
                                   },
                                 ],
                                 conditionalConfigs: [
                                   {
                                     media: wideMediaQuery,
                                     config: {
-                                      orientation: respVis.BarOrientation.Vertical,
+                                      orientation:
+                                        respVis.BarOrientation.Vertical,
                                       events: [
                                         {
                                           typenames: 'mouseover',
@@ -216,8 +259,10 @@
                                 },
                                 bars: bars,
                                 labels: values.flat(),
-                                horizontalPosition: respVis.HorizontalPosition.Center,
-                                verticalPosition: respVis.VerticalPosition.Center,
+                                horizontalPosition:
+                                  respVis.HorizontalPosition.Center,
+                                verticalPosition:
+                                  respVis.VerticalPosition.Center,
                                 transitionDuration: 1000,
                               })),
                               // Left axis
@@ -227,19 +272,31 @@
                                   attributes: {
                                     cursor: 'default',
                                     '.tick': { 'font-weight': 'normal' },
-                                    '.tick[highlighted=true]': { 'font-weight': 'bold' },
+                                    '.tick[highlighted=true]': {
+                                      'font-weight': 'bold',
+                                    },
                                   },
                                   scale: bars.categoriesScale(),
                                   events: [
                                     {
                                       typenames: 'mouseover',
                                       callback: (e, d) =>
-                                        hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, true),
+                                        hoverCategoryAxisTick(
+                                          yAxis,
+                                          xAxis,
+                                          d.tickIndex,
+                                          true
+                                        ),
                                     },
                                     {
                                       typenames: 'mouseout',
                                       callback: (e, d) =>
-                                        hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, false),
+                                        hoverCategoryAxisTick(
+                                          yAxis,
+                                          xAxis,
+                                          d.tickIndex,
+                                          false
+                                        ),
                                     },
                                   ],
                                   conditionalConfigs: [
@@ -256,7 +313,10 @@
                                 title: {
                                   text: 'People',
                                   conditionalConfigs: [
-                                    { media: wideMediaQuery, config: { text: 'Expenses' } },
+                                    {
+                                      media: wideMediaQuery,
+                                      config: { text: 'Expenses' },
+                                    },
                                   ],
                                 },
                               })),
@@ -267,7 +327,9 @@
                                   attributes: {
                                     cursor: 'auto',
                                     '.tick': { 'font-weight': 'normal' },
-                                    '.tick[highlighted=true]': { 'font-weight': 'bold' },
+                                    '.tick[highlighted=true]': {
+                                      'font-weight': 'bold',
+                                    },
                                   },
                                   scale: bars.valuesScale(),
                                   conditionalConfigs: [
@@ -305,7 +367,10 @@
                                 title: {
                                   text: 'Expenses',
                                   conditionalConfigs: [
-                                    { media: wideMediaQuery, config: { text: 'People' } },
+                                    {
+                                      media: wideMediaQuery,
+                                      config: { text: 'People' },
+                                    },
                                   ],
                                 },
                               })),
@@ -318,15 +383,20 @@
                         colors: respVis.GroupedBarsComponent.defaultColors,
                         rowCount: 1,
                         columnCount: expenses.length,
-                        attributes: { 'grid-area': '1 / 1 / 2 / 2', cursor: 'default' },
+                        attributes: {
+                          'grid-area': '1 / 1 / 2 / 2',
+                          cursor: 'default',
+                        },
                         events: [
                           {
                             typenames: 'mouseover',
-                            callback: (e, d) => hoverLegendSwatch(d.childIndex, true),
+                            callback: (e, d) =>
+                              hoverLegendSwatch(d.childIndex, true),
                           },
                           {
                             typenames: 'mouseout',
-                            callback: (e, d) => hoverLegendSwatch(d.childIndex, false),
+                            callback: (e, d) =>
+                              hoverLegendSwatch(d.childIndex, false),
                           },
                         ],
                         conditionalConfigs: [

@@ -81,9 +81,6 @@ export function applyAttributes(
       // → name = child selector, value = child attributes
       selectors.push(name);
     } else selection.attr(name, value);
-    if (name === 'transform') {
-      selection.each((d, i, nodes) => applyLayoutTransforms(nodes[i] as Element));
-    }
   }
 
   selectors

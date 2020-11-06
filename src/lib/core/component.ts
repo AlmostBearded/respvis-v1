@@ -81,14 +81,6 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
 
   abstract resize(): this;
 
-  afterResize(): this {
-    this._applyConditionalConfigs();
-    this._afterResize();
-    return this;
-  }
-
-  protected abstract _afterResize(): void;
-
   config(config: Partial<TConfig>): this;
   config(configFn: (config: TConfig) => Partial<TConfig>): this;
   config(): TConfig;

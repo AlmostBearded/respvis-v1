@@ -22,10 +22,18 @@
     <script src="./components/padding.js"></script>
     <script src="./components/axis.js"></script>
     <script>
-      var categories = ['Vienna', 'Graz', 'Linz', 'Salzburg', 'Innsbruck', 'Klagenfurt', 'Villach'];
+      var categories = [
+        'Vienna',
+        'Graz',
+        'Linz',
+        'Salzburg',
+        'Innsbruck',
+        'Klagenfurt',
+        'Villach',
+      ];
       var values = [1691000, 222000, 205000, 153000, 132000, 91000, 59000];
 
-      var bars, barLabels, xAxis, yAxis;
+      var chart, bars, barLabels, xAxis, yAxis;
 
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
@@ -43,7 +51,10 @@
         barLabels.config({});
 
         // Clear highlights of wrong axis in case unhighlight never got called
-        valueAxis.selection().selectAll('[highlighted]').attr('highlighted', null);
+        valueAxis
+          .selection()
+          .selectAll('[highlighted]')
+          .attr('highlighted', null);
         valueAxis.config({});
 
         categoryAxis
@@ -51,6 +62,8 @@
           .select(`.tick:nth-of-type(${barIndex + 1})`)
           .attr('highlighted', true);
         categoryAxis.config({});
+
+        chart.update();
       }
 
       function unhighlightBar(barIndex, categoryAxis, valueAxis) {
@@ -67,7 +80,10 @@
         barLabels.config({});
 
         // Clear highlights of wrong axis in case unhighlight never got called
-        valueAxis.selection().selectAll('[highlighted]').attr('highlighted', null);
+        valueAxis
+          .selection()
+          .selectAll('[highlighted]')
+          .attr('highlighted', null);
         valueAxis.config({});
 
         categoryAxis
@@ -75,14 +91,18 @@
           .select(`.tick:nth-of-type(${barIndex + 1})`)
           .attr('highlighted', null);
         categoryAxis.config({});
+
+        chart.update();
       }
 
-      respVis
+      chart = respVis
         .chart()
         .root(
           padding().config({
             all: 10,
-            conditionalConfigs: [{ media: wideMediaQuery, config: { top: 20 } }],
+            conditionalConfigs: [
+              { media: wideMediaQuery, config: { top: 20 } },
+            ],
             children: [
               respVis.group().config({
                 attributes: { 'grid-template': '1fr auto / auto 1fr' },
@@ -111,11 +131,13 @@
                           events: [
                             {
                               typenames: 'mouseover',
-                              callback: (e, d) => highlightBar(d.index, xAxis, yAxis),
+                              callback: (e, d) =>
+                                highlightBar(d.index, xAxis, yAxis),
                             },
                             {
                               typenames: 'mouseout',
-                              callback: (e, d) => unhighlightBar(d.index, xAxis, yAxis),
+                              callback: (e, d) =>
+                                unhighlightBar(d.index, xAxis, yAxis),
                             },
                           ],
                         },
@@ -128,7 +150,8 @@
                       },
                       {
                         typenames: 'mouseout',
-                        callback: (e, d) => unhighlightBar(d.index, yAxis, xAxis),
+                        callback: (e, d) =>
+                          unhighlightBar(d.index, yAxis, xAxis),
                       },
                     ],
                   })),
@@ -185,13 +208,19 @@
                       },
                       scale: bars.categoriesScale(),
                       conditionalConfigs: [
-                        { media: wideMediaQuery, config: { scale: bars.valuesScale() } },
+                        {
+                          media: wideMediaQuery,
+                          config: { scale: bars.valuesScale() },
+                        },
                       ],
                     },
                     title: {
                       text: 'Cities',
                       conditionalConfigs: [
-                        { media: wideMediaQuery, config: { text: 'Population' } },
+                        {
+                          media: wideMediaQuery,
+                          config: { text: 'Population' },
+                        },
                       ],
                     },
                   })),
@@ -230,7 +259,9 @@
                     },
                     title: {
                       text: 'Population',
-                      conditionalConfigs: [{ media: wideMediaQuery, config: { text: 'Cities' } }],
+                      conditionalConfigs: [
+                        { media: wideMediaQuery, config: { text: 'Cities' } },
+                      ],
                     },
                   })),
                 ],

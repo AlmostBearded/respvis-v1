@@ -24,7 +24,10 @@ export interface IStackedBarsComponentConfig
   extends IComponentConfig,
     IStackedBarsPositionerConfig {
   transitionDuration: number;
-  events: { typenames: string; callback: (event: Event, data: IStackedBarsEventData) => void }[];
+  events: {
+    typenames: string;
+    callback: (event: Event, data: IStackedBarsEventData) => void;
+  }[];
 }
 
 export interface IStackedBarsEventData extends IComponentEventData {
@@ -46,7 +49,10 @@ export class StackedBarsComponent
 
   static defaultColors = colors.categorical;
 
-  static setEventListeners(component: StackedBarsComponent, config: IStackedBarsComponentConfig) {
+  static setEventListeners(
+    component: StackedBarsComponent,
+    config: IStackedBarsComponentConfig
+  ) {
     config.events.forEach((eventConfig) =>
       component.selection().on(eventConfig.typenames, (e: Event) => {
         const rectElement = e.target as SVGRectElement;
@@ -54,7 +60,10 @@ export class StackedBarsComponent
         const barStackElement = barElement.parentNode!;
 
         const indexOf = Array.prototype.indexOf;
-        const categoryIndex = indexOf.call(barStackElement.parentNode!.children, barStackElement);
+        const categoryIndex = indexOf.call(
+          barStackElement.parentNode!.children,
+          barStackElement
+        );
         const barIndex = indexOf.call(barStackElement.children, barElement);
 
         eventConfig.callback(e, {
@@ -115,8 +124,6 @@ export class StackedBarsComponent
     return this;
   }
 
-  protected _afterResize(): void {}
-
   render(animated: boolean): this {
     const values = this.activeConfig().values;
     const bars = this._barPositioner.bars();
@@ -134,7 +141,10 @@ export class StackedBarsComponent
         );
       });
 
-    this.selection().call(utils.applyAttributes, this.activeConfig().attributes);
+    this.selection().call(
+      utils.applyAttributes,
+      this.activeConfig().attributes
+    );
 
     return this;
   }

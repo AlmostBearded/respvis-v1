@@ -1,10 +1,18 @@
-import { Component, IComponent, IComponentConfig, IComponentEventData } from '../component';
+import {
+  Component,
+  IComponent,
+  IComponentConfig,
+  IComponentEventData,
+} from '../component';
 import { Selection, BaseType, create } from 'd3-selection';
 import { nullFunction } from '../utils';
 
 export interface IGroupComponentConfig extends IComponentConfig {
   children: IComponent<IComponentConfig>[];
-  events: { typenames: string; callback: (event: Event, data: IGroupEventData) => void }[];
+  events: {
+    typenames: string;
+    callback: (event: Event, data: IGroupEventData) => void;
+  }[];
 }
 
 export interface IGroupEventData extends IComponentEventData {
@@ -13,8 +21,13 @@ export interface IGroupEventData extends IComponentEventData {
 
 export interface IGroupComponent extends IComponent<IGroupComponentConfig> {}
 
-export class GroupComponent extends Component<IGroupComponentConfig> implements IGroupComponent {
-  static setEventListeners(component: GroupComponent, config: IGroupComponentConfig) {
+export class GroupComponent
+  extends Component<IGroupComponentConfig>
+  implements IGroupComponent {
+  static setEventListeners(
+    component: GroupComponent,
+    config: IGroupComponentConfig
+  ) {
     config.events.forEach((eventConfig) =>
       component.selection().on(eventConfig.typenames, (e: Event) => {
         let childElement = e.target as Element;
@@ -23,9 +36,15 @@ export class GroupComponent extends Component<IGroupComponentConfig> implements 
         }
 
         const indexOf = Array.prototype.indexOf;
-        const childIndex = indexOf.call(childElement.parentNode!.children, childElement);
+        const childIndex = indexOf.call(
+          childElement.parentNode!.children,
+          childElement
+        );
 
-        eventConfig.callback(e, { component: component, childIndex: childIndex });
+        eventConfig.callback(e, {
+          component: component,
+          childIndex: childIndex,
+        });
       })
     );
   }
@@ -39,9 +58,15 @@ export class GroupComponent extends Component<IGroupComponentConfig> implements 
           'grid-template': 'auto / auto',
         },
         conditionalConfigs: [],
-        configParser: (previousConfig: IGroupComponentConfig, newConfig: IGroupComponentConfig) => {
+        configParser: (
+          previousConfig: IGroupComponentConfig,
+          newConfig: IGroupComponentConfig
+        ) => {
           GroupComponent.clearEventListeners(this, previousConfig);
           GroupComponent.setEventListeners(this, newConfig);
+          newConfig.children
+            .sort((a, b) => a.renderOrder() - b.renderOrder())
+            .forEach((child) => child.config({}));
         },
         events: [],
       },
@@ -63,12 +88,6 @@ export class GroupComponent extends Component<IGroupComponentConfig> implements 
       .children.sort((a, b) => a.renderOrder() - b.renderOrder())
       .forEach((child) => child.resize());
     return this;
-  }
-
-  protected _afterResize(): void {
-    this.activeConfig()
-      .children.sort((a, b) => a.renderOrder() - b.renderOrder())
-      .forEach((child) => child.afterResize());
   }
 
   render(animated: boolean): this {

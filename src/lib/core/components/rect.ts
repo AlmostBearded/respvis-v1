@@ -13,7 +13,9 @@ export interface IRectComponentConfig extends IComponentConfig {
 
 export interface IRectComponent extends IComponent<IRectComponentConfig> {}
 
-export class RectComponent extends Component<IRectComponentConfig> implements IRectComponent {
+export class RectComponent
+  extends Component<IRectComponentConfig>
+  implements IRectComponent {
   constructor() {
     super(
       create<SVGElement>('svg:g'),
@@ -34,7 +36,7 @@ export class RectComponent extends Component<IRectComponentConfig> implements IR
           Component.setEventListeners(this, newConfig);
           newConfig.attributes.width = newConfig.size.width;
           newConfig.attributes.height = newConfig.size.height;
-          // TODO: Rerender if size changed?
+          this._render(newConfig, false)
         },
       },
       Component.mergeConfigs
@@ -52,21 +54,23 @@ export class RectComponent extends Component<IRectComponentConfig> implements IR
     return this;
   }
 
-  protected _afterResize(): void {}
-
-  render(animated: boolean): this {
+  private _render(config: IRectComponentConfig, animated: boolean): this {
     this.selection()
       .call(
         renderClippedRect,
         {
           x: 0,
           y: 0,
-          ...this.activeConfig().size,
+          ...config.size,
         },
         0
       )
-      .call(applyAttributes, this.activeConfig().attributes);
+      .call(applyAttributes, config.attributes);
     return this;
+  }
+
+  render(animated: boolean): this {
+    return this._render(this.activeConfig(), animated);
   }
 
   renderOrder(): number {
@@ -88,7 +92,12 @@ export function renderClippedRect(
   selection
     // Casting to disable type checking as the latest d3-selection types don't contain selectChildren yet.
     .call((s: any) =>
-      (s.selectChildren('clipPath') as Selection<SVGClipPathElement, unknown, BaseType, unknown>)
+      (s.selectChildren('clipPath') as Selection<
+        SVGClipPathElement,
+        unknown,
+        BaseType,
+        unknown
+      >)
         .data([null])
         .join((enter) =>
           enter
@@ -103,7 +112,12 @@ export function renderClippedRect(
         .call(applyAttributes, attributes)
     )
     .call((s: any) =>
-      (s.selectChildren('rect') as Selection<SVGRectElement, unknown, BaseType, unknown>)
+      (s.selectChildren('rect') as Selection<
+        SVGRectElement,
+        unknown,
+        BaseType,
+        unknown
+      >)
         .data([null])
         .join((enter) =>
           enter

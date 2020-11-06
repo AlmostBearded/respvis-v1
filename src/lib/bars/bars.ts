@@ -21,12 +21,19 @@ import { ScaleBand, ScaleLinear } from 'd3-scale';
 import { Primitive } from 'd3-array';
 import 'd3-transition';
 
-export interface IBarsComponentConfig extends IComponentConfig, IBarPositionerConfig {
+export interface IBarsComponentConfig
+  extends IComponentConfig,
+    IBarPositionerConfig {
   transitionDuration: number;
-  events: { typenames: string; callback: (event: Event, data: IBarsEventData) => void }[];
+  events: {
+    typenames: string;
+    callback: (event: Event, data: IBarsEventData) => void;
+  }[];
 }
 
-export interface IBarsComponent extends IComponent<IBarsComponentConfig>, IBars {}
+export interface IBarsComponent
+  extends IComponent<IBarsComponentConfig>,
+    IBars {}
 
 export interface IBarsEventData extends IComponentEventData {
   index: number;
@@ -34,17 +41,25 @@ export interface IBarsEventData extends IComponentEventData {
   barElement: SVGGElement;
 }
 
-export class BarsComponent extends Component<IBarsComponentConfig> implements IBarsComponent {
+export class BarsComponent
+  extends Component<IBarsComponentConfig>
+  implements IBarsComponent {
   private _barPositioner: IBarPositioner = new BarPositioner();
 
   static defaultColor = colors.categorical[0];
 
-  static setEventListeners(component: BarsComponent, config: IBarsComponentConfig) {
+  static setEventListeners(
+    component: BarsComponent,
+    config: IBarsComponentConfig
+  ) {
     config.events.forEach((eventConfig) =>
       component.selection().on(eventConfig.typenames, (e: Event) => {
         const rectElement = e.target as SVGRectElement;
         const barElement = rectElement.parentNode as SVGGElement;
-        const index = Array.prototype.indexOf.call(barElement.parentNode!.children, barElement);
+        const index = Array.prototype.indexOf.call(
+          barElement.parentNode!.children,
+          barElement
+        );
         eventConfig.callback(e, {
           component: component,
           index: index,
@@ -102,8 +117,6 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
     return this;
   }
 
-  protected _afterResize(): void {}
-
   render(animated: boolean): this {
     this.selection()
       .call(
@@ -112,7 +125,6 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
         animated ? this.activeConfig().transitionDuration : 0
       )
       .call(utils.applyAttributes, this.activeConfig().attributes);
-
     return this;
   }
 
@@ -147,5 +159,7 @@ export function renderBars(
     .data(bars)
     .join('g')
     .classed('bar', true)
-    .each((d, i, nodes) => select(nodes[i]).call(renderClippedRect, { ...d }, transitionDuration));
+    .each((d, i, nodes) =>
+      select(nodes[i]).call(renderClippedRect, { ...d }, transitionDuration)
+    );
 }

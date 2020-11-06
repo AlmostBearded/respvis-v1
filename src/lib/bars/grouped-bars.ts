@@ -20,9 +20,14 @@ import { renderBars } from './bars';
 import { ScaleBand, ScaleLinear } from 'd3-scale';
 import { Primitive } from 'd3-array';
 
-export interface IGroupedBarsComponentConfig extends IComponentConfig, IGroupedBarPositionerConfig {
+export interface IGroupedBarsComponentConfig
+  extends IComponentConfig,
+    IGroupedBarPositionerConfig {
   transitionDuration: number;
-  events: { typenames: string; callback: (event: Event, data: IGroupedBarsEventData) => void }[];
+  events: {
+    typenames: string;
+    callback: (event: Event, data: IGroupedBarsEventData) => void;
+  }[];
 }
 
 export interface IGroupedBarsEventData extends IComponentEventData {
@@ -44,7 +49,10 @@ export class GroupedBarsComponent
 
   static defaultColors = colors.categorical;
 
-  static setEventListeners(component: GroupedBarsComponent, config: IGroupedBarsComponentConfig) {
+  static setEventListeners(
+    component: GroupedBarsComponent,
+    config: IGroupedBarsComponentConfig
+  ) {
     config.events.forEach((eventConfig) =>
       component.selection().on(eventConfig.typenames, (e: Event) => {
         const rectElement = e.target as SVGRectElement;
@@ -52,7 +60,10 @@ export class GroupedBarsComponent
         const barGroupElement = barElement.parentNode!;
 
         const indexOf = Array.prototype.indexOf;
-        const categoryIndex = indexOf.call(barGroupElement.parentNode!.children, barGroupElement);
+        const categoryIndex = indexOf.call(
+          barGroupElement.parentNode!.children,
+          barGroupElement
+        );
         const barIndex = indexOf.call(barGroupElement.children, barElement);
 
         eventConfig.callback(e, {
@@ -80,7 +91,7 @@ export class GroupedBarsComponent
         attributes: Object.assign(
           { '.bar': { stroke: '#232323', 'stroke-width': 3 } },
           ...GroupedBarsComponent.defaultColors.map((c, i) => ({
-            [`.bar:nth-child(${i + 1}) > rect`]: { fill: c },
+            [`.bar:nth-child(${i + 1})`]: { fill: c },
           }))
         ),
         conditionalConfigs: [],
@@ -115,8 +126,6 @@ export class GroupedBarsComponent
     return this;
   }
 
-  protected _afterResize(): void {}
-
   render(animated: boolean): this {
     const values = this.activeConfig().values;
     const bars = this._barPositioner.bars();
@@ -134,7 +143,10 @@ export class GroupedBarsComponent
         );
       });
 
-    this.selection().call(utils.applyAttributes, this.activeConfig().attributes);
+    this.selection().call(
+      utils.applyAttributes,
+      this.activeConfig().attributes
+    );
 
     return this;
   }

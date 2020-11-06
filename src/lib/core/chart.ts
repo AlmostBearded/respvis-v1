@@ -4,9 +4,10 @@ import { IComponent, IComponentConfig } from './component';
 import { applyLayoutTransforms, computeLayout } from './layout/layout';
 
 export interface IChart {
-  mount(containerSelector: string): this;
   root(root: IComponent<IComponentConfig>): this;
   root(): IComponent<IComponentConfig>;
+  mount(containerSelector: string): this;
+  update(): this;
 }
 
 export class Chart implements IChart {
@@ -39,14 +40,8 @@ export class Chart implements IChart {
     };
 
     const afterResize = () => {
-      this._root.afterResize();
-
-      let bbox = this._selection.node()!.getBoundingClientRect();
-      computeLayout(this._root.selection().node()!, bbox);
-
-      this._root.resize().render(true);
-
-      applyLayoutTransforms(this._root.selection().node()!);
+      this._root.config({});
+      this.update();
     };
 
     resize();
@@ -63,6 +58,16 @@ export class Chart implements IChart {
     if (root === undefined) return this._root;
     this._root = root;
     // TODO: Handle changing after mount.
+    return this;
+  }
+  update(): this {
+    let bbox = this._selection.node()!.getBoundingClientRect();
+    computeLayout(this._root.selection().node()!, bbox);
+
+    this._root.resize().render(true);
+
+    applyLayoutTransforms(this._root.selection().node()!);
+
     return this;
   }
 }

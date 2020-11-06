@@ -8,7 +8,9 @@ export interface ITextComponentConfig extends IComponentConfig {
 
 export interface ITextComponent extends IComponent<ITextComponentConfig> {}
 
-export class TextComponent extends Component<ITextComponentConfig> implements ITextComponent {
+export class TextComponent
+  extends Component<ITextComponentConfig>
+  implements ITextComponent {
   constructor() {
     super(
       create<SVGElement>('svg:text'),
@@ -44,14 +46,13 @@ export class TextComponent extends Component<ITextComponentConfig> implements IT
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
     selection.append(() => this.selection().node());
+    this.render(false);
     return this;
   }
 
   resize(): this {
     return this;
   }
-
-  protected _afterResize(): void {}
 
   render(animated: boolean): this {
     return this;
