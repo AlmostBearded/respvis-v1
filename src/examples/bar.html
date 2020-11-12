@@ -19,257 +19,166 @@
     <h1>Bar Chart</h1>
     <div id="chart"></div>
     <script src="../respvis.js"></script>
-    <script src="./components/padding.js"></script>
-    <script src="./components/axis.js"></script>
-    <script>
-      var categories = [
-        'Vienna',
-        'Graz',
-        'Linz',
-        'Salzburg',
-        'Innsbruck',
-        'Klagenfurt',
-        'Villach',
-      ];
-      var values = [1691000, 222000, 205000, 153000, 132000, 91000, 59000];
+    <script type="module">
+      import withPaddingLayout from './components/with-padding-layout.js';
+      import withLeftAxis from './components/axis/with-left-axis.js';
+      import withBottomAxis from './components/axis/with-bottom-axis.js';
+      import withHighlightTick from './components/axis/with-highlight-tick.js';
+      import withHighlightBar from './components/bars/with-highlight-bar.js';
+      import withShowLabel from './components/bar-labels/with-show-label.js';
 
-      var chart, bars, barLabels, xAxis, yAxis;
+      var categories = ['Vienna', 'Graz', 'Linz', 'Salzburg', 'Innsbruck', 'Klagenfurt', 'Villach'];
+      var values = [1691000, 222000, 205000, 153000, 132000, 91000, 59000];
 
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
-      function highlightBar(barIndex, categoryAxis, valueAxis) {
-        bars
-          .selection()
-          .select(`.bar:nth-of-type(${barIndex + 1})`)
-          .attr('highlighted', true);
-        bars.config({});
+      // bars
+      const bars = withHighlightBar(respVis.bars()).config({
+        categories: categories,
+        values: values,
+        orientation: respVis.BarOrientation.Horizontal,
+        transitionDuration: 1000,
+        events: [
+          {
+            typenames: 'mouseover',
+            callback: (e, d) => hoverBar(d.index, yAxis, xAxis, true),
+          },
+          {
+            typenames: 'mouseout',
+            callback: (e, d) => hoverBar(d.index, yAxis, xAxis, false),
+          },
+        ],
+        conditionalConfigs: [
+          {
+            media: wideMediaQuery,
+            config: {
+              orientation: respVis.BarOrientation.Vertical,
+              events: [
+                {
+                  typenames: 'mouseover',
+                  callback: (e, d) => hoverBar(d.index, xAxis, yAxis, true),
+                },
+                {
+                  typenames: 'mouseout',
+                  callback: (e, d) => hoverBar(d.index, xAxis, yAxis, false),
+                },
+              ],
+            },
+          },
+        ],
+      });
 
-        barLabels
-          .selection()
-          .select(`.label:nth-of-type(${barIndex + 1})`)
-          .attr('highlighted', true);
-        barLabels.config({});
+      // bar labels
+      const barLabels = withShowLabel(respVis.barLabels()).config({
+        attributes: {
+          text: {
+            'dominant-baseline': 'middle',
+            'text-anchor': 'start',
+            transform: 'translate(4, 0)',
+            'font-weight': 'bold',
+            'pointer-events': 'none',
+          },
+        },
+        bars: bars,
+        labels: values,
+        horizontalPosition: respVis.HorizontalPosition.Left,
+        verticalPosition: respVis.VerticalPosition.Center,
+        transitionDuration: 1000,
+        conditionalConfigs: [
+          {
+            media: wideMediaQuery,
+            config: {
+              attributes: {
+                text: {
+                  'dominant-baseline': 'auto',
+                  'text-anchor': 'middle',
+                  transform: 'translate(0, -2)',
+                },
+              },
+              horizontalPosition: respVis.HorizontalPosition.Center,
+              verticalPosition: respVis.VerticalPosition.Top,
+            },
+          },
+        ],
+      });
 
-        // Clear highlights of wrong axis in case unhighlight never got called
-        valueAxis
-          .selection()
-          .selectAll('[highlighted]')
-          .attr('highlighted', null);
-        valueAxis.config({});
+      // bottom axis
+      const xAxis = withHighlightTick(withBottomAxis(respVis.group())).config({
+        ticks: {
+          scale: bars.valuesScale(),
+          attributes: {
+            text: {
+              'dominant-baseline': 'hanging',
+              transform: 'translate(0, 7) rotate(-45)',
+              'text-anchor': 'end',
+            },
+          },
+          conditionalConfigs: [
+            {
+              media: wideMediaQuery,
+              config: {
+                scale: bars.categoriesScale(),
+                attributes: { text: { transform: 'translate(0, 7)', 'text-anchor': 'middle' } },
+              },
+            },
+          ],
+        },
+        title: {
+          text: 'Population',
+          conditionalConfigs: [{ media: wideMediaQuery, config: { text: 'Cities' } }],
+        },
+      });
 
-        categoryAxis
-          .selection()
-          .select(`.tick:nth-of-type(${barIndex + 1})`)
-          .attr('highlighted', true);
-        categoryAxis.config({});
+      // left axis
+      const yAxis = withHighlightTick(withLeftAxis(respVis.group())).config({
+        ticks: {
+          scale: bars.categoriesScale(),
+          conditionalConfigs: [{ media: wideMediaQuery, config: { scale: bars.valuesScale() } }],
+        },
+        title: {
+          text: 'Cities',
+          conditionalConfigs: [{ media: wideMediaQuery, config: { text: 'Population' } }],
+        },
+      });
 
-        chart.update();
-      }
-
-      function unhighlightBar(barIndex, categoryAxis, valueAxis) {
-        bars
-          .selection()
-          .select(`.bar:nth-of-type(${barIndex + 1})`)
-          .attr('highlighted', null);
-        bars.config({});
-
-        barLabels
-          .selection()
-          .select(`.label:nth-of-type(${barIndex + 1})`)
-          .attr('highlighted', null);
-        barLabels.config({});
-
-        // Clear highlights of wrong axis in case unhighlight never got called
-        valueAxis
-          .selection()
-          .selectAll('[highlighted]')
-          .attr('highlighted', null);
-        valueAxis.config({});
-
-        categoryAxis
-          .selection()
-          .select(`.tick:nth-of-type(${barIndex + 1})`)
-          .attr('highlighted', null);
-        categoryAxis.config({});
-
-        chart.update();
-      }
-
-      chart = respVis
+      const chart = respVis
         .chart()
         .root(
-          padding().config({
+          withPaddingLayout(respVis.group()).config({
             all: 10,
-            conditionalConfigs: [
-              { media: wideMediaQuery, config: { top: 20 } },
-            ],
+            conditionalConfigs: [{ media: wideMediaQuery, config: { top: 20 } }],
             children: [
               respVis.group().config({
                 attributes: { 'grid-template': '1fr auto / auto 1fr' },
                 children: [
-                  // Bars
-                  (bars = respVis.bars().config({
-                    attributes: {
-                      'grid-area': '1 / 2 / 2 / 3',
-                      '.bar[highlighted=true]': {
-                        fill: respVis.chroma
-                          .hex(respVis.BarsComponent.defaultColor)
-                          .brighten(0.5)
-                          .hex(),
-                      },
-                    },
-                    categories: categories,
-                    values: values,
-                    orientation: respVis.BarOrientation.Horizontal,
-                    transitionDuration: 1000,
-                    conditionalConfigs: [
-                      // Config overrides for wider screens
-                      {
-                        media: wideMediaQuery,
-                        config: {
-                          orientation: respVis.BarOrientation.Vertical,
-                          events: [
-                            {
-                              typenames: 'mouseover',
-                              callback: (e, d) =>
-                                highlightBar(d.index, xAxis, yAxis),
-                            },
-                            {
-                              typenames: 'mouseout',
-                              callback: (e, d) =>
-                                unhighlightBar(d.index, xAxis, yAxis),
-                            },
-                          ],
-                        },
-                      },
-                    ],
-                    events: [
-                      {
-                        typenames: 'mouseover',
-                        callback: (e, d) => highlightBar(d.index, yAxis, xAxis),
-                      },
-                      {
-                        typenames: 'mouseout',
-                        callback: (e, d) =>
-                          unhighlightBar(d.index, yAxis, xAxis),
-                      },
-                    ],
-                  })),
-                  // Bar Labels
-                  (barLabels = respVis.barLabels().config({
-                    attributes: {
-                      'grid-area': '1 / 2 / 2 / 3',
-                      '.label': {
-                        opacity: 0,
-                        'pointer-events': 'none',
-                      },
-                      '.label[highlighted=true]': {
-                        opacity: 1,
-                      },
-                      text: {
-                        'dominant-baseline': 'middle',
-                        'text-anchor': 'start',
-                        transform: 'translate(4, 0)',
-                        'font-weight': 'bold',
-                      },
-                    },
-                    bars: bars,
-                    labels: values,
-                    horizontalPosition: respVis.HorizontalPosition.Left,
-                    verticalPosition: respVis.VerticalPosition.Center,
-                    transitionDuration: 1000,
-                    conditionalConfigs: [
-                      // Config overrides for wider screens
-                      {
-                        media: wideMediaQuery,
-                        config: {
-                          attributes: {
-                            text: {
-                              'dominant-baseline': 'auto',
-                              'text-anchor': 'middle',
-                              transform: 'translate(0, -2)',
-                            },
-                          },
-                          horizontalPosition: respVis.HorizontalPosition.Center,
-                          verticalPosition: respVis.VerticalPosition.Top,
-                        },
-                      },
-                    ],
-                  })),
-                  // Left axis
-                  (yAxis = leftAxis().config({
-                    attributes: {
-                      'grid-area': '1 / 1 / 2 / 2',
-                    },
-                    ticks: {
-                      attributes: {
-                        '.tick': { 'font-weight': 'normal' },
-                        '.tick[highlighted=true]': { 'font-weight': 'bold' },
-                      },
-                      scale: bars.categoriesScale(),
-                      conditionalConfigs: [
-                        {
-                          media: wideMediaQuery,
-                          config: { scale: bars.valuesScale() },
-                        },
-                      ],
-                    },
-                    title: {
-                      text: 'Cities',
-                      conditionalConfigs: [
-                        {
-                          media: wideMediaQuery,
-                          config: { text: 'Population' },
-                        },
-                      ],
-                    },
-                  })),
-                  // Bottom axis
-                  (xAxis = bottomAxis().config({
-                    attributes: {
-                      'grid-area': '2 / 2 / 3 / 3',
-                    },
-                    ticks: {
-                      scale: bars.valuesScale(),
-                      attributes: {
-                        '.tick': {
-                          'font-weight': 'normal',
-                        },
-                        '.tick[highlighted=true]': { 'font-weight': 'bold' },
-                        '.tick > text': {
-                          'dominant-baseline': 'hanging',
-                          transform: 'translate(0, 7) rotate(-45)',
-                          'text-anchor': 'end',
-                        },
-                      },
-                      conditionalConfigs: [
-                        {
-                          media: wideMediaQuery,
-                          config: {
-                            scale: bars.categoriesScale(),
-                            attributes: {
-                              '.tick > text': {
-                                transform: 'translate(0, 7)',
-                                'text-anchor': 'middle',
-                              },
-                            },
-                          },
-                        },
-                      ],
-                    },
-                    title: {
-                      text: 'Population',
-                      conditionalConfigs: [
-                        { media: wideMediaQuery, config: { text: 'Cities' } },
-                      ],
-                    },
-                  })),
+                  // bars
+                  bars.config({ attributes: { 'grid-area': '1 / 2 / 2 / 3' } }),
+
+                  // bar Labels
+                  barLabels.config({ attributes: { 'grid-area': '1 / 2 / 2 / 3' } }),
+
+                  // left axis
+                  yAxis.config({ attributes: { 'grid-area': '1 / 1 / 2 / 2' } }),
+
+                  // bottom axis
+                  xAxis.config({ attributes: { 'grid-area': '2 / 2 / 3 / 3' } }),
                 ],
               }),
             ],
           })
         )
         .mount('#chart');
+
+      function hoverBar(barIndex, categoryAxis, valueAxis, hover) {
+        // Clear highlights of wrong axis in case unhighlight never got called
+        valueAxis.clearHighlights();
+
+        bars.highlightBar(barIndex, hover);
+        barLabels.showLabel(barIndex, hover);
+        categoryAxis.highlightTick(barIndex, hover);
+
+        chart.update();
+      }
     </script>
   </body>
 </html>

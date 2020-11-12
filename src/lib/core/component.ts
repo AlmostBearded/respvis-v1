@@ -26,7 +26,6 @@ export type MergeConfigsFn = <TConfig extends IComponentConfig>(
 export interface IComponent<TConfig extends IComponentConfig> {
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this;
   resize(): this;
-  afterResize(): this;
   render(animated: boolean): this;
   selection(): Selection<SVGElement, unknown, BaseType, unknown>;
   renderOrder(): number;

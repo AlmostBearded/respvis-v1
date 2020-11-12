@@ -19,11 +19,18 @@
     <h1>Grouped Bar Chart</h1>
     <div id="chart"></div>
     <script src="../respvis.js"></script>
-    <script src="./components/axis.js"></script>
-    <script src="./components/padding.js"></script>
-    <script src="./components/matrix.js"></script>
-    <script src="./components/swatch-legend.js"></script>
-    <script>
+    <script type="module">
+      import withPaddingLayout from './components/with-padding-layout.js';
+      import withLeftAxis from './components/axis/with-left-axis.js';
+      import withBottomAxis from './components/axis/with-bottom-axis.js';
+      import withHighlightTick from './components/axis/with-highlight-tick.js';
+      import withHighlightBar from './components/grouped-bars/with-highlight-bar.js';
+      import withShowLabel from './components/bar-labels/with-show-label.js';
+      import withSwatchLegend from './components/legend/with-swatch-legend.js';
+      import withHighlightLegendSwatch from './components/legend/with-highlight-swatch.js';
+      import withDisableLegendSwatch from './components/legend/with-disable-swatch.js';
+
+      // data
       var categories = ['Vienna', 'Rome', 'Paris', 'Berlin', 'Amsterdam'];
       var years = ['2018', '2019', '2020'];
       var values = [
@@ -33,190 +40,199 @@
         [30, 24, 28],
         [12, 14, 18],
       ];
+
+      // to toggle subcategories
       var subcategoryToggles = [true, true, true];
 
-      const colors = respVis.GroupedBarsComponent.defaultColors;
-      const brighten = (color) => respVis.chroma.hex(color).brighten(0.5).hex();
-      const desaturate = (color) =>
-        respVis.chroma.hex(color).desaturate(4).hex();
 
+      // media query for wide screens
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
-      var chart, bars, barLabels, legend, xAxis, yAxis;
-
-      function legendSwatchIndexToBarIndex(swatchIndex) {
-        return subcategoryToggles.slice(0, swatchIndex).filter((t) => t).length;
-      }
-
-      function barIndexToLegendSwatchIndex(barIndex) {
-        let lastIndex = -1;
-        for (let i = 0; i <= barIndex; ++i)
-          lastIndex = subcategoryToggles.indexOf(true, lastIndex + 1);
-        return lastIndex;
-      }
-
-      function createBarColorAttributes(colors) {
-        return Object.assign(
-          ...colors.map((c, i) => ({
-            [`.bar:nth-child(${i + 1})`]: {
-              fill: c,
-            },
-          })),
-          ...colors.map((c, i) => ({
-            [`.bar:nth-child(${i + 1})[highlighted=true]`]: {
-              fill: brighten(c),
-              'stroke-width': 6,
-            },
-          }))
-        );
-      }
-
-      function highlightBar(categoryIndex, barIndex, highlight) {
-        bars
-          .selection()
-          .select(
-            `.bar-group:nth-of-type(${categoryIndex + 1}) .bar:nth-of-type(${
-              barIndex + 1
-            })`
-          )
-          .attr('highlighted', highlight);
-        bars.config({});
-      }
-
-      function highlightBarLabel(labelIndex, highlight) {
-        barLabels
-          .selection()
-          .select(`.label:nth-of-type(${labelIndex + 1})`)
-          .attr('highlighted', highlight);
-        barLabels.config({});
-      }
-
-      function highlightLegendSwatch(swatchIndex, highlight) {
-        legend.activeConfig().children[swatchIndex].config({
-          rect: {
-            attributes: {
-              fill: highlight
-                ? brighten(colors[swatchIndex])
-                : colors[swatchIndex],
+      // bars
+      const barColors = respVis.GroupedBarsComponent.defaultColors;
+      const bars = withHighlightBar(respVis.groupedBars()).config({
+        categories: categories,
+        values: values,
+        orientation: respVis.BarOrientation.Horizontal,
+        colors: barColors,
+        transitionDuration: 1000,
+        events: [
+          {
+            typenames: 'mouseover',
+            callback: (e, d) => hoverBar(d.categoryIndex, d.barIndex, yAxis, xAxis, true),
+          },
+          {
+            typenames: 'mouseout',
+            callback: (e, d) => hoverBar(d.categoryIndex, d.barIndex, yAxis, xAxis, false),
+          },
+        ],
+        conditionalConfigs: [
+          {
+            media: wideMediaQuery,
+            config: {
+              orientation: respVis.BarOrientation.Vertical,
+              // TODO: It might be cleaner to change the events config syntax to...
+              // events: {
+              //   mouseover: (e, d) => hoverBar(d.categoryIndex, d.barIndex, xAxis, yAxis, true),
+              //   mouseout: (e, d) => hoverBar(d.categoryIndex, d.barIndex, xAxis, yAxis, false),
+              // },
+              events: [
+                {
+                  typenames: 'mouseover',
+                  callback: (e, d) => hoverBar(d.categoryIndex, d.barIndex, xAxis, yAxis, true),
+                },
+                {
+                  typenames: 'mouseout',
+                  callback: (e, d) => hoverBar(d.categoryIndex, d.barIndex, xAxis, yAxis, false),
+                },
+              ],
             },
           },
-          label: {
-            attributes: { 'font-weight': highlight ? 'bold' : 'normal' },
-          },
-        });
-      }
+        ],
+      });
 
-      function disableLegendSwatch(swatchIndex, disable) {
-        legend.activeConfig().children[swatchIndex].config({
-          rect: {
-            attributes: {
-              fill: disable
-                ? desaturate(colors[swatchIndex])
-                : colors[swatchIndex],
-              'stroke-width': disable ? 1 : 4,
+      // labels
+      const labels = withShowLabel(respVis.barLabels()).config({
+        attributes: {
+          text: {
+            'dominant-baseline': 'middle',
+            'text-anchor': 'start',
+            transform: 'translate(2, 0)',
+            'font-weight': 'bold',
+          },
+        },
+        bars: bars,
+        labels: values.flat(),
+        horizontalPosition: respVis.HorizontalPosition.Right,
+        verticalPosition: respVis.VerticalPosition.Center,
+        transitionDuration: 1000,
+        conditionalConfigs: [
+          {
+            media: wideMediaQuery,
+            config: {
+              horizontalPosition: respVis.HorizontalPosition.Center,
+              verticalPosition: respVis.VerticalPosition.Top,
+              attributes: {
+                text: {
+                  'dominant-baseline': 'auto',
+                  'text-anchor': 'middle',
+                  transform: 'translate(0, -2)',
+                },
+              },
             },
           },
-          label: {
-            attributes: { fill: disable ? '#ababab' : '#000000' },
+        ],
+      });
+
+      // legend
+      const legend = withDisableLegendSwatch(
+        withHighlightLegendSwatch(withSwatchLegend(respVis.group()))
+      ).config({
+        attributes: {
+          // TODO: Can't specify grid-area later because conditionalConfigs can't be deep-merged
+          'grid-area': '1 / 1 / 2 / 2',
+          cursor: 'pointer',
+        },
+        labels: years,
+        colors: barColors,
+        rowCount: 1,
+        columnCount: years.length,
+        events: [
+          {
+            typenames: 'mouseover',
+            callback: (e, d) => hoverLegendSwatch(d.childIndex, true),
           },
-        });
-      }
+          {
+            typenames: 'mouseout',
+            callback: (e, d) => hoverLegendSwatch(d.childIndex, false),
+          },
+          {
+            typenames: 'click',
+            callback: (e, d) => clickLegendSwatch(d.childIndex),
+          },
+        ],
+        conditionalConfigs: [
+          {
+            media: wideMediaQuery,
+            config: {
+              rowCount: years.length,
+              columnCount: 1,
+              attributes: {
+                // TODO: Can't specify grid-area later because conditionalConfigs can't be deep-merged
+                'grid-area': '1 / 2 / 2 / 3',
+              },
+            },
+          },
+        ],
+      });
 
-      function highlightAxisTick(axis, tickIndex, highlight) {
-        axis
-          .selection()
-          .select(`.tick:nth-of-type(${tickIndex + 1})`)
-          .attr('highlighted', highlight);
-        axis.config({});
-      }
+      // bottom axis
+      const xAxis = withHighlightTick(withBottomAxis(respVis.group())).config({
+        ticks: {
+          attributes: { cursor: 'auto' },
+          scale: bars.valuesScale(),
+          conditionalConfigs: [
+            {
+              media: wideMediaQuery,
+              config: {
+                scale: bars.categoriesScale(),
+                attributes: { cursor: 'default' },
+                events: [
+                  {
+                    typenames: 'mouseover',
+                    callback: (e, d) => hoverCategoryAxisTick(xAxis, yAxis, d.tickIndex, true),
+                  },
+                  {
+                    typenames: 'mouseout',
+                    callback: (e, d) => hoverCategoryAxisTick(xAxis, yAxis, d.tickIndex, false),
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        title: {
+          text: 'Revenue',
+          conditionalConfigs: [{ media: wideMediaQuery, config: { text: 'Locations' } }],
+        },
+      });
 
-      function clearAxisHighlights(axis) {
-        axis.selection().selectAll('[highlighted]').attr('highlighted', null);
-        axis.config({});
-      }
+      // left axis
+      const yAxis = withHighlightTick(withLeftAxis(respVis.group())).config({
+        ticks: {
+          scale: bars.categoriesScale(),
+          attributes: { cursor: 'default' },
+          events: [
+            {
+              typenames: 'mouseover',
+              callback: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, true),
+            },
+            {
+              typenames: 'mouseout',
+              callback: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, false),
+            },
+          ],
+          conditionalConfigs: [
+            {
+              media: wideMediaQuery,
+              config: {
+                scale: bars.valuesScale(),
+                attributes: { cursor: 'auto' },
+                events: [], // unregister events
+              },
+            },
+          ],
+        },
+        title: {
+          text: 'Locations',
+          conditionalConfigs: [{ media: wideMediaQuery, config: { text: 'Revenue' } }],
+        },
+      });
 
-      function hoverBar(
-        categoryIndex,
-        barIndex,
-        categoryAxis,
-        valueAxis,
-        hover
-      ) {
-        const flatBarIndex =
-          categoryIndex * subcategoryToggles.filter((t) => t).length + barIndex;
-        highlightBar(categoryIndex, barIndex, hover);
-        highlightBarLabel(flatBarIndex, hover);
-        highlightLegendSwatch(barIndexToLegendSwatchIndex(barIndex), hover);
-        clearAxisHighlights(valueAxis);
-        highlightAxisTick(categoryAxis, categoryIndex, hover);
-        chart.update();
-      }
-
-      function hoverLegendSwatch(swatchIndex, hover) {
-        if (subcategoryToggles[swatchIndex] === false) return;
-
-        categories.forEach((category, categoryIndex) => {
-          let barIndex = legendSwatchIndexToBarIndex(swatchIndex);
-          const flatBarIndex =
-            categoryIndex * subcategoryToggles.filter((t) => t).length +
-            barIndex;
-          highlightBar(categoryIndex, barIndex, hover);
-          highlightBarLabel(flatBarIndex, hover);
-        });
-        highlightLegendSwatch(swatchIndex, hover);
-        chart.update();
-      }
-
-      function clickLegendSwatch(swatchIndex) {
-        // Prevent hiding the last subcategory
-        if (
-          subcategoryToggles.filter((t) => t).length === 1 &&
-          subcategoryToggles[swatchIndex] === true
-        )
-          return;
-
-        hoverLegendSwatch(swatchIndex, false);
-
-        subcategoryToggles[swatchIndex] = !subcategoryToggles[swatchIndex];
-        const newValues = values.map((subcategoryValues) =>
-          subcategoryValues.filter((c, i) => subcategoryToggles[i])
-        );
-        bars.config({
-          values: newValues,
-          attributes: createBarColorAttributes(
-            colors.filter((c, i) => subcategoryToggles[i])
-          ),
-        });
-
-        barLabels.config({ labels: newValues.flat() });
-
-        disableLegendSwatch(swatchIndex, !subcategoryToggles[swatchIndex]);
-
-        chart.update();
-      }
-
-      function hoverCategoryAxisTick(
-        categoryAxis,
-        valueAxis,
-        tickIndex,
-        hover
-      ) {
-        clearAxisHighlights(valueAxis);
-        highlightAxisTick(categoryAxis, tickIndex, hover);
-        for (let i = 0; i < subcategoryToggles.filter((t) => t).length; ++i) {
-          const flatBarIndex =
-            tickIndex * subcategoryToggles.filter((t) => t).length + i;
-          highlightBar(tickIndex, i, hover);
-          highlightBarLabel(flatBarIndex, hover);
-        }
-
-        chart.update();
-      }
-
-      chart = respVis
+      const chart = respVis
         .chart()
         .root(
-          padding().config({
+          withPaddingLayout(respVis.group()).config({
             all: 10,
             children: [
               respVis.group().config({
@@ -230,7 +246,7 @@
                   },
                 ],
                 children: [
-                  padding().config({
+                  withPaddingLayout(respVis.group()).config({
                     top: 5,
                     right: 20,
                     attributes: {
@@ -252,267 +268,102 @@
                           'grid-template': '1fr auto / auto 1fr',
                         },
                         children: [
-                          // Bars
-                          (bars = respVis.groupedBars().config({
-                            attributes: Object.assign(
-                              { 'grid-area': '1 / 2 / 2 / 3' },
-                              createBarColorAttributes(colors)
-                            ),
-                            categories: categories,
-                            values: values,
-                            orientation: respVis.BarOrientation.Horizontal,
-                            transitionDuration: 1000,
-                            events: [
-                              {
-                                typenames: 'mouseover',
-                                callback: (e, d) =>
-                                  hoverBar(
-                                    d.categoryIndex,
-                                    d.barIndex,
-                                    yAxis,
-                                    xAxis,
-                                    true
-                                  ),
-                              },
-                              {
-                                typenames: 'mouseout',
-                                callback: (e, d) =>
-                                  hoverBar(
-                                    d.categoryIndex,
-                                    d.barIndex,
-                                    yAxis,
-                                    xAxis,
-                                    false
-                                  ),
-                              },
-                            ],
-                            conditionalConfigs: [
-                              {
-                                media: wideMediaQuery,
-                                config: {
-                                  orientation: respVis.BarOrientation.Vertical,
-                                  events: [
-                                    {
-                                      typenames: 'mouseover',
-                                      callback: (e, d) =>
-                                        hoverBar(
-                                          d.categoryIndex,
-                                          d.barIndex,
-                                          xAxis,
-                                          yAxis,
-                                          true
-                                        ),
-                                    },
-                                    {
-                                      typenames: 'mouseout',
-                                      callback: (e, d) =>
-                                        hoverBar(
-                                          d.categoryIndex,
-                                          d.barIndex,
-                                          xAxis,
-                                          yAxis,
-                                          false
-                                        ),
-                                    },
-                                  ],
-                                },
-                              },
-                            ],
-                          })),
-                          (barLabels = respVis.barLabels().config({
-                            attributes: {
-                              'grid-area': '1 / 2 / 2 / 3',
-                              '.label': { opacity: 0 },
-                              '.label[highlighted=true]': { opacity: 1 },
-                              text: {
-                                'dominant-baseline': 'middle',
-                                'text-anchor': 'start',
-                                transform: 'translate(2, 0)',
-                                'font-weight': 'bold',
-                              },
-                            },
-                            bars: bars,
-                            labels: values.flat(),
-                            horizontalPosition:
-                              respVis.HorizontalPosition.Right,
-                            verticalPosition: respVis.VerticalPosition.Center,
-                            transitionDuration: 1000,
-                            conditionalConfigs: [
-                              {
-                                media: wideMediaQuery,
-                                config: {
-                                  horizontalPosition:
-                                    respVis.HorizontalPosition.Center,
-                                  verticalPosition:
-                                    respVis.VerticalPosition.Top,
-                                  attributes: {
-                                    text: {
-                                      'dominant-baseline': 'auto',
-                                      'text-anchor': 'middle',
-                                      transform: 'translate(0, -2)',
-                                    },
-                                  },
-                                },
-                              },
-                            ],
-                          })),
-                          // Left axis
-                          (yAxis = leftAxis().config({
-                            attributes: { 'grid-area': '1 / 1 / 2 / 2' },
-                            ticks: {
-                              attributes: {
-                                cursor: 'default',
-                                '.tick': { 'font-weight': 'normal' },
-                                '.tick[highlighted=true]': {
-                                  'font-weight': 'bold',
-                                },
-                              },
-                              scale: bars.categoriesScale(),
-                              events: [
-                                {
-                                  typenames: 'mouseover',
-                                  callback: (e, d) =>
-                                    hoverCategoryAxisTick(
-                                      yAxis,
-                                      xAxis,
-                                      d.tickIndex,
-                                      true
-                                    ),
-                                },
-                                {
-                                  typenames: 'mouseout',
-                                  callback: (e, d) =>
-                                    hoverCategoryAxisTick(
-                                      yAxis,
-                                      xAxis,
-                                      d.tickIndex,
-                                      false
-                                    ),
-                                },
-                              ],
-                              conditionalConfigs: [
-                                {
-                                  media: wideMediaQuery,
-                                  config: {
-                                    scale: bars.valuesScale(),
-                                    events: [],
-                                    attributes: { cursor: 'auto' },
-                                  },
-                                },
-                              ],
-                            },
-                            title: {
-                              text: 'Locations',
-                              conditionalConfigs: [
-                                {
-                                  media: wideMediaQuery,
-                                  config: { text: 'Revenue' },
-                                },
-                              ],
-                            },
-                          })),
-                          // Bottom axis
-                          (xAxis = bottomAxis().config({
-                            attributes: { 'grid-area': '2 / 2 / 3 / 3' },
-                            ticks: {
-                              attributes: {
-                                cursor: 'auto',
-                                '.tick': { 'font-weight': 'normal' },
-                                '.tick[highlighted=true]': {
-                                  'font-weight': 'bold',
-                                },
-                              },
-                              scale: bars.valuesScale(),
-                              conditionalConfigs: [
-                                {
-                                  media: wideMediaQuery,
-                                  config: {
-                                    scale: bars.categoriesScale(),
-                                    attributes: { cursor: 'default' },
-                                    events: [
-                                      {
-                                        typenames: 'mouseover',
-                                        callback: (e, d) =>
-                                          hoverCategoryAxisTick(
-                                            xAxis,
-                                            yAxis,
-                                            d.tickIndex,
-                                            true
-                                          ),
-                                      },
-                                      {
-                                        typenames: 'mouseout',
-                                        callback: (e, d) =>
-                                          hoverCategoryAxisTick(
-                                            xAxis,
-                                            yAxis,
-                                            d.tickIndex,
-                                            false
-                                          ),
-                                      },
-                                    ],
-                                  },
-                                },
-                              ],
-                            },
-                            title: {
-                              text: 'Revenue',
-                              conditionalConfigs: [
-                                {
-                                  media: wideMediaQuery,
-                                  config: { text: 'Locations' },
-                                },
-                              ],
-                            },
-                          })),
+                          // bars
+                          bars.config({ attributes: { 'grid-area': '1 / 2 / 2 / 3' } }),
+
+                          // labels
+                          labels.config({ attributes: { 'grid-area': '1 / 2 / 2 / 3' } }),
+
+                          // left axis
+                          yAxis.config({ attributes: { 'grid-area': '1 / 1 / 2 / 2' } }),
+
+                          // bottom axis
+                          xAxis.config({ attributes: { 'grid-area': '2 / 2 / 3 / 3' } }),
                         ],
                       }),
                     ],
                   }),
-                  (legend = swatchLegend().config({
-                    labels: years,
-                    colors: respVis.GroupedBarsComponent.defaultColors,
-                    rowCount: 1,
-                    columnCount: years.length,
-                    attributes: {
-                      'grid-area': '1 / 1 / 2 / 2',
-                      cursor: 'pointer',
-                    },
-                    events: [
-                      {
-                        typenames: 'mouseover',
-                        callback: (e, d) =>
-                          hoverLegendSwatch(d.childIndex, true),
-                      },
-                      {
-                        typenames: 'mouseout',
-                        callback: (e, d) =>
-                          hoverLegendSwatch(d.childIndex, false),
-                      },
-                      {
-                        typenames: 'click',
-                        callback: (e, d) => clickLegendSwatch(d.childIndex),
-                      },
-                    ],
-                    conditionalConfigs: [
-                      {
-                        media: wideMediaQuery,
-                        config: {
-                          rowCount: years.length,
-                          columnCount: 1,
-                          attributes: {
-                            'grid-area': '1 / 2 / 2 / 3',
-                          },
-                        },
-                      },
-                    ],
-                  })),
+                  // legend
+                  legend,
                 ],
               }),
             ],
           })
         )
         .mount('#chart');
+
+      function legendSwatchIndexToBarIndex(swatchIndex) {
+        return subcategoryToggles.slice(0, swatchIndex).filter((t) => t).length;
+      }
+
+      function barIndexToLegendSwatchIndex(barIndex) {
+        let lastIndex = -1;
+        for (let i = 0; i <= barIndex; ++i)
+          lastIndex = subcategoryToggles.indexOf(true, lastIndex + 1);
+        return lastIndex;
+      }
+
+      function hoverBar(categoryIndex, barIndex, categoryAxis, valueAxis, hover) {
+        const flatBarIndex = categoryIndex * subcategoryToggles.filter((t) => t).length + barIndex;
+        bars.highlightBar(categoryIndex, barIndex, hover);
+        labels.showLabel(flatBarIndex, hover);
+        legend.highlightSwatch(barIndexToLegendSwatchIndex(barIndex), hover);
+        valueAxis.clearHighlights();
+        categoryAxis.highlightTick(categoryIndex, hover);
+        chart.update();
+      }
+
+      function hoverCategoryAxisTick(categoryAxis, valueAxis, tickIndex, hover) {
+        valueAxis.clearHighlights();
+        categoryAxis.highlightTick(tickIndex, hover);
+        for (let i = 0; i < subcategoryToggles.filter((t) => t).length; ++i) {
+          const flatBarIndex = tickIndex * subcategoryToggles.filter((t) => t).length + i;
+          bars.highlightBar(tickIndex, i, hover);
+          labels.showLabel(flatBarIndex, hover);
+        }
+
+        chart.update();
+      }
+
+      function hoverLegendSwatch(swatchIndex, hover) {
+        if (subcategoryToggles[swatchIndex] === false) return;
+
+        categories.forEach((category, categoryIndex) => {
+          let barIndex = legendSwatchIndexToBarIndex(swatchIndex);
+          const flatBarIndex =
+            categoryIndex * subcategoryToggles.filter((t) => t).length + barIndex;
+          bars.highlightBar(categoryIndex, barIndex, hover);
+          labels.showLabel(flatBarIndex, hover);
+        });
+        legend.highlightSwatch(swatchIndex, hover);
+        chart.update();
+      }
+
+      function clickLegendSwatch(swatchIndex) {
+        // Prevent hiding the last subcategory
+        if (
+          subcategoryToggles.filter((t) => t).length === 1 &&
+          subcategoryToggles[swatchIndex] === true
+        )
+          return;
+
+        hoverLegendSwatch(swatchIndex, false);
+
+        subcategoryToggles[swatchIndex] = !subcategoryToggles[swatchIndex];
+        const newValues = values.map((subcategoryValues) =>
+          subcategoryValues.filter((c, i) => subcategoryToggles[i])
+        );
+        bars.config({
+          values: newValues,
+          colors: barColors.filter((c, i) => subcategoryToggles[i]),
+        });
+
+        labels.config({ labels: newValues.flat() });
+
+        legend.disableSwatch(swatchIndex, !subcategoryToggles[swatchIndex]);
+
+        chart.update();
+      }
     </script>
   </body>
 </html>

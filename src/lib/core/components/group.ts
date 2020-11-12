@@ -1,9 +1,4 @@
-import {
-  Component,
-  IComponent,
-  IComponentConfig,
-  IComponentEventData,
-} from '../component';
+import { Component, IComponent, IComponentConfig, IComponentEventData } from '../component';
 import { Selection, BaseType, create } from 'd3-selection';
 import { nullFunction } from '../utils';
 
@@ -21,13 +16,8 @@ export interface IGroupEventData extends IComponentEventData {
 
 export interface IGroupComponent extends IComponent<IGroupComponentConfig> {}
 
-export class GroupComponent
-  extends Component<IGroupComponentConfig>
-  implements IGroupComponent {
-  static setEventListeners(
-    component: GroupComponent,
-    config: IGroupComponentConfig
-  ) {
+export class GroupComponent extends Component<IGroupComponentConfig> implements IGroupComponent {
+  static setEventListeners(component: GroupComponent, config: IGroupComponentConfig) {
     config.events.forEach((eventConfig) =>
       component.selection().on(eventConfig.typenames, (e: Event) => {
         let childElement = e.target as Element;
@@ -36,10 +26,7 @@ export class GroupComponent
         }
 
         const indexOf = Array.prototype.indexOf;
-        const childIndex = indexOf.call(
-          childElement.parentNode!.children,
-          childElement
-        );
+        const childIndex = indexOf.call(childElement.parentNode!.children, childElement);
 
         eventConfig.callback(e, {
           component: component,
@@ -58,13 +45,11 @@ export class GroupComponent
           'grid-template': 'auto / auto',
         },
         conditionalConfigs: [],
-        configParser: (
-          previousConfig: IGroupComponentConfig,
-          newConfig: IGroupComponentConfig
-        ) => {
+        configParser: (previousConfig: IGroupComponentConfig, newConfig: IGroupComponentConfig) => {
           GroupComponent.clearEventListeners(this, previousConfig);
           GroupComponent.setEventListeners(this, newConfig);
-          newConfig.children
+          // clone children array before sorting to retain order
+          [...newConfig.children]
             .sort((a, b) => a.renderOrder() - b.renderOrder())
             .forEach((child) => child.config({}));
         },
@@ -77,22 +62,25 @@ export class GroupComponent
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
     selection.append(() => this.selection().node());
-    this.activeConfig()
-      .children.sort((a, b) => a.renderOrder() - b.renderOrder())
+    // clone children array before sorting to retain order
+    [...this.activeConfig().children]
+      .sort((a, b) => a.renderOrder() - b.renderOrder())
       .forEach((child) => child.mount(this.selection()));
     return this;
   }
 
   resize(): this {
-    this.activeConfig()
-      .children.sort((a, b) => a.renderOrder() - b.renderOrder())
+    // clone children array before sorting to retain order
+    [...this.activeConfig().children]
+      .sort((a, b) => a.renderOrder() - b.renderOrder())
       .forEach((child) => child.resize());
     return this;
   }
 
   render(animated: boolean): this {
-    this.activeConfig()
-      .children.sort((a, b) => a.renderOrder() - b.renderOrder())
+    // clone children array before sorting to retain order
+    [...this.activeConfig().children]
+      .sort((a, b) => a.renderOrder() - b.renderOrder())
       .forEach((child) => child.render(animated));
     return this;
   }
