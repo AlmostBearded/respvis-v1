@@ -4,6 +4,7 @@ import { applyAttributes, Attributes, ISize, nullFunction } from '../utils';
 import chroma from 'chroma-js';
 import { v4 as uuidv4 } from 'uuid';
 import { utils } from '..';
+import { chainedTransition } from '../chained-transition';
 
 // TODO: Maybe this component should be called ClippedRect?
 
@@ -13,9 +14,7 @@ export interface IRectComponentConfig extends IComponentConfig {
 
 export interface IRectComponent extends IComponent<IRectComponentConfig> {}
 
-export class RectComponent
-  extends Component<IRectComponentConfig>
-  implements IRectComponent {
+export class RectComponent extends Component<IRectComponentConfig> implements IRectComponent {
   constructor() {
     super(
       create<SVGElement>('svg:g'),
@@ -28,15 +27,12 @@ export class RectComponent
         },
         conditionalConfigs: [],
         events: [],
-        configParser: (
-          previousConfig: IRectComponentConfig,
-          newConfig: IRectComponentConfig
-        ) => {
+        configParser: (previousConfig: IRectComponentConfig, newConfig: IRectComponentConfig) => {
           Component.clearEventListeners(this, previousConfig);
           Component.setEventListeners(this, newConfig);
           newConfig.attributes.width = newConfig.size.width;
           newConfig.attributes.height = newConfig.size.height;
-          this._render(newConfig, false)
+          this._render(newConfig, false);
         },
       },
       Component.mergeConfigs
@@ -92,12 +88,7 @@ export function renderClippedRect(
   selection
     // Casting to disable type checking as the latest d3-selection types don't contain selectChildren yet.
     .call((s: any) =>
-      (s.selectChildren('clipPath') as Selection<
-        SVGClipPathElement,
-        unknown,
-        BaseType,
-        unknown
-      >)
+      (s.selectChildren('clipPath') as Selection<SVGClipPathElement, unknown, BaseType, unknown>)
         .data([null])
         .join((enter) =>
           enter
@@ -107,17 +98,14 @@ export function renderClippedRect(
         )
 
         .select('rect')
-        .transition()
-        .duration(transitionDuration)
-        .call(applyAttributes, attributes)
+        .each((d, i, groups) => {
+          chainedTransition(groups[i])
+            .duration(transitionDuration)
+            .call(applyAttributes, attributes);
+        })
     )
     .call((s: any) =>
-      (s.selectChildren('rect') as Selection<
-        SVGRectElement,
-        unknown,
-        BaseType,
-        unknown
-      >)
+      (s.selectChildren('rect') as Selection<SVGRectElement, unknown, BaseType, unknown>)
         .data([null])
         .join((enter) =>
           enter
@@ -125,8 +113,10 @@ export function renderClippedRect(
             .attr('clip-path', `url(#${clipId})`)
             .call(applyAttributes, attributes)
         )
-        .transition()
-        .duration(transitionDuration)
-        .call(applyAttributes, attributes)
+        .each((d, i, groups) => {
+          chainedTransition(groups[i])
+            .duration(transitionDuration)
+            .call(applyAttributes, attributes);
+        })
     );
 }

@@ -4,6 +4,7 @@ import {
   IComponentConfig,
   IComponentEventData,
   utils,
+  chainedTransition,
 } from '../core';
 import {
   BarPointPositioner,
@@ -17,9 +18,7 @@ import { Selection, BaseType, create } from 'd3-selection';
 import { IBarPositioner } from './bar-positioner';
 import { active } from 'd3-transition';
 
-export interface IBarLabelsConfig
-  extends IComponentConfig,
-    IBarPointPositionerConfig {
+export interface IBarLabelsConfig extends IComponentConfig, IBarPointPositionerConfig {
   labels: utils.IStringable[];
   transitionDuration: number;
   events: {
@@ -32,28 +31,18 @@ export interface IBarLabelsEventData extends IComponentEventData {
   labelIndex: number;
 }
 
-export interface IBarLabelsComponent
-  extends IComponent<IBarLabelsConfig>,
-    IPoints {}
+export interface IBarLabelsComponent extends IComponent<IBarLabelsConfig>, IPoints {}
 
-export class BarLabelsComponent
-  extends Component<IBarLabelsConfig>
-  implements IBarLabelsComponent {
+export class BarLabelsComponent extends Component<IBarLabelsConfig> implements IBarLabelsComponent {
   private _barPointPositioner: IBarPointPositioner = new BarPointPositioner();
 
-  static setEventListeners(
-    component: BarLabelsComponent,
-    config: IBarLabelsConfig
-  ) {
+  static setEventListeners(component: BarLabelsComponent, config: IBarLabelsConfig) {
     config.events.forEach((eventConfig) =>
       component.selection().on(eventConfig.typenames, (e: Event) => {
         const textElement = e.target as SVGTextElement;
         const labelElement = textElement.parentNode!;
         const indexOf = Array.prototype.indexOf;
-        const labelIndex = indexOf.call(
-          labelElement.parentNode!.children,
-          labelElement
-        );
+        const labelIndex = indexOf.call(labelElement.parentNode!.children, labelElement);
         eventConfig.callback(e, {
           component: component,
           labelIndex: labelIndex,
@@ -79,10 +68,7 @@ export class BarLabelsComponent
         },
         conditionalConfigs: [],
         events: [],
-        configParser: (
-          previousConfig: IBarLabelsConfig,
-          newConfig: IBarLabelsConfig
-        ) => {
+        configParser: (previousConfig: IBarLabelsConfig, newConfig: IBarLabelsConfig) => {
           BarLabelsComponent.clearEventListeners(this, previousConfig);
           BarLabelsComponent.setEventListeners(this, newConfig);
           this._barPointPositioner.config(newConfig);
@@ -148,9 +134,11 @@ export function renderBarLabels(
         .classed('label', true)
         .call((groupSelection) => groupSelection.append('text'))
     )
-    .transition()
-    .duration(transitionDuration)
-    .attr('transform', (d) => `translate(${d.x}, ${d.y})`)
-    .select('text')
-    .text((d, i) => labels[i].toString());
+    .each((d, i, groups) => {
+      chainedTransition(groups[i])
+        .duration(transitionDuration)
+        .attr('transform', (d) => `translate(${d.x}, ${d.y})`)
+        .select('text')
+        .text((d, i) => labels[i].toString());
+    });
 }
