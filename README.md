@@ -21,7 +21,9 @@ Gulp is used to automate repeatable tasks.
 The build task will create a new build of the whole framework and the examples into the `dist` folder. To explore a built version, simply open the `dist/index.html` file in a browser.
 
 ```
-npx gulp build
+gulp build  // Using globally installed gulp
+
+npx gulp build  // Using packaged gulp
 ```
 
 ## Development
@@ -29,11 +31,15 @@ npx gulp build
 For development it is oftentimes very useful to automatically rebuild and reload an app. This framework uses Browsersync to implement this and the command to run a hot-reloadable live server is
 
 ```
-npx gulp serve
+gulp serve  // Using globally installed gulp
+
+npx gulp serve  // Using packaged gulp
 ```
 
 or simply
 
 ```
-npx gulp
+gulp  // Using globally installed gulp
+
+npx gulp  // Using packaged gulp
 ```
