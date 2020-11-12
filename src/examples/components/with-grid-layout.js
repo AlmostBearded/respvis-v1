@@ -1,5 +1,5 @@
-// applies a matrix layout to group components
-export default function withMatrixLayout(group) {
+// applies a grid layout to group components
+export default function withGridLayout(group) {
   return group.config((c) => ({
     rowCount: 1,
     columnCount: 1,

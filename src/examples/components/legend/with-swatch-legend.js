@@ -1,8 +1,8 @@
-import withMatrixLayout from '../with-matrix-layout.js';
+import withGridLayout from '../with-grid-layout.js';
 import withSwatch from './with-swatch.js';
 
 export default function withSwatchLegend(group) {
-  return withMatrixLayout(group).config((c) => ({
+  return withGridLayout(group).config((c) => ({
     labels: [],
     colors: [],
     configParser: (previousConfig, newConfig) => {
