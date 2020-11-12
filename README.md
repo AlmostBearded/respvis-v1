@@ -1,6 +1,6 @@
 # RespVis
 
-A framework to build responsive visualizations based on SVG and with a strong focus on styling and layouting via CSS.
+The goal of this framework is to make building responsive visualizations as easy as possible while also providing mechanisms for powerful customization and extensibility. This is achieved by merging SVG-based components with a layouting engine based on the CSS grid syntax.
 
 A live version of the `master` branch can be found at [respvis.netlify.app](https://respvis.netlify.app/).
 
@@ -18,7 +18,7 @@ npm install
 
 Gulp is used to automate repeatable tasks.
 
-The build task will create a new build of the whole framework and the examples into the `dist` folder. To explore a built version, simply open the `dist/index.html` file in a browser.
+The build task will create a new build of the whole framework and the examples into the `dist` folder. To test a built version you have to deploy the `dist` folder to a web server, or open the `dist/index.html` file directly in a browser (make sure your browser CORS policy [allows local file requests](https://dev.to/dengel29/loading-local-files-in-firefox-and-chrome-m9f)).
 
 ```
 gulp build  // Using globally installed gulp
