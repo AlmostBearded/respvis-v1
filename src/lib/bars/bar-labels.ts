@@ -137,8 +137,8 @@ export function renderBarLabels(
     .each((d, i, groups) => {
       chainedTransition(groups[i])
         .duration(transitionDuration)
-        .attr('transform', (d) => `translate(${d.x}, ${d.y})`)
+        .attr('transform', `translate(${d.x}, ${d.y})`)
         .select('text')
-        .text((d, i) => labels[i].toString());
+        .text(labels[i].toString());
     });
 }
