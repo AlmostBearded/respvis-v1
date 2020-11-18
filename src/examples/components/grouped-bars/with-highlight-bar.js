@@ -18,7 +18,7 @@ export default function withHighlightBar(groupedBars) {
           // set attributes of individual bars when highlighted
           [`.bar:nth-child(${i + 1})[highlighted=true]`]: {
             fill: respVis.chroma.hex(c).brighten(0.5).hex(),
-            'stroke-width': 6,
+            'stroke-width': 4,
           },
         }))
       );

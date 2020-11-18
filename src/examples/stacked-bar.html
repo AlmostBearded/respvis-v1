@@ -75,10 +75,7 @@
 
       // bar labels
       const barLabels = withShowLabel(respVis.barLabels()).config({
-        attributes: {
-          'pointer-events': 'none',
-          text: { 'stroke-width': 0.1, stroke: '#ffffff' },
-        },
+        attributes: { 'pointer-events': 'none', text: { fill: '#fff' } },
         bars: bars,
         labels: values.flat(),
         horizontalPosition: respVis.HorizontalPosition.Center,
