@@ -195,12 +195,16 @@
                           }),
                         ],
                       }),
-                      // legend
-                      legend.config({
+                      withPaddingLayout(respVis.group()).config({
+                        all: '0.5fr',
                         attributes: { 'grid-area': '1 / 1 / 2 / 2' },
                         responsiveConfigs: {
                           [wideMediaQuery]: { attributes: { 'grid-area': '1 / 2 / 2 / 3' } },
                         },
+                        children: [
+                          // legend
+                          legend,
+                        ],
                       }),
                     ],
                   }),
