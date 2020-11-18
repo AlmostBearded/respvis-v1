@@ -2,8 +2,8 @@ export default function withHighlightTick(axis) {
   axis.config({
     ticks: {
       attributes: {
-        '.tick': { 'font-weight': 'normal' },
-        '.tick[highlighted=true]': { 'font-weight': 'bold' },
+        '.tick': { 'text-decoration': 'none' },
+        '.tick[highlighted=true]': { 'text-decoration': 'underline' },
       },
     },
   });
