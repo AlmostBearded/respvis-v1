@@ -25,7 +25,7 @@ export class RectComponent extends Component<IRectComponentConfig> implements IR
           stroke: '#232323',
           'stroke-width': 4,
         },
-        conditionalConfigs: [],
+        responsiveConfigs: {},
         events: {},
         configParser: (previousConfig: IRectComponentConfig, newConfig: IRectComponentConfig) => {
           Component.clearEventListeners(this, previousConfig);
@@ -37,7 +37,7 @@ export class RectComponent extends Component<IRectComponentConfig> implements IR
       },
       Component.mergeConfigs
     );
-    this._applyConditionalConfigs();
+    this._applyResponsiveConfigs();
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {

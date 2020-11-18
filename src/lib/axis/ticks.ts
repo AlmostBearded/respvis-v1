@@ -72,7 +72,7 @@ export class TicksComponent extends Component<ITicksComponentConfig> implements 
         attributes: {
           ...(vertical ? { width: 'min-content' } : { height: 'min-content' }),
         },
-        conditionalConfigs: [],
+        responsiveConfigs: {},
         events: {},
         configParser: (previousConfig: ITicksComponentConfig, newConfig: ITicksComponentConfig) => {
           TicksComponent.clearEventListeners(this, previousConfig);
@@ -83,7 +83,7 @@ export class TicksComponent extends Component<ITicksComponentConfig> implements 
       Component.mergeConfigs
     );
     this._labelPosition = labelPosition;
-    this._applyConditionalConfigs();
+    this._applyResponsiveConfigs();
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {

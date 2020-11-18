@@ -83,7 +83,7 @@ export class GroupedBarsComponent
             [`.bar:nth-child(${i + 1})`]: { fill: c },
           }))
         ),
-        conditionalConfigs: [],
+        responsiveConfigs: {},
         events: {},
         configParser: (
           previousConfig: IGroupedBarsComponentConfig,
@@ -97,7 +97,7 @@ export class GroupedBarsComponent
       Component.mergeConfigs
     );
 
-    this._applyConditionalConfigs();
+    this._applyResponsiveConfigs();
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {

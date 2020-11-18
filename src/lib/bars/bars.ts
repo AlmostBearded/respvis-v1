@@ -71,7 +71,7 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
             'stroke-width': 3,
           },
         },
-        conditionalConfigs: [],
+        responsiveConfigs: {},
         events: {},
         configParser: (previousConfig: IBarsComponentConfig, newConfig: IBarsComponentConfig) => {
           BarsComponent.clearEventListeners(this, previousConfig);
@@ -81,7 +81,7 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
       },
       Component.mergeConfigs
     );
-    this._applyConditionalConfigs();
+    this._applyResponsiveConfigs();
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {

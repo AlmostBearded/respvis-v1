@@ -41,7 +41,7 @@ export class GroupComponent extends Component<IGroupComponentConfig> implements 
         attributes: {
           'grid-template': 'auto / auto',
         },
-        conditionalConfigs: [],
+        responsiveConfigs: {},
         configParser: (previousConfig: IGroupComponentConfig, newConfig: IGroupComponentConfig) => {
           GroupComponent.clearEventListeners(this, previousConfig);
           GroupComponent.setEventListeners(this, newConfig);
@@ -54,7 +54,7 @@ export class GroupComponent extends Component<IGroupComponentConfig> implements 
       },
       Component.mergeConfigs
     );
-    this._applyConditionalConfigs();
+    this._applyResponsiveConfigs();
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {

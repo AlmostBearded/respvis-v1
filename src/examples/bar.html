@@ -43,18 +43,15 @@
           mouseover: (e, d) => hoverBar(d.index, yAxis, xAxis, true),
           mouseout: (e, d) => hoverBar(d.index, yAxis, xAxis, false),
         },
-        conditionalConfigs: [
-          {
-            media: wideMediaQuery,
-            config: {
-              orientation: respVis.BarOrientation.Vertical,
-              events: {
-                mouseover: (e, d) => hoverBar(d.index, xAxis, yAxis, true),
-                mouseout: (e, d) => hoverBar(d.index, xAxis, yAxis, false),
-              },
+        responsiveConfigs: {
+          [wideMediaQuery]: {
+            orientation: respVis.BarOrientation.Vertical,
+            events: {
+              mouseover: (e, d) => hoverBar(d.index, xAxis, yAxis, true),
+              mouseout: (e, d) => hoverBar(d.index, xAxis, yAxis, false),
             },
           },
-        ],
+        },
       });
 
       // bar labels
@@ -73,22 +70,19 @@
         horizontalPosition: respVis.HorizontalPosition.Left,
         verticalPosition: respVis.VerticalPosition.Center,
         transitionDuration: 1000,
-        conditionalConfigs: [
-          {
-            media: wideMediaQuery,
-            config: {
-              attributes: {
-                text: {
-                  'dominant-baseline': 'auto',
-                  'text-anchor': 'middle',
-                  transform: 'translate(0, -2)',
-                },
+        responsiveConfigs: {
+          [wideMediaQuery]: {
+            attributes: {
+              text: {
+                'dominant-baseline': 'auto',
+                'text-anchor': 'middle',
+                transform: 'translate(0, -2)',
               },
-              horizontalPosition: respVis.HorizontalPosition.Center,
-              verticalPosition: respVis.VerticalPosition.Top,
             },
+            horizontalPosition: respVis.HorizontalPosition.Center,
+            verticalPosition: respVis.VerticalPosition.Top,
           },
-        ],
+        },
       });
 
       // bottom axis
@@ -102,19 +96,16 @@
               'text-anchor': 'end',
             },
           },
-          conditionalConfigs: [
-            {
-              media: wideMediaQuery,
-              config: {
-                scale: bars.categoriesScale(),
-                attributes: { text: { transform: 'translate(0, 7)', 'text-anchor': 'middle' } },
-              },
+          responsiveConfigs: {
+            [wideMediaQuery]: {
+              scale: bars.categoriesScale(),
+              attributes: { text: { transform: 'translate(0, 7)', 'text-anchor': 'middle' } },
             },
-          ],
+          },
         },
         title: {
           text: 'Population',
-          conditionalConfigs: [{ media: wideMediaQuery, config: { text: 'Cities' } }],
+          responsiveConfigs: { [wideMediaQuery]: { text: 'Cities' } },
         },
       });
 
@@ -122,11 +113,11 @@
       const yAxis = withHighlightTick(withLeftAxis(respVis.group())).config({
         ticks: {
           scale: bars.categoriesScale(),
-          conditionalConfigs: [{ media: wideMediaQuery, config: { scale: bars.valuesScale() } }],
+          responsiveConfigs: { [wideMediaQuery]: { scale: bars.valuesScale() } },
         },
         title: {
           text: 'Cities',
-          conditionalConfigs: [{ media: wideMediaQuery, config: { text: 'Population' } }],
+          responsiveConfigs: { [wideMediaQuery]: { text: 'Population' } },
         },
       });
 
@@ -135,7 +126,7 @@
         .root(
           withPaddingLayout(respVis.group()).config({
             all: 10,
-            conditionalConfigs: [{ media: wideMediaQuery, config: { top: 20 } }],
+            responsiveConfigs: { [wideMediaQuery]: { top: 20 } },
             children: [
               respVis.group().config({
                 attributes: { 'grid-template': '1fr auto / auto 1fr' },

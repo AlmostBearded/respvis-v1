@@ -2,18 +2,13 @@ import { Selection, BaseType } from 'd3-selection';
 import { applyAttributes, Attributes, IDictionary, nullFunction } from './utils';
 import { deepExtend } from './utils';
 
-export interface IConditionalComponentConfig<TConfig> {
-  media: string;
-  config: Partial<TConfig>;
-}
-
 export interface IComponentEventData {
   component: IComponent<IComponentConfig>;
 }
 
 export interface IComponentConfig {
   attributes: Attributes;
-  conditionalConfigs: IConditionalComponentConfig<this>[];
+  responsiveConfigs: IDictionary<Partial<this>>;
   configParser: (previousConfig: this, newConfig: this) => void;
   events: IDictionary<(event: Event, data: IComponentEventData) => void>;
 }
@@ -54,6 +49,12 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
       },
       {
         events: deepExtend(target.events || {}, source.events || {}),
+      },
+      {
+        responsiveConfigs: deepExtend(
+          target.responsiveConfigs || {},
+          source.responsiveConfigs || {}
+        ),
       }
     );
   }
@@ -96,7 +97,7 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
     if (c === undefined) return this._config;
     const config = c instanceof Function ? c(this._activeConfig) : c;
     this._mergeConfigsFn(this._config, config);
-    this._applyConditionalConfigs();
+    this._applyResponsiveConfigs();
     return this;
   }
 
@@ -104,14 +105,14 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
     return this._activeConfig;
   }
 
-  protected _applyConditionalConfigs(): this {
+  protected _applyResponsiveConfigs(): this {
     const newConfig = this._mergeConfigsFn({}, this._config) as TConfig;
 
-    this._config.conditionalConfigs.forEach((conditionalConfig) => {
-      if (window.matchMedia(conditionalConfig.media).matches) {
-        this._mergeConfigsFn(newConfig, conditionalConfig.config);
+    for (const media in this._config.responsiveConfigs) {
+      if (window.matchMedia(media).matches) {
+        this._mergeConfigsFn(newConfig, this._config.responsiveConfigs[media]);
       }
-    });
+    }
 
     newConfig.configParser(this._activeConfig, newConfig);
 

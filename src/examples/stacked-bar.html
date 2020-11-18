@@ -62,18 +62,15 @@
           mouseover: (e, d) => hoverBar(d.categoryIndex, d.barIndex, yAxis, xAxis, true),
           mouseout: (e, d) => hoverBar(d.categoryIndex, d.barIndex, yAxis, xAxis, false),
         },
-        conditionalConfigs: [
-          {
-            media: wideMediaQuery,
-            config: {
-              orientation: respVis.BarOrientation.Vertical,
-              events: {
-                mouseover: (e, d) => hoverBar(d.categoryIndex, d.barIndex, xAxis, yAxis, true),
-                mouseout: (e, d) => hoverBar(d.categoryIndex, d.barIndex, xAxis, yAxis, false),
-              },
+        responsiveConfigs: {
+          [wideMediaQuery]: {
+            orientation: respVis.BarOrientation.Vertical,
+            events: {
+              mouseover: (e, d) => hoverBar(d.categoryIndex, d.barIndex, xAxis, yAxis, true),
+              mouseout: (e, d) => hoverBar(d.categoryIndex, d.barIndex, xAxis, yAxis, false),
             },
           },
-        ],
+        },
       });
 
       // bar labels
@@ -101,26 +98,12 @@
         colors: respVis.GroupedBarsComponent.defaultColors,
         rowCount: 1,
         columnCount: expenses.length,
-        attributes: {
-          // TODO: Can't specify grid-area later because conditionalConfigs can't be deep-merged
-          'grid-area': '1 / 1 / 2 / 2',
-          cursor: 'default',
-        },
+        attributes: { cursor: 'default' },
         events: {
           mouseover: (e, d) => hoverLegendSwatch(d.childIndex, true),
           mouseout: (e, d) => hoverLegendSwatch(d.childIndex, false),
         },
-        conditionalConfigs: [
-          {
-            media: wideMediaQuery,
-            config: {
-              rowCount: expenses.length,
-              columnCount: 1,
-              // TODO: Can't specify grid-area later because conditionalConfigs can't be deep-merged
-              attributes: { 'grid-area': '1 / 2 / 2 / 3' },
-            },
-          },
-        ],
+        responsiveConfigs: { [wideMediaQuery]: { rowCount: expenses.length, columnCount: 1 } },
       });
 
       // bottom axis
@@ -128,28 +111,20 @@
         ticks: {
           attributes: { cursor: 'auto' },
           scale: bars.valuesScale(),
-          conditionalConfigs: [
-            {
-              media: wideMediaQuery,
-              config: {
-                scale: bars.categoriesScale(),
-                attributes: { cursor: 'default' },
-                events: {
-                  mouseover: (e, d) => hoverCategoryAxisTick(xAxis, yAxis, d.tickIndex, true),
-                  mouseout: (e, d) => hoverCategoryAxisTick(xAxis, yAxis, d.tickIndex, false),
-                },
+          responsiveConfigs: {
+            [wideMediaQuery]: {
+              scale: bars.categoriesScale(),
+              attributes: { cursor: 'default' },
+              events: {
+                mouseover: (e, d) => hoverCategoryAxisTick(xAxis, yAxis, d.tickIndex, true),
+                mouseout: (e, d) => hoverCategoryAxisTick(xAxis, yAxis, d.tickIndex, false),
               },
             },
-          ],
+          },
         },
         title: {
           text: 'Expenses',
-          conditionalConfigs: [
-            {
-              media: wideMediaQuery,
-              config: { text: 'People' },
-            },
-          ],
+          responsiveConfigs: { [wideMediaQuery]: { text: 'People' } },
         },
       });
 
@@ -162,29 +137,21 @@
             mouseover: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, true),
             mouseout: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, false),
           },
-          conditionalConfigs: [
-            {
-              media: wideMediaQuery,
-              config: {
-                scale: bars.valuesScale(),
-                events: {
-                  // unregister events
-                  mouseover: null,
-                  mouseout: null,
-                },
-                attributes: { cursor: 'auto' },
+          responsiveConfigs: {
+            [wideMediaQuery]: {
+              scale: bars.valuesScale(),
+              events: {
+                // unregister events
+                mouseover: null,
+                mouseout: null,
               },
+              attributes: { cursor: 'auto' },
             },
-          ],
+          },
         },
         title: {
           text: 'People',
-          conditionalConfigs: [
-            {
-              media: wideMediaQuery,
-              config: { text: 'Expenses' },
-            },
-          ],
+          responsiveConfigs: { [wideMediaQuery]: { text: 'Expenses' } },
         },
       });
 
@@ -200,28 +167,20 @@
                 children: [
                   respVis.group().config({
                     attributes: { 'grid-template': 'auto 1fr / 1fr ' },
-                    conditionalConfigs: [
-                      {
-                        media: wideMediaQuery,
-                        config: {
-                          attributes: { 'grid-template': '1fr / 1fr auto' },
-                        },
-                      },
-                    ],
+                    responsiveConfigs: {
+                      [wideMediaQuery]: { attributes: { 'grid-template': '1fr / 1fr auto' } },
+                    },
                     children: [
                       withPaddingLayout(respVis.group()).config({
                         top: 5,
                         attributes: { 'grid-area': '2 / 1 / 3 / 2' },
-                        conditionalConfigs: [
-                          {
-                            media: wideMediaQuery,
-                            config: {
-                              top: 0,
-                              right: 5,
-                              attributes: { 'grid-area': '1 / 1 / 2 / 2' },
-                            },
+                        responsiveConfigs: {
+                          [wideMediaQuery]: {
+                            top: 0,
+                            right: 5,
+                            attributes: { 'grid-area': '1 / 1 / 2 / 2' },
                           },
-                        ],
+                        },
                         children: [
                           respVis.group().config({
                             attributes: {
@@ -244,7 +203,12 @@
                         ],
                       }),
                       // legend
-                      legend,
+                      legend.config({
+                        attributes: { 'grid-area': '1 / 1 / 2 / 2' },
+                        responsiveConfigs: {
+                          [wideMediaQuery]: { attributes: { 'grid-area': '1 / 2 / 2 / 3' } },
+                        },
+                      }),
                     ],
                   }),
                 ],

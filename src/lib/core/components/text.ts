@@ -1,6 +1,5 @@
 import { Selection, BaseType, create } from 'd3-selection';
 import { Component, IComponent, IComponentConfig } from '../component';
-import { nullFunction } from '../utils';
 
 export interface ITextComponentConfig extends IComponentConfig {
   text: string;
@@ -28,7 +27,7 @@ export class TextComponent
           'text-anchor': 'start',
           'font-family': 'sans-serif',
         },
-        conditionalConfigs: [],
+        responsiveConfigs: {},
         events: {},
         configParser: (
           previousConfig: ITextComponentConfig,
@@ -41,7 +40,7 @@ export class TextComponent
       },
       Component.mergeConfigs
     );
-    this._applyConditionalConfigs();
+    this._applyResponsiveConfigs();
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {

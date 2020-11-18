@@ -63,7 +63,7 @@ export class BarLabelsComponent extends Component<IBarLabelsConfig> implements I
             'font-weight': 'normal',
           },
         },
-        conditionalConfigs: [],
+        responsiveConfigs: {},
         events: {},
         configParser: (previousConfig: IBarLabelsConfig, newConfig: IBarLabelsConfig) => {
           BarLabelsComponent.clearEventListeners(this, previousConfig);
@@ -73,7 +73,7 @@ export class BarLabelsComponent extends Component<IBarLabelsConfig> implements I
       },
       Component.mergeConfigs
     );
-    this._applyConditionalConfigs();
+    this._applyResponsiveConfigs();
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {

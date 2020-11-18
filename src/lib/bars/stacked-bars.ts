@@ -84,7 +84,7 @@ export class StackedBarsComponent
             [`.bar:nth-child(${i + 1})`]: { fill: c },
           }))
         ),
-        conditionalConfigs: [],
+        responsiveConfigs: {},
         events: {},
         configParser: (
           previousConfig: IStackedBarsComponentConfig,
@@ -97,7 +97,7 @@ export class StackedBarsComponent
       },
       Component.mergeConfigs
     );
-    this._applyConditionalConfigs();
+    this._applyResponsiveConfigs();
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
