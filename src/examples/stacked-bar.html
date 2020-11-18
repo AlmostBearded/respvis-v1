@@ -58,31 +58,19 @@
         values: values,
         orientation: respVis.BarOrientation.Horizontal,
         transitionDuration: 1000,
-        events: [
-          {
-            typenames: 'mouseover',
-            callback: (e, d) => hoverBar(d.categoryIndex, d.barIndex, yAxis, xAxis, true),
-          },
-          {
-            typenames: 'mouseout',
-            callback: (e, d) => hoverBar(d.categoryIndex, d.barIndex, yAxis, xAxis, false),
-          },
-        ],
+        events: {
+          mouseover: (e, d) => hoverBar(d.categoryIndex, d.barIndex, yAxis, xAxis, true),
+          mouseout: (e, d) => hoverBar(d.categoryIndex, d.barIndex, yAxis, xAxis, false),
+        },
         conditionalConfigs: [
           {
             media: wideMediaQuery,
             config: {
               orientation: respVis.BarOrientation.Vertical,
-              events: [
-                {
-                  typenames: 'mouseover',
-                  callback: (e, d) => hoverBar(d.categoryIndex, d.barIndex, xAxis, yAxis, true),
-                },
-                {
-                  typenames: 'mouseout',
-                  callback: (e, d) => hoverBar(d.categoryIndex, d.barIndex, xAxis, yAxis, false),
-                },
-              ],
+              events: {
+                mouseover: (e, d) => hoverBar(d.categoryIndex, d.barIndex, xAxis, yAxis, true),
+                mouseout: (e, d) => hoverBar(d.categoryIndex, d.barIndex, xAxis, yAxis, false),
+              },
             },
           },
         ],
@@ -118,16 +106,10 @@
           'grid-area': '1 / 1 / 2 / 2',
           cursor: 'default',
         },
-        events: [
-          {
-            typenames: 'mouseover',
-            callback: (e, d) => hoverLegendSwatch(d.childIndex, true),
-          },
-          {
-            typenames: 'mouseout',
-            callback: (e, d) => hoverLegendSwatch(d.childIndex, false),
-          },
-        ],
+        events: {
+          mouseover: (e, d) => hoverLegendSwatch(d.childIndex, true),
+          mouseout: (e, d) => hoverLegendSwatch(d.childIndex, false),
+        },
         conditionalConfigs: [
           {
             media: wideMediaQuery,
@@ -152,16 +134,10 @@
               config: {
                 scale: bars.categoriesScale(),
                 attributes: { cursor: 'default' },
-                events: [
-                  {
-                    typenames: 'mouseover',
-                    callback: (e, d) => hoverCategoryAxisTick(xAxis, yAxis, d.tickIndex, true),
-                  },
-                  {
-                    typenames: 'mouseout',
-                    callback: (e, d) => hoverCategoryAxisTick(xAxis, yAxis, d.tickIndex, false),
-                  },
-                ],
+                events: {
+                  mouseover: (e, d) => hoverCategoryAxisTick(xAxis, yAxis, d.tickIndex, true),
+                  mouseout: (e, d) => hoverCategoryAxisTick(xAxis, yAxis, d.tickIndex, false),
+                },
               },
             },
           ],
@@ -182,22 +158,20 @@
         ticks: {
           attributes: { cursor: 'default' },
           scale: bars.categoriesScale(),
-          events: [
-            {
-              typenames: 'mouseover',
-              callback: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, true),
-            },
-            {
-              typenames: 'mouseout',
-              callback: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, false),
-            },
-          ],
+          events: {
+            mouseover: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, true),
+            mouseout: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, false),
+          },
           conditionalConfigs: [
             {
               media: wideMediaQuery,
               config: {
                 scale: bars.valuesScale(),
-                events: [],
+                events: {
+                  // unregister events
+                  mouseover: null,
+                  mouseout: null,
+                },
                 attributes: { cursor: 'auto' },
               },
             },

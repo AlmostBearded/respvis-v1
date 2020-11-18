@@ -21,19 +21,12 @@ import { ScaleBand, ScaleLinear } from 'd3-scale';
 import { Primitive } from 'd3-array';
 import 'd3-transition';
 
-export interface IBarsComponentConfig
-  extends IComponentConfig,
-    IBarPositionerConfig {
+export interface IBarsComponentConfig extends IComponentConfig, IBarPositionerConfig {
   transitionDuration: number;
-  events: {
-    typenames: string;
-    callback: (event: Event, data: IBarsEventData) => void;
-  }[];
+  events: utils.IDictionary<(event: Event, data: IBarsEventData) => void>;
 }
 
-export interface IBarsComponent
-  extends IComponent<IBarsComponentConfig>,
-    IBars {}
+export interface IBarsComponent extends IComponent<IBarsComponentConfig>, IBars {}
 
 export interface IBarsEventData extends IComponentEventData {
   index: number;
@@ -41,33 +34,25 @@ export interface IBarsEventData extends IComponentEventData {
   barElement: SVGGElement;
 }
 
-export class BarsComponent
-  extends Component<IBarsComponentConfig>
-  implements IBarsComponent {
+export class BarsComponent extends Component<IBarsComponentConfig> implements IBarsComponent {
   private _barPositioner: IBarPositioner = new BarPositioner();
 
   static defaultColor = colors.categorical[0];
 
-  static setEventListeners(
-    component: BarsComponent,
-    config: IBarsComponentConfig
-  ) {
-    config.events.forEach((eventConfig) =>
-      component.selection().on(eventConfig.typenames, (e: Event) => {
+  static setEventListeners(component: BarsComponent, config: IBarsComponentConfig) {
+    for (const typenames in config.events) {
+      component.selection().on(typenames, (e: Event) => {
         const rectElement = e.target as SVGRectElement;
         const barElement = rectElement.parentNode as SVGGElement;
-        const index = Array.prototype.indexOf.call(
-          barElement.parentNode!.children,
-          barElement
-        );
-        eventConfig.callback(e, {
+        const index = Array.prototype.indexOf.call(barElement.parentNode!.children, barElement);
+        config.events[typenames](e, {
           component: component,
           index: index,
           rectElement: e.target as SVGRectElement,
           barElement: barElement,
         });
-      })
-    );
+      });
+    }
   }
 
   constructor() {
@@ -87,11 +72,8 @@ export class BarsComponent
           },
         },
         conditionalConfigs: [],
-        events: [],
-        configParser: (
-          previousConfig: IBarsComponentConfig,
-          newConfig: IBarsComponentConfig
-        ) => {
+        events: {},
+        configParser: (previousConfig: IBarsComponentConfig, newConfig: IBarsComponentConfig) => {
           BarsComponent.clearEventListeners(this, previousConfig);
           BarsComponent.setEventListeners(this, newConfig);
           this._barPositioner.config(newConfig);
@@ -159,7 +141,5 @@ export function renderBars(
     .data(bars)
     .join('g')
     .classed('bar', true)
-    .each((d, i, nodes) =>
-      select(nodes[i]).call(renderClippedRect, { ...d }, transitionDuration)
-    );
+    .each((d, i, nodes) => select(nodes[i]).call(renderClippedRect, { ...d }, transitionDuration));
 }

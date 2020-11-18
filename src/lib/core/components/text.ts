@@ -29,7 +29,7 @@ export class TextComponent
           'font-family': 'sans-serif',
         },
         conditionalConfigs: [],
-        events: [],
+        events: {},
         configParser: (
           previousConfig: ITextComponentConfig,
           newConfig: ITextComponentConfig

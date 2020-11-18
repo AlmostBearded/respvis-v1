@@ -45,7 +45,6 @@
       // to toggle subcategories
       var subcategoryToggles = [true, true, true];
 
-
       // media query for wide screens
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
@@ -57,36 +56,19 @@
         orientation: respVis.BarOrientation.Horizontal,
         colors: barColors,
         transitionDuration: 1000,
-        events: [
-          {
-            typenames: 'mouseover',
-            callback: (e, d) => hoverBar(d.categoryIndex, d.barIndex, yAxis, xAxis, true),
-          },
-          {
-            typenames: 'mouseout',
-            callback: (e, d) => hoverBar(d.categoryIndex, d.barIndex, yAxis, xAxis, false),
-          },
-        ],
+        events: {
+          mouseover: (e, d) => hoverBar(d.categoryIndex, d.barIndex, yAxis, xAxis, true),
+          mouseout: (e, d) => hoverBar(d.categoryIndex, d.barIndex, yAxis, xAxis, false),
+        },
         conditionalConfigs: [
           {
             media: wideMediaQuery,
             config: {
               orientation: respVis.BarOrientation.Vertical,
-              // TODO: It might be cleaner to change the events config syntax to...
-              // events: {
-              //   mouseover: (e, d) => hoverBar(d.categoryIndex, d.barIndex, xAxis, yAxis, true),
-              //   mouseout: (e, d) => hoverBar(d.categoryIndex, d.barIndex, xAxis, yAxis, false),
-              // },
-              events: [
-                {
-                  typenames: 'mouseover',
-                  callback: (e, d) => hoverBar(d.categoryIndex, d.barIndex, xAxis, yAxis, true),
-                },
-                {
-                  typenames: 'mouseout',
-                  callback: (e, d) => hoverBar(d.categoryIndex, d.barIndex, xAxis, yAxis, false),
-                },
-              ],
+              events: {
+                mouseover: (e, d) => hoverBar(d.categoryIndex, d.barIndex, xAxis, yAxis, true),
+                mouseout: (e, d) => hoverBar(d.categoryIndex, d.barIndex, xAxis, yAxis, false),
+              },
             },
           },
         ],
@@ -138,20 +120,11 @@
         colors: barColors,
         rowCount: 1,
         columnCount: years.length,
-        events: [
-          {
-            typenames: 'mouseover',
-            callback: (e, d) => hoverLegendSwatch(d.childIndex, true),
-          },
-          {
-            typenames: 'mouseout',
-            callback: (e, d) => hoverLegendSwatch(d.childIndex, false),
-          },
-          {
-            typenames: 'click',
-            callback: (e, d) => clickLegendSwatch(d.childIndex),
-          },
-        ],
+        events: {
+          mouseover: (e, d) => hoverLegendSwatch(d.childIndex, true),
+          mouseout: (e, d) => hoverLegendSwatch(d.childIndex, false),
+          click: (e, d) => clickLegendSwatch(d.childIndex),
+        },
         conditionalConfigs: [
           {
             media: wideMediaQuery,
@@ -178,16 +151,10 @@
               config: {
                 scale: bars.categoriesScale(),
                 attributes: { cursor: 'default' },
-                events: [
-                  {
-                    typenames: 'mouseover',
-                    callback: (e, d) => hoverCategoryAxisTick(xAxis, yAxis, d.tickIndex, true),
-                  },
-                  {
-                    typenames: 'mouseout',
-                    callback: (e, d) => hoverCategoryAxisTick(xAxis, yAxis, d.tickIndex, false),
-                  },
-                ],
+                events: {
+                  mouseover: (e, d) => hoverCategoryAxisTick(xAxis, yAxis, d.tickIndex, true),
+                  mouseout: (e, d) => hoverCategoryAxisTick(xAxis, yAxis, d.tickIndex, false),
+                },
               },
             },
           ],
@@ -203,23 +170,21 @@
         ticks: {
           scale: bars.categoriesScale(),
           attributes: { cursor: 'default' },
-          events: [
-            {
-              typenames: 'mouseover',
-              callback: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, true),
-            },
-            {
-              typenames: 'mouseout',
-              callback: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, false),
-            },
-          ],
+          events: {
+            mouseover: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, true),
+            mouseout: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, false),
+          },
           conditionalConfigs: [
             {
               media: wideMediaQuery,
               config: {
                 scale: bars.valuesScale(),
                 attributes: { cursor: 'auto' },
-                events: [], // unregister events
+                events: {
+                  // unregister events
+                  mouseover: null,
+                  mouseout: null,
+                },
               },
             },
           ],

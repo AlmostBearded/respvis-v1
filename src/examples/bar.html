@@ -39,31 +39,19 @@
         values: values,
         orientation: respVis.BarOrientation.Horizontal,
         transitionDuration: 1000,
-        events: [
-          {
-            typenames: 'mouseover',
-            callback: (e, d) => hoverBar(d.index, yAxis, xAxis, true),
-          },
-          {
-            typenames: 'mouseout',
-            callback: (e, d) => hoverBar(d.index, yAxis, xAxis, false),
-          },
-        ],
+        events: {
+          mouseover: (e, d) => hoverBar(d.index, yAxis, xAxis, true),
+          mouseout: (e, d) => hoverBar(d.index, yAxis, xAxis, false),
+        },
         conditionalConfigs: [
           {
             media: wideMediaQuery,
             config: {
               orientation: respVis.BarOrientation.Vertical,
-              events: [
-                {
-                  typenames: 'mouseover',
-                  callback: (e, d) => hoverBar(d.index, xAxis, yAxis, true),
-                },
-                {
-                  typenames: 'mouseout',
-                  callback: (e, d) => hoverBar(d.index, xAxis, yAxis, false),
-                },
-              ],
+              events: {
+                mouseover: (e, d) => hoverBar(d.index, xAxis, yAxis, true),
+                mouseout: (e, d) => hoverBar(d.index, xAxis, yAxis, false),
+              },
             },
           },
         ],

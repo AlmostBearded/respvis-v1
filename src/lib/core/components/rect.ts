@@ -26,7 +26,7 @@ export class RectComponent extends Component<IRectComponentConfig> implements IR
           'stroke-width': 4,
         },
         conditionalConfigs: [],
-        events: [],
+        events: {},
         configParser: (previousConfig: IRectComponentConfig, newConfig: IRectComponentConfig) => {
           Component.clearEventListeners(this, previousConfig);
           Component.setEventListeners(this, newConfig);

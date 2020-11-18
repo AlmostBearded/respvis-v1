@@ -1,13 +1,10 @@
 import { Component, IComponent, IComponentConfig, IComponentEventData } from '../component';
 import { Selection, BaseType, create } from 'd3-selection';
-import { nullFunction } from '../utils';
+import { IDictionary, nullFunction } from '../utils';
 
 export interface IGroupComponentConfig extends IComponentConfig {
   children: IComponent<IComponentConfig>[];
-  events: {
-    typenames: string;
-    callback: (event: Event, data: IGroupEventData) => void;
-  }[];
+  events: IDictionary<(event: Event, data: IGroupEventData) => void>;
 }
 
 export interface IGroupEventData extends IComponentEventData {
@@ -18,8 +15,8 @@ export interface IGroupComponent extends IComponent<IGroupComponentConfig> {}
 
 export class GroupComponent extends Component<IGroupComponentConfig> implements IGroupComponent {
   static setEventListeners(component: GroupComponent, config: IGroupComponentConfig) {
-    config.events.forEach((eventConfig) =>
-      component.selection().on(eventConfig.typenames, (e: Event) => {
+    for (const typenames in config.events) {
+      component.selection().on(typenames, (e: Event) => {
         let childElement = e.target as Element;
         while (childElement.parentNode !== e.currentTarget) {
           childElement = childElement.parentNode as Element;
@@ -28,12 +25,12 @@ export class GroupComponent extends Component<IGroupComponentConfig> implements 
         const indexOf = Array.prototype.indexOf;
         const childIndex = indexOf.call(childElement.parentNode!.children, childElement);
 
-        eventConfig.callback(e, {
+        config.events[typenames](e, {
           component: component,
           childIndex: childIndex,
         });
-      })
-    );
+      });
+    }
   }
 
   constructor() {
@@ -53,7 +50,7 @@ export class GroupComponent extends Component<IGroupComponentConfig> implements 
             .sort((a, b) => a.renderOrder() - b.renderOrder())
             .forEach((child) => child.config({}));
         },
-        events: [],
+        events: {},
       },
       Component.mergeConfigs
     );

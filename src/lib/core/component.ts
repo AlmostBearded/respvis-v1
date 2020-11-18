@@ -1,5 +1,5 @@
 import { Selection, BaseType } from 'd3-selection';
-import { applyAttributes, Attributes, nullFunction } from './utils';
+import { applyAttributes, Attributes, IDictionary, nullFunction } from './utils';
 import { deepExtend } from './utils';
 
 export interface IConditionalComponentConfig<TConfig> {
@@ -15,7 +15,7 @@ export interface IComponentConfig {
   attributes: Attributes;
   conditionalConfigs: IConditionalComponentConfig<this>[];
   configParser: (previousConfig: this, newConfig: this) => void;
-  events: { typenames: string; callback: (event: Event, data: IComponentEventData) => void }[];
+  events: IDictionary<(event: Event, data: IComponentEventData) => void>;
 }
 
 export type MergeConfigsFn = <TConfig extends IComponentConfig>(
@@ -46,21 +46,30 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
     target: Partial<TConfig>,
     source: Partial<TConfig>
   ): Partial<TConfig> {
-    return Object.assign(target, source, {
-      attributes: deepExtend(target.attributes || {}, source.attributes || {}),
-    });
+    return Object.assign(
+      target,
+      source,
+      {
+        attributes: deepExtend(target.attributes || {}, source.attributes || {}),
+      },
+      {
+        events: deepExtend(target.events || {}, source.events || {}),
+      }
+    );
   }
 
   static clearEventListeners(component: IComponent<IComponentConfig>, config: IComponentConfig) {
-    config.events.forEach((eventConfig) => component.selection().on(eventConfig.typenames, null));
+    for (const typenames in config.events) {
+      component.selection().on(typenames, null);
+    }
   }
 
   static setEventListeners(component: IComponent<IComponentConfig>, config: IComponentConfig) {
-    config.events.forEach((eventConfig) =>
-      component.selection().on(eventConfig.typenames, (e: Event) => {
-        eventConfig.callback(e, { component: component });
-      })
-    );
+    for (const typenames in config.events) {
+      component.selection().on(typenames, (e: Event) => {
+        config.events[typenames](e, { component: component });
+      });
+    }
   }
 
   constructor(

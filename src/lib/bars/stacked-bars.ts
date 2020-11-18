@@ -24,10 +24,7 @@ export interface IStackedBarsComponentConfig
   extends IComponentConfig,
     IStackedBarsPositionerConfig {
   transitionDuration: number;
-  events: {
-    typenames: string;
-    callback: (event: Event, data: IStackedBarsEventData) => void;
-  }[];
+  events: utils.IDictionary<(event: Event, data: IStackedBarsEventData) => void>;
 }
 
 export interface IStackedBarsEventData extends IComponentEventData {
@@ -49,24 +46,18 @@ export class StackedBarsComponent
 
   static defaultColors = colors.categorical;
 
-  static setEventListeners(
-    component: StackedBarsComponent,
-    config: IStackedBarsComponentConfig
-  ) {
-    config.events.forEach((eventConfig) =>
-      component.selection().on(eventConfig.typenames, (e: Event) => {
+  static setEventListeners(component: StackedBarsComponent, config: IStackedBarsComponentConfig) {
+    for (const typenames in config.events) {
+      component.selection().on(typenames, (e: Event) => {
         const rectElement = e.target as SVGRectElement;
         const barElement = rectElement.parentNode!;
         const barStackElement = barElement.parentNode!;
 
         const indexOf = Array.prototype.indexOf;
-        const categoryIndex = indexOf.call(
-          barStackElement.parentNode!.children,
-          barStackElement
-        );
+        const categoryIndex = indexOf.call(barStackElement.parentNode!.children, barStackElement);
         const barIndex = indexOf.call(barStackElement.children, barElement);
 
-        eventConfig.callback(e, {
+        config.events[typenames](e, {
           component: component,
           categoryIndex: categoryIndex,
           barIndex: barIndex,
@@ -74,8 +65,8 @@ export class StackedBarsComponent
           barElement: barElement as SVGGElement,
           rectElement: rectElement,
         });
-      })
-    );
+      });
+    }
   }
 
   constructor() {
@@ -94,7 +85,7 @@ export class StackedBarsComponent
           }))
         ),
         conditionalConfigs: [],
-        events: [],
+        events: {},
         configParser: (
           previousConfig: IStackedBarsComponentConfig,
           newConfig: IStackedBarsComponentConfig
@@ -141,10 +132,7 @@ export class StackedBarsComponent
         );
       });
 
-    this.selection().call(
-      utils.applyAttributes,
-      this.activeConfig().attributes
-    );
+    this.selection().call(utils.applyAttributes, this.activeConfig().attributes);
 
     return this;
   }

@@ -20,14 +20,9 @@ import { renderBars } from './bars';
 import { ScaleBand, ScaleLinear } from 'd3-scale';
 import { Primitive } from 'd3-array';
 
-export interface IGroupedBarsComponentConfig
-  extends IComponentConfig,
-    IGroupedBarPositionerConfig {
+export interface IGroupedBarsComponentConfig extends IComponentConfig, IGroupedBarPositionerConfig {
   transitionDuration: number;
-  events: {
-    typenames: string;
-    callback: (event: Event, data: IGroupedBarsEventData) => void;
-  }[];
+  events: utils.IDictionary<(event: Event, data: IGroupedBarsEventData) => void>;
 }
 
 export interface IGroupedBarsEventData extends IComponentEventData {
@@ -49,24 +44,18 @@ export class GroupedBarsComponent
 
   static defaultColors = colors.categorical;
 
-  static setEventListeners(
-    component: GroupedBarsComponent,
-    config: IGroupedBarsComponentConfig
-  ) {
-    config.events.forEach((eventConfig) =>
-      component.selection().on(eventConfig.typenames, (e: Event) => {
+  static setEventListeners(component: GroupedBarsComponent, config: IGroupedBarsComponentConfig) {
+    for (const typenames in config.events) {
+      component.selection().on(typenames, (e: Event) => {
         const rectElement = e.target as SVGRectElement;
         const barElement = rectElement.parentNode!;
         const barGroupElement = barElement.parentNode!;
 
         const indexOf = Array.prototype.indexOf;
-        const categoryIndex = indexOf.call(
-          barGroupElement.parentNode!.children,
-          barGroupElement
-        );
+        const categoryIndex = indexOf.call(barGroupElement.parentNode!.children, barGroupElement);
         const barIndex = indexOf.call(barGroupElement.children, barElement);
 
-        eventConfig.callback(e, {
+        config.events[typenames](e, {
           component: component,
           categoryIndex: categoryIndex,
           barIndex: barIndex,
@@ -74,8 +63,8 @@ export class GroupedBarsComponent
           barElement: barElement as SVGGElement,
           rectElement: rectElement,
         });
-      })
-    );
+      });
+    }
   }
 
   constructor() {
@@ -95,7 +84,7 @@ export class GroupedBarsComponent
           }))
         ),
         conditionalConfigs: [],
-        events: [],
+        events: {},
         configParser: (
           previousConfig: IGroupedBarsComponentConfig,
           newConfig: IGroupedBarsComponentConfig
@@ -143,10 +132,7 @@ export class GroupedBarsComponent
         );
       });
 
-    this.selection().call(
-      utils.applyAttributes,
-      this.activeConfig().attributes
-    );
+    this.selection().call(utils.applyAttributes, this.activeConfig().attributes);
 
     return this;
   }

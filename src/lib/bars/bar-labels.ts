@@ -21,10 +21,7 @@ import { active } from 'd3-transition';
 export interface IBarLabelsConfig extends IComponentConfig, IBarPointPositionerConfig {
   labels: utils.IStringable[];
   transitionDuration: number;
-  events: {
-    typenames: string;
-    callback: (event: Event, data: IBarLabelsEventData) => void;
-  }[];
+  events: utils.IDictionary<(event: Event, data: IBarLabelsEventData) => void>;
 }
 
 export interface IBarLabelsEventData extends IComponentEventData {
@@ -37,18 +34,18 @@ export class BarLabelsComponent extends Component<IBarLabelsConfig> implements I
   private _barPointPositioner: IBarPointPositioner = new BarPointPositioner();
 
   static setEventListeners(component: BarLabelsComponent, config: IBarLabelsConfig) {
-    config.events.forEach((eventConfig) =>
-      component.selection().on(eventConfig.typenames, (e: Event) => {
+    for (const typenames in config.events) {
+      component.selection().on(typenames, (e: Event) => {
         const textElement = e.target as SVGTextElement;
         const labelElement = textElement.parentNode!;
         const indexOf = Array.prototype.indexOf;
         const labelIndex = indexOf.call(labelElement.parentNode!.children, labelElement);
-        eventConfig.callback(e, {
+        config.events[typenames](e, {
           component: component,
           labelIndex: labelIndex,
         });
-      })
-    );
+      });
+    }
   }
 
   constructor() {
@@ -67,7 +64,7 @@ export class BarLabelsComponent extends Component<IBarLabelsConfig> implements I
           },
         },
         conditionalConfigs: [],
-        events: [],
+        events: {},
         configParser: (previousConfig: IBarLabelsConfig, newConfig: IBarLabelsConfig) => {
           BarLabelsComponent.clearEventListeners(this, previousConfig);
           BarLabelsComponent.setEventListeners(this, newConfig);
