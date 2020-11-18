@@ -55,7 +55,7 @@
         values: values,
         orientation: respVis.BarOrientation.Horizontal,
         colors: barColors,
-        transitionDuration: 1000,
+        transitionDuration: 250,
         events: {
           mouseover: (e, d) => hoverBar(d.categoryIndex, d.barIndex, yAxis, xAxis, true),
           mouseout: (e, d) => hoverBar(d.categoryIndex, d.barIndex, yAxis, xAxis, false),
@@ -84,7 +84,7 @@
         labels: values.flat(),
         horizontalPosition: respVis.HorizontalPosition.Right,
         verticalPosition: respVis.VerticalPosition.Center,
-        transitionDuration: 1000,
+        transitionDuration: 250,
         responsiveConfigs: {
           [wideMediaQuery]: {
             horizontalPosition: respVis.HorizontalPosition.Center,

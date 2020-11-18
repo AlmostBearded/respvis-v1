@@ -38,7 +38,7 @@
         categories: categories,
         values: values,
         orientation: respVis.BarOrientation.Horizontal,
-        transitionDuration: 1000,
+        transitionDuration: 250,
         events: {
           mouseover: (e, d) => hoverBar(d.index, yAxis, xAxis, true),
           mouseout: (e, d) => hoverBar(d.index, yAxis, xAxis, false),
@@ -68,7 +68,7 @@
         labels: values,
         horizontalPosition: respVis.HorizontalPosition.Left,
         verticalPosition: respVis.VerticalPosition.Center,
-        transitionDuration: 1000,
+        transitionDuration: 250,
         responsiveConfigs: {
           [wideMediaQuery]: {
             attributes: {
