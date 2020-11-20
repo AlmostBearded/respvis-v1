@@ -9,7 +9,8 @@ export interface IComponentEventData {
 export interface IComponentConfig {
   attributes: Attributes;
   responsiveConfigs: IDictionary<Partial<this>>;
-  configParser: (previousConfig: this, newConfig: this) => void;
+  parseConfig: (previousConfig: this, newConfig: this) => void;
+  applyConfig: (previousConfig: this, newConfig: this) => void;
   events: IDictionary<(event: Event, data: IComponentEventData) => void>;
 }
 
@@ -27,6 +28,7 @@ export interface IComponent<TConfig extends IComponentConfig> {
   config(config: Partial<TConfig>): this;
   config(configFn: (config: TConfig) => Partial<TConfig>): this;
   config(): TConfig;
+  applyConfig(): this;
   activeConfig(): TConfig;
   call(componentFn: (component: this) => void): this;
 }
@@ -80,7 +82,7 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
   ) {
     this._selection = selection;
     this._config = config;
-    this._activeConfig = config;
+    this._activeConfig = mergeConfigsFn({}, config) as TConfig;
     this._mergeConfigsFn = mergeConfigsFn;
   }
 
@@ -97,13 +99,22 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
     if (c === undefined) return this._config;
     const config = c instanceof Function ? c(this._activeConfig) : c;
     this._mergeConfigsFn(this._config, config);
-    this._applyResponsiveConfigs();
+    this._config.parseConfig(this._activeConfig, this._config);
+    this._activeConfig = this._mergeConfigsFn({}, this._config) as TConfig;
     return this;
   }
 
   activeConfig(): TConfig {
     return this._activeConfig;
   }
+
+  applyConfig(): this {
+    this._applyResponsiveConfigs();
+    this._applyConfig();
+    return this;
+  }
+
+  protected _applyConfig(): void {}
 
   protected _applyResponsiveConfigs(): this {
     const newConfig = this._mergeConfigsFn({}, this._config) as TConfig;
@@ -114,7 +125,10 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
       }
     }
 
-    newConfig.configParser(this._activeConfig, newConfig);
+    // TODO: Is this needed here?
+    newConfig.parseConfig(this._activeConfig, newConfig);
+
+    newConfig.applyConfig(this._activeConfig, newConfig);
 
     this._selection.call(applyAttributes, newConfig.attributes);
 

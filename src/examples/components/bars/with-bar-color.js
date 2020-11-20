@@ -4,10 +4,10 @@ export default function withBarColor(bars) {
     // initialize with default colors
     color: respVis.BarsComponent.defaultColor,
     // set config parser
-    configParser: (previousConfig, newConfig) => {
+    parseConfig: (previousConfig, newConfig) => {
       // using deepExtend to only override specified attributes
       respVis.utils.deepExtend(newConfig.attributes, { '.bar': { fill: newConfig.color } });
-      c.configParser(previousConfig, newConfig);
+      c.parseConfig(previousConfig, newConfig);
     },
   }));
 }

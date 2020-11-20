@@ -26,7 +26,7 @@ export class Chart implements IChart {
       `Couldn't mount chart under selector '${containerSelector}'`
     );
 
-    this._root.mount(this._selection);
+    this._root.applyConfig().mount(this._selection);
 
     const resize = () => {
       const bbox = this._selection.node()!.getBoundingClientRect();
@@ -40,7 +40,7 @@ export class Chart implements IChart {
     };
 
     const afterResize = () => {
-      this._root.config({});
+      this._root.applyConfig();
       this.update();
     };
 
@@ -60,7 +60,10 @@ export class Chart implements IChart {
     // TODO: Handle changing after mount.
     return this;
   }
+
   update(): this {
+    this._root.applyConfig();
+
     let bbox = this._selection.node()!.getBoundingClientRect();
     computeLayout(this._root.selection().node()!, bbox);
 

@@ -65,7 +65,8 @@ export class BarLabelsComponent extends Component<IBarLabelsConfig> implements I
         },
         responsiveConfigs: {},
         events: {},
-        configParser: (previousConfig: IBarLabelsConfig, newConfig: IBarLabelsConfig) => {
+        parseConfig: (previousConfig: IBarLabelsConfig, newConfig: IBarLabelsConfig) => {},
+        applyConfig: (previousConfig: IBarLabelsConfig, newConfig: IBarLabelsConfig) => {
           BarLabelsComponent.clearEventListeners(this, previousConfig);
           BarLabelsComponent.setEventListeners(this, newConfig);
           this._barPointPositioner.config(newConfig);
@@ -73,7 +74,6 @@ export class BarLabelsComponent extends Component<IBarLabelsConfig> implements I
       },
       Component.mergeConfigs
     );
-    this._applyResponsiveConfigs();
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {

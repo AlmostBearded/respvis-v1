@@ -10,6 +10,7 @@ import {
   utils,
 } from '../core';
 import { applyLayoutTransforms } from '../core/layout/layout';
+import { IStringable } from '../core/utils';
 
 export enum Position {
   Left,
@@ -20,6 +21,7 @@ export enum Position {
 
 export interface ITicksComponentConfig extends IComponentConfig {
   scale: AxisScale<unknown>;
+  labelFormatter: (value: IStringable) => string;
   events: utils.IDictionary<(event: Event, data: ITicksEventData) => void>;
 }
 
@@ -34,15 +36,22 @@ export class TicksComponent extends Component<ITicksComponentConfig> implements 
 
   private static _renderFunctionByPosition = new Map<
     Position,
-    (
-      selection: Selection<SVGElement, unknown, BaseType, unknown>,
-      scale: AxisScale<unknown>
-    ) => void
+    (selection: Selection<SVGElement, unknown, BaseType, unknown>, axis: Axis<unknown>) => void
   >([
     [Position.Top, renderTopTicks],
     [Position.Right, renderRightTicks],
     [Position.Bottom, renderBottomTicks],
     [Position.Left, renderLeftTicks],
+  ]);
+
+  private static _axisFunctionByPosition = new Map<
+    Position,
+    (scale: AxisScale<unknown>) => Axis<unknown>
+  >([
+    [Position.Left, axisLeft],
+    [Position.Bottom, axisBottom],
+    [Position.Top, axisTop],
+    [Position.Right, axisRight],
   ]);
 
   static setEventListeners(component: TicksComponent, config: ITicksComponentConfig) {
@@ -69,12 +78,17 @@ export class TicksComponent extends Component<ITicksComponentConfig> implements 
       create<SVGElement>('svg:g').classed('ticks', true),
       {
         scale: scaleLinear().domain([0, 1]).range([0, 100]),
+        labelFormatter: (value: IStringable) => value.toString(),
         attributes: {
           ...(vertical ? { width: 'min-content' } : { height: 'min-content' }),
         },
         responsiveConfigs: {},
         events: {},
-        configParser: (previousConfig: ITicksComponentConfig, newConfig: ITicksComponentConfig) => {
+        parseConfig: (
+          previousConfig: ITicksComponentConfig,
+          newConfig: ITicksComponentConfig
+        ) => {},
+        applyConfig: (previousConfig: ITicksComponentConfig, newConfig: ITicksComponentConfig) => {
           TicksComponent.clearEventListeners(this, previousConfig);
           TicksComponent.setEventListeners(this, newConfig);
           this._render(newConfig, true);
@@ -83,7 +97,6 @@ export class TicksComponent extends Component<ITicksComponentConfig> implements 
       Component.mergeConfigs
     );
     this._labelPosition = labelPosition;
-    this._applyResponsiveConfigs();
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
@@ -98,7 +111,12 @@ export class TicksComponent extends Component<ITicksComponentConfig> implements 
 
   private _render(config: ITicksComponentConfig, animated: boolean): this {
     this.selection()
-      .call(TicksComponent._renderFunctionByPosition.get(this._labelPosition)!, config.scale)
+      .call(
+        TicksComponent._renderFunctionByPosition.get(this._labelPosition)!,
+        TicksComponent._axisFunctionByPosition.get(this._labelPosition)!(config.scale).tickFormat(
+          config.labelFormatter
+        )
+      )
       .call(utils.applyAttributes, config.attributes);
     return this;
   }
@@ -133,19 +151,12 @@ export function bottomTicks(): TicksComponent {
   return new TicksComponent(Position.Bottom);
 }
 
-const axisFunctionByPosition = new Map<Position, (scale: AxisScale<unknown>) => Axis<unknown>>();
-axisFunctionByPosition.set(Position.Left, axisLeft);
-axisFunctionByPosition.set(Position.Bottom, axisBottom);
-axisFunctionByPosition.set(Position.Top, axisTop);
-axisFunctionByPosition.set(Position.Right, axisRight);
-
 function renderTicks(
   selection: Selection<SVGElement, unknown, BaseType, unknown>,
-  position: Position,
-  scale: AxisScale<unknown>
+  axis: Axis<unknown>
 ): void {
   selection
-    .call(axisFunctionByPosition.get(position)!(scale))
+    .call(axis)
     .attr('font-size', '0.7em')
     .call((ticksSelection) =>
       ticksSelection.selectAll<SVGTextElement, never>('.tick text').each((d, i, groups) => {
@@ -163,10 +174,10 @@ function renderTicks(
 
 function renderLeftTicks(
   selection: Selection<SVGElement, unknown, BaseType, unknown>,
-  scale: AxisScale<unknown>
+  axis: Axis<unknown>
 ): void {
   selection
-    .call(renderTicks, Position.Left, scale)
+    .call(renderTicks, axis)
     .call((s) => s.selectAll('.tick text').attr('dominant-baseline', 'middle'))
     .call(function (ticksSelection: Selection<SVGGElement, unknown, SVGElement, unknown>) {
       var boundingRect = ticksSelection.node()!.getBoundingClientRect();
@@ -176,19 +187,19 @@ function renderLeftTicks(
 
 function renderBottomTicks(
   selection: Selection<SVGElement, unknown, BaseType, unknown>,
-  scale: AxisScale<unknown>
+  axis: Axis<unknown>
 ): void {
   selection
-    .call(renderTicks, Position.Bottom, scale)
+    .call(renderTicks, axis)
     .call((s) => s.selectAll('.tick text').attr('dominant-baseline', 'hanging'));
 }
 
 function renderTopTicks(
   selection: Selection<SVGElement, unknown, BaseType, unknown>,
-  scale: AxisScale<unknown>
+  axis: Axis<unknown>
 ): void {
   selection
-    .call(renderTicks, Position.Top, scale)
+    .call(renderTicks, axis)
     .call(function (ticksSelection: Selection<SVGGElement, unknown, SVGElement, unknown>) {
       var boundingRect = ticksSelection.node()!.getBoundingClientRect();
       ticksSelection.attr('transform', `translate(0, ${boundingRect.height})`);
@@ -197,9 +208,9 @@ function renderTopTicks(
 
 function renderRightTicks(
   selection: Selection<SVGElement, unknown, BaseType, unknown>,
-  scale: AxisScale<unknown>
+  axis: Axis<unknown>
 ): void {
   selection
-    .call(renderTicks, Position.Right, scale)
+    .call(renderTicks, axis)
     .call((s) => s.selectAll('.tick text').attr('dominant-baseline', 'middle'));
 }

@@ -86,7 +86,11 @@ export class StackedBarsComponent
         ),
         responsiveConfigs: {},
         events: {},
-        configParser: (
+        parseConfig: (
+          previousConfig: IStackedBarsComponentConfig,
+          newConfig: IStackedBarsComponentConfig
+        ) => {},
+        applyConfig: (
           previousConfig: IStackedBarsComponentConfig,
           newConfig: IStackedBarsComponentConfig
         ) => {
@@ -97,7 +101,6 @@ export class StackedBarsComponent
       },
       Component.mergeConfigs
     );
-    this._applyResponsiveConfigs();
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {

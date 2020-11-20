@@ -7,9 +7,7 @@ export interface ITextComponentConfig extends IComponentConfig {
 
 export interface ITextComponent extends IComponent<ITextComponentConfig> {}
 
-export class TextComponent
-  extends Component<ITextComponentConfig>
-  implements ITextComponent {
+export class TextComponent extends Component<ITextComponentConfig> implements ITextComponent {
   constructor() {
     super(
       create<SVGElement>('svg:text'),
@@ -29,10 +27,8 @@ export class TextComponent
         },
         responsiveConfigs: {},
         events: {},
-        configParser: (
-          previousConfig: ITextComponentConfig,
-          newConfig: ITextComponentConfig
-        ) => {
+        parseConfig: (previousConfig: ITextComponentConfig, newConfig: ITextComponentConfig) => {},
+        applyConfig: (previousConfig: ITextComponentConfig, newConfig: ITextComponentConfig) => {
           Component.clearEventListeners(this, previousConfig);
           Component.setEventListeners(this, newConfig);
           this.selection().text(newConfig.text);
@@ -40,7 +36,6 @@ export class TextComponent
       },
       Component.mergeConfigs
     );
-    this._applyResponsiveConfigs();
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {

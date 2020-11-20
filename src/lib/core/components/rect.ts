@@ -27,17 +27,18 @@ export class RectComponent extends Component<IRectComponentConfig> implements IR
         },
         responsiveConfigs: {},
         events: {},
-        configParser: (previousConfig: IRectComponentConfig, newConfig: IRectComponentConfig) => {
-          Component.clearEventListeners(this, previousConfig);
-          Component.setEventListeners(this, newConfig);
+        parseConfig: (previousConfig: IRectComponentConfig, newConfig: IRectComponentConfig) => {
           newConfig.attributes.width = newConfig.size.width;
           newConfig.attributes.height = newConfig.size.height;
+        },
+        applyConfig: (previousConfig: IRectComponentConfig, newConfig: IRectComponentConfig) => {
+          Component.clearEventListeners(this, previousConfig);
+          Component.setEventListeners(this, newConfig);
           this._render(newConfig, false);
         },
       },
       Component.mergeConfigs
     );
-    this._applyResponsiveConfigs();
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {

@@ -41,6 +41,8 @@
         [650, 160, 60, 30],
       ];
 
+      var valueFormatter = (value) => `${value}k`;
+
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
       function highlightBar(categoryIndex, barIndex, highlight) {
@@ -100,53 +102,62 @@
       });
 
       // bottom axis
-      const xAxis = withHighlightTick(withBottomAxis(respVis.group())).config({
-        ticks: {
-          attributes: { cursor: 'auto' },
-          scale: bars.valuesScale(),
-          responsiveConfigs: {
-            [wideMediaQuery]: {
-              scale: bars.categoriesScale(),
-              attributes: { cursor: 'default' },
-              events: {
-                mouseover: (e, d) => hoverCategoryAxisTick(xAxis, yAxis, d.tickIndex, true),
-                mouseout: (e, d) => hoverCategoryAxisTick(xAxis, yAxis, d.tickIndex, false),
+      const xAxis = withHighlightTick(withBottomAxis(respVis.group()))
+        .call((axis) =>
+          axis.ticks.config({
+            attributes: { cursor: 'auto' },
+            scale: bars.valuesScale(),
+            labelFormatter: valueFormatter,
+            responsiveConfigs: {
+              [wideMediaQuery]: {
+                scale: bars.categoriesScale(),
+                labelFormatter: (value) => value.toString(),
+                attributes: { cursor: 'default' },
+                events: {
+                  mouseover: (e, d) => hoverCategoryAxisTick(xAxis, yAxis, d.tickIndex, true),
+                  mouseout: (e, d) => hoverCategoryAxisTick(xAxis, yAxis, d.tickIndex, false),
+                },
               },
             },
-          },
-        },
-        title: {
-          text: 'Expenses',
-          responsiveConfigs: { [wideMediaQuery]: { text: 'People' } },
-        },
-      });
+          })
+        )
+        .call((axis) =>
+          axis.title.config({
+            text: 'Expenses',
+            responsiveConfigs: { [wideMediaQuery]: { text: 'People' } },
+          })
+        );
 
       // left axis
-      const yAxis = withHighlightTick(withLeftAxis(respVis.group())).config({
-        ticks: {
-          attributes: { cursor: 'default' },
-          scale: bars.categoriesScale(),
-          events: {
-            mouseover: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, true),
-            mouseout: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, false),
-          },
-          responsiveConfigs: {
-            [wideMediaQuery]: {
-              scale: bars.valuesScale(),
-              events: {
-                // unregister events
-                mouseover: null,
-                mouseout: null,
-              },
-              attributes: { cursor: 'auto' },
+      const yAxis = withHighlightTick(withLeftAxis(respVis.group()))
+        .call((axis) =>
+          axis.ticks.config({
+            attributes: { cursor: 'default' },
+            scale: bars.categoriesScale(),
+            events: {
+              mouseover: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, true),
+              mouseout: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, false),
             },
-          },
-        },
-        title: {
-          text: 'People',
-          responsiveConfigs: { [wideMediaQuery]: { text: 'Expenses' } },
-        },
-      });
+            responsiveConfigs: {
+              [wideMediaQuery]: {
+                scale: bars.valuesScale(),
+                labelFormatter: valueFormatter,
+                events: {
+                  // unregister events
+                  mouseover: null,
+                  mouseout: null,
+                },
+                attributes: { cursor: 'auto' },
+              },
+            },
+          })
+        )
+        .call((axis) =>
+          axis.title.config({
+            text: 'People',
+            responsiveConfigs: { [wideMediaQuery]: { text: 'Expenses' } },
+          })
+        );
 
       // chart
       const chart = respVis

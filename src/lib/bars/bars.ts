@@ -73,7 +73,8 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
         },
         responsiveConfigs: {},
         events: {},
-        configParser: (previousConfig: IBarsComponentConfig, newConfig: IBarsComponentConfig) => {
+        parseConfig: (previousConfig: IBarsComponentConfig, newConfig: IBarsComponentConfig) => {},
+        applyConfig: (previousConfig: IBarsComponentConfig, newConfig: IBarsComponentConfig) => {
           BarsComponent.clearEventListeners(this, previousConfig);
           BarsComponent.setEventListeners(this, newConfig);
           this._barPositioner.config(newConfig);
@@ -81,7 +82,6 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
       },
       Component.mergeConfigs
     );
-    this._applyResponsiveConfigs();
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {

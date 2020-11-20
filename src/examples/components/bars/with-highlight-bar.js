@@ -8,7 +8,7 @@ export default function withHighlightBar(bars) {
 
   bars.config((c) => ({
     // set config parser
-    configParser: (previousConfig, newConfig) => {
+    parseConfig: (previousConfig, newConfig) => {
       // using deepExtend to only override specified attributes
       respVis.utils.deepExtend(newConfig.attributes, {
         '.bar[highlighted=true]': {
@@ -16,7 +16,7 @@ export default function withHighlightBar(bars) {
           'stroke-width': 4,
         },
       });
-      c.configParser(previousConfig, newConfig);
+      c.parseConfig(previousConfig, newConfig);
     },
   }));
 

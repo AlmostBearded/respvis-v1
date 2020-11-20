@@ -2,19 +2,20 @@ import withGridLayout from '../with-grid-layout.js';
 import withSwatch from './with-swatch.js';
 
 export default function withSwatchLegend(group) {
-  return withGridLayout(group).config((c) => ({
+  const legend = withGridLayout(group);
+  legend.config((c) => ({
     labels: [],
     colors: [],
-    configParser: (previousConfig, newConfig) => {
-      var swatches = newConfig.labels.map((label, i) => {
-        const swatch = previousConfig.children[i] || withSwatch(respVis.group());
-        return swatch.config({
-          rect: { attributes: { fill: newConfig.colors[i] } },
-          label: { text: label },
-        });
+    parseConfig: (previousConfig, newConfig) => {
+      legend.swatches = newConfig.labels.map((label, i) => {
+        const swatch = legend.swatches?.[i] || withSwatch(respVis.group());
+        swatch.rect.config({ attributes: { fill: newConfig.colors[i] } });
+        swatch.label.config({ text: label });
+        return swatch;
       });
-      newConfig.children = swatches;
-      c.configParser(previousConfig, newConfig);
+      newConfig.children = legend.swatches;
+      c.parseConfig(previousConfig, newConfig);
     },
   }));
+  return legend;
 }

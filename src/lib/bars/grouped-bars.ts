@@ -85,7 +85,11 @@ export class GroupedBarsComponent
         ),
         responsiveConfigs: {},
         events: {},
-        configParser: (
+        parseConfig: (
+          previousConfig: IGroupedBarsComponentConfig,
+          newConfig: IGroupedBarsComponentConfig
+        ) => {},
+        applyConfig: (
           previousConfig: IGroupedBarsComponentConfig,
           newConfig: IGroupedBarsComponentConfig
         ) => {
@@ -96,8 +100,6 @@ export class GroupedBarsComponent
       },
       Component.mergeConfigs
     );
-
-    this._applyResponsiveConfigs();
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {

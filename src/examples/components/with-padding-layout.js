@@ -8,7 +8,7 @@ export default function withPaddingLayout(group) {
     right: undefined,
     bottom: undefined,
     left: undefined,
-    configParser: (previousConfig, newConfig) => {
+    parseConfig: (previousConfig, newConfig) => {
       const top = newConfig.top || newConfig.vertical || newConfig.all;
       const bottom = newConfig.bottom || newConfig.vertical || newConfig.all;
       const left = newConfig.left || newConfig.horizontal || newConfig.all;
@@ -20,7 +20,7 @@ export default function withPaddingLayout(group) {
         child.config({ attributes: { 'grid-area': `2 / 2 / 3 / 3` } });
       });
 
-      c.configParser(previousConfig, newConfig);
+      c.parseConfig(previousConfig, newConfig);
     },
   }));
 }

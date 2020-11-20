@@ -42,6 +42,8 @@
         [12, 14, 18],
       ];
 
+      var valueFormatter = (value) => `${value}k`;
+
       // to toggle subcategories
       var subcategoryToggles = [true, true, true];
 
@@ -81,7 +83,7 @@
           },
         },
         bars: bars,
-        labels: values.flat(),
+        labels: values.flat().map(valueFormatter),
         horizontalPosition: respVis.HorizontalPosition.Right,
         verticalPosition: respVis.VerticalPosition.Center,
         transitionDuration: 250,
@@ -118,53 +120,62 @@
       });
 
       // bottom axis
-      const xAxis = withHighlightTick(withBottomAxis(respVis.group())).config({
-        ticks: {
-          attributes: { cursor: 'auto' },
-          scale: bars.valuesScale(),
-          responsiveConfigs: {
-            [wideMediaQuery]: {
-              scale: bars.categoriesScale(),
-              attributes: { cursor: 'default' },
-              events: {
-                mouseover: (e, d) => hoverCategoryAxisTick(xAxis, yAxis, d.tickIndex, true),
-                mouseout: (e, d) => hoverCategoryAxisTick(xAxis, yAxis, d.tickIndex, false),
+      const xAxis = withHighlightTick(withBottomAxis(respVis.group()))
+        .call((axis) =>
+          axis.ticks.config({
+            attributes: { cursor: 'auto' },
+            scale: bars.valuesScale(),
+            labelFormatter: valueFormatter,
+            responsiveConfigs: {
+              [wideMediaQuery]: {
+                scale: bars.categoriesScale(),
+                labelFormatter: (value) => value.toString(),
+                attributes: { cursor: 'default' },
+                events: {
+                  mouseover: (e, d) => hoverCategoryAxisTick(xAxis, yAxis, d.tickIndex, true),
+                  mouseout: (e, d) => hoverCategoryAxisTick(xAxis, yAxis, d.tickIndex, false),
+                },
               },
             },
-          },
-        },
-        title: {
-          text: 'Revenue',
-          responsiveConfigs: { [wideMediaQuery]: { text: 'Locations' } },
-        },
-      });
+          })
+        )
+        .call((axis) =>
+          axis.title.config({
+            text: 'Revenue',
+            responsiveConfigs: { [wideMediaQuery]: { text: 'Locations' } },
+          })
+        );
 
       // left axis
-      const yAxis = withHighlightTick(withLeftAxis(respVis.group())).config({
-        ticks: {
-          scale: bars.categoriesScale(),
-          attributes: { cursor: 'default' },
-          events: {
-            mouseover: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, true),
-            mouseout: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, false),
-          },
-          responsiveConfigs: {
-            [wideMediaQuery]: {
-              scale: bars.valuesScale(),
-              attributes: { cursor: 'auto' },
-              events: {
-                // unregister events
-                mouseover: null,
-                mouseout: null,
+      const yAxis = withHighlightTick(withLeftAxis(respVis.group()))
+        .call((axis) =>
+          axis.ticks.config({
+            scale: bars.categoriesScale(),
+            attributes: { cursor: 'default' },
+            events: {
+              mouseover: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, true),
+              mouseout: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, false),
+            },
+            responsiveConfigs: {
+              [wideMediaQuery]: {
+                scale: bars.valuesScale(),
+                labelFormatter: valueFormatter,
+                attributes: { cursor: 'auto' },
+                events: {
+                  // unregister events
+                  mouseover: null,
+                  mouseout: null,
+                },
               },
             },
-          },
-        },
-        title: {
-          text: 'Locations',
-          responsiveConfigs: { [wideMediaQuery]: { text: 'Revenue' } },
-        },
-      });
+          })
+        )
+        .call((axis) =>
+          axis.title.config({
+            text: 'Locations',
+            responsiveConfigs: { [wideMediaQuery]: { text: 'Revenue' } },
+          })
+        );
 
       const chart = respVis
         .chart()

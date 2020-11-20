@@ -3,7 +3,7 @@ export default function withGridLayout(group) {
   return group.config((c) => ({
     rowCount: 1,
     columnCount: 1,
-    configParser: (previousConfig, newConfig) => {
+    parseConfig: (previousConfig, newConfig) => {
       const rows = Array(newConfig.rowCount).fill('auto').join(' ');
       const columns = Array(newConfig.columnCount).fill('auto').join(' ');
 
@@ -16,7 +16,7 @@ export default function withGridLayout(group) {
           attributes: { 'grid-area': `${row} / ${column} / ${row + 1} / ${column + 1}` },
         });
       });
-      c.configParser(previousConfig, newConfig);
+      c.parseConfig(previousConfig, newConfig);
     },
   }));
 }

@@ -10,7 +10,7 @@ export default function withHighlightBar(stackedBars) {
 
   stackedBars.config((c) => ({
     // set config parser
-    configParser: (previousConfig, newConfig) => {
+    parseConfig: (previousConfig, newConfig) => {
       // using deepExtend to only override specified attributes
       respVis.utils.deepExtend(
         newConfig.attributes,
@@ -22,7 +22,7 @@ export default function withHighlightBar(stackedBars) {
           },
         }))
       );
-      c.configParser(previousConfig, newConfig);
+      c.parseConfig(previousConfig, newConfig);
     },
   }));
 

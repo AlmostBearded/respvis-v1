@@ -6,7 +6,7 @@ export default function withBarColors(groupedBars) {
     // initialize with default colors
     colors: respVis.GroupedBarsComponent.defaultColors,
     // set config parser
-    configParser: (previousConfig, newConfig) => {
+    parseConfig: (previousConfig, newConfig) => {
       // using deepExtend to only override specified attributes
       respVis.utils.deepExtend(
         newConfig.attributes,
@@ -17,7 +17,7 @@ export default function withBarColors(groupedBars) {
           },
         }))
       );
-      c.configParser(previousConfig, newConfig);
+      c.parseConfig(previousConfig, newConfig);
     },
   }));
 }

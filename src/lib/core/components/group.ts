@@ -42,19 +42,24 @@ export class GroupComponent extends Component<IGroupComponentConfig> implements 
           'grid-template': 'auto / auto',
         },
         responsiveConfigs: {},
-        configParser: (previousConfig: IGroupComponentConfig, newConfig: IGroupComponentConfig) => {
+        parseConfig: (
+          previousConfig: IGroupComponentConfig,
+          newConfig: IGroupComponentConfig
+        ) => {},
+        applyConfig: (previousConfig: IGroupComponentConfig, newConfig: IGroupComponentConfig) => {
           GroupComponent.clearEventListeners(this, previousConfig);
           GroupComponent.setEventListeners(this, newConfig);
-          // clone children array before sorting to retain order
-          [...newConfig.children]
-            .sort((a, b) => a.renderOrder() - b.renderOrder())
-            .forEach((child) => child.config({}));
         },
         events: {},
       },
       Component.mergeConfigs
     );
-    this._applyResponsiveConfigs();
+  }
+
+  protected _applyConfig(): void {
+    [...this.activeConfig().children]
+      .sort((a, b) => a.renderOrder() - b.renderOrder())
+      .forEach((child) => child.applyConfig());
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {

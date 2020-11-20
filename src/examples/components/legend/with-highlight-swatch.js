@@ -1,10 +1,11 @@
 export default function withHighlightSwatch(legend) {
   legend.highlightSwatch = function highlightSwatch(swatchIndex, highlight) {
     const c = legend.activeConfig().colors[swatchIndex];
-    legend.activeConfig().children[swatchIndex].config({
-      rect: { attributes: { fill: highlight ? respVis.chroma.hex(c).brighten(0.5).hex() : c } },
-      label: { attributes: { 'text-decoration': highlight ? 'underline' : 'none' } },
+    const swatch = legend.swatches[swatchIndex];
+    swatch.rect.config({
+      attributes: { fill: highlight ? respVis.chroma.hex(c).brighten(0.5).hex() : c },
     });
+    swatch.label.config({ attributes: { 'text-decoration': highlight ? 'underline' : 'none' } });
   };
 
   return legend;
