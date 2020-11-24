@@ -91,19 +91,27 @@ export function applyAttributes(
 }
 
 export function deepExtend(target: any, ...args: any[]) {
+  return deepExtendWithConfig({ deleteUndefined: true }, target, ...args);
+}
+
+export function deepExtendWithConfig(
+  config: { deleteUndefined: boolean, },
+  target: any,
+  ...args: any[]
+) {
   target = target || {};
   for (let i = 0; i < args.length; i++) {
     const obj = args[i];
     if (!obj) continue;
     for (const key in obj) {
       if (obj.hasOwnProperty(key)) {
-        if (obj[key] === null) {
+        if (config.deleteUndefined && obj[key] === undefined) {
           delete target[key];
         } else if (typeof obj[key] === 'object') {
           if (obj[key] instanceof Array == true) {
             target[key] = obj[key].slice(0);
           } else {
-            target[key] = deepExtend(target[key], obj[key]);
+            target[key] = deepExtendWithConfig(config, target[key], obj[key]);
           }
         } else {
           target[key] = obj[key];

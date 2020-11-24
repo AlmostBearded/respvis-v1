@@ -1,6 +1,11 @@
 import { Selection, BaseType } from 'd3-selection';
-import { applyAttributes, Attributes, IDictionary, nullFunction } from './utils';
-import { deepExtend } from './utils';
+import {
+  applyAttributes,
+  Attributes,
+  deepExtendWithConfig,
+  IDictionary,
+  nullFunction,
+} from './utils';
 
 export interface IComponentEventData {
   component: IComponent<IComponentConfig>;
@@ -46,13 +51,26 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
       target,
       source,
       {
-        attributes: deepExtend(target.attributes || {}, source.attributes || {}),
+        attributes: deepExtendWithConfig(
+          { deleteUndefined: true },
+          target.attributes || {},
+          source.attributes || {}
+        ),
       },
       {
-        events: deepExtend(target.events || {}, source.events || {}),
+        events: deepExtendWithConfig(
+          { deleteUndefined: true },
+          target.events || {},
+          source.events || {}
+        ),
       },
       {
-        responsiveConfigs: deepExtend(
+        responsiveConfigs: deepExtendWithConfig(
+          {
+            // responsive configs are merged later and need to delete undefined
+            // properties then.
+            deleteUndefined: false,
+          },
           target.responsiveConfigs || {},
           source.responsiveConfigs || {}
         ),
@@ -123,9 +141,7 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
       }
     }
 
-    // TODO: Is this needed here?
     newConfig.parseConfig(this._activeConfig, newConfig);
-
     newConfig.applyConfig(this._activeConfig, newConfig);
 
     this._selection.call(applyAttributes, newConfig.attributes);
