@@ -51,10 +51,6 @@ export class TextComponent extends Component<ITextComponentConfig> implements IT
   render(animated: boolean): this {
     return this;
   }
-
-  renderOrder(): number {
-    return 0;
-  }
 }
 
 export function text(): TextComponent {

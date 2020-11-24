@@ -38,16 +38,15 @@ export class StackedBarPositioner implements IStackedBarPositioner {
   config(config?: IStackedBarsPositionerConfig): any {
     if (config === undefined) return this._config;
     utils.deepExtend(this._config, config);
-    return this;
-  }
-
-  fitInSize(size: utils.ISize): this {
     this._categoriesScale.domain(this._config.categories).padding(this._config.categoryPadding);
     this._valuesScale.domain([
       0,
       max(this._config.values.map((values) => values.reduce((a, b) => a + b)))!,
     ]);
+    return this;
+  }
 
+  fitInSize(size: utils.ISize): this {
     if (this._config.orientation === BarOrientation.Vertical) {
       this._categoriesScale.range([0, size.width]);
       this._valuesScale.range([size.height, 0]);

@@ -24,7 +24,6 @@ export interface IComponent<TConfig extends IComponentConfig> {
   resize(): this;
   render(animated: boolean): this;
   selection(): Selection<SVGElement, unknown, BaseType, unknown>;
-  renderOrder(): number;
   config(config: Partial<TConfig>): this;
   config(configFn: (config: TConfig) => Partial<TConfig>): this;
   config(): TConfig;
@@ -88,7 +87,6 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
 
   abstract mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this;
   abstract render(animated: boolean): this;
-  abstract renderOrder(): number;
 
   abstract resize(): this;
 

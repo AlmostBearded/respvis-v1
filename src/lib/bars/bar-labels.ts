@@ -103,10 +103,6 @@ export class BarLabelsComponent extends Component<IBarLabelsConfig> implements I
     return this;
   }
 
-  renderOrder(): number {
-    return 1;
-  }
-
   points(): utils.IPosition[] {
     return this._barPointPositioner.points();
   }

@@ -110,10 +110,6 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
     return this;
   }
 
-  renderOrder(): number {
-    return 0;
-  }
-
   bars(): Rect[] {
     return this._barPositioner.bars();
   }

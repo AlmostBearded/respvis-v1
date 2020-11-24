@@ -46,13 +46,12 @@ export class BarPositioner implements IBarPositioner {
   config(config?: IBarPositionerConfig): any {
     if (config === undefined) return this._config;
     utils.deepExtend(this._config, config);
+    this._categoriesScale.domain(this._config.categories).padding(this._config.categoryPadding);
+    this._valuesScale.domain([0, max(this._config.values)!]);
     return this;
   }
 
   fitInSize(size: utils.ISize): this {
-    this._categoriesScale.domain(this._config.categories).padding(this._config.categoryPadding);
-    this._valuesScale.domain([0, max(this._config.values)!]);
-
     if (this._config.orientation === BarOrientation.Vertical) {
       this._categoriesScale.range([0, size.width]);
       this._valuesScale.range([size.height, 0]);

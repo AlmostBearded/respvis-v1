@@ -139,10 +139,6 @@ export class GroupedBarsComponent
     return this;
   }
 
-  renderOrder(): number {
-    return 0;
-  }
-
   bars(): Rect[] {
     return this._barPositioner.bars();
   }

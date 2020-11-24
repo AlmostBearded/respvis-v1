@@ -63,6 +63,7 @@ export class Chart implements IChart {
   update(updateLayout: boolean): this {
     this._root.applyConfig();
 
+    // layout computation is fairly costly so it's only done when requested. 
     if (updateLayout) {
       let bbox = this._selection.node()!.getBoundingClientRect();
       computeLayout(this._root.selection().node()!, bbox);

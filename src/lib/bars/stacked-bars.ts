@@ -140,10 +140,6 @@ export class StackedBarsComponent
     return this;
   }
 
-  renderOrder(): number {
-    return 0;
-  }
-
   bars(): Rect[] {
     return this._barPositioner.bars();
   }

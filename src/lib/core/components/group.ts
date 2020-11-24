@@ -57,39 +57,23 @@ export class GroupComponent extends Component<IGroupComponentConfig> implements 
   }
 
   protected _applyConfig(): void {
-    [...this.activeConfig().children]
-      .sort((a, b) => a.renderOrder() - b.renderOrder())
-      .forEach((child) => child.applyConfig());
+    this.activeConfig().children.forEach((child) => child.applyConfig());
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
     selection.append(() => this.selection().node());
-    // clone children array before sorting to retain order
-    [...this.activeConfig().children]
-      .sort((a, b) => a.renderOrder() - b.renderOrder())
-      .forEach((child) => child.mount(this.selection()));
+    this.activeConfig().children.forEach((child) => child.mount(this.selection()));
     return this;
   }
 
   resize(): this {
-    // clone children array before sorting to retain order
-    [...this.activeConfig().children]
-      .sort((a, b) => a.renderOrder() - b.renderOrder())
-      .forEach((child) => child.resize());
+    this.activeConfig().children.forEach((child) => child.resize());
     return this;
   }
 
   render(animated: boolean): this {
-    // clone children array before sorting to retain order
-    [...this.activeConfig().children]
-      .sort((a, b) => a.renderOrder() - b.renderOrder())
-      .forEach((child) => child.render(animated));
+    this.activeConfig().children.forEach((child) => child.render(animated));
     return this;
-  }
-
-  renderOrder(): number {
-    // TODO: This should probably configurable by the user
-    return 0;
   }
 }
 

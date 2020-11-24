@@ -69,10 +69,6 @@ export class RectComponent extends Component<IRectComponentConfig> implements IR
   render(animated: boolean): this {
     return this._render(this.activeConfig(), animated);
   }
-
-  renderOrder(): number {
-    return 0;
-  }
 }
 
 export function rect(): RectComponent {

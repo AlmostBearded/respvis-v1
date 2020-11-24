@@ -124,11 +124,6 @@ export class TicksComponent extends Component<ITicksComponentConfig> implements 
   render(animated: boolean): this {
     return this._render(this.activeConfig(), animated);
   }
-
-  renderOrder(): number {
-    // It is important that ticks render after the component which set up their scale
-    return 10;
-  }
 }
 
 export function ticks(position: Position): TicksComponent {
