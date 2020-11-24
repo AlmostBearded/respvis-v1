@@ -7,7 +7,7 @@ export interface IChart {
   root(root: IComponent<IComponentConfig>): this;
   root(): IComponent<IComponentConfig>;
   mount(containerSelector: string): this;
-  update(): this;
+  update(updateLayout: boolean): this;
 }
 
 export class Chart implements IChart {
@@ -40,8 +40,7 @@ export class Chart implements IChart {
     };
 
     const afterResize = () => {
-      this._root.applyConfig();
-      this.update();
+      this.update(true);
     };
 
     resize();
@@ -61,11 +60,13 @@ export class Chart implements IChart {
     return this;
   }
 
-  update(): this {
+  update(updateLayout: boolean): this {
     this._root.applyConfig();
 
-    let bbox = this._selection.node()!.getBoundingClientRect();
-    computeLayout(this._root.selection().node()!, bbox);
+    if (updateLayout) {
+      let bbox = this._selection.node()!.getBoundingClientRect();
+      computeLayout(this._root.selection().node()!, bbox);
+    }
 
     this._root.resize().render(true);
 

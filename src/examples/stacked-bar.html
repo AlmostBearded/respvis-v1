@@ -233,7 +233,7 @@
         legend.highlightSwatch(barIndex, hover);
         valueAxis.clearHighlights();
         categoryAxis.highlightTick(categoryIndex, hover);
-        chart.update();
+        chart.update(false);
       }
 
       function hoverLegendSwatch(swatchIndex, hover) {
@@ -243,7 +243,7 @@
           bars.highlightBar(categoryIndex, swatchIndex, hover);
           barLabels.showLabel(flatBarIndex, hover);
         });
-        chart.update();
+        chart.update(false);
       }
 
       function hoverCategoryAxisTick(categoryAxis, valueAxis, tickIndex, hover) {
@@ -254,7 +254,7 @@
           bars.highlightBar(tickIndex, i, hover);
           barLabels.showLabel(flatBarIndex, hover);
         }
-        chart.update();
+        chart.update(false);
       }
     </script>
   </body>
