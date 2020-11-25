@@ -105,10 +105,6 @@ export class TicksComponent extends Component<ITicksComponentConfig> implements 
     return this;
   }
 
-  resize(): this {
-    return this;
-  }
-
   private _render(config: ITicksComponentConfig, animated: boolean): this {
     this.selection()
       .call(

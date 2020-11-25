@@ -34,19 +34,18 @@ export class Chart implements IChart {
 
       computeLayout(this._root.selection().node()!, bbox);
 
-      this._root.resize().render(false);
+      this._root.render(false);
 
       applyLayoutTransforms(this._root.selection().node()!);
-    };
-
-    const afterResize = () => {
-      this.update(true);
     };
 
     resize();
 
     window.addEventListener('resize', resize);
-    window.addEventListener('resize', debounce(afterResize, 250));
+    window.addEventListener(
+      'resize',
+      debounce(() => this.update(true), 250)
+    );
 
     return this;
   }
@@ -63,13 +62,13 @@ export class Chart implements IChart {
   update(updateLayout: boolean): this {
     this._root.applyConfig();
 
-    // layout computation is fairly costly so it's only done when requested. 
+    // layout computation is fairly costly so it's only done when requested.
     if (updateLayout) {
       let bbox = this._selection.node()!.getBoundingClientRect();
       computeLayout(this._root.selection().node()!, bbox);
     }
 
-    this._root.resize().render(true);
+    this._root.render(true);
 
     applyLayoutTransforms(this._root.selection().node()!);
 

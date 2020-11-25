@@ -44,10 +44,6 @@ export class TextComponent extends Component<ITextComponentConfig> implements IT
     return this;
   }
 
-  resize(): this {
-    return this;
-  }
-
   render(animated: boolean): this {
     return this;
   }

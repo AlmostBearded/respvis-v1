@@ -87,10 +87,6 @@ export class BarLabelsComponent extends Component<IBarLabelsConfig> implements I
     return this;
   }
 
-  resize(): this {
-    return this;
-  }
-
   render(animated: boolean): this {
     this.selection()
       .call(

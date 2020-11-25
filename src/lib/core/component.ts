@@ -26,7 +26,6 @@ export type MergeConfigsFn = <TConfig extends IComponentConfig>(
 
 export interface IComponent<TConfig extends IComponentConfig> {
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this;
-  resize(): this;
   render(animated: boolean): this;
   selection(): Selection<SVGElement, unknown, BaseType, unknown>;
   config(config: Partial<TConfig>): this;
@@ -105,8 +104,6 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
 
   abstract mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this;
   abstract render(animated: boolean): this;
-
-  abstract resize(): this;
 
   config(config: Partial<TConfig>): this;
   config(configFn: (config: TConfig) => Partial<TConfig>): this;

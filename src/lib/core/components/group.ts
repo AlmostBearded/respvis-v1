@@ -66,11 +66,6 @@ export class GroupComponent extends Component<IGroupComponentConfig> implements 
     return this;
   }
 
-  resize(): this {
-    this.activeConfig().children.forEach((child) => child.resize());
-    return this;
-  }
-
   render(animated: boolean): this {
     this.activeConfig().children.forEach((child) => child.render(animated));
     return this;

@@ -47,10 +47,6 @@ export class RectComponent extends Component<IRectComponentConfig> implements IR
     return this;
   }
 
-  resize(): this {
-    return this;
-  }
-
   private _render(config: IRectComponentConfig, animated: boolean): this {
     this.selection()
       .call(

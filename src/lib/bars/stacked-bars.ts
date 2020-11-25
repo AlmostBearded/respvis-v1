@@ -105,20 +105,14 @@ export class StackedBarsComponent
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
     selection.append(() => this.selection().node());
-
-    this._barPositioner.fitInSize({ width: 600, height: 400 });
     this.render(false);
-
-    return this;
-  }
-
-  resize(): this {
-    const layoutRect = Rect.fromString(this.selection().attr('layout'));
-    this._barPositioner.fitInSize(layoutRect);
     return this;
   }
 
   render(animated: boolean): this {
+    const layoutRect = Rect.fromString(this.selection().attr('layout') || '0, 0, 600, 400');
+    this._barPositioner.fitInSize(layoutRect);
+
     const values = this.activeConfig().values;
     const bars = this._barPositioner.bars();
     this.selection()
