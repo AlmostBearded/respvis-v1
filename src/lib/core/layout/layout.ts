@@ -26,7 +26,7 @@ export interface ILayoutStyle {
 
 export function computeLayout(element: Element, size: ISize) {
   // 1st Phase
-  const rootLayoutNode = parseElementHierarchy(element);
+  const rootLayoutNode = parseElementHierarchy(element)!;
   rootLayoutNode.style.width = size.width;
   rootLayoutNode.style.height = size.height;
   faberComputeLayout(rootLayoutNode);
@@ -106,11 +106,22 @@ function parseLayoutStyle(element: Element): ILayoutStyle {
 
   if (style.gridTemplateRows || style.gridTemplateColumns) style.display = 'grid';
 
+  // delete undefined properties
+  Object.keys(style).forEach((key) => style[key] === undefined && delete style[key]);
+
   return style;
 }
 
-function parseElementHierarchy(element: Element): ILayoutNode {
+function parseElementHierarchy(element: Element): ILayoutNode | null {
   const layoutStyle = parseLayoutStyle(element);
+
+  if (Object.keys(layoutStyle).length === 0) {
+    element.removeAttribute('laidOut');
+    return null;
+  }
+
+  element.setAttribute('laidOut', '');
+
   const layoutNode: ILayoutNode = {
     style: layoutStyle,
     layout: { x: 0, y: 0, width: 0, height: 0 },
@@ -134,11 +145,19 @@ function setCalculatedDimensions(layoutNode: ILayoutNode) {
   }
 }
 
-function setLayoutAttributes(element: Element, layoutNode: ILayoutNode) {
-  if (Object.keys(layoutNode.style).length) {
-    element.setAttribute('layout', Rect.fromRect(layoutNode.layout).toString());
-  }
+function setLayoutAttributes(element: Element, layoutNode: ILayoutNode): boolean {
+  if (element.getAttribute('laidOut') === null) return false;
+
+  element.setAttribute('layout', Rect.fromRect(layoutNode.layout).toString());
+
+  let notLaidOutChildCount = 0;
   for (let i = 0; i < element.children.length; ++i) {
-    setLayoutAttributes(element.children[i], layoutNode.children[i]);
+    notLaidOutChildCount += setLayoutAttributes(
+      element.children[i],
+      layoutNode.children[i - notLaidOutChildCount]
+    )
+      ? 0
+      : 1;
   }
+  return true;
 }
