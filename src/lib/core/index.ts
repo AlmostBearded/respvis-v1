@@ -6,6 +6,10 @@ export { chainedTransition } from './chained-transition';
 import chroma from 'chroma-js';
 export { chroma };
 
+export * as uuid from 'uuid';
+
+export * from './clip';
+
 export * from './chart';
 
 export * from './component';
