@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <title>RespVis - Scatterplot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8" />
+    <style>
+      #chart {
+        width: 100%;
+        height: 50vh;
+        min-height: 25rem;
+      }
+
+      body {
+        background-color: floralwhite;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Scatterplot</h1>
+    <div id="chart"></div>
+    <script src="../respvis.js"></script>
+    <script type="module">
+      import withPaddingLayout from './components/with-padding-layout.js';
+      import withLeftAxis from './components/axis/with-left-axis.js';
+      import withBottomAxis from './components/axis/with-bottom-axis.js';
+      import withHighlightTick from './components/axis/with-highlight-tick.js';
+      import data from './data/two-num.js';
+
+      const minArea = Math.min(...data.area),
+        maxArea = Math.max(...data.area),
+        areaSpan = maxArea - minArea;
+      const minPrice = Math.min(...data.price),
+        maxPrice = Math.max(...data.price),
+        priceSpan = maxPrice - minPrice;
+
+      // const areaFormatter = (area) => `${area}ft²`;
+      // const priceFormatter = (price) => `${price}$`;
+
+      const wideMediaQuery = 'screen and (min-width: 40rem)';
+
+      // scales
+      const areaScale = respVis.linearScale();
+      const priceScale = respVis.linearScale();
+
+      // points
+      const points = respVis.points().config({
+        categories: data.area,
+        categoryScale: {
+          scale: areaScale,
+          domain: [0, maxArea + areaSpan * 0.2],
+        },
+        values: data.price,
+        valueScale: {
+          scale: priceScale,
+          domain: [0, maxPrice + priceSpan * 0.2],
+        },
+        // transitionDuration: 250,
+        // events: {
+        //   mouseover: (e, d) => hoverBar(d.index, yAxis, xAxis, true),
+        //   mouseout: (e, d) => hoverBar(d.index, yAxis, xAxis, false),
+        // },
+        // responsiveConfigs: {
+        //   [wideMediaQuery]: {
+        //     orientation: respVis.BarOrientation.Vertical,
+        //     events: {
+        //       mouseover: (e, d) => hoverBar(d.index, xAxis, yAxis, true),
+        //       mouseout: (e, d) => hoverBar(d.index, xAxis, yAxis, false),
+        //     },
+        //   },
+        // },
+      });
+
+      // bar labels
+      // const barLabels = withShowLabel(respVis.barLabels()).config({
+      //   attributes: {
+      //     text: {
+      //       'dominant-baseline': 'middle',
+      //       'text-anchor': 'start',
+      //       transform: 'translate(4, 0)',
+      //       'pointer-events': 'none',
+      //     },
+      //   },
+      //   bars: bars,
+      //   labels: values.map(valueFormatter),
+      //   horizontalPosition: respVis.HorizontalPosition.Left,
+      //   verticalPosition: respVis.VerticalPosition.Center,
+      //   transitionDuration: 250,
+      //   responsiveConfigs: {
+      //     [wideMediaQuery]: {
+      //       attributes: {
+      //         text: {
+      //           'dominant-baseline': 'auto',
+      //           'text-anchor': 'middle',
+      //           transform: 'translate(0, -2)',
+      //         },
+      //       },
+      //       horizontalPosition: respVis.HorizontalPosition.Center,
+      //       verticalPosition: respVis.VerticalPosition.Top,
+      //     },
+      //   },
+      // });
+
+      // bottom axis
+      const xAxis = withHighlightTick(withBottomAxis(respVis.group()))
+        .call((axis) =>
+          axis.ticks.config({
+            scale: areaScale,
+            // labelFormatter: areaFormatter,
+          })
+        )
+        .call((axis) =>
+          axis.title.config({
+            text: 'Area [ft²]',
+          })
+        );
+
+      // left axis
+      const yAxis = withHighlightTick(withLeftAxis(respVis.group()))
+        .call((axis) =>
+          axis.ticks.config({
+            scale: priceScale,
+            // labelFormatter: priceFormatter,
+          })
+        )
+        .call((axis) =>
+          axis.title.config({
+            text: 'Price [$]',
+          })
+        );
+
+      const chart = respVis
+        .chart()
+        .root(
+          withPaddingLayout(respVis.group()).config({
+            all: 10,
+            children: [
+              respVis.group().config({
+                attributes: { 'grid-template': '1fr auto / auto 1fr' },
+                children: [
+                  // points
+                  points.config({ attributes: { 'grid-area': '1 / 2 / 2 / 3' } }),
+
+                  // bar Labels
+                  // barLabels.config({ attributes: { 'grid-area': '1 / 2 / 2 / 3' } }),
+
+                  // left axis
+                  yAxis.config({ attributes: { 'grid-area': '1 / 1 / 2 / 2' } }),
+
+                  // bottom axis
+                  xAxis.config({ attributes: { 'grid-area': '2 / 2 / 3 / 3' } }),
+                ],
+              }),
+            ],
+          })
+        )
+        .mount('#chart');
+
+      // function hoverBar(barIndex, categoryAxis, valueAxis, hover) {
+      //   // Clear highlights of wrong axis in case unhighlight never got called
+      //   valueAxis.clearHighlights();
+
+      //   bars.highlightBar(barIndex, hover);
+      //   barLabels.showLabel(barIndex, hover);
+      //   categoryAxis.highlightTick(barIndex, hover);
+
+      //   chart.update(false);
+      // }
+    </script>
+  </body>
+</html>

@@ -86,7 +86,6 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
     selection.append(() => this.selection().node());
-    this.render(false);
     return this;
   }
 

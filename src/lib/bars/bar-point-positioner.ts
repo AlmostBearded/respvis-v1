@@ -1,4 +1,5 @@
 import { utils } from '../core';
+import { IPoints } from '../points';
 import { IBars } from './bar-positioner';
 
 export enum HorizontalPosition {
@@ -11,10 +12,6 @@ export enum VerticalPosition {
   Top = 0,
   Center = 1,
   Bottom = 2,
-}
-
-export interface IPoints {
-  points(): utils.IPosition[];
 }
 
 export interface IBarPointPositionerConfig {
