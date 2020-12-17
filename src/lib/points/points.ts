@@ -4,10 +4,13 @@ import {
   clipByItself,
   colors,
   Component,
+  IAttributes,
   IComponent,
   IComponentConfig,
   Rect,
+  setAttributes,
   setUniformNestedAttributes,
+  transitionAttributes,
   utils,
   uuid,
 } from '../core';
@@ -26,8 +29,8 @@ export interface IPointPositionerConfig {
 
 export interface IPointsComponentConfig extends IComponentConfig, IPointPositionerConfig {
   createCircles: (
-    selection: Selection<BaseType, utils.IPosition, any, unknown>
-  ) => Selection<SVGCircleElement, utils.IPosition, any, unknown>;
+    selection: Selection<BaseType, IAttributes, any, unknown>
+  ) => Selection<SVGCircleElement, IAttributes, any, unknown>;
   transitionDuration: number;
   // TODO: Add events
 }
@@ -140,16 +143,18 @@ export class PointsComponent extends Component<IPointsComponentConfig> implement
 
     const config = this.activeConfig();
 
+    const attributes: IAttributes[] = this._pointPositioner
+      .points()
+      .map((center) => ({ cx: center.x, cy: center.y, r: 0 }));
+
     const circlesSelection = this.selection()
       .selectAll<SVGElement, utils.IPosition>('circle')
-      .data(this._pointPositioner.points())
+      .data(attributes)
       .join(config.createCircles);
 
-    const circlesSelectionOrTransition =
-      animated && config.transitionDuration > 0
-        ? circlesSelection.transition().duration(config.transitionDuration)
-        : circlesSelection;
-    circlesSelectionOrTransition.call(setCircleCenters);
+    if (animated && config.transitionDuration > 0)
+      circlesSelection.transition().duration(config.transitionDuration).call(transitionAttributes);
+    else circlesSelection.call(setAttributes);
 
     this.selection().datum(config.attributes).call(setUniformNestedAttributes).datum(null);
 
@@ -165,20 +170,14 @@ export function points(): PointsComponent {
   return new PointsComponent();
 }
 
-export function setCircleCenters(
-  selectionOrTransition: SelectionOrTransition<SVGElement, utils.IPosition, any, unknown>
-) {
-  selectionOrTransition.attr('cx', (d) => d.x).attr('cy', (d) => d.y);
-}
-
 export function createCircles(
-  selection: Selection<BaseType, utils.IPosition, SVGElement, unknown>
-): Selection<SVGCircleElement, utils.IPosition, SVGElement, unknown> {
-  return selection.append('circle').call(setCircleCenters);
+  selection: Selection<BaseType, IAttributes, SVGElement, unknown>
+): Selection<SVGCircleElement, IAttributes, SVGElement, unknown> {
+  return selection.append('circle').call(setAttributes);
 }
 
 export function createClippedCircles(
-  selection: Selection<BaseType, utils.IPosition, SVGElement, unknown>
-): Selection<SVGCircleElement, utils.IPosition, SVGElement, unknown> {
-  return selection.append('circle').call(clipByItself).call(setCircleCenters);
+  selection: Selection<BaseType, IAttributes, SVGElement, unknown>
+): Selection<SVGCircleElement, IAttributes, SVGElement, unknown> {
+  return selection.append('circle').call(clipByItself).call(setAttributes);
 }
