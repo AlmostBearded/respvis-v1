@@ -1,18 +1,13 @@
 import { Selection, BaseType } from 'd3-selection';
-import {
-  applyAttributes,
-  Attributes,
-  deepExtendWithConfig,
-  IDictionary,
-  nullFunction,
-} from './utils';
+import { INestedAttributes, setUniformNestedAttributes, _setNestedAttributes } from './attributes';
+import { deepExtendWithConfig, IDictionary, nullFunction } from './utils';
 
 export interface IComponentEventData {
   component: IComponent<IComponentConfig>;
 }
 
 export interface IComponentConfig {
-  attributes: Attributes;
+  attributes: INestedAttributes;
   responsiveConfigs: IDictionary<Partial<this>>;
   parseConfig: (previousConfig: this, newConfig: this) => void;
   applyConfig: (previousConfig: this, newConfig: this) => void;
@@ -141,7 +136,11 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
     newConfig.parseConfig(this._activeConfig, newConfig);
     newConfig.applyConfig(this._activeConfig, newConfig);
 
-    this._selection.call(applyAttributes, newConfig.attributes);
+    const node = this._selection.node();
+    this._selection
+      .datum(newConfig.attributes)
+      .call(setUniformNestedAttributes)
+      .datum(null);
 
     this._activeConfig = newConfig;
 

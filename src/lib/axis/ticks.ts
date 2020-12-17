@@ -6,10 +6,10 @@ import {
   IComponent,
   IComponentConfig,
   IComponentEventData,
-  ITextComponentConfig,
+  setUniformNestedAttributes,
   utils,
+  _setNestedAttributes,
 } from '../core';
-import { applyLayoutTransforms } from '../core/layout/layout';
 import { IStringable } from '../core/utils';
 
 export enum Position {
@@ -91,6 +91,37 @@ export class TicksComponent extends Component<ITicksComponentConfig> implements 
         applyConfig: (previousConfig: ITicksComponentConfig, newConfig: ITicksComponentConfig) => {
           TicksComponent.clearEventListeners(this, previousConfig);
           TicksComponent.setEventListeners(this, newConfig);
+          // Object.keys(previousConfig.events)
+          //   .filter(
+          //     (typenames) =>
+          //       !Object.keys(newConfig.events).includes(typenames) ||
+          //       newConfig.events[typenames] !== previousConfig.events[typenames]
+          //   )
+          //   .forEach((typenames) => this.selection().on(typenames, null));
+          // Object.keys(newConfig.events)
+          //   .filter(
+          //     (typenames) =>
+          //       !Object.keys(previousConfig.events).includes(typenames) ||
+          //       newConfig.events[typenames] !== previousConfig.events[typenames]
+          //   )
+          //   .forEach((typenames) =>
+          //     this.selection().on(typenames, (e: Event) => {
+          //       if (e.target instanceof SVGPathElement) {
+          //         // Domain element
+          //       } else if (
+          //         e.target instanceof SVGLineElement ||
+          //         e.target instanceof SVGTextElement
+          //       ) {
+          //         const tickElement = e.target.parentNode!;
+          //         const indexOf = Array.prototype.indexOf;
+          //         const tickIndex = indexOf.call(tickElement.parentNode!.children, tickElement);
+          //         newConfig.events[typenames](e, {
+          //           component: this,
+          //           tickIndex: tickIndex - 1, // -1 because the domain element is always the first child
+          //         });
+          //       }
+          //     })
+          //   );
           this._render(newConfig, true);
         },
       },
@@ -113,7 +144,9 @@ export class TicksComponent extends Component<ITicksComponentConfig> implements 
           config.labelFormatter
         )
       )
-      .call(utils.applyAttributes, config.attributes);
+      .datum(config.attributes)
+      .call(setUniformNestedAttributes)
+      .datum(null);
     return this;
   }
 

@@ -7,6 +7,8 @@ import {
   utils,
   chroma,
   IComponentEventData,
+  setUniformNestedAttributes,
+  _setNestedAttributes,
 } from '../core';
 import {
   IStackedBarPositioner,
@@ -129,7 +131,10 @@ export class StackedBarsComponent
         );
       });
 
-    this.selection().call(utils.applyAttributes, this.activeConfig().attributes);
+    this.selection()
+      .datum(this.activeConfig().attributes)
+      .call(setUniformNestedAttributes)
+      .datum(null);
 
     return this;
   }

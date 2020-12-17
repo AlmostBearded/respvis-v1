@@ -5,18 +5,18 @@ import {
   IComponentEventData,
   utils,
   chainedTransition,
+  setUniformNestedAttributes,
+  _setNestedAttributes,
 } from '../core';
 import {
   BarPointPositioner,
   HorizontalPosition,
   IBarPointPositioner,
   IBarPointPositionerConfig,
-  IPoints,
   VerticalPosition,
 } from './bar-point-positioner';
 import { Selection, BaseType, create } from 'd3-selection';
-import { IBarPositioner } from './bar-positioner';
-import { active } from 'd3-transition';
+import { IPoints } from '../points';
 
 export interface IBarLabelsConfig extends IComponentConfig, IBarPointPositionerConfig {
   labels: utils.IStringable[];
@@ -95,7 +95,9 @@ export class BarLabelsComponent extends Component<IBarLabelsConfig> implements I
         this.activeConfig().labels,
         animated ? this.activeConfig().transitionDuration : 0
       )
-      .call(utils.applyAttributes, this.activeConfig().attributes);
+      .datum(this.activeConfig().attributes)
+      .call(setUniformNestedAttributes)
+      .datum(null);
     return this;
   }
 

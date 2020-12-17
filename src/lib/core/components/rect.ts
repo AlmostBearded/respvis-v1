@@ -1,10 +1,15 @@
-import { Selection, BaseType, create } from 'd3-selection';
+import { Selection, BaseType, create, select } from 'd3-selection';
 import { Component, IComponent, IComponentConfig } from '../component';
-import { applyAttributes, Attributes, ISize, nullFunction } from '../utils';
-import chroma from 'chroma-js';
+import { ISize } from '../utils';
 import { v4 as uuidv4 } from 'uuid';
-import { utils } from '..';
 import { chainedTransition } from '../chained-transition';
+import {
+  IAttributes,
+  setAttributes,
+  setUniformNestedAttributes,
+  transitionAttributes,
+  _setNestedAttributes,
+} from '../attributes';
 
 // TODO: Maybe this component should be called ClippedRect?
 
@@ -58,7 +63,9 @@ export class RectComponent extends Component<IRectComponentConfig> implements IR
         },
         0
       )
-      .call(applyAttributes, config.attributes);
+      .datum(config.attributes)
+      .call(setUniformNestedAttributes)
+      .datum(null);
     return this;
   }
 
@@ -73,7 +80,7 @@ export function rect(): RectComponent {
 
 export function renderClippedRect(
   selection: Selection<SVGGElement, unknown, BaseType, unknown>,
-  attributes: Attributes,
+  attributes: IAttributes,
   transitionDuration: number
 ): void {
   let clipId: string;
@@ -87,29 +94,28 @@ export function renderClippedRect(
           enter
             .append('clipPath')
             .attr('id', (clipId = uuidv4()))
-            .call((s) => s.append('rect').call(applyAttributes, attributes))
+            .call((s) => s.append('rect').datum(attributes).call(setAttributes))
         )
 
         .select('rect')
         .each((d, i, groups) => {
-          chainedTransition(groups[i])
-            .duration(transitionDuration)
-            .call(applyAttributes, attributes);
+          select(groups[i]).datum(attributes);
+          chainedTransition(groups[i]).duration(transitionDuration).call(transitionAttributes);
         })
     )
     .call((s: any) =>
-      (s.selectChildren('rect') as Selection<SVGRectElement, unknown, BaseType, unknown>)
+      (s.selectChildren('rect') as Selection<SVGRectElement, IAttributes, BaseType, unknown>)
         .data([null])
         .join((enter) =>
           enter
             .append('rect')
-            .attr('clip-path', `url(#${clipId})`)
-            .call(applyAttributes, attributes)
+            .call((rect) =>
+              rect.attr('clip-path', `url(#${clipId})`).datum(attributes).call(setAttributes)
+            )
         )
         .each((d, i, groups) => {
-          chainedTransition(groups[i])
-            .duration(transitionDuration)
-            .call(applyAttributes, attributes);
+          select(groups[i]).datum(attributes);
+          chainedTransition(groups[i]).duration(transitionDuration).call(transitionAttributes);
         })
     );
 }

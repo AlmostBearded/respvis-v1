@@ -8,6 +8,8 @@ import {
   IComponentConfig,
   chroma,
   IComponentEventData,
+  setUniformNestedAttributes,
+  _setNestedAttributes,
 } from '../core';
 import {
   BarPositioner,
@@ -99,8 +101,10 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
         this._barPositioner.bars(),
         animated ? this.activeConfig().transitionDuration : 0
       )
-      .call(utils.applyAttributes, this.activeConfig().attributes);
-      
+      .datum(this.activeConfig().attributes)
+      .call(setUniformNestedAttributes)
+      .datum(null);
+
     return this;
   }
 

@@ -7,6 +7,7 @@ import {
   IComponent,
   IComponentConfig,
   Rect,
+  setUniformNestedAttributes,
   utils,
   uuid,
 } from '../core';
@@ -150,7 +151,7 @@ export class PointsComponent extends Component<IPointsComponentConfig> implement
         : circlesSelection;
     circlesSelectionOrTransition.call(setCircleCenters);
 
-    this.selection().call(utils.applyAttributes, config.attributes);
+    this.selection().datum(config.attributes).call(setUniformNestedAttributes).datum(null);
 
     return this;
   }

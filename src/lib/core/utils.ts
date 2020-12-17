@@ -1,6 +1,6 @@
 import { Primitive } from 'd3-array';
-import { BaseType, Selection } from 'd3-selection';
-import { Transition } from 'd3-transition';
+import { BaseType, select, Selection } from 'd3-selection';
+import { SelectionOrTransition, Transition } from 'd3-transition';
 import { applyLayoutTransforms } from './layout/layout';
 
 export function nullFunction() {}
@@ -62,40 +62,12 @@ export function calculateSpecificity(selector: string): number {
   return 100 * a + 10 * b + c;
 }
 
-export type Attributes = {
-  [name: string]: string | number | boolean | Attributes | null;
-};
-
-export function applyAttributes(
-  selection:
-    | Selection<BaseType, unknown, BaseType, unknown>
-    | Transition<BaseType, unknown, BaseType, unknown>,
-  attributes: Attributes
-) {
-  const selectors: string[] = [];
-
-  for (const name in attributes) {
-    const value = attributes[name];
-    if (value === null) selection.attr(name, null);
-    else if (typeof value === 'object') {
-      // → name = child selector, value = child attributes
-      selectors.push(name);
-    } else selection.attr(name, value);
-  }
-
-  selectors
-    .sort((a, b) => calculateSpecificity(a) - calculateSpecificity(b))
-    .forEach((selector) =>
-      selection.selectAll<BaseType, unknown>(selector).call(applyAttributes, attributes[selector])
-    );
-}
-
 export function deepExtend(target: any, ...args: any[]) {
   return deepExtendWithConfig({ deleteUndefined: true }, target, ...args);
 }
 
 export function deepExtendWithConfig(
-  config: { deleteUndefined: boolean, },
+  config: { deleteUndefined: boolean },
   target: any,
   ...args: any[]
 ) {

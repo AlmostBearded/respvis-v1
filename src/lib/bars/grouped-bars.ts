@@ -7,6 +7,8 @@ import {
   Rect,
   chroma,
   IComponentEventData,
+  setUniformNestedAttributes,
+  _setNestedAttributes,
 } from '../core';
 import {
   IGroupedBarPositioner,
@@ -128,8 +130,10 @@ export class GroupedBarsComponent
         );
       });
 
-    this.selection().call(utils.applyAttributes, this.activeConfig().attributes);
-
+    this.selection()
+      .datum(this.activeConfig().attributes)
+      .call(setUniformNestedAttributes)
+      .datum(null);
     return this;
   }
 

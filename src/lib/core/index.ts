@@ -9,6 +9,7 @@ export { chroma };
 export * as uuid from 'uuid';
 
 export * from './clip';
+export * from './attributes';
 
 export * from './chart';
 
