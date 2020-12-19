@@ -8,9 +8,17 @@ export default function withSwatchLegend(group) {
     colors: [],
     parseConfig: (previousConfig, newConfig) => {
       legend.swatches = newConfig.labels.map((label, i) => {
-        const swatch = legend.swatches?.[i] || withSwatch(respVis.group());
-        swatch.rect.config({ attributes: { fill: newConfig.colors[i] } });
-        swatch.label.config({ text: label });
+        let swatch = legend.swatches?.[i];
+        if (!swatch) {
+          swatch = withSwatch(respVis.group());
+          swatch.rect.config({ attributes: { fill: newConfig.colors[i] } });
+          swatch.label.config({ text: label });
+        } else {
+          if (previousConfig.colors[i] !== newConfig.colors[i])
+            swatch.rect.config({ attributes: { fill: newConfig.colors[i] } });
+          if (previousConfig.labels[i] !== newConfig.labels[i])
+            swatch.label.config({ text: label });
+        }
         return swatch;
       });
       newConfig.children = legend.swatches;
