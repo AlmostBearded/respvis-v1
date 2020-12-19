@@ -14,7 +14,7 @@ import {
   utils,
   uuid,
 } from '../core';
-import { IScale, IScaleConfig, linearScale, pointScale } from './scales';
+import { IScaleConfig, linearScale, pointScale } from '../core';
 
 export interface IPoints {
   points(): utils.IPosition[];
@@ -50,9 +50,9 @@ export class PointPositioner implements IPointPositioner {
   constructor() {
     this._config = {
       categories: [],
-      categoryScale: { scale: linearScale(), domain: [] },
+      categoryScale: { scale: linearScale<number>(), domain: [] },
       values: [],
-      valueScale: { scale: linearScale(), domain: [] },
+      valueScale: { scale: linearScale<number>(), domain: [] },
     };
   }
 
@@ -99,9 +99,9 @@ export class PointsComponent extends Component<IPointsComponentConfig> implement
       create<SVGElement>('svg:g').classed('points', true),
       {
         categories: [],
-        categoryScale: { scale: pointScale(), domain: [] },
+        categoryScale: { scale: linearScale<number>(), domain: [] },
         values: [],
-        valueScale: { scale: linearScale(), domain: [] },
+        valueScale: { scale: linearScale<number>(), domain: [] },
         attributes: {
           fill: PointsComponent.defaultColor,
           stroke: '#232323',
@@ -148,7 +148,7 @@ export class PointsComponent extends Component<IPointsComponentConfig> implement
       .map((center) => ({ cx: center.x, cy: center.y, r: 0 }));
 
     const circlesSelection = this.selection()
-      .selectAll<SVGElement, utils.IPosition>('circle')
+      .selectAll<SVGElement, IAttributes>('circle')
       .data(attributes)
       .join(config.createCircles);
 
@@ -164,6 +164,10 @@ export class PointsComponent extends Component<IPointsComponentConfig> implement
   points(): utils.IPosition[] {
     return this._pointPositioner.points();
   }
+}
+
+export function pointPositioner(): PointPositioner {
+  return new PointPositioner();
 }
 
 export function points(): PointsComponent {

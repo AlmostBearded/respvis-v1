@@ -13,7 +13,7 @@ export default function withHighlightBar(bars) {
       respVis.utils.deepExtend(newConfig.attributes, {
         '.bar[highlighted=true]': {
           fill: respVis.chroma.hex(newConfig.color).brighten(0.5).hex(),
-          'stroke-width': 4,
+          'stroke-width': 1.5,
         },
       });
       c.parseConfig(previousConfig, newConfig);

@@ -16,9 +16,9 @@ export default function withHighlightBar(groupedBars) {
         newConfig.attributes,
         ...newConfig.colors.map((c, i) => ({
           // set attributes of individual bars when highlighted
-          [`.bar:nth-child(${i + 1})[highlighted=true]`]: {
+          [`.bar:nth-of-type(${i + 1})[highlighted=true]`]: {
             fill: respVis.chroma.hex(c).brighten(0.5).hex(),
-            'stroke-width': 4,
+            'stroke-width': 1.5,
           },
         }))
       );

@@ -56,7 +56,7 @@ export function transitionUniformAttributes(
   transition.call(_transitionAttributes, transition.selection().datum());
 }
 
-export function _setNestedAttributes(
+function _setNestedAttributes(
   selection: Selection<BaseType, unknown, BaseType, unknown>,
   attributes: INestedAttributes
 ) {

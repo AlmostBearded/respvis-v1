@@ -8,7 +8,6 @@ import {
   setAttributes,
   setUniformNestedAttributes,
   transitionAttributes,
-  _setNestedAttributes,
 } from '../attributes';
 
 // TODO: Maybe this component should be called ClippedRect?
@@ -28,7 +27,7 @@ export class RectComponent extends Component<IRectComponentConfig> implements IR
         attributes: {
           fill: '#999999',
           stroke: '#232323',
-          'stroke-width': 4,
+          'stroke-width': 1,
         },
         responsiveConfigs: {},
         events: {},
@@ -48,7 +47,6 @@ export class RectComponent extends Component<IRectComponentConfig> implements IR
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
     selection.append(() => this.selection().node());
-    this.render(false);
     return this;
   }
 

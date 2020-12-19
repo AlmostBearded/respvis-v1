@@ -10,6 +10,7 @@ export * as uuid from 'uuid';
 
 export * from './clip';
 export * from './attributes';
+export * from './scales';
 
 export * from './chart';
 

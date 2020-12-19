@@ -31,33 +31,34 @@
       import withHighlightLegendSwatch from './components/legend/with-highlight-swatch.js';
       import withDisableLegendSwatch from './components/legend/with-disable-swatch.js';
 
-      var categories = ['Ken', 'Barbie', 'Hank', 'Fred', 'Susie'];
-      var expenses = ['Rent', 'Food', 'Utilities', 'Fun'];
-      var values = [
-        [600, 150, 50, 20],
-        [500, 125, 80, 50],
-        [700, 200, 25, 25],
-        [550, 175, 75, 100],
-        [650, 160, 60, 30],
-      ];
+      // data
+      const categories = ['Ken', 'Barbie', 'Hank', 'Fred', 'Susie'],
+        expenses = ['Rent', 'Food', 'Utilities', 'Fun'],
+        values = [
+          [600, 150, 50, 20],
+          [500, 125, 80, 50],
+          [700, 200, 25, 25],
+          [550, 175, 75, 100],
+          [650, 160, 60, 30],
+        ],
+        maxValue = Math.max(...values.map((stackValues) => stackValues.reduce((a, b) => a + b)));
 
+      // formatters
       var valueFormatter = (value) => `${value}k`;
 
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
-      function highlightBar(categoryIndex, barIndex, highlight) {
-        bars
-          .selection()
-          .select(`.bar-stack:nth-of-type(${categoryIndex + 1}) .bar:nth-of-type(${barIndex + 1})`)
-          .attr('highlighted', highlight);
-        bars.config({});
-      }
+      // scales
+      const personScale = respVis.bandScale();
+      const expenseScale = respVis.linearScale();
 
       // bars
       const barColors = respVis.StackedBarsComponent.defaultColors;
       const bars = withHighlightBar(respVis.stackedBars()).config({
         categories: categories,
+        categoryScale: { scale: personScale, padding: 0.1 },
         values: values,
+        valueScale: { scale: expenseScale, domain: [0, maxValue] },
         orientation: respVis.BarOrientation.Horizontal,
         transitionDuration: 250,
         events: {
@@ -106,11 +107,11 @@
         .call((axis) =>
           axis.ticks.config({
             attributes: { cursor: 'auto' },
-            scale: bars.valuesScale(),
+            scale: expenseScale,
             labelFormatter: valueFormatter,
             responsiveConfigs: {
               [wideMediaQuery]: {
-                scale: bars.categoriesScale(),
+                scale: personScale,
                 labelFormatter: (value) => value.toString(),
                 attributes: { cursor: 'default' },
                 events: {
@@ -133,14 +134,14 @@
         .call((axis) =>
           axis.ticks.config({
             attributes: { cursor: 'default' },
-            scale: bars.categoriesScale(),
+            scale: personScale,
             events: {
               mouseover: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, true),
               mouseout: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, false),
             },
             responsiveConfigs: {
               [wideMediaQuery]: {
-                scale: bars.valuesScale(),
+                scale: expenseScale,
                 labelFormatter: valueFormatter,
                 events: {
                   // unregister events

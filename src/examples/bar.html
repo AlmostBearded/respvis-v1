@@ -28,16 +28,23 @@
       import withHighlightBar from './components/bars/with-highlight-bar.js';
       import withShowLabel from './components/bar-labels/with-show-label.js';
 
-      var categories = ['Vienna', 'Graz', 'Linz', 'Salzburg', 'Innsbruck', 'Klagenfurt', 'Villach'];
-      var values = [1691, 222, 205, 153, 132, 91, 59];
-      var valueFormatter = (value) => `${value}k`;
+      var categories = ['Vienna', 'Graz', 'Linz', 'Salzburg', 'Innsbruck', 'Klagenfurt', 'Villach'],
+        values = [1691, 222, 205, 153, 132, 91, 59],
+        maxValue = Math.max(...values),
+        valueFormatter = (value) => `${value}k`;
 
       const wideMediaQuery = 'screen and (min-width: 40rem)';
+
+      // scales
+      const cityScale = respVis.bandScale();
+      const populationScale = respVis.linearScale();
 
       // bars
       const bars = withHighlightBar(respVis.bars()).config({
         categories: categories,
+        categoryScale: { scale: cityScale, padding: 0.1 },
         values: values,
+        valueScale: { scale: populationScale, domain: [0, maxValue] },
         orientation: respVis.BarOrientation.Horizontal,
         transitionDuration: 250,
         events: {
@@ -76,7 +83,7 @@
               text: {
                 'dominant-baseline': 'auto',
                 'text-anchor': 'middle',
-                transform: 'translate(0, -2)',
+                transform: 'translate(0, -4)',
               },
             },
             horizontalPosition: respVis.HorizontalPosition.Center,
@@ -89,7 +96,7 @@
       const xAxis = withHighlightTick(withBottomAxis(respVis.group()))
         .call((axis) =>
           axis.ticks.config({
-            scale: bars.valuesScale(),
+            scale: populationScale,
             labelFormatter: valueFormatter,
             attributes: {
               text: {
@@ -100,7 +107,7 @@
             },
             responsiveConfigs: {
               [wideMediaQuery]: {
-                scale: bars.categoriesScale(),
+                scale: cityScale,
                 labelFormatter: (value) => `${value}`,
                 attributes: { text: { transform: 'translate(0, 7)', 'text-anchor': 'middle' } },
               },
@@ -118,9 +125,9 @@
       const yAxis = withHighlightTick(withLeftAxis(respVis.group()))
         .call((axis) =>
           axis.ticks.config({
-            scale: bars.categoriesScale(),
+            scale: cityScale,
             responsiveConfigs: {
-              [wideMediaQuery]: { scale: bars.valuesScale(), labelFormatter: valueFormatter },
+              [wideMediaQuery]: { scale: populationScale, labelFormatter: valueFormatter },
             },
           })
         )

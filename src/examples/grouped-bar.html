@@ -32,16 +32,18 @@
       import withDisableLegendSwatch from './components/legend/with-disable-swatch.js';
 
       // data
-      var categories = ['Vienna', 'Rome', 'Paris', 'Berlin', 'Amsterdam'];
-      var years = ['2018', '2019', '2020'];
-      var values = [
-        [23, 27, 29],
-        [15, 13, 16],
-        [43, 55, 70],
-        [30, 24, 28],
-        [12, 14, 18],
-      ];
+      const categories = ['Vienna', 'Rome', 'Paris', 'Berlin', 'Amsterdam'],
+        years = ['2018', '2019', '2020'],
+        values = [
+          [23, 27, 29],
+          [15, 13, 16],
+          [43, 55, 70],
+          [30, 24, 28],
+          [12, 14, 18],
+        ],
+        maxValue = Math.max(...values.flat());
 
+      // formatters
       var valueFormatter = (value) => `${value}k`;
 
       // to toggle subcategories
@@ -50,11 +52,17 @@
       // media query for wide screens
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
+      // scales
+      const cityScale = respVis.bandScale();
+      const revenueScale = respVis.linearScale();
+
       // bars
       const barColors = respVis.GroupedBarsComponent.defaultColors;
       const bars = withHighlightBar(respVis.groupedBars()).config({
         categories: categories,
+        categoryScale: { scale: cityScale, padding: 0.1 },
         values: values,
+        valueScale: { scale: revenueScale, domain: [0, maxValue] },
         orientation: respVis.BarOrientation.Horizontal,
         colors: barColors,
         transitionDuration: 250,
@@ -95,7 +103,7 @@
               text: {
                 'dominant-baseline': 'auto',
                 'text-anchor': 'middle',
-                transform: 'translate(0, -2)',
+                transform: 'translate(0, -4)',
               },
             },
           },
@@ -124,11 +132,11 @@
         .call((axis) =>
           axis.ticks.config({
             attributes: { cursor: 'auto' },
-            scale: bars.valuesScale(),
+            scale: revenueScale,
             labelFormatter: valueFormatter,
             responsiveConfigs: {
               [wideMediaQuery]: {
-                scale: bars.categoriesScale(),
+                scale: cityScale,
                 labelFormatter: (value) => value.toString(),
                 attributes: { cursor: 'default' },
                 events: {
@@ -150,7 +158,7 @@
       const yAxis = withHighlightTick(withLeftAxis(respVis.group()))
         .call((axis) =>
           axis.ticks.config({
-            scale: bars.categoriesScale(),
+            scale: cityScale,
             attributes: { cursor: 'default' },
             events: {
               mouseover: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, true),
@@ -158,7 +166,7 @@
             },
             responsiveConfigs: {
               [wideMediaQuery]: {
-                scale: bars.valuesScale(),
+                scale: revenueScale,
                 labelFormatter: valueFormatter,
                 attributes: { cursor: 'auto' },
                 events: {

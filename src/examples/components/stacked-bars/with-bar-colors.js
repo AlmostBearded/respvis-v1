@@ -12,7 +12,7 @@ export default function withBarColors(stackedBars) {
         newConfig.attributes,
         ...newConfig.colors.map((c, i) => ({
           // set fill attribute of individual bars
-          [`.bar:nth-child(${i + 1})`]: {
+          [`.bar:nth-of-type(${i + 1})`]: {
             fill: c,
           },
         }))
