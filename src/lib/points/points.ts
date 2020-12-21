@@ -1,5 +1,4 @@
-import { BaseType, create, EnterElement, select, selection, Selection } from 'd3-selection';
-import { SelectionOrTransition } from 'd3-transition';
+import { BaseType, create, Selection } from 'd3-selection';
 import {
   clipByItself,
   colors,
@@ -12,20 +11,14 @@ import {
   setUniformNestedAttributes,
   transitionAttributes,
   utils,
-  uuid,
 } from '../core';
-import { IScaleConfig, linearScale, pointScale } from '../core';
-
-export interface IPoints {
-  points(): utils.IPosition[];
-}
-
-export interface IPointPositionerConfig {
-  categories: any[];
-  categoryScale: IScaleConfig<any, number, number>;
-  values: number[];
-  valueScale: IScaleConfig<number, number, number>;
-}
+import { linearScale } from '../core';
+import {
+  IPointPositioner,
+  IPointPositionerConfig,
+  IPoints,
+  PointPositioner,
+} from './point-positioner';
 
 export interface IPointsComponentConfig extends IComponentConfig, IPointPositionerConfig {
   createCircles: (
@@ -35,59 +28,7 @@ export interface IPointsComponentConfig extends IComponentConfig, IPointPosition
   // TODO: Add events
 }
 
-export interface IPointPositioner extends IPoints {
-  config(config: IPointPositionerConfig): this;
-  config(): IPointPositionerConfig;
-  fitInSize(size: utils.ISize): this;
-}
-
 export interface IPointsComponent extends IComponent<IPointsComponentConfig>, IPoints {}
-
-export class PointPositioner implements IPointPositioner {
-  private _config: IPointPositionerConfig;
-  private _points: utils.IPosition[] = [];
-
-  constructor() {
-    this._config = {
-      categories: [],
-      categoryScale: { scale: linearScale<number>(), domain: [] },
-      values: [],
-      valueScale: { scale: linearScale<number>(), domain: [] },
-    };
-  }
-
-  config(config: IPointPositionerConfig): this;
-  config(): IPointPositionerConfig;
-  config(config?: IPointPositionerConfig): any {
-    if (config === undefined) return this._config;
-    utils.deepExtend(this._config, config);
-    this._config.categoryScale.scale.domain(this._config.categoryScale.domain);
-    this._config.valueScale.scale.domain(this._config.valueScale.domain);
-    return this;
-  }
-
-  fitInSize(size: utils.ISize): this {
-    this._config.categoryScale.scale.range([0, size.width]);
-    this._config.valueScale.scale.range([size.height, 0]);
-
-    this._points = [];
-
-    for (let i = 0; i < this._config.categories.length; ++i) {
-      const c = this._config.categories[i],
-        v = this._config.values[i];
-      this._points.push({
-        x: this._config.categoryScale.scale(c)!,
-        y: this._config.valueScale.scale(v)!,
-      });
-    }
-
-    return this;
-  }
-
-  points(): utils.IPosition[] {
-    return this._points;
-  }
-}
 
 export class PointsComponent extends Component<IPointsComponentConfig> implements IPointsComponent {
   private _pointPositioner: IPointPositioner = new PointPositioner();
@@ -164,10 +105,6 @@ export class PointsComponent extends Component<IPointsComponentConfig> implement
   points(): utils.IPosition[] {
     return this._pointPositioner.points();
   }
-}
-
-export function pointPositioner(): PointPositioner {
-  return new PointPositioner();
 }
 
 export function points(): PointsComponent {

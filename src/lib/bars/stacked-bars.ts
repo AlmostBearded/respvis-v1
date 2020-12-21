@@ -7,24 +7,19 @@ import {
   utils,
   IComponentEventData,
   setUniformNestedAttributes,
-  IBandScaleConfig,
-  IScaleConfig,
   IAttributes,
-  bandScale,
-  linearScale,
   transitionAttributes,
   setAttributes,
 } from '../core';
 import { Selection, BaseType, create } from 'd3-selection';
-import { BarOrientation, createBars, IBars } from './bars';
-
-export interface IStackedBarPositionerConfig {
-  categories: string[];
-  categoryScale: IBandScaleConfig;
-  values: number[][];
-  valueScale: IScaleConfig<number, number, number>;
-  orientation: BarOrientation;
-}
+import { createBars } from './bars';
+import {
+  IStackedBarPositioner,
+  IStackedBarPositionerConfig,
+  StackedBarPositioner,
+  DEFAULT_STACKED_BAR_POSITIONER_CONFIG,
+} from './stacked-bar-positioner';
+import { IBars } from './bar-positioner';
 
 export interface IStackedBarsComponentConfig extends IComponentConfig, IStackedBarPositionerConfig {
   createBars: (
@@ -44,90 +39,7 @@ export interface IStackedBarsEventData extends IComponentEventData {
   barStackElement: SVGGElement;
 }
 
-export interface IStackedBarPositioner extends IBars {
-  config(config: IStackedBarPositionerConfig): this;
-  config(): IStackedBarPositionerConfig;
-  fitInSize(size: utils.ISize): this;
-}
-
 export interface IStackedBarsComponent extends IComponent<IStackedBarsComponentConfig>, IBars {}
-
-const defaultStackedBarPositionerConfig: IStackedBarPositionerConfig = {
-  categories: [],
-  categoryScale: { scale: bandScale(), domain: [], padding: 0.1 },
-  values: [],
-  valueScale: { scale: linearScale<number>(), domain: [] },
-  orientation: BarOrientation.Vertical,
-};
-
-export class StackedBarPositioner implements IStackedBarPositioner {
-  private _config: IStackedBarPositionerConfig;
-  private _bars: Rect[] = [];
-
-  constructor() {
-    this._config = defaultStackedBarPositionerConfig;
-  }
-
-  config(config: IStackedBarPositionerConfig): this;
-  config(): IStackedBarPositionerConfig;
-  config(config?: IStackedBarPositionerConfig): any {
-    if (config === undefined) return this._config;
-    utils.deepExtend(this._config, config);
-    this._config.categoryScale.scale
-      .domain(this._config.categories)
-      .padding(this._config.categoryScale.padding);
-    this._config.valueScale.scale.domain(this._config.valueScale.domain);
-    return this;
-  }
-
-  fitInSize(size: utils.ISize): this {
-    const categoryScale = this._config.categoryScale.scale,
-      valueScale = this._config.valueScale.scale;
-
-    if (this._config.orientation === BarOrientation.Vertical) {
-      categoryScale.range([0, size.width]);
-      valueScale.range([size.height, 0]);
-    } else if (this._config.orientation === BarOrientation.Horizontal) {
-      categoryScale.range([0, size.height]);
-      valueScale.range([0, size.width]);
-    }
-
-    this._bars = [];
-
-    for (let i = 0; i < this._config.categories.length; ++i) {
-      const subcategoryValues = this._config.values[i];
-      let sum = 0;
-      for (let j = 0; j < subcategoryValues.length; ++j) {
-        const c = this._config.categories[i];
-        const v = subcategoryValues[j];
-
-        if (this._config.orientation === BarOrientation.Vertical) {
-          this._bars.push({
-            x: categoryScale(c)!,
-            y: -sum + Math.min(valueScale(0)!, valueScale(v)!),
-            width: categoryScale.bandwidth(),
-            height: Math.abs(valueScale(0)! - valueScale(v)!),
-          });
-          sum += this._bars[this._bars.length - 1].height;
-        } else if (this._config.orientation === BarOrientation.Horizontal) {
-          this._bars.push({
-            x: sum + Math.min(valueScale(0)!, valueScale(v)!),
-            y: categoryScale(c)!,
-            width: Math.abs(valueScale(0)! - valueScale(v)!),
-            height: categoryScale.bandwidth(),
-          });
-          sum += this._bars[this._bars.length - 1].width;
-        }
-      }
-    }
-
-    return this;
-  }
-
-  bars(): Rect[] {
-    return this._bars;
-  }
-}
 
 export class StackedBarsComponent
   extends Component<IStackedBarsComponentConfig>
@@ -161,7 +73,7 @@ export class StackedBarsComponent
     super(
       create<SVGGElement>('svg:g').classed('stacked-bars', true),
       {
-        ...defaultStackedBarPositionerConfig,
+        ...DEFAULT_STACKED_BAR_POSITIONER_CONFIG,
         createBarStacks: createBarStacks,
         createBars: createBars,
         transitionDuration: 0,
@@ -230,10 +142,6 @@ export class StackedBarsComponent
   bars(): Rect[] {
     return this._barPositioner.bars();
   }
-}
-
-export function stackedBarPositioner(): StackedBarPositioner {
-  return new StackedBarPositioner();
 }
 
 export function stackedBars(): StackedBarsComponent {

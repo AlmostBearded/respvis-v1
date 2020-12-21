@@ -4,7 +4,6 @@ import {
   IComponentConfig,
   IComponentEventData,
   utils,
-  chainedTransition,
   setUniformNestedAttributes,
   setAttributes,
   IAttributes,

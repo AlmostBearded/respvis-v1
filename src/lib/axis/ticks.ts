@@ -8,7 +8,6 @@ import {
   IComponentEventData,
   setUniformNestedAttributes,
   utils,
-  _setNestedAttributes,
 } from '../core';
 import { IStringable } from '../core/utils';
 
