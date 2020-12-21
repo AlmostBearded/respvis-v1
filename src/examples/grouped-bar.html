@@ -315,7 +315,7 @@
           colors: barColors.filter((c, i) => subcategoryToggles[i]),
         });
 
-        labels.config({ labels: newValues.flat() });
+        labels.config({ labels: newValues.flat().map(valueFormatter) });
 
         legend.disableSwatch(swatchIndex, !subcategoryToggles[swatchIndex]);
 

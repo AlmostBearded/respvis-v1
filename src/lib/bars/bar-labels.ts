@@ -6,7 +6,9 @@ import {
   utils,
   chainedTransition,
   setUniformNestedAttributes,
-  _setNestedAttributes,
+  setAttributes,
+  IAttributes,
+  transitionAttributes,
 } from '../core';
 import {
   BarPointPositioner,
@@ -19,6 +21,9 @@ import { Selection, BaseType, create } from 'd3-selection';
 import { IPoints } from '../points';
 
 export interface IBarLabelsConfig extends IComponentConfig, IBarPointPositionerConfig {
+  createLabels: (
+    selection: Selection<BaseType, IAttributes, any, any>
+  ) => Selection<SVGGElement, IAttributes, any, any>;
   labels: utils.IStringable[];
   transitionDuration: number;
   events: utils.IDictionary<(event: Event, data: IBarLabelsEventData) => void>;
@@ -65,6 +70,7 @@ export class BarLabelsComponent extends Component<IBarLabelsConfig> implements I
         },
         responsiveConfigs: {},
         events: {},
+        createLabels: createLabels,
         parseConfig: (previousConfig: IBarLabelsConfig, newConfig: IBarLabelsConfig) => {},
         applyConfig: (previousConfig: IBarLabelsConfig, newConfig: IBarLabelsConfig) => {
           BarLabelsComponent.clearEventListeners(this, previousConfig);
@@ -77,27 +83,33 @@ export class BarLabelsComponent extends Component<IBarLabelsConfig> implements I
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
-    if (!this.activeConfig().bars)
-      throw Error('Bar labels require an associated bars config property');
-
     selection.append(() => this.selection().node());
-
-    this.render(false);
-
     return this;
   }
 
   render(animated: boolean): this {
+    const config = this.activeConfig();
+
+    const attributes: IAttributes[] = this._barPointPositioner
+      .points()
+      .map((point) => ({ transform: `translate(${point.x}, ${point.y})` }));
+
+    const labelsSelection = this.selection()
+      .selectAll('.label')
+      .data(attributes)
+      .join(config.createLabels);
+
+    if (animated && config.transitionDuration > 0)
+      labelsSelection.transition().duration(config.transitionDuration).call(transitionAttributes);
+    else labelsSelection.call(setAttributes);
+
     this.selection()
-      .call(
-        renderBarLabels,
-        this._barPointPositioner.points(),
-        this.activeConfig().labels,
-        animated ? this.activeConfig().transitionDuration : 0
-      )
-      .datum(this.activeConfig().attributes)
-      .call(setUniformNestedAttributes)
-      .datum(null);
+      .selectAll('text')
+      .data(config.labels)
+      .text((d) => d.toString());
+
+    this.selection().datum(config.attributes).call(setUniformNestedAttributes).datum(null);
+
     return this;
   }
 
@@ -110,26 +122,12 @@ export function barLabels(): BarLabelsComponent {
   return new BarLabelsComponent();
 }
 
-export function renderBarLabels(
-  selection: Selection<SVGGElement, unknown, BaseType, unknown>,
-  points: utils.IPosition[],
-  labels: utils.IStringable[],
-  transitionDuration: number
-): void {
-  selection
-    .selectAll<SVGGElement, utils.IPosition>('.label')
-    .data(points)
-    .join((enter) =>
-      enter
-        .append('g')
-        .classed('label', true)
-        .call((groupSelection) => groupSelection.append('text'))
-    )
-    .each((d, i, groups) => {
-      chainedTransition(groups[i])
-        .duration(transitionDuration)
-        .attr('transform', `translate(${d.x}, ${d.y})`)
-        .select('text')
-        .text(labels[i].toString());
-    });
+export function createLabels(
+  selection: Selection<BaseType, IAttributes, SVGElement, unknown>
+): Selection<SVGGElement, IAttributes, SVGElement, unknown> {
+  return selection
+    .append('g')
+    .classed('label', true)
+    .call(setAttributes)
+    .call((g) => g.append('text'));
 }

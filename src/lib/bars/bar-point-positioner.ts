@@ -1,6 +1,6 @@
 import { utils } from '../core';
 import { IPoints } from '../points';
-import { IBars } from './bar-positioner';
+import { IBars } from './bars';
 
 export enum HorizontalPosition {
   Left = 0,

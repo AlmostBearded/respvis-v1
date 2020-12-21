@@ -5,7 +5,6 @@ export default function withDisableSwatch(legend) {
     swatch.rect.config({
       attributes: {
         fill: disable ? respVis.chroma.hex(c).desaturate(4).hex() : c,
-        'stroke-width': disable ? 1 : 4,
       },
     });
 
