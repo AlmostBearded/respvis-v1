@@ -1,4 +1,4 @@
-import { IScaleConfig, linearScale, utils } from '../core';
+import { applyScaleConfig, IScaleConfig, linearScale, utils } from '../core';
 
 export interface IPoints {
   points(): utils.IPosition[];
@@ -35,8 +35,8 @@ export class PointPositioner implements IPointPositioner {
   config(config?: IPointPositionerConfig): any {
     if (config === undefined) return this._config;
     utils.deepExtend(this._config, config);
-    this._config.categoryScale.scale.domain(this._config.categoryScale.domain);
-    this._config.valueScale.scale.domain(this._config.valueScale.domain);
+    applyScaleConfig(this._config.categoryScale);
+    applyScaleConfig(this._config.valueScale);
     return this;
   }
 

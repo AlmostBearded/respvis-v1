@@ -133,10 +133,12 @@
           axis.ticks.config({
             attributes: { cursor: 'auto' },
             scale: revenueScale,
+            tickValues: [0, Math.floor(maxValue / 3), Math.floor((maxValue * 2) / 3), maxValue],
             labelFormatter: valueFormatter,
             responsiveConfigs: {
               [wideMediaQuery]: {
                 scale: cityScale,
+                tickValues: undefined,
                 labelFormatter: (value) => value.toString(),
                 attributes: { cursor: 'default' },
                 events: {

@@ -66,7 +66,7 @@ export class PointsComponent extends Component<IPointsComponentConfig> implement
           PointsComponent.clearEventListeners(this, previousConfig);
           PointsComponent.setEventListeners(this, newConfig);
           this._pointPositioner.config(newConfig);
-          // TODO: delete all points if the renderCircles property changes?
+          // TODO: delete all points if the createCircles property changes?
         },
       },
       Component.mergeConfigs

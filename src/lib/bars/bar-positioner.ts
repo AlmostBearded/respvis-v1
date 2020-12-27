@@ -1,4 +1,13 @@
-import { bandScale, IBandScaleConfig, IScaleConfig, linearScale, Rect, utils } from '../core';
+import {
+  applyBandScaleConfig,
+  applyScaleConfig,
+  bandScale,
+  IBandScaleConfig,
+  IScaleConfig,
+  linearScale,
+  Rect,
+  utils,
+} from '../core';
 
 export enum BarOrientation {
   Vertical,
@@ -44,10 +53,9 @@ export class BarPositioner implements IBarPositioner {
   config(config?: IBarPositionerConfig): any {
     if (config === undefined) return this._config;
     utils.deepExtend(this._config, config);
-    this._config.categoryScale.scale
-      .domain(this._config.categories)
-      .padding(this._config.categoryScale.padding);
-    this._config.valueScale.scale.domain(this._config.valueScale.domain);
+    this._config.categoryScale.domain = this._config.categories;
+    applyBandScaleConfig(this._config.categoryScale);
+    applyScaleConfig(this._config.valueScale);
     return this;
   }
 

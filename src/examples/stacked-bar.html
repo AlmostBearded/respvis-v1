@@ -44,7 +44,7 @@
         maxValue = Math.max(...values.map((stackValues) => stackValues.reduce((a, b) => a + b)));
 
       // formatters
-      var valueFormatter = (value) => `${value}$`;
+      var valueFormatter = (value) => `$${value}`;
 
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
@@ -108,10 +108,12 @@
           axis.ticks.config({
             attributes: { cursor: 'auto' },
             scale: expenseScale,
+            tickValues: [0, maxValue / 2, maxValue],
             labelFormatter: valueFormatter,
             responsiveConfigs: {
               [wideMediaQuery]: {
                 scale: personScale,
+                tickValues: undefined,
                 labelFormatter: (value) => value.toString(),
                 attributes: { cursor: 'default' },
                 events: {

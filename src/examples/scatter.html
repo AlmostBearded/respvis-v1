@@ -27,6 +27,8 @@
       import withHighlightTick from './components/axis/with-highlight-tick.js';
       import data from './data/two-num.js';
 
+      data.price = data.price.map((price) => price / 1000);
+
       const minArea = Math.min(...data.area),
         maxArea = Math.max(...data.area),
         areaSpan = maxArea - minArea;
@@ -34,8 +36,8 @@
         maxPrice = Math.max(...data.price),
         priceSpan = maxPrice - minPrice;
 
-      // const areaFormatter = (area) => `${area}ft²`;
-      // const priceFormatter = (price) => `${price}$`;
+      const areaFormatter = (area) => `${area}ft²`;
+      const priceFormatter = (price) => `$${price}k`;
 
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
@@ -106,12 +108,18 @@
         .call((axis) =>
           axis.ticks.config({
             scale: areaScale,
-            // labelFormatter: areaFormatter,
+            ticks: 3,
+            labelFormatter: areaFormatter,
+            responsiveConfigs: {
+              [wideMediaQuery]: {
+                ticks: 6,
+              },
+            },
           })
         )
         .call((axis) =>
           axis.title.config({
-            text: 'Area [ft²]',
+            text: 'Area',
           })
         );
 
@@ -120,12 +128,12 @@
         .call((axis) =>
           axis.ticks.config({
             scale: priceScale,
-            // labelFormatter: priceFormatter,
+            labelFormatter: priceFormatter,
           })
         )
         .call((axis) =>
           axis.title.config({
-            text: 'Price [$]',
+            text: 'Price',
           })
         );
 

@@ -1,5 +1,14 @@
 import { range } from 'd3-array';
-import { bandScale, IBandScaleConfig, IScaleConfig, linearScale, Rect, utils } from '../core';
+import {
+  applyBandScaleConfig,
+  applyScaleConfig,
+  bandScale,
+  IBandScaleConfig,
+  IScaleConfig,
+  linearScale,
+  Rect,
+  utils,
+} from '../core';
 import { BarOrientation, IBars } from './bar-positioner';
 
 export interface IGroupedBarPositionerConfig {
@@ -39,13 +48,13 @@ export class GroupedBarPositioner implements IGroupedBarPositioner {
   config(config?: IGroupedBarPositionerConfig): any {
     if (config === undefined) return this._config;
     utils.deepExtend(this._config, config);
-    this._config.categoryScale.scale
-      .domain(this._config.categories)
-      .padding(this._config.categoryScale.padding);
-    this._config.subcategoryScale.scale
-      .domain(range(this._config.values[0]?.length || 0))
-      .padding(this._config.subcategoryScale.padding);
-    this._config.valueScale.scale.domain(this._config.valueScale.domain);
+
+    this._config.categoryScale.domain = this._config.categories;
+    this._config.subcategoryScale.domain = range(this._config.values[0]?.length || 0);
+    applyBandScaleConfig(this._config.categoryScale);
+    applyBandScaleConfig(this._config.subcategoryScale);
+    applyScaleConfig(this._config.valueScale);
+
     return this;
   }
 

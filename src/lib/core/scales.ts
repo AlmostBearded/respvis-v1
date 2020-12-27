@@ -11,20 +11,23 @@ import {
   ScaleTime,
 } from 'd3-scale';
 
-export interface IScaleConfig<TDomain extends string | number | Date, TRange, TOutput> {
-  scale: // continuous input and continuous output
+type ScaleAny<TDomain extends string | number | Date, TRange, TOutput> =
+  // continuous input and continuous output
   | ScaleLinear<TRange, TOutput>
-    | ScalePower<TRange, TOutput>
-    | ScaleLogarithmic<TRange, TOutput>
-    | ScaleTime<TRange, TOutput>
-    // continuous input and discrete output
-    | ScaleQuantize<TRange>
-    | ScaleQuantile<TRange>
-    | ScaleThreshold<TDomain, TRange>
-    // discrete input and discrete output
-    | ScaleOrdinal<TDomain, TRange>
-    | ScaleBand<TDomain>
-    | ScalePoint<TDomain>;
+  | ScalePower<TRange, TOutput>
+  | ScaleLogarithmic<TRange, TOutput>
+  | ScaleTime<TRange, TOutput>
+  // continuous input and discrete output
+  | ScaleQuantize<TRange>
+  | ScaleQuantile<TRange>
+  | ScaleThreshold<TDomain, TRange>
+  // discrete input and discrete output
+  | ScaleOrdinal<TDomain, TRange>
+  | ScaleBand<TDomain>
+  | ScalePoint<TDomain>;
+
+export interface IScaleConfig<TDomain extends string | number | Date, TRange, TOutput> {
+  scale: ScaleAny<TDomain, TRange, TOutput>;
   domain: TDomain[];
 }
 
@@ -49,3 +52,12 @@ export {
   scaleBand as bandScale,
   scalePoint as pointScale,
 } from 'd3-scale';
+
+export function applyScaleConfig(config: IScaleConfig<any, any, any>) {
+  config.scale.domain(config.domain);
+}
+
+export function applyBandScaleConfig(config: IBandScaleConfig) {
+  applyScaleConfig(config);
+  config.scale.padding(config.padding);
+}
