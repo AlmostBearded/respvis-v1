@@ -8,6 +8,8 @@ import {
   setAttributes,
   IAttributes,
   transitionAttributes,
+  transitionBoundAttributes,
+  setBoundAttributes,
 } from '../core';
 import {
   BarPointPositioner,
@@ -99,15 +101,18 @@ export class BarLabelsComponent extends Component<IBarLabelsConfig> implements I
       .join(config.createLabels);
 
     if (animated && config.transitionDuration > 0)
-      labelsSelection.transition().duration(config.transitionDuration).call(transitionAttributes);
-    else labelsSelection.call(setAttributes);
+      labelsSelection
+        .transition()
+        .duration(config.transitionDuration)
+        .call(transitionBoundAttributes);
+    else labelsSelection.call(setBoundAttributes);
 
     this.selection()
       .selectAll('text')
       .data(config.labels)
       .text((d) => d.toString());
 
-    this.selection().datum(config.attributes).call(setUniformNestedAttributes).datum(null);
+    this.selection().call(setUniformNestedAttributes, config.attributes);
 
     return this;
   }
@@ -127,6 +132,6 @@ export function createLabels(
   return selection
     .append('g')
     .classed('label', true)
-    .call(setAttributes)
+    .call(setBoundAttributes)
     .call((g) => g.append('text'));
 }

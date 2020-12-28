@@ -136,8 +136,7 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
     newConfig.parseConfig(this._activeConfig, newConfig);
     newConfig.applyConfig(this._activeConfig, newConfig);
 
-    const node = this._selection.node();
-    this._selection.datum(newConfig.attributes).call(setUniformNestedAttributes).datum(null);
+    this._selection.call(setUniformNestedAttributes, newConfig.attributes);
 
     this._activeConfig = newConfig;
 

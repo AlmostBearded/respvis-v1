@@ -1,5 +1,5 @@
 import { BaseType, select, Selection } from 'd3-selection';
-import { Transition } from 'd3-transition';
+import { SelectionOrTransition, Transition } from 'd3-transition';
 import { calculateSpecificity } from './utils';
 
 export interface IAttributes {
@@ -10,117 +10,159 @@ export interface INestedAttributes {
   [name: string]: string | number | boolean | null | INestedAttributes;
 }
 
-function _setAttributes(
+function _setOrTransitionUniformAttributes(
+  selectionOrTransition: SelectionOrTransition<BaseType, unknown, BaseType, unknown>,
+  attributes: IAttributes
+) {
+  for (const name in attributes) {
+    const value = attributes[name];
+    if (value === null) selectionOrTransition.attr(name, null);
+    else selectionOrTransition.attr(name, value);
+  }
+}
+
+// # set attributes
+
+export function setUniformAttributes(
   selection: Selection<BaseType, unknown, BaseType, unknown>,
   attributes: IAttributes
 ) {
-  for (const name in attributes) {
-    const value = attributes[name];
-    if (value === null) selection.attr(name, null);
-    else selection.attr(name, value);
-  }
+  _setOrTransitionUniformAttributes(selection, attributes);
 }
 
-export function setAttributes(selection: Selection<BaseType, IAttributes, BaseType, unknown>) {
-  selection.each((attributes, i, groups) => select(groups[i]).call(_setAttributes, attributes));
-}
-
-export function setUniformAttributes(
+export function setBoundUniformAttributes(
   selection: Selection<BaseType, IAttributes, BaseType, unknown>
 ) {
-  selection.call(_setAttributes, selection.datum());
+  selection.call(setUniformAttributes, selection.datum());
 }
 
-function _transitionAttributes(
+export function setAttributes(
+  selection: Selection<BaseType, unknown, BaseType, unknown>,
+  attributes: IAttributes[]
+) {
+  selection.each((d, i, groups) => select(groups[i]).call(setUniformAttributes, attributes[i]));
+}
+
+export function setBoundAttributes(selection: Selection<BaseType, IAttributes, BaseType, unknown>) {
+  selection.each((attributes, i, groups) =>
+    select(groups[i]).call(setUniformAttributes, attributes)
+  );
+}
+
+// # transition attributes
+
+export function transitionUniformAttributes(
   transition: Transition<BaseType, unknown, BaseType, unknown>,
   attributes: IAttributes
 ) {
-  for (const name in attributes) {
-    const value = attributes[name];
-    if (value === null) transition.attr(name, null);
-    else transition.attr(name, value);
-  }
+  _setOrTransitionUniformAttributes(transition, attributes);
+}
+
+export function transitionBoundUniformAttributes(
+  transition: Transition<BaseType, IAttributes, BaseType, unknown>
+) {
+  transition.call(transitionUniformAttributes, transition.selection().datum());
 }
 
 export function transitionAttributes(
-  transition: Transition<BaseType, IAttributes, BaseType, unknown>
+  transition: Transition<BaseType, unknown, BaseType, unknown>,
+  attributes: IAttributes[]
 ) {
-  transition.each((attributes, i, groups) =>
-    select(groups[i]).transition(transition).call(_transitionAttributes, attributes)
+  transition.each((d, i, groups) =>
+    select(groups[i]).transition(transition).call(transitionUniformAttributes, attributes[i])
   );
 }
 
-export function transitionUniformAttributes(
+export function transitionBoundAttributes(
   transition: Transition<BaseType, IAttributes, BaseType, unknown>
 ) {
-  transition.call(_transitionAttributes, transition.selection().datum());
+  transition.each((attributes, i, groups) =>
+    select(groups[i]).transition(transition).call(transitionUniformAttributes, attributes)
+  );
 }
 
-function _setNestedAttributes(
-  selection: Selection<BaseType, unknown, BaseType, unknown>,
+// # set nested attributes
+
+function _setOrTransitionUniformNestedAttributes(
+  selectionOrTransition: SelectionOrTransition<BaseType, unknown, BaseType, unknown>,
   attributes: INestedAttributes
 ) {
   const selectors: string[] = [];
 
   for (const name in attributes) {
     const value = attributes[name];
-    if (value === null) selection.attr(name, null);
+    if (value === null) selectionOrTransition.attr(name, null);
     else if (typeof value === 'object') selectors.push(name);
-    else selection.attr(name, value);
+    else selectionOrTransition.attr(name, value);
   }
 
   selectors
     .sort((a, b) => calculateSpecificity(a) - calculateSpecificity(b))
     .forEach((selector) =>
-      selection.selectAll(selector).call(_setNestedAttributes, attributes[selector])
+      selectionOrTransition
+        .selectAll(selector)
+        .call(setUniformNestedAttributes, attributes[selector])
     );
-}
-
-export function setNestedAttributes(
-  selection: Selection<BaseType, INestedAttributes, BaseType, unknown>
-) {
-  selection.each((attributes, i, groups) =>
-    select(groups[i]).call(_setNestedAttributes, attributes)
-  );
 }
 
 export function setUniformNestedAttributes(
-  selection: Selection<BaseType, INestedAttributes, BaseType, unknown>
-) {
-  const attributes = selection.datum();
-  selection.call(_setNestedAttributes, attributes);
-}
-
-function _transitionNestedAttributes(
-  transition: Transition<BaseType, unknown, BaseType, unknown>,
+  selection: Selection<BaseType, unknown, BaseType, unknown>,
   attributes: INestedAttributes
 ) {
-  const selectors: string[] = [];
-
-  for (const name in attributes) {
-    const value = attributes[name];
-    if (value === null) transition.attr(name, null);
-    else if (typeof value === 'object') selectors.push(name);
-    else transition.attr(name, value);
-  }
-
-  selectors
-    .sort((a, b) => calculateSpecificity(a) - calculateSpecificity(b))
-    .forEach((selector) =>
-      transition.selectAll(selector).call(_transitionNestedAttributes, attributes[selector])
-    );
+  _setOrTransitionUniformNestedAttributes(selection, attributes);
 }
 
-export function transitionNestedAttributes(
-  transition: Transition<BaseType, INestedAttributes, BaseType, unknown>
+export function setBoundUniformNestedAttributes(
+  selection: Selection<BaseType, INestedAttributes, BaseType, unknown>
 ) {
-  transition.each((attributes, i, groups) =>
-    select(groups[i]).transition(transition).call(_transitionNestedAttributes, attributes)
+  selection.call(setUniformNestedAttributes, selection.datum());
+}
+
+export function setNestedAttributes(
+  selection: Selection<BaseType, unknown, BaseType, unknown>,
+  attributes: INestedAttributes[]
+) {
+  selection.each((d, i, groups) =>
+    select(groups[i]).call(setUniformNestedAttributes, attributes[i])
   );
 }
 
+export function setBoundNestedAttributes(
+  selection: Selection<BaseType, INestedAttributes, BaseType, unknown>
+) {
+  selection.each((attributes, i, groups) =>
+    select(groups[i]).call(setUniformNestedAttributes, attributes)
+  );
+}
+
+// # transition nested attributes
+
 export function transitionUniformNestedAttributes(
+  transition: Transition<BaseType, unknown, BaseType, unknown>,
+  attributes: INestedAttributes
+) {
+  _setOrTransitionUniformNestedAttributes(transition, attributes);
+}
+
+export function transitionBoundUniformNestedAttributes(
   transition: Transition<BaseType, INestedAttributes, BaseType, unknown>
 ) {
-  transition.call(_transitionNestedAttributes, transition.selection().datum());
+  transition.call(transitionUniformNestedAttributes, transition.selection().datum());
+}
+
+export function transitionNestedAttributes(
+  transition: Transition<BaseType, unknown, BaseType, unknown>,
+  attributes: INestedAttributes[]
+) {
+  transition.each((d, i, groups) =>
+    select(groups[i]).transition(transition).call(transitionUniformNestedAttributes, attributes[i])
+  );
+}
+
+export function transitionBoundNestedAttributes(
+  transition: Transition<BaseType, INestedAttributes, BaseType, unknown>
+) {
+  transition.each((attributes, i, groups) =>
+    select(groups[i]).transition(transition).call(transitionUniformNestedAttributes, attributes)
+  );
 }

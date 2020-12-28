@@ -8,8 +8,8 @@ import {
   IComponentEventData,
   setUniformNestedAttributes,
   IAttributes,
-  transitionAttributes,
-  setAttributes,
+  transitionBoundAttributes,
+  setBoundAttributes,
 } from '../core';
 import { Selection, BaseType, create } from 'd3-selection';
 import { createBars } from './bars';
@@ -128,13 +128,13 @@ export class StackedBarsComponent
       .join(config.createBars);
 
     if (animated && config.transitionDuration > 0)
-      barsSelection.transition().duration(config.transitionDuration).call(transitionAttributes);
-    else barsSelection.call(setAttributes);
+      barsSelection
+        .transition()
+        .duration(config.transitionDuration)
+        .call(transitionBoundAttributes);
+    else barsSelection.call(setBoundAttributes);
 
-    this.selection()
-      .datum(this.activeConfig().attributes)
-      .call(setUniformNestedAttributes)
-      .datum(null);
+    this.selection().call(setUniformNestedAttributes, this.activeConfig().attributes);
 
     return this;
   }

@@ -114,9 +114,7 @@ export class TicksComponent extends Component<ITicksComponentConfig> implements 
 
     this.selection()
       .call(TicksComponent._renderFunctionByPosition.get(this._labelPosition)!, axis)
-      .datum(config.attributes)
-      .call(setUniformNestedAttributes)
-      .datum(null);
+      .call(setUniformNestedAttributes, config.attributes);
     return this;
   }
 

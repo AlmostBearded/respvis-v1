@@ -11,6 +11,8 @@ import {
   setAttributes,
   clipByItself,
   transitionAttributes,
+  transitionBoundAttributes,
+  setBoundAttributes,
 } from '../core';
 import { Selection, BaseType, create } from 'd3-selection';
 import {
@@ -101,10 +103,13 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
       .join(config.createBars);
 
     if (animated && config.transitionDuration > 0)
-      barsSelection.transition().duration(config.transitionDuration).call(transitionAttributes);
-    else barsSelection.call(setAttributes);
+      barsSelection
+        .transition()
+        .duration(config.transitionDuration)
+        .call(transitionBoundAttributes);
+    else barsSelection.call(setBoundAttributes);
 
-    this.selection().datum(config.attributes).call(setUniformNestedAttributes).datum(null);
+    this.selection().call(setUniformNestedAttributes, config.attributes);
 
     return this;
   }
@@ -121,11 +126,11 @@ export function bars(): BarsComponent {
 export function createBars(
   selection: Selection<BaseType, IAttributes, SVGElement, unknown>
 ): Selection<SVGRectElement, IAttributes, SVGElement, unknown> {
-  return selection.append('rect').classed('bar', true).call(setAttributes);
+  return selection.append('rect').classed('bar', true).call(setBoundAttributes);
 }
 
 export function createClippedBars(
   selection: Selection<BaseType, IAttributes, SVGElement, unknown>
 ): Selection<SVGRectElement, IAttributes, SVGElement, unknown> {
-  return selection.append('rect').classed('bar', true).call(clipByItself).call(setAttributes);
+  return selection.append('rect').classed('bar', true).call(clipByItself).call(setBoundAttributes);
 }

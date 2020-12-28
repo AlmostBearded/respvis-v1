@@ -6,8 +6,10 @@ import { chainedTransition } from '../chained-transition';
 import {
   IAttributes,
   setAttributes,
+  setUniformAttributes,
   setUniformNestedAttributes,
   transitionAttributes,
+  transitionUniformAttributes,
 } from '../attributes';
 
 // TODO: Maybe this component should be called ClippedRect?
@@ -61,9 +63,7 @@ export class RectComponent extends Component<IRectComponentConfig> implements IR
         },
         0
       )
-      .datum(config.attributes)
-      .call(setUniformNestedAttributes)
-      .datum(null);
+      .call(setUniformNestedAttributes, config.attributes);
     return this;
   }
 
@@ -92,13 +92,14 @@ export function renderClippedRect(
           enter
             .append('clipPath')
             .attr('id', (clipId = uuidv4()))
-            .call((s) => s.append('rect').datum(attributes).call(setAttributes))
+            .call((s) => s.append('rect').call(setUniformAttributes, attributes))
         )
 
         .select('rect')
         .each((d, i, groups) => {
-          select(groups[i]).datum(attributes);
-          chainedTransition(groups[i]).duration(transitionDuration).call(transitionAttributes);
+          chainedTransition(groups[i])
+            .duration(transitionDuration)
+            .call(transitionUniformAttributes, attributes);
         })
     )
     .call((s: any) =>
@@ -108,12 +109,13 @@ export function renderClippedRect(
           enter
             .append('rect')
             .call((rect) =>
-              rect.attr('clip-path', `url(#${clipId})`).datum(attributes).call(setAttributes)
+              rect.attr('clip-path', `url(#${clipId})`).call(setUniformAttributes, attributes)
             )
         )
         .each((d, i, groups) => {
-          select(groups[i]).datum(attributes);
-          chainedTransition(groups[i]).duration(transitionDuration).call(transitionAttributes);
+          chainedTransition(groups[i])
+            .duration(transitionDuration)
+            .call(transitionUniformAttributes, attributes);
         })
     );
 }

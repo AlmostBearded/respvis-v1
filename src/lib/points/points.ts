@@ -7,9 +7,9 @@ import {
   IComponent,
   IComponentConfig,
   Rect,
-  setAttributes,
+  setBoundAttributes,
   setUniformNestedAttributes,
-  transitionAttributes,
+  transitionBoundAttributes,
   utils,
 } from '../core';
 import { linearScale } from '../core';
@@ -94,10 +94,13 @@ export class PointsComponent extends Component<IPointsComponentConfig> implement
       .join(config.createCircles);
 
     if (animated && config.transitionDuration > 0)
-      circlesSelection.transition().duration(config.transitionDuration).call(transitionAttributes);
-    else circlesSelection.call(setAttributes);
+      circlesSelection
+        .transition()
+        .duration(config.transitionDuration)
+        .call(transitionBoundAttributes);
+    else circlesSelection.call(setBoundAttributes);
 
-    this.selection().datum(config.attributes).call(setUniformNestedAttributes).datum(null);
+    this.selection().call(setUniformNestedAttributes, config.attributes);
 
     return this;
   }
@@ -114,11 +117,11 @@ export function points(): PointsComponent {
 export function createCircles(
   selection: Selection<BaseType, IAttributes, SVGElement, unknown>
 ): Selection<SVGCircleElement, IAttributes, SVGElement, unknown> {
-  return selection.append('circle').call(setAttributes);
+  return selection.append('circle').call(setBoundAttributes);
 }
 
 export function createClippedCircles(
   selection: Selection<BaseType, IAttributes, SVGElement, unknown>
 ): Selection<SVGCircleElement, IAttributes, SVGElement, unknown> {
-  return selection.append('circle').call(clipByItself).call(setAttributes);
+  return selection.append('circle').call(clipByItself).call(setBoundAttributes);
 }
