@@ -46,14 +46,14 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
       source,
       {
         attributes: deepExtendWithConfig(
-          { deleteUndefined: true },
+          { deleteUndefined: true, deleteNull: false },
           target.attributes || {},
           source.attributes || {}
         ),
       },
       {
         events: deepExtendWithConfig(
-          { deleteUndefined: true },
+          { deleteUndefined: true, deleteNull: false },
           target.events || {},
           source.events || {}
         ),
@@ -61,9 +61,10 @@ export abstract class Component<TConfig extends IComponentConfig> implements ICo
       {
         responsiveConfigs: deepExtendWithConfig(
           {
-            // responsive configs are merged later and need to delete undefined
-            // properties then.
+            // responsive configs are merged successivly and need to be able to delete
+            // undefined or null properties then.
             deleteUndefined: false,
+            deleteNull: false,
           },
           target.responsiveConfigs || {},
           source.responsiveConfigs || {}

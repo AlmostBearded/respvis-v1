@@ -63,11 +63,11 @@ export function calculateSpecificity(selector: string): number {
 }
 
 export function deepExtend(target: any, ...args: any[]) {
-  return deepExtendWithConfig({ deleteUndefined: true }, target, ...args);
+  return deepExtendWithConfig({ deleteUndefined: true, deleteNull: false }, target, ...args);
 }
 
 export function deepExtendWithConfig(
-  config: { deleteUndefined: boolean },
+  config: { deleteUndefined: boolean; deleteNull: boolean },
   target: any,
   ...args: any[]
 ) {
@@ -77,8 +77,13 @@ export function deepExtendWithConfig(
     if (!obj) continue;
     for (const key in obj) {
       if (obj.hasOwnProperty(key)) {
-        if (config.deleteUndefined && obj[key] === undefined) {
+        if (
+          (config.deleteUndefined && obj[key] === undefined) ||
+          (config.deleteNull && obj[key] === null)
+        ) {
           delete target[key];
+        } else if (obj[key] === undefined || obj[key] === null) {
+          target[key] = obj[key];
         } else if (typeof obj[key] === 'object') {
           if (obj[key] instanceof Array == true) {
             target[key] = obj[key].slice(0);

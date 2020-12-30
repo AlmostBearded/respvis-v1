@@ -6,6 +6,7 @@ import {
   IAttributes,
   IComponent,
   IComponentConfig,
+  IComponentEventData,
   Rect,
   setBoundAttributes,
   setUniformNestedAttributes,
@@ -25,7 +26,12 @@ export interface IPointsComponentConfig extends IComponentConfig, IPointPosition
     selection: Selection<BaseType, IAttributes, any, unknown>
   ) => Selection<SVGCircleElement, IAttributes, any, unknown>;
   transitionDuration: number;
-  // TODO: Add events
+  events: utils.IDictionary<(event: Event, data: IPointsEventData) => void>;
+}
+
+export interface IPointsEventData extends IComponentEventData {
+  index: number;
+  element: SVGCircleElement;
 }
 
 export interface IPointsComponent extends IComponent<IPointsComponentConfig>, IPoints {}
@@ -34,6 +40,20 @@ export class PointsComponent extends Component<IPointsComponentConfig> implement
   private _pointPositioner: IPointPositioner = new PointPositioner();
 
   static defaultColor = colors.categorical[0];
+
+  static setEventListeners(component: PointsComponent, config: IPointsComponentConfig) {
+    for (const typenames in config.events) {
+      component.selection().on(typenames, (e: Event) => {
+        const element = e.target as SVGCircleElement;
+        const index = Array.prototype.indexOf.call(element.parentNode!.children, element);
+        config.events[typenames](e, {
+          component: component,
+          index: index,
+          element: element,
+        });
+      });
+    }
+  }
 
   constructor() {
     super(
@@ -47,7 +67,7 @@ export class PointsComponent extends Component<IPointsComponentConfig> implement
           fill: PointsComponent.defaultColor,
           stroke: '#232323',
           'stroke-width': 1,
-          circle: {
+          '.point': {
             r: 4,
           },
         },
@@ -86,11 +106,11 @@ export class PointsComponent extends Component<IPointsComponentConfig> implement
 
     const attributes: IAttributes[] = this._pointPositioner
       .points()
-      .map((center) => ({ cx: center.x, cy: center.y, r: 0 }));
+      .map((center) => ({ cx: center.x, cy: center.y }));
 
     const circlesSelection = this.selection()
       .selectAll<SVGElement, IAttributes>('circle')
-      .data(attributes)
+      .data(attributes, (d, i) => `${config.categories[i]}/${config.values[i]}`)
       .join(config.createCircles);
 
     if (animated && config.transitionDuration > 0)
@@ -117,11 +137,15 @@ export function points(): PointsComponent {
 export function createCircles(
   selection: Selection<BaseType, IAttributes, SVGElement, unknown>
 ): Selection<SVGCircleElement, IAttributes, SVGElement, unknown> {
-  return selection.append('circle').call(setBoundAttributes);
+  return selection.append('circle').classed('point', true).call(setBoundAttributes);
 }
 
 export function createClippedCircles(
   selection: Selection<BaseType, IAttributes, SVGElement, unknown>
 ): Selection<SVGCircleElement, IAttributes, SVGElement, unknown> {
-  return selection.append('circle').call(clipByItself).call(setBoundAttributes);
+  return selection
+    .append('circle')
+    .classed('point', true)
+    .call(clipByItself)
+    .call(setBoundAttributes);
 }

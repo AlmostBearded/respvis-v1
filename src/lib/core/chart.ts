@@ -7,7 +7,7 @@ export interface IChart {
   root(root: IComponent<IComponentConfig>): this;
   root(): IComponent<IComponentConfig>;
   mount(containerSelector: string): this;
-  update(updateLayout: boolean): this;
+  update(updateLayout: boolean, animated: boolean): this;
 }
 
 export class Chart implements IChart {
@@ -44,7 +44,7 @@ export class Chart implements IChart {
     window.addEventListener('resize', resize);
     window.addEventListener(
       'resize',
-      debounce(() => this.update(true), 250)
+      debounce(() => this.update(true, true), 250)
     );
 
     return this;
@@ -59,7 +59,7 @@ export class Chart implements IChart {
     return this;
   }
 
-  update(updateLayout: boolean): this {
+  update(updateLayout: boolean, animated: boolean): this {
     this._root.applyConfig();
 
     // layout computation is fairly costly so it's only done when requested.
@@ -68,7 +68,7 @@ export class Chart implements IChart {
       computeLayout(this._root.selection().node()!, bbox);
     }
 
-    this._root.render(true);
+    this._root.render(animated);
 
     applyLayoutTransforms(this._root.selection().node()!);
 

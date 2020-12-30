@@ -269,7 +269,7 @@
         legend.highlightSwatch(barIndexToLegendSwatchIndex(barIndex), hover);
         valueAxis.clearHighlights();
         categoryAxis.highlightTick(categoryIndex, hover);
-        chart.update(false);
+        chart.update(false, true);
       }
 
       function hoverCategoryAxisTick(categoryAxis, valueAxis, tickIndex, hover) {
@@ -281,7 +281,7 @@
           labels.showLabel(flatBarIndex, hover);
         }
 
-        chart.update(false);
+        chart.update(false, true);
       }
 
       function hoverLegendSwatch(swatchIndex, hover) {
@@ -295,7 +295,7 @@
           labels.showLabel(flatBarIndex, hover);
         });
         legend.highlightSwatch(swatchIndex, hover);
-        chart.update(false);
+        chart.update(false, true);
       }
 
       function clickLegendSwatch(swatchIndex) {
@@ -321,7 +321,7 @@
 
         legend.disableSwatch(swatchIndex, !subcategoryToggles[swatchIndex]);
 
-        chart.update(false);
+        chart.update(false, true);
       }
     </script>
   </body>

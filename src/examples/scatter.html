@@ -25,6 +25,7 @@
       import withLeftAxis from './components/axis/with-left-axis.js';
       import withBottomAxis from './components/axis/with-bottom-axis.js';
       import withHighlightTick from './components/axis/with-highlight-tick.js';
+      import withHightlightPoint from './components/points/with-highlight-point.js';
       import data from './data/two-num.js';
 
       data.price = data.price.map((price) => price / 1000);
@@ -46,7 +47,7 @@
       const priceScale = respVis.linearScale();
 
       // points
-      const points = respVis.points().config({
+      const points = withHightlightPoint(respVis.points()).config({
         categories: data.area,
         categoryScale: {
           scale: areaScale,
@@ -57,11 +58,11 @@
           scale: priceScale,
           domain: [0, maxPrice + priceSpan * 0.2],
         },
-        // transitionDuration: 250,
-        // events: {
-        //   mouseover: (e, d) => hoverBar(d.index, yAxis, xAxis, true),
-        //   mouseout: (e, d) => hoverBar(d.index, yAxis, xAxis, false),
-        // },
+        transitionDuration: 250,
+        events: {
+          mouseover: (e, d) => hoverPoint(d.index, true),
+          mouseout: (e, d) => hoverPoint(d.index, false),
+        },
         // responsiveConfigs: {
         //   [wideMediaQuery]: {
         //     orientation: respVis.BarOrientation.Vertical,
@@ -164,16 +165,13 @@
         )
         .mount('#chart');
 
-      // function hoverBar(barIndex, categoryAxis, valueAxis, hover) {
-      //   // Clear highlights of wrong axis in case unhighlight never got called
-      //   valueAxis.clearHighlights();
+      function hoverPoint(pointIndex, hover) {
+        points.highlightPoint(pointIndex, hover);
+        // barLabels.showLabel(barIndex, hover);
+        // categoryAxis.highlightTick(barIndex, hover);
 
-      //   bars.highlightBar(barIndex, hover);
-      //   barLabels.showLabel(barIndex, hover);
-      //   categoryAxis.highlightTick(barIndex, hover);
-
-      //   chart.update(false);
-      // }
+        chart.update(false, true);
+      }
     </script>
   </body>
 </html>
