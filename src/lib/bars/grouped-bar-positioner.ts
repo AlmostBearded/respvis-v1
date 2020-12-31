@@ -28,10 +28,10 @@ export interface IGroupedBarPositioner extends IBars {
 
 export const DEFAULT_GROUPED_BAR_POSITIONER_CONFIG: IGroupedBarPositionerConfig = {
   categories: [],
-  categoryScale: { scale: bandScale(), domain: [], padding: 0.1 },
-  subcategoryScale: { scale: bandScale(), domain: [], padding: 0.1 },
+  categoryScale: { scale: bandScale(), domain: [], padding: 0.1, nice: true },
+  subcategoryScale: { scale: bandScale(), domain: [], padding: 0.1, nice: false },
   values: [],
-  valueScale: { scale: linearScale<number>(), domain: [] },
+  valueScale: { scale: linearScale<number>(), domain: [], nice: true },
   orientation: BarOrientation.Vertical,
 };
 

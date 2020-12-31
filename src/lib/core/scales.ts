@@ -29,6 +29,7 @@ type ScaleAny<TDomain extends string | number | Date, TRange, TOutput> =
 export interface IScaleConfig<TDomain extends string | number | Date, TRange, TOutput> {
   scale: ScaleAny<TDomain, TRange, TOutput>;
   domain: TDomain[];
+  nice: boolean;
 }
 
 export interface IBandScaleConfig extends IScaleConfig<string | number | Date, number, number> {
@@ -55,6 +56,7 @@ export {
 
 export function applyScaleConfig(config: IScaleConfig<any, any, any>) {
   config.scale.domain(config.domain);
+  if (config.nice && 'nice' in config.scale) config.scale.nice();
 }
 
 export function applyBandScaleConfig(config: IBandScaleConfig) {

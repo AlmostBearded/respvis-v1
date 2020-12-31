@@ -1,6 +1,8 @@
 import { BaseType, create, Selection } from 'd3-selection';
 import {
+  chainedTransition,
   clipByItself,
+  clipBySelection,
   colors,
   Component,
   IAttributes,
@@ -8,7 +10,9 @@ import {
   IComponentConfig,
   IComponentEventData,
   Rect,
+  setAttributes,
   setBoundAttributes,
+  setUniformAttributes,
   setUniformNestedAttributes,
   transitionBoundAttributes,
   utils,
@@ -38,6 +42,7 @@ export interface IPointsComponent extends IComponent<IPointsComponentConfig>, IP
 
 export class PointsComponent extends Component<IPointsComponentConfig> implements IPointsComponent {
   private _pointPositioner: IPointPositioner = new PointPositioner();
+  private _clipRectSelection: Selection<SVGRectElement, unknown, BaseType, unknown>;
 
   static defaultColor = colors.categorical[0];
 
@@ -60,9 +65,9 @@ export class PointsComponent extends Component<IPointsComponentConfig> implement
       create<SVGElement>('svg:g').classed('points', true),
       {
         categories: [],
-        categoryScale: { scale: linearScale<number>(), domain: [] },
+        categoryScale: { scale: linearScale<number>(), domain: [], nice: true },
         values: [],
-        valueScale: { scale: linearScale<number>(), domain: [] },
+        valueScale: { scale: linearScale<number>(), domain: [], nice: true },
         attributes: {
           fill: PointsComponent.defaultColor,
           stroke: '#232323',
@@ -91,16 +96,24 @@ export class PointsComponent extends Component<IPointsComponentConfig> implement
       },
       Component.mergeConfigs
     );
+    this._clipRectSelection = create<SVGRectElement>('svg:rect');
   }
 
   mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
-    selection.append(() => this.selection().node());
+    selection.append(() => this.selection().node()).call(clipBySelection, this._clipRectSelection);
     return this;
   }
 
   render(animated: boolean): this {
     const layoutRect = Rect.fromString(this.selection().attr('layout') || '0, 0, 600, 400');
     this._pointPositioner.fitInSize(layoutRect);
+
+    this._clipRectSelection.call(setUniformAttributes, {
+      x: 0,
+      y: 0,
+      width: layoutRect.width,
+      height: layoutRect.height,
+    });
 
     const config = this.activeConfig();
 
@@ -110,14 +123,15 @@ export class PointsComponent extends Component<IPointsComponentConfig> implement
 
     const circlesSelection = this.selection()
       .selectAll<SVGElement, IAttributes>('circle')
-      .data(attributes, (d, i) => `${config.categories[i]}/${config.values[i]}`)
+      .data(attributes)
       .join(config.createCircles);
 
     if (animated && config.transitionDuration > 0)
-      circlesSelection
-        .transition()
-        .duration(config.transitionDuration)
-        .call(transitionBoundAttributes);
+      circlesSelection.each((d, i, groups) =>
+        chainedTransition(groups[i])
+          .duration(config.transitionDuration)
+          .call(transitionBoundAttributes)
+      );
     else circlesSelection.call(setBoundAttributes);
 
     this.selection().call(setUniformNestedAttributes, config.attributes);

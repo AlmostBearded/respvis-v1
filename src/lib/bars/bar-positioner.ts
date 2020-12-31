@@ -34,9 +34,9 @@ export interface IBarPositioner extends IBars {
 
 export const DEFAULT_BAR_POSITIONER_CONFIG: IBarPositionerConfig = {
   categories: [],
-  categoryScale: { scale: bandScale(), domain: [], padding: 0.1 },
+  categoryScale: { scale: bandScale(), domain: [], padding: 0.1, nice: true },
   values: [],
-  valueScale: { scale: linearScale<number>(), domain: [] },
+  valueScale: { scale: linearScale<number>(), domain: [], nice: true },
   orientation: BarOrientation.Vertical,
 };
 

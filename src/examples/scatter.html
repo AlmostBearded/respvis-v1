@@ -43,22 +43,28 @@
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
       // scales
-      const areaScale = respVis.linearScale();
-      const priceScale = respVis.linearScale();
+      const areaScale = respVis.linearScale(),
+        areaDomain = [0, maxArea + areaSpan * 0.2];
+      const priceScale = respVis.linearScale(),
+        priceDomain = [0, maxPrice + priceSpan * 0.2];
+
+      let transitionTimeoutHandle,
+        transitioning = false;
 
       // points
+      const pointsTransitionDuration = 1000;
       const points = withHightlightPoint(respVis.points()).config({
         categories: data.area,
         categoryScale: {
           scale: areaScale,
-          domain: [0, maxArea + areaSpan * 0.2],
+          domain: areaDomain,
         },
         values: data.price,
         valueScale: {
           scale: priceScale,
-          domain: [0, maxPrice + priceSpan * 0.2],
+          domain: priceDomain,
         },
-        transitionDuration: 250,
+        transitionDuration: pointsTransitionDuration,
         events: {
           mouseover: (e, d) => hoverPoint(d.index, true),
           mouseout: (e, d) => hoverPoint(d.index, false),
@@ -72,6 +78,13 @@
         //     },
         //   },
         // },
+      });
+
+      // brush
+      const brush = respVis.brush().config({
+        events: {
+          end: (e, d) => (d.selectionRect ? zoomToRect(d.selectionRect) : resetZoom()),
+        },
       });
 
       // bar labels
@@ -147,6 +160,10 @@
               respVis.group().config({
                 attributes: { 'grid-template': '1fr auto / auto 1fr' },
                 children: [
+                  // brush
+                  // added before points so that points can still be hovered
+                  brush.config({ attributes: { 'grid-area': '1 / 2 / 2 / 3' } }),
+
                   // points
                   points.config({ attributes: { 'grid-area': '1 / 2 / 2 / 3' } }),
 
@@ -166,11 +183,41 @@
         .mount('#chart');
 
       function hoverPoint(pointIndex, hover) {
+        if (transitioning) return;
         points.highlightPoint(pointIndex, hover);
         // barLabels.showLabel(barIndex, hover);
         // categoryAxis.highlightTick(barIndex, hover);
 
-        chart.update(false, true);
+        chart.update(false, false);
+      }
+
+      function resetZoom() {
+        transitioning = true;
+        clearTimeout(transitionTimeoutHandle);
+        transitionTimeoutHandle = setTimeout(() => (transitioning = false), pointsTransitionDuration);
+
+        points.config({
+          categoryScale: { domain: areaDomain },
+          valueScale: { domain: priceDomain },
+        });
+        chart.update(true, true);
+      }
+
+      function zoomToRect(rect) {
+        transitioning = true;
+        clearTimeout(transitionTimeoutHandle);
+        transitionTimeoutHandle = setTimeout(() => (transitioning = false), pointsTransitionDuration);
+
+        const zoomedAreaDomain = [areaScale.invert(rect.x), areaScale.invert(rect.x + rect.width)];
+        const zoomedPriceDomain = [
+          priceScale.invert(rect.y + rect.height),
+          priceScale.invert(rect.y),
+        ];
+        points.config({
+          categoryScale: { domain: zoomedAreaDomain },
+          valueScale: { domain: zoomedPriceDomain },
+        });
+        chart.update(true, true);
       }
     </script>
   </body>
