@@ -9,8 +9,11 @@ import {
   Rect,
   utils,
 } from '../core';
+import { active } from 'd3-transition';
 
 export interface IBrushComponentConfig extends IComponentConfig {
+  selectionRect: IRect | null;
+  transitionDuration: number;
   events: utils.IDictionary<(event: Event, data: IBrushEventData) => void>;
 }
 
@@ -55,6 +58,8 @@ export class BrushComponent extends Component<IBrushComponentConfig> implements 
     super(
       create<SVGElement>('svg:g').classed('brush', true),
       {
+        selectionRect: null,
+        transitionDuration: 0,
         attributes: {},
         events: {},
         responsiveConfigs: {},
@@ -79,11 +84,30 @@ export class BrushComponent extends Component<IBrushComponentConfig> implements 
 
   render(animated: boolean): this {
     const layoutRect = Rect.fromString(this.selection().attr('layout') || '0, 0, 600, 400');
+
+    const config = this.activeConfig();
+
     this._brush.extent([
       [0, 0],
       [layoutRect.width, layoutRect.height],
     ]);
+
     this.selection().call(this._brush);
+
+    const r = config.selectionRect;
+    const brushSelection = r
+      ? [
+          [r.x, r.y],
+          [r.x + r.width, r.y + r.height],
+        ]
+      : null;
+    if (animated && config.transitionDuration > 0)
+      this.selection()
+        .transition()
+        .duration(config.transitionDuration)
+        .call(this._brush.move, brushSelection);
+    else this.selection().call(this._brush.move, brushSelection);
+
     return this;
   }
 }

@@ -49,7 +49,9 @@
         priceDomain = [0, maxPrice + priceSpan * 0.2];
 
       let transitionTimeoutHandle,
-        transitioning = false;
+        transitioning = false,
+        resetZoomTimeoutDuration = 300,
+        resetZoomTimeoutHandle;
 
       // points
       const pointsTransitionDuration = 1000;
@@ -192,9 +194,24 @@
       }
 
       function resetZoom() {
+        console.trace('A', resetZoomTimeoutHandle);
+        if (!resetZoomTimeoutHandle) {
+          resetZoomTimeoutHandle = setTimeout(
+            () => (resetZoomTimeoutHandle = null),
+            resetZoomTimeoutDuration
+          );
+          console.trace('B');
+          return;
+        }
+        resetZoomTimeoutHandle = null;
+
+        console.trace('C');
         transitioning = true;
         clearTimeout(transitionTimeoutHandle);
-        transitionTimeoutHandle = setTimeout(() => (transitioning = false), pointsTransitionDuration);
+        transitionTimeoutHandle = setTimeout(
+          () => (transitioning = false),
+          pointsTransitionDuration
+        );
 
         points.config({
           categoryScale: { domain: areaDomain },
@@ -204,9 +221,13 @@
       }
 
       function zoomToRect(rect) {
+        console.trace('D');
         transitioning = true;
         clearTimeout(transitionTimeoutHandle);
-        transitionTimeoutHandle = setTimeout(() => (transitioning = false), pointsTransitionDuration);
+        transitionTimeoutHandle = setTimeout(
+          () => (transitioning = false),
+          pointsTransitionDuration
+        );
 
         const zoomedAreaDomain = [areaScale.invert(rect.x), areaScale.invert(rect.x + rect.width)];
         const zoomedPriceDomain = [
