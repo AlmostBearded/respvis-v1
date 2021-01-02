@@ -39,5 +39,15 @@ export default function withHighlightPoints(points) {
     return points;
   };
 
+  points.clearHighlights = function clearHighlights() {
+    // clear all point highlights
+    points.selection().select(`.point[highlighted=true]`).attr('highlighted', null);
+
+    // reapply configuration
+    points.config({});
+
+    return points;
+  };
+
   return points;
 }

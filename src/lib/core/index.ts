@@ -1,5 +1,6 @@
 export * as colors from './colors';
 export * as utils from './utils';
+export * from './array';
 
 export { chainedTransition } from './chained-transition';
 

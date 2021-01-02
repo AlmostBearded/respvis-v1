@@ -1,6 +1,12 @@
 import { Selection, BaseType, create, selection } from 'd3-selection';
-import { brush as d3Brush, BrushBehavior, D3BrushEvent } from 'd3-brush';
 import {
+  brush as d3Brush,
+  brushSelection as d3BrushSelection,
+  BrushBehavior,
+  D3BrushEvent,
+} from 'd3-brush';
+import {
+  arraysEqual,
   Component,
   IComponent,
   IComponentConfig,
@@ -95,18 +101,23 @@ export class BrushComponent extends Component<IBrushComponentConfig> implements 
     this.selection().call(this._brush);
 
     const r = config.selectionRect;
-    const brushSelection = r
+    const newBrushSelection = r
       ? [
           [r.x, r.y],
           [r.x + r.width, r.y + r.height],
         ]
       : null;
-    if (animated && config.transitionDuration > 0)
-      this.selection()
-        .transition()
-        .duration(config.transitionDuration)
-        .call(this._brush.move, brushSelection);
-    else this.selection().call(this._brush.move, brushSelection);
+
+    const oldBrushSelection = d3BrushSelection(this.selection().node() as SVGGElement);
+
+    if (!arraysEqual(newBrushSelection, oldBrushSelection)) {
+      if (animated && config.transitionDuration > 0)
+        this.selection()
+          .transition()
+          .duration(config.transitionDuration)
+          .call(this._brush.move, newBrushSelection);
+      else this.selection().call(this._brush.move, newBrushSelection);
+    }
 
     return this;
   }

@@ -194,24 +194,23 @@
       }
 
       function resetZoom() {
-        console.trace('A', resetZoomTimeoutHandle);
         if (!resetZoomTimeoutHandle) {
           resetZoomTimeoutHandle = setTimeout(
             () => (resetZoomTimeoutHandle = null),
             resetZoomTimeoutDuration
           );
-          console.trace('B');
           return;
         }
         resetZoomTimeoutHandle = null;
 
-        console.trace('C');
         transitioning = true;
         clearTimeout(transitionTimeoutHandle);
         transitionTimeoutHandle = setTimeout(
           () => (transitioning = false),
           pointsTransitionDuration
         );
+
+        points.clearHighlights();
 
         points.config({
           categoryScale: { domain: areaDomain },
@@ -221,13 +220,14 @@
       }
 
       function zoomToRect(rect) {
-        console.trace('D');
         transitioning = true;
         clearTimeout(transitionTimeoutHandle);
         transitionTimeoutHandle = setTimeout(
           () => (transitioning = false),
           pointsTransitionDuration
         );
+
+        points.clearHighlights();
 
         const zoomedAreaDomain = [areaScale.invert(rect.x), areaScale.invert(rect.x + rect.width)];
         const zoomedPriceDomain = [
