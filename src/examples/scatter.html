@@ -69,15 +69,6 @@
           mouseover: (e, d) => hoverPoint(d.index, true),
           mouseout: (e, d) => hoverPoint(d.index, false),
         },
-        // responsiveConfigs: {
-        //   [wideMediaQuery]: {
-        //     orientation: respVis.BarOrientation.Vertical,
-        //     events: {
-        //       mouseover: (e, d) => hoverBar(d.index, xAxis, yAxis, true),
-        //       mouseout: (e, d) => hoverBar(d.index, xAxis, yAxis, false),
-        //     },
-        //   },
-        // },
       });
 
       // brush
@@ -86,36 +77,6 @@
           end: (e, d) => (d.selectionRect ? zoomToRect(d.selectionRect) : resetZoom()),
         },
       });
-
-      // bar labels
-      // const barLabels = withShowLabel(respVis.barLabels()).config({
-      //   attributes: {
-      //     text: {
-      //       'dominant-baseline': 'middle',
-      //       'text-anchor': 'start',
-      //       transform: 'translate(4, 0)',
-      //       'pointer-events': 'none',
-      //     },
-      //   },
-      //   bars: bars,
-      //   labels: values.map(valueFormatter),
-      //   horizontalPosition: respVis.HorizontalPosition.Left,
-      //   verticalPosition: respVis.VerticalPosition.Center,
-      //   transitionDuration: 250,
-      //   responsiveConfigs: {
-      //     [wideMediaQuery]: {
-      //       attributes: {
-      //         text: {
-      //           'dominant-baseline': 'auto',
-      //           'text-anchor': 'middle',
-      //           transform: 'translate(0, -2)',
-      //         },
-      //       },
-      //       horizontalPosition: respVis.HorizontalPosition.Center,
-      //       verticalPosition: respVis.VerticalPosition.Top,
-      //     },
-      //   },
-      // });
 
       // bottom axis
       const xAxis = withHighlightTick(withBottomAxis(respVis.group()))
@@ -192,6 +153,12 @@
       }
 
       function resetZoom() {
+        // requires a double invocation of this function within a duration to
+        // actually reset the zoom.
+        //
+        // this is needed because the brush selection is removed immediately after
+        // zooming which would cause this function to be called and immediately reset
+        // the zoom again if not for this double invocation requirement.
         if (!resetZoomTimeoutHandle) {
           resetZoomTimeoutHandle = setTimeout(
             () => (resetZoomTimeoutHandle = null),
@@ -201,16 +168,19 @@
         }
         resetZoomTimeoutHandle = null;
 
+        // clear point highlights because mouseout events might not be called during transition.
         points.clearHighlights();
 
         points.config({
           categoryScale: { domain: areaDomain },
           valueScale: { domain: priceDomain },
         });
+
         chart.update(true, true);
       }
 
       function zoomToRect(rect) {
+        // clear point highlights because mouseout events might not be called during transition.
         points.clearHighlights();
 
         const zoomedAreaDomain = [areaScale.invert(rect.x), areaScale.invert(rect.x + rect.width)];
