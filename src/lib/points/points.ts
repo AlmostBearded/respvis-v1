@@ -136,7 +136,8 @@ export class PointsComponent extends Component<IPointsComponentConfig> implement
         .duration(config.transitionDuration)
         .call(transitionBoundAttributes)
         .end()
-        .then(() => (this._inTransition = false));
+        .then(() => (this._inTransition = false))
+        .catch(() => ({}));
     } else circlesSelection.call(setBoundAttributes);
 
     this.selection().call(setUniformNestedAttributes, config.attributes);
