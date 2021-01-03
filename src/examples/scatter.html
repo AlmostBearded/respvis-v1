@@ -48,9 +48,7 @@
       const priceScale = respVis.linearScale(),
         priceDomain = [0, maxPrice + priceSpan * 0.2];
 
-      let transitionTimeoutHandle,
-        transitioning = false,
-        resetZoomTimeoutDuration = 300,
+      let resetZoomTimeoutDuration = 300,
         resetZoomTimeoutHandle;
 
       // points
@@ -185,7 +183,7 @@
         .mount('#chart');
 
       function hoverPoint(pointIndex, hover) {
-        if (transitioning) return;
+        if (points.inTransition()) return;
         points.highlightPoint(pointIndex, hover);
         // barLabels.showLabel(barIndex, hover);
         // categoryAxis.highlightTick(barIndex, hover);
@@ -203,13 +201,6 @@
         }
         resetZoomTimeoutHandle = null;
 
-        transitioning = true;
-        clearTimeout(transitionTimeoutHandle);
-        transitionTimeoutHandle = setTimeout(
-          () => (transitioning = false),
-          pointsTransitionDuration
-        );
-
         points.clearHighlights();
 
         points.config({
@@ -220,13 +211,6 @@
       }
 
       function zoomToRect(rect) {
-        transitioning = true;
-        clearTimeout(transitionTimeoutHandle);
-        transitionTimeoutHandle = setTimeout(
-          () => (transitioning = false),
-          pointsTransitionDuration
-        );
-
         points.clearHighlights();
 
         const zoomedAreaDomain = [areaScale.invert(rect.x), areaScale.invert(rect.x + rect.width)];

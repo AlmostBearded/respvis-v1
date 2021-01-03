@@ -38,11 +38,14 @@ export interface IPointsEventData extends IComponentEventData {
   element: SVGCircleElement;
 }
 
-export interface IPointsComponent extends IComponent<IPointsComponentConfig>, IPoints {}
+export interface IPointsComponent extends IComponent<IPointsComponentConfig>, IPoints {
+  inTransition(): boolean;
+}
 
 export class PointsComponent extends Component<IPointsComponentConfig> implements IPointsComponent {
   private _pointPositioner: IPointPositioner = new PointPositioner();
   private _clipRectSelection: Selection<SVGRectElement, unknown, BaseType, unknown>;
+  private _inTransition = false;
 
   static defaultColor = colors.categorical[0];
 
@@ -126,13 +129,15 @@ export class PointsComponent extends Component<IPointsComponentConfig> implement
       .data(attributes)
       .join(config.createCircles);
 
-    if (animated && config.transitionDuration > 0)
-      circlesSelection.each((d, i, groups) =>
-        chainedTransition(groups[i])
-          .duration(config.transitionDuration)
-          .call(transitionBoundAttributes)
-      );
-    else circlesSelection.call(setBoundAttributes);
+    if (animated && config.transitionDuration > 0) {
+      this._inTransition = true;
+      circlesSelection
+        .transition()
+        .duration(config.transitionDuration)
+        .call(transitionBoundAttributes)
+        .end()
+        .then(() => (this._inTransition = false));
+    } else circlesSelection.call(setBoundAttributes);
 
     this.selection().call(setUniformNestedAttributes, config.attributes);
 
@@ -141,6 +146,10 @@ export class PointsComponent extends Component<IPointsComponentConfig> implement
 
   points(): utils.IPosition[] {
     return this._pointPositioner.points();
+  }
+
+  inTransition(): boolean {
+    return this._inTransition;
   }
 }
 
