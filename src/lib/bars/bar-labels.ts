@@ -10,6 +10,7 @@ import {
   transitionAttributes,
   transitionBoundAttributes,
   setBoundAttributes,
+  IRect,
 } from '../core';
 import {
   BarPointPositioner,
@@ -18,12 +19,14 @@ import {
   IBarPointPositionerConfig,
   VerticalPosition,
 } from './bar-point-positioner';
-import { Selection, BaseType, create } from 'd3-selection';
+import { Selection, BaseType, create, select } from 'd3-selection';
 import { IPoints } from '../points';
+import { createDropShadowFilter } from '../core/filter';
 
 export interface IBarLabelsConfig extends IComponentConfig, IBarPointPositionerConfig {
   createLabels: (
-    selection: Selection<BaseType, IAttributes, any, any>
+    selection: Selection<BaseType, IAttributes, any, any>,
+    containerSelection: Selection<SVGElement, any, any, unknown>
   ) => Selection<SVGGElement, IAttributes, any, any>;
   labels: utils.IStringable[];
   transitionDuration: number;
@@ -98,7 +101,7 @@ export class BarLabelsComponent extends Component<IBarLabelsConfig> implements I
     const labelsSelection = this.selection()
       .selectAll('.label')
       .data(attributes)
-      .join(config.createLabels);
+      .join((enter) => config.createLabels(enter, this.selection()));
 
     if (animated && config.transitionDuration > 0)
       labelsSelection
@@ -127,11 +130,43 @@ export function barLabels(): BarLabelsComponent {
 }
 
 export function createLabels(
-  selection: Selection<BaseType, IAttributes, SVGElement, unknown>
+  selection: Selection<BaseType, IAttributes, SVGElement, unknown>,
+  containerSelection: Selection<SVGElement, any, SVGElement, unknown>
 ): Selection<SVGGElement, IAttributes, SVGElement, unknown> {
   return selection
     .append('g')
     .classed('label', true)
     .call(setBoundAttributes)
     .call((g) => g.append('text'));
+}
+
+export function createLabelsWithDropShadow(
+  selection: Selection<BaseType, IAttributes, SVGElement, unknown>,
+  containerSelection: Selection<SVGElement, any, SVGElement, unknown>,
+  dropShadowFilterRect: IRect<string>,
+  dropShadowOffset: utils.IPosition,
+  dropShadowBlurStdDeviation: number
+): Selection<SVGGElement, IAttributes, SVGElement, unknown> {
+  containerSelection
+    .selectAll('.drop-shadow')
+    .data([null])
+    .join((enter) =>
+      enter
+        .call(
+          createDropShadowFilter,
+          dropShadowFilterRect,
+          dropShadowOffset,
+          dropShadowBlurStdDeviation
+        )
+        .select('defs')
+    );
+
+  const filterSelection = containerSelection.select('.drop-shadow');
+  const filterId = filterSelection.attr('id');
+
+  return selection
+    .append('g')
+    .classed('label', true)
+    .call(setBoundAttributes)
+    .call((g) => g.append('text').attr('filter', `url(#${filterId})`));
 }

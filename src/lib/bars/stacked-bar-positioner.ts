@@ -5,7 +5,7 @@ import {
   IBandScaleConfig,
   IScaleConfig,
   linearScale,
-  Rect,
+  IRect,
   utils,
 } from '../core';
 import { BarOrientation, IBars } from './bar-positioner';
@@ -34,7 +34,7 @@ export const DEFAULT_STACKED_BAR_POSITIONER_CONFIG: IStackedBarPositionerConfig 
 
 export class StackedBarPositioner implements IStackedBarPositioner {
   private _config: IStackedBarPositionerConfig;
-  private _bars: Rect[] = [];
+  private _bars: IRect<number>[] = [];
 
   constructor() {
     this._config = DEFAULT_STACKED_BAR_POSITIONER_CONFIG;
@@ -97,7 +97,7 @@ export class StackedBarPositioner implements IStackedBarPositioner {
     return this;
   }
 
-  bars(): Rect[] {
+  bars(): IRect<number>[] {
     return this._bars;
   }
 }

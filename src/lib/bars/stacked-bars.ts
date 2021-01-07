@@ -4,6 +4,7 @@ import {
   IComponent,
   IComponentConfig,
   Rect,
+  IRect,
   utils,
   IComponentEventData,
   setUniformNestedAttributes,
@@ -139,7 +140,7 @@ export class StackedBarsComponent
     return this;
   }
 
-  bars(): Rect[] {
+  bars(): IRect<number>[] {
     return this._barPositioner.bars();
   }
 }

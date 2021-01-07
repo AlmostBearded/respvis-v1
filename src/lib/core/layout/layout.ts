@@ -4,7 +4,7 @@ import { IRect, Rect } from '../rect';
 
 type ILayoutNode = {
   style: ILayoutStyle;
-  layout: IRect;
+  layout: IRect<number>;
   children: ILayoutNode[];
 };
 

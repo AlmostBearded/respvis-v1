@@ -18,14 +18,14 @@ import {
 import { active } from 'd3-transition';
 
 export interface IBrushComponentConfig extends IComponentConfig {
-  selectionRect: IRect | null;
+  selectionRect: IRect<number> | null;
   transitionDuration: number;
   events: utils.IDictionary<(event: Event, data: IBrushEventData) => void>;
 }
 
 export interface IBrushEventData extends IComponentEventData {
   brushEvent: D3BrushEvent<unknown>;
-  selectionRect?: IRect;
+  selectionRect?: IRect<number>;
 }
 
 export interface IBrushComponent extends IComponent<IBrushComponentConfig> {}
@@ -37,7 +37,7 @@ export class BrushComponent extends Component<IBrushComponentConfig> implements 
     for (const typenames in config.events) {
       component._brush.on(typenames, (e: D3BrushEvent<unknown>) => {
         const s = e.selection;
-        let selectionRect: IRect | undefined = undefined;
+        let selectionRect: IRect<number> | undefined = undefined;
         if (s) {
           const x = s[0][0],
             y = s[0][1],

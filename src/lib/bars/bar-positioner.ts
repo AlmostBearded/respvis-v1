@@ -5,7 +5,7 @@ import {
   IBandScaleConfig,
   IScaleConfig,
   linearScale,
-  Rect,
+  IRect,
   utils,
 } from '../core';
 
@@ -15,7 +15,7 @@ export enum BarOrientation {
 }
 
 export interface IBars {
-  bars(): Rect[];
+  bars(): IRect<number>[];
 }
 
 export interface IBarPositionerConfig {
@@ -42,7 +42,7 @@ export const DEFAULT_BAR_POSITIONER_CONFIG: IBarPositionerConfig = {
 
 export class BarPositioner implements IBarPositioner {
   private _config: IBarPositionerConfig;
-  private _bars: Rect[] = [];
+  private _bars: IRect<number>[] = [];
 
   constructor() {
     this._config = DEFAULT_BAR_POSITIONER_CONFIG;
@@ -97,7 +97,7 @@ export class BarPositioner implements IBarPositioner {
     return this;
   }
 
-  bars(): Rect[] {
+  bars(): IRect<number>[] {
     return this._bars;
   }
 }

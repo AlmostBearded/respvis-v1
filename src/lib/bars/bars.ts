@@ -1,4 +1,5 @@
 import {
+  IRect,
   Rect,
   colors,
   utils,
@@ -114,7 +115,7 @@ export class BarsComponent extends Component<IBarsComponentConfig> implements IB
     return this;
   }
 
-  bars(): Rect[] {
+  bars(): IRect<number>[] {
     return this._barPositioner.bars();
   }
 }

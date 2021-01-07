@@ -77,6 +77,14 @@
         labels: values.flat(),
         horizontalPosition: respVis.HorizontalPosition.Center,
         verticalPosition: respVis.VerticalPosition.Center,
+        createLabels: (selection, containerSelection) =>
+          respVis.createLabelsWithDropShadow(
+            selection,
+            containerSelection,
+            { x: '-25%', y: '-25%', width: '150%', height: '150%' },
+            { x: 0, y: 0 },
+            3  
+          ),
         transitionDuration: 250,
       });
 

@@ -6,7 +6,7 @@ import {
   IBandScaleConfig,
   IScaleConfig,
   linearScale,
-  Rect,
+  IRect,
   utils,
 } from '../core';
 import { BarOrientation, IBars } from './bar-positioner';
@@ -37,7 +37,7 @@ export const DEFAULT_GROUPED_BAR_POSITIONER_CONFIG: IGroupedBarPositionerConfig 
 
 export class GroupedBarPositioner implements IGroupedBarPositioner {
   private _config: IGroupedBarPositionerConfig;
-  private _bars: Rect[] = [];
+  private _bars: IRect<number>[] = [];
 
   constructor() {
     this._config = DEFAULT_GROUPED_BAR_POSITIONER_CONFIG;
@@ -101,7 +101,7 @@ export class GroupedBarPositioner implements IGroupedBarPositioner {
     return this;
   }
 
-  bars(): Rect[] {
+  bars(): IRect<number>[] {
     return this._bars;
   }
 }

@@ -5,6 +5,7 @@ import {
   utils,
   colors,
   Rect,
+  IRect,
   IComponentEventData,
   setUniformNestedAttributes,
   IAttributes,
@@ -139,7 +140,7 @@ export class GroupedBarsComponent
     return this;
   }
 
-  bars(): Rect[] {
+  bars(): IRect<number>[] {
     return this._barPositioner.bars();
   }
 }

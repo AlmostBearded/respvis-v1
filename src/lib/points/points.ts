@@ -10,6 +10,7 @@ import {
   IComponentConfig,
   IComponentEventData,
   Rect,
+  IRect,
   setAttributes,
   setBoundAttributes,
   setUniformAttributes,
