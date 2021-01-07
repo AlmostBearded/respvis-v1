@@ -30,35 +30,29 @@
       import withSwatchLegend from './components/legend/with-swatch-legend.js';
       import withHighlightLegendSwatch from './components/legend/with-highlight-swatch.js';
       import withDisableLegendSwatch from './components/legend/with-disable-swatch.js';
+      import data from './data/desktop-mobile-tablet.js';
 
       // data
-      const categories = ['Ken', 'Barbie', 'Hank', 'Fred', 'Susie'],
-        expenses = ['Rent', 'Food', 'Utilities', 'Fun'],
-        values = [
-          [600, 150, 50, 20],
-          [500, 125, 80, 50],
-          [700, 200, 25, 25],
-          [550, 175, 75, 100],
-          [650, 160, 60, 30],
-        ],
-        maxValue = Math.max(...values.map((stackValues) => stackValues.reduce((a, b) => a + b)));
+      const subcategories = ['Desktop', 'Mobile', 'Tablet'],
+        values = data.desktop.map((d, i) => [data.desktop[i], data.mobile[i], data.tablet[i]]),
+        maxValue = 100;
 
       // formatters
-      var valueFormatter = (value) => `$${value}`;
+      var valueFormatter = (value) => `${value}%`;
 
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
       // scales
-      const personScale = respVis.bandScale();
-      const expenseScale = respVis.linearScale();
+      const yearScale = respVis.bandScale();
+      const shareScale = respVis.linearScale();
 
       // bars
       const barColors = respVis.StackedBarsComponent.defaultColors;
       const bars = withHighlightBar(respVis.stackedBars()).config({
-        categories: categories,
-        categoryScale: { scale: personScale, padding: 0.1 },
+        categories: data.years,
+        categoryScale: { scale: yearScale, padding: 0.1 },
         values: values,
-        valueScale: { scale: expenseScale, domain: [0, maxValue] },
+        valueScale: { scale: shareScale, domain: [0, maxValue] },
         orientation: respVis.BarOrientation.Horizontal,
         transitionDuration: 250,
         events: {
@@ -90,16 +84,16 @@
       const legend = withDisableLegendSwatch(
         withHighlightLegendSwatch(withSwatchLegend(respVis.group()))
       ).config({
-        labels: expenses,
+        labels: subcategories,
         colors: respVis.GroupedBarsComponent.defaultColors,
         rowCount: 1,
-        columnCount: expenses.length,
+        columnCount: subcategories.length,
         attributes: { cursor: 'default' },
         events: {
           mouseover: (e, d) => hoverLegendSwatch(d.childIndex, true),
           mouseout: (e, d) => hoverLegendSwatch(d.childIndex, false),
         },
-        responsiveConfigs: { [wideMediaQuery]: { rowCount: expenses.length, columnCount: 1 } },
+        responsiveConfigs: { [wideMediaQuery]: { rowCount: subcategories.length, columnCount: 1 } },
       });
 
       // bottom axis
@@ -107,12 +101,12 @@
         .call((axis) =>
           axis.ticks.config({
             attributes: { cursor: 'auto' },
-            scale: expenseScale,
+            scale: shareScale,
             tickValues: [0, maxValue / 2, maxValue],
             labelFormatter: valueFormatter,
             responsiveConfigs: {
               [wideMediaQuery]: {
-                scale: personScale,
+                scale: yearScale,
                 tickValues: undefined,
                 labelFormatter: (value) => value.toString(),
                 attributes: { cursor: 'default' },
@@ -126,8 +120,8 @@
         )
         .call((axis) =>
           axis.title.config({
-            text: 'Expenses',
-            responsiveConfigs: { [wideMediaQuery]: { text: 'People' } },
+            text: 'Market Shares',
+            responsiveConfigs: { [wideMediaQuery]: { text: 'Years' } },
           })
         );
 
@@ -136,14 +130,14 @@
         .call((axis) =>
           axis.ticks.config({
             attributes: { cursor: 'default' },
-            scale: personScale,
+            scale: yearScale,
             events: {
               mouseover: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, true),
               mouseout: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, false),
             },
             responsiveConfigs: {
               [wideMediaQuery]: {
-                scale: expenseScale,
+                scale: shareScale,
                 labelFormatter: valueFormatter,
                 events: {
                   // unregister events
@@ -157,8 +151,8 @@
         )
         .call((axis) =>
           axis.title.config({
-            text: 'People',
-            responsiveConfigs: { [wideMediaQuery]: { text: 'Expenses' } },
+            text: 'Years',
+            responsiveConfigs: { [wideMediaQuery]: { text: 'Market Shares' } },
           })
         );
 
@@ -230,7 +224,7 @@
         .mount('#chart');
 
       function hoverBar(categoryIndex, barIndex, categoryAxis, valueAxis, hover) {
-        const flatBarIndex = categoryIndex * expenses.length + barIndex;
+        const flatBarIndex = categoryIndex * subcategories.length + barIndex;
         bars.highlightBar(categoryIndex, barIndex, hover);
         barLabels.showLabel(flatBarIndex, hover);
         legend.highlightSwatch(barIndex, hover);
@@ -241,8 +235,8 @@
 
       function hoverLegendSwatch(swatchIndex, hover) {
         legend.highlightSwatch(swatchIndex, hover);
-        categories.forEach((category, categoryIndex) => {
-          const flatBarIndex = categoryIndex * expenses.length + swatchIndex;
+        data.years.forEach((category, categoryIndex) => {
+          const flatBarIndex = categoryIndex * subcategories.length + swatchIndex;
           bars.highlightBar(categoryIndex, swatchIndex, hover);
           barLabels.showLabel(flatBarIndex, hover);
         });
@@ -252,8 +246,8 @@
       function hoverCategoryAxisTick(categoryAxis, valueAxis, tickIndex, hover) {
         valueAxis.clearHighlights();
         categoryAxis.highlightTick(tickIndex, hover);
-        for (let i = 0; i < expenses.length; ++i) {
-          const flatBarIndex = tickIndex * expenses.length + i;
+        for (let i = 0; i < subcategories.length; ++i) {
+          const flatBarIndex = tickIndex * subcategories.length + i;
           bars.highlightBar(tickIndex, i, hover);
           barLabels.showLabel(flatBarIndex, hover);
         }
