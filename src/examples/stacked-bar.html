@@ -35,7 +35,8 @@
       // data
       const subcategories = ['Desktop', 'Mobile', 'Tablet'],
         values = data.desktop.map((d, i) => [data.desktop[i], data.mobile[i], data.tablet[i]]),
-        maxValue = 100;
+        maxValue = 100,
+        labels = values.flat();
 
       // formatters
       var valueFormatter = (value) => `${value}%`;
@@ -74,7 +75,7 @@
       const barLabels = withShowLabel(respVis.barLabels()).config({
         attributes: { 'pointer-events': 'none', text: { fill: '#fff' } },
         bars: bars,
-        labels: values.flat(),
+        labels: labels,
         horizontalPosition: respVis.HorizontalPosition.Center,
         verticalPosition: respVis.VerticalPosition.Center,
         createLabels: (selection, containerSelection) =>
@@ -83,7 +84,7 @@
             containerSelection,
             { x: '-25%', y: '-25%', width: '150%', height: '150%' },
             { x: 0, y: 0 },
-            3  
+            3
           ),
         transitionDuration: 250,
       });
@@ -244,6 +245,7 @@
       function hoverLegendSwatch(swatchIndex, hover) {
         legend.highlightSwatch(swatchIndex, hover);
         data.years.forEach((category, categoryIndex) => {
+          if (values[categoryIndex][swatchIndex] === 0) return;
           const flatBarIndex = categoryIndex * subcategories.length + swatchIndex;
           bars.highlightBar(categoryIndex, swatchIndex, hover);
           barLabels.showLabel(flatBarIndex, hover);
@@ -255,6 +257,7 @@
         valueAxis.clearHighlights();
         categoryAxis.highlightTick(tickIndex, hover);
         for (let i = 0; i < subcategories.length; ++i) {
+          if (values[tickIndex][i] === 0) continue;
           const flatBarIndex = tickIndex * subcategories.length + i;
           bars.highlightBar(tickIndex, i, hover);
           barLabels.showLabel(flatBarIndex, hover);
