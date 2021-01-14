@@ -1,121 +1,63 @@
-import { Selection, BaseType, create, select } from 'd3-selection';
-import { Component, IComponent, IComponentConfig } from '../component';
+import { BaseType, create, Selection } from 'd3-selection';
+import { setUniformAttributes, transitionUniformAttributes } from '../attributes';
+import { IRect } from '../rect';
 import { ISize } from '../utils';
-import { v4 as uuidv4 } from 'uuid';
-import { chainedTransition } from '../chained-transition';
-import {
-  IAttributes,
-  setAttributes,
-  setUniformAttributes,
-  setUniformNestedAttributes,
-  transitionAttributes,
-  transitionUniformAttributes,
-} from '../attributes';
+import { Chart } from './chart';
+import { Component } from './component';
 
-// TODO: Maybe this component should be called ClippedRect?
+export class RectComponent extends Component {
+  private _rect: IRect<number>;
+  private _transitionDuration: number;
 
-export interface IRectComponentConfig extends IComponentConfig {
-  size: ISize;
-}
-
-export interface IRectComponent extends IComponent<IRectComponentConfig> {}
-
-export class RectComponent extends Component<IRectComponentConfig> implements IRectComponent {
-  constructor() {
-    super(
-      create<SVGElement>('svg:g'),
-      {
-        size: { width: 10, height: 10 },
-        attributes: {
-          fill: '#999999',
-          stroke: '#232323',
-          'stroke-width': 1,
-        },
-        responsiveConfigs: {},
-        events: {},
-        parseConfig: (previousConfig: IRectComponentConfig, newConfig: IRectComponentConfig) => {
-          newConfig.attributes.width = newConfig.size.width;
-          newConfig.attributes.height = newConfig.size.height;
-        },
-        applyConfig: (previousConfig: IRectComponentConfig, newConfig: IRectComponentConfig) => {
-          Component.clearEventListeners(this, previousConfig);
-          Component.setEventListeners(this, newConfig);
-          this._render(newConfig, false);
-        },
-      },
-      Component.mergeConfigs
-    );
+  constructor();
+  constructor(selection: Selection<SVGElement, any, any, any>);
+  constructor(selection?: Selection<SVGElement, any, any, any>) {
+    super(selection || create('svg:rect'));
   }
 
-  mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
-    selection.append(() => this.selection().node());
+  init(): this {
+    super.init();
+    this._rect = { x: 0, y: 0, width: 10, height: 10 };
+    this._transitionDuration = 250;
+    this.render();
     return this;
   }
 
-  private _render(config: IRectComponentConfig, animated: boolean): this {
+  rect(): IRect<number>;
+  rect(rect: IRect<number>): this;
+  rect(rect?: IRect<number>): IRect<number> | this {
+    if (rect === undefined) return this._rect;
+    this._rect = rect;
+    return this;
+  }
+
+  size(): ISize;
+  size(size: ISize): this;
+  size(size?: ISize): ISize | this {
+    if (size === undefined) return this._rect;
+    this._rect = { ...this._rect, ...size };
+    return this;
+  }
+
+  transitionDuration(): number;
+  transitionDuration(duration: number): this;
+  transitionDuration(duration?: number): number | this {
+    if (duration === undefined) return this._transitionDuration;
+    this._transitionDuration = duration;
+    return this;
+  }
+
+  render(): this {
+    this.selection().call(setUniformAttributes, this._rect);
+    return super.render();
+  }
+
+  transition(): this {
     this.selection()
-      .call(
-        renderClippedRect,
-        {
-          x: 0,
-          y: 0,
-          ...config.size,
-        },
-        0
-      )
-      .call(setUniformNestedAttributes, config.attributes);
-    return this;
+      .transition()
+      .duration(this._transitionDuration)
+      .call(transitionUniformAttributes, this._rect);
+    this.chart().requestLayout(this._transitionDuration);
+    return super.transition();
   }
-
-  render(animated: boolean): this {
-    return this._render(this.activeConfig(), animated);
-  }
-}
-
-export function rect(): RectComponent {
-  return new RectComponent();
-}
-
-export function renderClippedRect(
-  selection: Selection<SVGGElement, unknown, BaseType, unknown>,
-  attributes: IAttributes,
-  transitionDuration: number
-): void {
-  let clipId: string;
-
-  selection
-    // Casting to disable type checking as the latest d3-selection types don't contain selectChildren yet.
-    .call((s: any) =>
-      (s.selectChildren('clipPath') as Selection<SVGClipPathElement, unknown, BaseType, unknown>)
-        .data([null])
-        .join((enter) =>
-          enter
-            .append('clipPath')
-            .attr('id', (clipId = uuidv4()))
-            .call((s) => s.append('rect').call(setUniformAttributes, attributes))
-        )
-
-        .select('rect')
-        .each((d, i, groups) => {
-          chainedTransition(groups[i])
-            .duration(transitionDuration)
-            .call(transitionUniformAttributes, attributes);
-        })
-    )
-    .call((s: any) =>
-      (s.selectChildren('rect') as Selection<SVGRectElement, IAttributes, BaseType, unknown>)
-        .data([null])
-        .join((enter) =>
-          enter
-            .append('rect')
-            .call((rect) =>
-              rect.attr('clip-path', `url(#${clipId})`).call(setUniformAttributes, attributes)
-            )
-        )
-        .each((d, i, groups) => {
-          chainedTransition(groups[i])
-            .duration(transitionDuration)
-            .call(transitionUniformAttributes, attributes);
-        })
-    );
 }

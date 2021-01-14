@@ -2,17 +2,9 @@ import { BaseType, select, Selection } from 'd3-selection';
 import { SelectionOrTransition, Transition } from 'd3-transition';
 import { calculateSpecificity } from './utils';
 
-export interface IAttributes {
-  [name: string]: string | number | boolean | null;
-}
-
-export interface INestedAttributes {
-  [name: string]: string | number | boolean | null | INestedAttributes;
-}
-
 function _setOrTransitionUniformAttributes(
   selectionOrTransition: SelectionOrTransition<BaseType, unknown, BaseType, unknown>,
-  attributes: IAttributes
+  attributes: object
 ) {
   for (const name in attributes) {
     const value = attributes[name];
@@ -25,25 +17,25 @@ function _setOrTransitionUniformAttributes(
 
 export function setUniformAttributes(
   selection: Selection<BaseType, unknown, BaseType, unknown>,
-  attributes: IAttributes
+  attributes: object
 ) {
   _setOrTransitionUniformAttributes(selection, attributes);
 }
 
 export function setBoundUniformAttributes(
-  selection: Selection<BaseType, IAttributes, BaseType, unknown>
+  selection: Selection<BaseType, object, BaseType, unknown>
 ) {
   selection.call(setUniformAttributes, selection.datum());
 }
 
 export function setAttributes(
   selection: Selection<BaseType, unknown, BaseType, unknown>,
-  attributes: IAttributes[]
+  attributes: object[]
 ) {
   selection.each((d, i, groups) => select(groups[i]).call(setUniformAttributes, attributes[i]));
 }
 
-export function setBoundAttributes(selection: Selection<BaseType, IAttributes, BaseType, unknown>) {
+export function setBoundAttributes(selection: Selection<BaseType, object, BaseType, unknown>) {
   selection.each((attributes, i, groups) =>
     select(groups[i]).call(setUniformAttributes, attributes)
   );
@@ -53,20 +45,20 @@ export function setBoundAttributes(selection: Selection<BaseType, IAttributes, B
 
 export function transitionUniformAttributes(
   transition: Transition<BaseType, unknown, BaseType, unknown>,
-  attributes: IAttributes
+  attributes: object
 ) {
   _setOrTransitionUniformAttributes(transition, attributes);
 }
 
 export function transitionBoundUniformAttributes(
-  transition: Transition<BaseType, IAttributes, BaseType, unknown>
+  transition: Transition<BaseType, object, BaseType, unknown>
 ) {
   transition.call(transitionUniformAttributes, transition.selection().datum());
 }
 
 export function transitionAttributes(
   transition: Transition<BaseType, unknown, BaseType, unknown>,
-  attributes: IAttributes[]
+  attributes: object[]
 ) {
   transition.each((d, i, groups) =>
     select(groups[i]).transition(transition).call(transitionUniformAttributes, attributes[i])
@@ -74,7 +66,7 @@ export function transitionAttributes(
 }
 
 export function transitionBoundAttributes(
-  transition: Transition<BaseType, IAttributes, BaseType, unknown>
+  transition: Transition<BaseType, object, BaseType, unknown>
 ) {
   transition.each((attributes, i, groups) =>
     select(groups[i]).transition(transition).call(transitionUniformAttributes, attributes)
@@ -85,7 +77,7 @@ export function transitionBoundAttributes(
 
 function _setOrTransitionUniformNestedAttributes(
   selectionOrTransition: SelectionOrTransition<BaseType, unknown, BaseType, unknown>,
-  attributes: INestedAttributes
+  attributes: object
 ) {
   const selectors: string[] = [];
 
@@ -107,20 +99,20 @@ function _setOrTransitionUniformNestedAttributes(
 
 export function setUniformNestedAttributes(
   selection: Selection<BaseType, unknown, BaseType, unknown>,
-  attributes: INestedAttributes
+  attributes: object
 ) {
   _setOrTransitionUniformNestedAttributes(selection, attributes);
 }
 
 export function setBoundUniformNestedAttributes(
-  selection: Selection<BaseType, INestedAttributes, BaseType, unknown>
+  selection: Selection<BaseType, object, BaseType, unknown>
 ) {
   selection.call(setUniformNestedAttributes, selection.datum());
 }
 
 export function setNestedAttributes(
   selection: Selection<BaseType, unknown, BaseType, unknown>,
-  attributes: INestedAttributes[]
+  attributes: object[]
 ) {
   selection.each((d, i, groups) =>
     select(groups[i]).call(setUniformNestedAttributes, attributes[i])
@@ -128,7 +120,7 @@ export function setNestedAttributes(
 }
 
 export function setBoundNestedAttributes(
-  selection: Selection<BaseType, INestedAttributes, BaseType, unknown>
+  selection: Selection<BaseType, object, BaseType, unknown>
 ) {
   selection.each((attributes, i, groups) =>
     select(groups[i]).call(setUniformNestedAttributes, attributes)
@@ -139,20 +131,20 @@ export function setBoundNestedAttributes(
 
 export function transitionUniformNestedAttributes(
   transition: Transition<BaseType, unknown, BaseType, unknown>,
-  attributes: INestedAttributes
+  attributes: object
 ) {
   _setOrTransitionUniformNestedAttributes(transition, attributes);
 }
 
 export function transitionBoundUniformNestedAttributes(
-  transition: Transition<BaseType, INestedAttributes, BaseType, unknown>
+  transition: Transition<BaseType, object, BaseType, unknown>
 ) {
   transition.call(transitionUniformNestedAttributes, transition.selection().datum());
 }
 
 export function transitionNestedAttributes(
   transition: Transition<BaseType, unknown, BaseType, unknown>,
-  attributes: INestedAttributes[]
+  attributes: object[]
 ) {
   transition.each((d, i, groups) =>
     select(groups[i]).transition(transition).call(transitionUniformNestedAttributes, attributes[i])
@@ -160,7 +152,7 @@ export function transitionNestedAttributes(
 }
 
 export function transitionBoundNestedAttributes(
-  transition: Transition<BaseType, INestedAttributes, BaseType, unknown>
+  transition: Transition<BaseType, object, BaseType, unknown>
 ) {
   transition.each((attributes, i, groups) =>
     select(groups[i]).transition(transition).call(transitionUniformNestedAttributes, attributes)

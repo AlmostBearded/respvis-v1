@@ -1,95 +1,112 @@
-import {
-  applyBandScaleConfig,
-  applyScaleConfig,
-  bandScale,
-  IBandScaleConfig,
-  IScaleConfig,
-  linearScale,
-  IRect,
-  utils,
-} from '../core';
+import { ScaleBand, ScaleContinuousNumeric } from 'd3-scale';
+import { bandScale, linearScale, IRect, utils } from '../core';
 
 export enum BarOrientation {
   Vertical,
   Horizontal,
 }
 
-export interface IBars {
+export interface Bars {
+  categories(): any[];
+  categories(categories: any[]): this;
+  categoryScale(): ScaleBand<any>;
+  categoryScale(scale: ScaleBand<any>): this;
+  values(): any[];
+  values(values: any[]): this;
+  valueScale(): ScaleContinuousNumeric<number, number>;
+  valueScale(scale: ScaleContinuousNumeric<number, number>): this;
+  orientation(): BarOrientation;
+  orientation(orientation: BarOrientation): this;
   bars(): IRect<number>[];
 }
 
-export interface IBarPositionerConfig {
-  categories: any[];
-  categoryScale: IBandScaleConfig;
-  values: number[];
-  valueScale: IScaleConfig<number, number, number>;
-  orientation: BarOrientation;
-}
+export class BarPositioner implements Bars {
+  private _categories: any[];
+  private _categoryScale: ScaleBand<any>;
+  private _values: number[];
+  private _valueScale: ScaleContinuousNumeric<number, number>;
+  private _orientation: BarOrientation;
 
-export interface IBarPositioner extends IBars {
-  config(config: IBarPositionerConfig): this;
-  config(): IBarPositionerConfig;
-  fitInSize(size: utils.ISize): this;
-}
-
-export const DEFAULT_BAR_POSITIONER_CONFIG: IBarPositionerConfig = {
-  categories: [],
-  categoryScale: { scale: bandScale(), domain: [], padding: 0.1, nice: true },
-  values: [],
-  valueScale: { scale: linearScale<number>(), domain: [], nice: true },
-  orientation: BarOrientation.Vertical,
-};
-
-export class BarPositioner implements IBarPositioner {
-  private _config: IBarPositionerConfig;
   private _bars: IRect<number>[] = [];
 
   constructor() {
-    this._config = DEFAULT_BAR_POSITIONER_CONFIG;
+    this._categories = [];
+    this._categoryScale = bandScale();
+    this._values = [];
+    this._valueScale = linearScale();
+    this._orientation = BarOrientation.Vertical;
   }
 
-  config(config: IBarPositionerConfig): this;
-  config(): IBarPositionerConfig;
-  config(config?: IBarPositionerConfig): any {
-    if (config === undefined) return this._config;
-    utils.deepExtend(this._config, config);
-    this._config.categoryScale.domain = this._config.categories;
-    applyBandScaleConfig(this._config.categoryScale);
-    applyScaleConfig(this._config.valueScale);
+  categories(): any[];
+  categories(categories: any[]): this;
+  categories(categories?: any[]): any[] | this {
+    if (categories === undefined) return this._categories;
+    this._categories = categories;
+    return this;
+  }
+
+  categoryScale(): ScaleBand<any>;
+  categoryScale(scale: ScaleBand<any>): this;
+  categoryScale(scale?: ScaleBand<any>): ScaleBand<any> | this {
+    if (scale === undefined) return this._categoryScale;
+    this._categoryScale = scale;
+    return this;
+  }
+
+  values(): any[];
+  values(values: any[]): this;
+  values(values?: any[]): any[] | this {
+    if (values === undefined) return this._values;
+    this._values = values;
+    return this;
+  }
+
+  valueScale(): ScaleContinuousNumeric<number, number>;
+  valueScale(scale: ScaleContinuousNumeric<number, number>): this;
+  valueScale(
+    scale?: ScaleContinuousNumeric<number, number>
+  ): ScaleContinuousNumeric<number, number> | this {
+    if (scale === undefined) return this._valueScale;
+    this._valueScale = scale;
+    return this;
+  }
+
+  orientation(): BarOrientation;
+  orientation(orientation: BarOrientation): this;
+  orientation(orientation?: BarOrientation): BarOrientation | this {
+    if (orientation === undefined) return this._orientation;
+    this._orientation = orientation;
     return this;
   }
 
   fitInSize(size: utils.ISize): this {
-    const categoryScale = this._config.categoryScale.scale,
-      valueScale = this._config.valueScale.scale;
-
-    if (this._config.orientation === BarOrientation.Vertical) {
-      categoryScale.range([0, size.width]);
-      valueScale.range([size.height, 0]);
-    } else if (this._config.orientation === BarOrientation.Horizontal) {
-      categoryScale.range([0, size.height]);
-      valueScale.range([0, size.width]);
+    if (this._orientation === BarOrientation.Vertical) {
+      this._categoryScale.range([0, size.width]);
+      this._valueScale.range([size.height, 0]);
+    } else if (this._orientation === BarOrientation.Horizontal) {
+      this._categoryScale.range([0, size.height]);
+      this._valueScale.range([0, size.width]);
     }
 
     this._bars = [];
 
-    for (let i = 0; i < this._config.values.length; ++i) {
-      const c = this._config.categories[i];
-      const v = this._config.values[i];
+    for (let i = 0; i < this._values.length; ++i) {
+      const c = this._categories[i];
+      const v = this._values[i];
 
-      if (this._config.orientation === BarOrientation.Vertical) {
+      if (this._orientation === BarOrientation.Vertical) {
         this._bars.push({
-          x: categoryScale(c)!,
-          y: Math.min(valueScale(0)!, valueScale(v)!),
-          width: categoryScale.bandwidth(),
-          height: Math.abs(valueScale(0)! - valueScale(v)!),
+          x: this._categoryScale(c)!,
+          y: Math.min(this._valueScale(0)!, this._valueScale(v)!),
+          width: this._categoryScale.bandwidth(),
+          height: Math.abs(this._valueScale(0)! - this._valueScale(v)!),
         });
-      } else if (this._config.orientation === BarOrientation.Horizontal) {
+      } else if (this._orientation === BarOrientation.Horizontal) {
         this._bars.push({
-          x: Math.min(valueScale(0)!, valueScale(v)!),
-          y: categoryScale(c)!,
-          width: Math.abs(valueScale(0)! - valueScale(v)!),
-          height: categoryScale.bandwidth(),
+          x: Math.min(this._valueScale(0)!, this._valueScale(v)!),
+          y: this._categoryScale(c)!,
+          width: Math.abs(this._valueScale(0)! - this._valueScale(v)!),
+          height: this._categoryScale.bandwidth(),
         });
       }
     }

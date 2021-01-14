@@ -149,6 +149,7 @@ function setLayoutAttributes(element: Element, layoutNode: ILayoutNode): boolean
   if (element.getAttribute('laidOut') === null) return false;
 
   element.setAttribute('layout', Rect.fromRect(layoutNode.layout).toString());
+  element.__layoutRect = layoutNode.layout;
 
   let notLaidOutChildCount = 0;
   for (let i = 0; i < element.children.length; ++i) {

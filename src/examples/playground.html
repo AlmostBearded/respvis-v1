@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <title>RespVis - Playground</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8" />
+    <style>
+      #chart {
+        width: 100%;
+        height: 50vh;
+        min-height: 25rem;
+      }
+
+      body {
+        background-color: floralwhite;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Bar Chart</h1>
+    <div id="chart"></div>
+    <script src="../respvis.js"></script>
+    <script type="module">
+      import LeftAxisMixin from './components/axis/left-axis-mixin.js';
+      import BottomAxisMixin from './components/axis/bottom-axis-mixin.js';
+      // import withSwatchLegend from './components/legend/with-swatch-legend.js';
+
+      // var categories = ['Vienna', 'Graz', 'Linz', 'Salzburg', 'Innsbruck', 'Klagenfurt', 'Villach'],
+      //   values = [1691, 222, 205, 153, 132, 91, 59],
+      //   maxValue = Math.max(...values),
+      //   valueFormatter = (value) => `${value}k`;
+
+      const wideMediaQuery = 'screen and (min-width: 40rem)';
+
+      // scales
+      // const cityScale = respVis.bandScale();
+      // const populationScale = respVis.linearScale();
+
+      // legend
+      // const legend = respVis.group().config({
+      // attributes: { cursor: 'pointer' },
+      // labels: years,
+      // colors: barColors,
+      // rowCount: 1,
+      // columnCount: years.length,
+      // responsiveConfigs: {
+      // [wideMediaQuery]: {
+      // rowCount: years.length, columnCount: 1
+      // },
+      // },
+      // });
+
+      const categories = ['A', 'B', 'C'];
+      const values = [1, 2, 3];
+
+      const categoryScale = respVis.bandScale().domain(categories).padding(0.1);
+      const valueScale = respVis.linearScale().domain([0, 3]).nice();
+
+      const bars = respVis.BarsComponent.create()
+        .categories(categories)
+        .categoryScale(categoryScale)
+        .values(values)
+        .valueScale(valueScale)
+        .orientation(respVis.BarOrientation.Vertical)
+        .onMediaQuery(
+          wideMediaQuery,
+          (bars) => bars.orientation(respVis.BarOrientation.Vertical),
+          (bars) => bars.orientation(respVis.BarOrientation.Horizontal)
+        );
+
+      const leftAxis = LeftAxisMixin(respVis.GroupComponent)
+        .create()
+        .onMediaQuery(
+          wideMediaQuery,
+          (axis) =>
+            axis
+              .call((axis) => axis.ticks().scale(valueScale))
+              .call((axis) => axis.title().text('Values')),
+          (axis) =>
+            axis
+              .call((axis) => axis.ticks().scale(categoryScale))
+              .call((axis) => axis.title().text('Categories'))
+        );
+
+      const bottomAxis = BottomAxisMixin(respVis.GroupComponent)
+        .create()
+        .onMediaQuery(
+          wideMediaQuery,
+          (axis) =>
+            axis
+              .call((axis) => axis.ticks().scale(categoryScale))
+              .call((axis) => axis.title().text('Categories')),
+          (axis) =>
+            axis
+              .call((axis) => axis.ticks().scale(valueScale))
+              .call((axis) => axis.title().text('Values'))
+        );
+
+      const text = respVis.TextComponent.create()
+        .attr('fill', 'green')
+        .onMediaQuery(
+          wideMediaQuery,
+          (text) => text.attr('font-size', '2rem').text('Hellooooo Woooorld!'),
+          (text) => text.attr('font-size', '1rem').text('Hello World')
+        );
+
+      const rect = respVis.RectComponent.create()
+        .attr('fill', 'blue')
+        .onMediaQuery(
+          wideMediaQuery,
+          (rect) => rect.size({ width: 200, height: 100 }),
+          (rect) => rect.size({ width: 150, height: 75 })
+        );
+
+      const chart = respVis.Chart.create()
+        .attr('grid-template', '1fr auto / auto 1fr')
+        .call((chart) => chart.append(bars).attr('grid-area', '1 / 2 / 2 / 3'))
+        .call((chart) => chart.append(leftAxis).attr('grid-area', '1 / 1 / 2 / 2'))
+        // .call((chart) => chart.append(bottomAxis).attr('grid-area', '2 / 2 / 3 / 3'))
+        // .call((chart) =>
+        //   chart.append(rect).attr('grid-area', '1 / 2 / 2 / 3').attr('place-self', 'center center')
+        // )
+        // .call((chart) =>
+        //   chart.append(text).attr('grid-area', '1 / 2 / 2 / 3').attr('place-self', 'center center')
+        // )
+
+        .mount('#chart');
+    </script>
+  </body>
+</html>
