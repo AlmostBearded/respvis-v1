@@ -72,14 +72,9 @@ export class BarsComponent
     return super.transition();
   }
 
-  layout(): this {
-    this.selectAll('.bar')
-      .data(this._barPositioner.fitInSize(Rect.fromString(this.attr('layout'))).bars())
-      .transition()
-      .delay(this._transitionDelay)
-      .duration(this._transitionDuration)
-      .call(transitionBoundAttributes);
-    super.layout();
+  update(): this {
+    super.update();
+    this._barPositioner.fitInSize(Rect.fromString(this.attr('layout')));
     return this;
   }
 

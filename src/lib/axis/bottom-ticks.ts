@@ -3,17 +3,13 @@ import { Selection } from 'd3-selection';
 import { TicksComponent } from './ticks';
 
 export class BottomTicksComponent extends TicksComponent {
-  constructor(selection: Selection<SVGElement, any, any, any>) {
-    super(selection);
-    this.attr('height', 'min-content');
-  }
-
   protected createAxis(scale: AxisScale<AxisDomain>): Axis<AxisDomain> {
     return axisBottom(scale);
   }
 
-  protected renderAxis(axis: Axis<AxisDomain>): void {
-    super.renderAxis(axis);
-    this.selection().selectAll('.tick text').attr('dominant-baseline', 'hanging');
+  update(): this {
+    super.update();
+    this.attr('height', this._bounds.height);
+    return this;
   }
 }

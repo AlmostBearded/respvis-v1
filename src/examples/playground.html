@@ -116,7 +116,7 @@
         .attr('grid-template', '1fr auto / auto 1fr')
         .call((chart) => chart.append(bars).attr('grid-area', '1 / 2 / 2 / 3'))
         .call((chart) => chart.append(leftAxis).attr('grid-area', '1 / 1 / 2 / 2'))
-        // .call((chart) => chart.append(bottomAxis).attr('grid-area', '2 / 2 / 3 / 3'))
+        .call((chart) => chart.append(bottomAxis).attr('grid-area', '2 / 2 / 3 / 3'))
         // .call((chart) =>
         //   chart.append(rect).attr('grid-area', '1 / 2 / 2 / 3').attr('place-self', 'center center')
         // )
