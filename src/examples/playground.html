@@ -66,7 +66,8 @@
           wideMediaQuery,
           (bars) => bars.orientation(respVis.BarOrientation.Vertical),
           (bars) => bars.orientation(respVis.BarOrientation.Horizontal)
-        );
+        )
+        .on('mouseover', (e, d) => console.log(e, d));
 
       const leftAxis = LeftAxisMixin(respVis.GroupComponent)
         .create()

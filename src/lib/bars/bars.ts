@@ -12,13 +12,20 @@ import { BarOrientation, BarPositioner, Bars } from './bar-positioner';
 import { ScaleBand, ScaleContinuousNumeric } from 'd3-scale';
 import { TransitionDurationMixin } from '../core/mixins/transition-duration';
 import { TransitionDelayMixin } from '../core/mixins/transition-delay';
+import { ComponentEventData, EventsMixin } from '../core/mixins/events';
 
 export type CreateBarsFunction = (
-  enterSelection: Selection<EnterElement, IRect<number>, BaseType, any>
-) => Selection<BaseType, any, BaseType, any>;
+  enterSelection: Selection<EnterElement, IRect<number>, any, any>
+) => Selection<BaseType, any, any, any>;
+
+export interface BarsComponentEventData extends ComponentEventData {
+  component: BarsComponent;
+  index: number;
+  element: SVGRectElement;
+}
 
 export class BarsComponent
-  extends TransitionDelayMixin(250, TransitionDurationMixin(250, Component))
+  extends EventsMixin(TransitionDelayMixin(250, TransitionDurationMixin(250, Component)))
   implements Bars {
   private _barPositioner: BarPositioner;
   private _onCreateBars: CreateBarsFunction;
@@ -132,17 +139,13 @@ export class BarsComponent
     return this._barPositioner.bars();
   }
 
-  // static setEventListeners(component: BarsComponent, config: IBarsComponentConfig) {
-  //   for (const typenames in config.events) {
-  //     component.selection().on(typenames, (e: Event) => {
-  //       const barElement = e.target as SVGRectElement;
-  //       const index = Array.prototype.indexOf.call(barElement.parentNode!.children, barElement);
-  //       config.events[typenames](e, {
-  //         component: component,
-  //         index: index,
-  //         barElement: barElement,
-  //       });
-  //     });
-  //   }
-  // }
+  createEventData(event: Event): BarsComponentEventData {
+    const element = event.target as SVGRectElement;
+    const index = Array.prototype.indexOf.call(element.parentNode!.children, element);
+    return {
+      component: this,
+      index: index,
+      element: element,
+    };
+  }
 }
