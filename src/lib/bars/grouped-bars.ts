@@ -1,156 +1,135 @@
-import {
-  Component,
-  IComponent,
-  IComponentConfig,
-  utils,
-  colors,
-  Rect,
-  IRect,
-  IComponentEventData,
-  setUniformNestedAttributes,
-  IAttributes,
-  transitionBoundAttributes,
-  setBoundAttributes,
-} from '../core';
-import { BaseType, Selection, create } from 'd3-selection';
-import { createBars } from './bars-decorator';
-import {
-  DEFAULT_GROUPED_BAR_POSITIONER_CONFIG,
-  GroupedBarPositioner,
-  IGroupedBarPositioner,
-  IGroupedBarPositionerConfig,
-} from './grouped-bar-positioner';
-import { IBars } from './bars';
+import { range } from 'd3-array';
+import { ScaleBand, ScaleContinuousNumeric } from 'd3-scale';
+import { linearScale, IRect, utils, bandScale } from '../core';
+import { ISize } from '../core/utils';
+import { BarOrientation } from './bars';
 
-export interface IGroupedBarsComponentConfig extends IComponentConfig, IGroupedBarPositionerConfig {
-  createBars: (
-    selection: Selection<BaseType, IAttributes, any, any>
-  ) => Selection<SVGRectElement, IAttributes, any, any>;
-  createBarGroups: (
-    selection: Selection<BaseType, any, any, any>
-  ) => Selection<SVGGElement, any, any, any>;
-  transitionDuration: number;
-  events: utils.IDictionary<(event: Event, data: IGroupedBarsEventData) => void>;
+export interface GroupedBars {
+  categories(): any[];
+  categories(categories: any[]): this;
+  categoryScale(): ScaleBand<any>;
+  categoryScale(scale: ScaleBand<any>): this;
+  values(): any[][];
+  values(values: any[][]): this;
+  valueScale(): ScaleContinuousNumeric<number, number>;
+  valueScale(scale: ScaleContinuousNumeric<number, number>): this;
+  subcategoryScale(): ScaleBand<any>;
+  subcategoryScale(scale: ScaleBand<any>): this;
+  orientation(): BarOrientation;
+  orientation(orientation: BarOrientation): this;
+  bars(): IRect<number>[];
 }
 
-export interface IGroupedBarsEventData extends IComponentEventData {
-  categoryIndex: number;
-  barIndex: number;
-  barGroupElement: SVGGElement;
-  barElement: SVGRectElement;
-}
-
-export interface IGroupedBarsComponent extends IComponent<IGroupedBarsComponentConfig>, IBars {}
-
-export class GroupedBarsComponent
-  extends Component<IGroupedBarsComponentConfig>
-  implements IGroupedBarsComponent {
-  private _barPositioner: IGroupedBarPositioner = new GroupedBarPositioner();
-
-  static defaultColors = colors.categorical;
-
-  static setEventListeners(component: GroupedBarsComponent, config: IGroupedBarsComponentConfig) {
-    for (const typenames in config.events) {
-      component.selection().on(typenames, (e: Event) => {
-        const barElement = e.target as SVGRectElement;
-        const barGroupElement = barElement.parentNode!;
-
-        const indexOf = Array.prototype.indexOf;
-        const categoryIndex = indexOf.call(barGroupElement.parentNode!.children, barGroupElement);
-        const barIndex = indexOf.call(barGroupElement.children, barElement);
-
-        config.events[typenames](e, {
-          component: component,
-          categoryIndex: categoryIndex,
-          barIndex: barIndex,
-          barGroupElement: barGroupElement as SVGGElement,
-          barElement: barElement as SVGRectElement,
-        });
-      });
-    }
-  }
+export class GroupedBarsCalculator implements GroupedBars {
+  private _categories: any[];
+  private _categoryScale: ScaleBand<any>;
+  private _subcategoryScale: ScaleBand<any>;
+  private _values: number[][];
+  private _valueScale: ScaleContinuousNumeric<number, number>;
+  private _orientation: BarOrientation;
+  private _bars: IRect<number>[];
 
   constructor() {
-    super(
-      create<SVGElement>('svg:g').classed('bars', true),
-      {
-        ...DEFAULT_GROUPED_BAR_POSITIONER_CONFIG,
-        createBars: createBars,
-        createBarGroups: createBarGroups,
-        transitionDuration: 0,
-        attributes: Object.assign(
-          { '.bar': { stroke: '#232323', 'stroke-width': 1 } },
-          ...GroupedBarsComponent.defaultColors.map((c, i) => ({
-            [`.bar:nth-child(${i + 1})`]: { fill: c },
-          }))
-        ),
-        responsiveConfigs: {},
-        events: {},
-        parseConfig: (
-          previousConfig: IGroupedBarsComponentConfig,
-          newConfig: IGroupedBarsComponentConfig
-        ) => {},
-        applyConfig: (
-          previousConfig: IGroupedBarsComponentConfig,
-          newConfig: IGroupedBarsComponentConfig
-        ) => {
-          GroupedBarsComponent.clearEventListeners(this, previousConfig);
-          GroupedBarsComponent.setEventListeners(this, newConfig);
-          this._barPositioner.config(newConfig);
-        },
-      },
-      Component.mergeConfigs
-    );
+    this._categories = [];
+    this._categoryScale = bandScale().padding(0.1);
+    this._subcategoryScale = bandScale().padding(0.1);
+    this._values = [];
+    this._valueScale = linearScale();
+    this._orientation = BarOrientation.Vertical;
+    this._bars = [];
   }
 
-  mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
-    selection.append(() => this.selection().node());
+  categories(): any[];
+  categories(categories: any[]): this;
+  categories(categories?: any) {
+    if (categories === undefined) return this._categories;
+    this._categories = categories;
+    this._categoryScale.domain(this._categories);
     return this;
   }
 
-  render(animated: boolean): this {
-    const layoutRect = Rect.fromString(this.selection().attr('layout') || '0, 0, 600, 400');
-    this._barPositioner.fitInSize(layoutRect);
+  categoryScale(): ScaleBand<any>;
+  categoryScale(scale: ScaleBand<any>): this;
+  categoryScale(scale?: any) {
+    if (scale === undefined) return this._categoryScale;
+    this._categoryScale = scale;
+    this._categoryScale.domain(this._categories);
+    return this;
+  }
 
-    const config = this.activeConfig();
+  values(): any[][];
+  values(values: any[][]): this;
+  values(values?: any) {
+    if (values === undefined) return this._values;
+    this._values = values;
+    this._subcategoryScale.domain(range(this._values[0]?.length || 0));
+    return this;
+  }
 
-    const flatBarAttributes: IAttributes[] = this._barPositioner.bars().map((bar) => ({ ...bar }));
-    const barAttributes: IAttributes[][] = [];
-    while (flatBarAttributes.length) {
-      barAttributes.push(flatBarAttributes.splice(0, config.values[0].length));
-    }
+  valueScale(): ScaleContinuousNumeric<number, number>;
+  valueScale(scale: ScaleContinuousNumeric<number, number>): this;
+  valueScale(scale?: any) {
+    if (scale === undefined) return this._valueScale;
+    this._valueScale = scale;
+    return this;
+  }
 
-    const barsSelection = this.selection()
-      .selectAll('.bar-group')
-      .data(barAttributes)
-      .join(config.createBarGroups)
-      .selectAll('.bar')
-      .data((d) => d)
-      .join(config.createBars);
+  subcategoryScale(): ScaleBand<any>;
+  subcategoryScale(scale: ScaleBand<any>): this;
+  subcategoryScale(scale?: any) {
+    if (scale === undefined) return this._subcategoryScale;
+    this._subcategoryScale = scale;
+    this._subcategoryScale.domain(range(this._values[0]?.length || 0));
+    return this;
+  }
 
-    if (animated && config.transitionDuration > 0)
-      barsSelection
-        .transition()
-        .duration(config.transitionDuration)
-        .call(transitionBoundAttributes);
-    else barsSelection.call(setBoundAttributes);
-
-    this.selection().call(setUniformNestedAttributes, config.attributes);
-
+  orientation(): BarOrientation;
+  orientation(orientation: BarOrientation): this;
+  orientation(orientation?: any) {
+    if (orientation === undefined) return this._orientation;
+    this._orientation = orientation;
     return this;
   }
 
   bars(): IRect<number>[] {
-    return this._barPositioner.bars();
+    return this._bars;
   }
-}
 
-export function groupedBars(): GroupedBarsComponent {
-  return new GroupedBarsComponent();
-}
+  fitInSize(size: ISize): this {
+    if (this._orientation === BarOrientation.Vertical) {
+      this._categoryScale.range([0, size.width]);
+      this._valueScale.range([size.height, 0]);
+    } else if (this._orientation === BarOrientation.Horizontal) {
+      this._categoryScale.range([0, size.height]);
+      this._valueScale.range([0, size.width]);
+    }
+    this._subcategoryScale.range([0, this._categoryScale.bandwidth()]);
 
-export function createBarGroups(
-  selection: Selection<BaseType, unknown, SVGElement, unknown>
-): Selection<SVGGElement, unknown, SVGElement, unknown> {
-  return selection.append('g').classed('bar-group', true);
+    this._bars = [];
+    for (let i = 0; i < this._values.length; ++i) {
+      const subcategoryValues = this._values[i];
+      for (let j = 0; j < subcategoryValues.length; ++j) {
+        const c = this._categories[i];
+        const v = subcategoryValues[j];
+
+        if (this._orientation === BarOrientation.Vertical) {
+          this._bars.push({
+            x: this._categoryScale(c)! + this._subcategoryScale(j)!,
+            y: Math.min(this._valueScale(0)!, this._valueScale(v)!),
+            width: this._subcategoryScale.bandwidth(),
+            height: Math.abs(this._valueScale(0)! - this._valueScale(v)!),
+          });
+        } else if (this._orientation === BarOrientation.Horizontal) {
+          this._bars.push({
+            x: Math.min(this._valueScale(0)!, this._valueScale(v)!),
+            y: this._categoryScale(c)! + this._subcategoryScale(j)!,
+            width: Math.abs(this._valueScale(0)! - this._valueScale(v)!),
+            height: this._subcategoryScale.bandwidth(),
+          });
+        }
+      }
+    }
+
+    return this;
+  }
 }

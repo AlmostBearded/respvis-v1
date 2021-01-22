@@ -26,7 +26,6 @@ export class BarsCalculator implements Bars {
   private _values: number[];
   private _valueScale: ScaleContinuousNumeric<number, number>;
   private _orientation: BarOrientation;
-
   private _bars: IRect<number>[];
 
   constructor() {
@@ -43,6 +42,7 @@ export class BarsCalculator implements Bars {
   categories(categories?: any[]): any[] | this {
     if (categories === undefined) return this._categories;
     this._categories = categories;
+    this._categoryScale.domain(this._categories);
     return this;
   }
 
@@ -51,6 +51,7 @@ export class BarsCalculator implements Bars {
   categoryScale(scale?: ScaleBand<any>): ScaleBand<any> | this {
     if (scale === undefined) return this._categoryScale;
     this._categoryScale = scale;
+    this._categoryScale.domain(this._categories);
     return this;
   }
 
@@ -118,8 +119,4 @@ export class BarsCalculator implements Bars {
   bars(): IRect<number>[] {
     return this._bars;
   }
-}
-
-export function barPositioner(): BarPositioner {
-  return new BarPositioner();
 }

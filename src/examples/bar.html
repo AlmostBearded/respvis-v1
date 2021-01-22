@@ -30,7 +30,7 @@
 
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
-      const cityScale = respVis.bandScale().domain(cities).padding(0.1);
+      const cityScale = respVis.bandScale().padding(0.1);
       const populationScale = respVis.linearScale().domain([0, maxPopulation]).nice();
 
       const barColor = respVis.BarsDecorator.defaultColor;

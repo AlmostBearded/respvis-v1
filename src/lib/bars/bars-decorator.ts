@@ -1,21 +1,23 @@
-import {
-  IRect,
-  Rect,
-  colors,
-  transitionBoundAttributes,
-  setBoundAttributes,
-  Component,
-  ComponentEventData,
-} from '../core';
+import { IRect, Rect, colors, Component, ComponentEventData } from '../core';
 import { Selection, BaseType, EnterElement } from 'd3-selection';
 import { BarOrientation, Bars, BarsCalculator } from './bars';
 import { ScaleBand, ScaleContinuousNumeric } from 'd3-scale';
 import { ContainerComponent } from '../core/components/container-component';
 import { ComponentDecorator } from '../core/component-decorator';
+import { SelectionOrTransition } from 'd3-transition';
+
+export interface BarData {
+  categoryIndex: number;
+  rect: IRect<number>;
+}
 
 export type CreateBarsFunction = (
-  enterSelection: Selection<EnterElement, IRect<number>, any, any>
-) => Selection<BaseType, any, any, any>;
+  enterSelection: Selection<EnterElement, BarData, any, any>
+) => Selection<SVGRectElement, any, any, any>;
+
+export type UpdateBarsFunction = (
+  selection: SelectionOrTransition<BaseType, BarData, any, any>
+) => void;
 
 export interface BarsEventData<TComponent extends Component>
   extends ComponentEventData<TComponent> {
@@ -23,29 +25,25 @@ export interface BarsEventData<TComponent extends Component>
   element: SVGRectElement;
 }
 
-export class BarsDecorator extends ComponentDecorator<ContainerComponent> implements Bars {
-  private _bars: BarsCalculator;
+export class BarsDecorator<TComponent extends ContainerComponent>
+  extends ComponentDecorator<TComponent>
+  implements Bars {
+  private _barsCalculator: BarsCalculator;
   private _transitionDelay: number;
   private _transitionDuration: number;
   private _onCreateBars: CreateBarsFunction;
+  private _onUpdateBars: UpdateBarsFunction;
 
   static defaultColor = colors.categorical[0];
 
-  constructor(component: ContainerComponent) {
+  constructor(component: TComponent) {
     super(component);
 
-    this._bars = new BarsCalculator();
+    this._barsCalculator = new BarsCalculator();
     this._transitionDuration = 250;
     this._transitionDelay = 250;
-    this._onCreateBars = (enter) =>
-      enter
-        .append('rect')
-        .classed('bar', true)
-        .attr('x', (d) => d.x + d.width / 2)
-        .attr('y', (d) => d.y + d.height / 2)
-        .attr('width', 0)
-        .attr('height', 0);
-
+    this._onCreateBars = createBars;
+    this._onUpdateBars = updateBars;
     this.component()
       .classed('bars', true)
       .attr('fill', BarsDecorator.defaultColor)
@@ -55,24 +53,24 @@ export class BarsDecorator extends ComponentDecorator<ContainerComponent> implem
   categories(): any[];
   categories(categories: any[]): this;
   categories(categories?: any[]): any[] | this {
-    if (categories === undefined) return this._bars.categories();
-    this._bars.categories(categories);
+    if (categories === undefined) return this._barsCalculator.categories();
+    this._barsCalculator.categories(categories);
     return this;
   }
 
   categoryScale(): ScaleBand<any>;
   categoryScale(scale: ScaleBand<any>): this;
   categoryScale(scale?: ScaleBand<any>): ScaleBand<any> | this {
-    if (scale === undefined) return this._bars.categoryScale();
-    this._bars.categoryScale(scale);
+    if (scale === undefined) return this._barsCalculator.categoryScale();
+    this._barsCalculator.categoryScale(scale);
     return this;
   }
 
   values(): any[];
   values(values: any[]): this;
   values(values?: any[]): any[] | this {
-    if (values === undefined) return this._bars.values();
-    this._bars.values(values);
+    if (values === undefined) return this._barsCalculator.values();
+    this._barsCalculator.values(values);
     return this;
   }
 
@@ -81,21 +79,21 @@ export class BarsDecorator extends ComponentDecorator<ContainerComponent> implem
   valueScale(
     scale?: ScaleContinuousNumeric<number, number>
   ): ScaleContinuousNumeric<number, number> | this {
-    if (scale === undefined) return this._bars.valueScale();
-    this._bars.valueScale(scale);
+    if (scale === undefined) return this._barsCalculator.valueScale();
+    this._barsCalculator.valueScale(scale);
     return this;
   }
 
   orientation(): BarOrientation;
   orientation(orientation: BarOrientation): this;
   orientation(orientation?: BarOrientation): BarOrientation | this {
-    if (orientation === undefined) return this._bars.orientation();
-    this._bars.orientation(orientation);
+    if (orientation === undefined) return this._barsCalculator.orientation();
+    this._barsCalculator.orientation(orientation);
     return this;
   }
 
   bars(): IRect<number>[] {
-    return this._bars.bars();
+    return this._barsCalculator.bars();
   }
 
   transitionDuration(): number;
@@ -122,9 +120,17 @@ export class BarsDecorator extends ComponentDecorator<ContainerComponent> implem
     return this;
   }
 
+  onUpdateBars(): UpdateBarsFunction;
+  onUpdateBars(callback: UpdateBarsFunction): this;
+  onUpdateBars(callback?: any) {
+    if (callback === undefined) return this._onUpdateBars;
+    this._onUpdateBars = callback;
+    return this;
+  }
+
   afterLayout(): this {
     super.afterLayout();
-    this._bars.fitInSize(Rect.fromString(this.component().attr('layout')));
+    this._barsCalculator.fitInSize(Rect.fromString(this.component().attr('layout')));
     return this;
   }
 
@@ -133,9 +139,9 @@ export class BarsDecorator extends ComponentDecorator<ContainerComponent> implem
     this.component()
       .selection()
       .selectAll('.bar')
-      .data(this._bars.bars())
+      .data(this._barsCalculator.bars().map((rect, i) => ({ categoryIndex: i, rect: rect })))
       .join(this._onCreateBars)
-      .call(setBoundAttributes);
+      .call(this._onUpdateBars);
     return this;
   }
 
@@ -144,12 +150,12 @@ export class BarsDecorator extends ComponentDecorator<ContainerComponent> implem
     this.component()
       .selection()
       .selectAll('.bar')
-      .data(this._bars.bars())
+      .data(this._barsCalculator.bars().map((rect, i) => ({ categoryIndex: i, rect: rect })))
       .join(this._onCreateBars)
       .transition()
       .delay(this._transitionDelay)
       .duration(this._transitionDuration)
-      .call(transitionBoundAttributes);
+      .call(this._onUpdateBars);
     return this;
   }
 
@@ -162,4 +168,24 @@ export class BarsDecorator extends ComponentDecorator<ContainerComponent> implem
       element: element,
     };
   }
+}
+
+export function createBars(
+  enterSelection: Selection<EnterElement, BarData, any, any>
+): Selection<SVGRectElement, any, any, any> {
+  return enterSelection
+    .append('rect')
+    .classed('bar', true)
+    .attr('x', (d) => d.rect.x + d.rect.width / 2)
+    .attr('y', (d) => d.rect.y + d.rect.height / 2)
+    .attr('width', 0)
+    .attr('height', 0);
+}
+
+export function updateBars(selection: SelectionOrTransition<BaseType, BarData, any, any>): void {
+  selection
+    .attr('x', (d) => d.rect.x)
+    .attr('y', (d) => d.rect.y)
+    .attr('width', (d) => d.rect.width)
+    .attr('height', (d) => d.rect.height);
 }
