@@ -2,10 +2,8 @@ export * as colors from './colors';
 export * as utils from './utils';
 // export * from './array';
 
-// export { chainedTransition } from './chained-transition';
-
-// import chroma from 'chroma-js';
-// export { chroma };
+import chroma from 'chroma-js';
+export { chroma };
 
 // export * as uuid from 'uuid';
 
@@ -13,12 +11,19 @@ export * as utils from './utils';
 export * from './attributes';
 export * from './scales';
 
-export * from './components/component';
-export * from './components/container';
-export * from './components/group';
-export * from './components/text';
-export * from './components/rect';
-export * from './components/chart';
+export * from './component';
+export * from './component-decorator';
+export * from './base-component';
+
+export * from './components/svg-component';
+export * from './components/group-component';
+export * from './components/text-component';
+export * from './components/rect-component';
+
+export * from './decorators/title-text-decorator';
+export * from './decorators/vertical-text-decorator';
+
+export * from './chart';
 
 export * from './rect';
 

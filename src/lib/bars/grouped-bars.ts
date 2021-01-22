@@ -13,14 +13,14 @@ import {
   setBoundAttributes,
 } from '../core';
 import { BaseType, Selection, create } from 'd3-selection';
-import { createBars } from './bars';
+import { createBars } from './bars-decorator';
 import {
   DEFAULT_GROUPED_BAR_POSITIONER_CONFIG,
   GroupedBarPositioner,
   IGroupedBarPositioner,
   IGroupedBarPositionerConfig,
 } from './grouped-bar-positioner';
-import { IBars } from './bar-positioner';
+import { IBars } from './bars';
 
 export interface IGroupedBarsComponentConfig extends IComponentConfig, IGroupedBarPositionerConfig {
   createBars: (

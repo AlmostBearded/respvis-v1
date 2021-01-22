@@ -21,161 +21,125 @@
     <div id="chart"></div>
     <script src="../respvis.js"></script>
     <script type="module">
-      import withPaddingLayout from './components/with-padding-layout.js';
-      import withLeftAxis from './components/axis/with-left-axis.js';
-      import withBottomAxis from './components/axis/with-bottom-axis.js';
-      import withHighlightTick from './components/axis/with-highlight-tick.js';
-      import withHighlightBar from './components/bars/with-highlight-bar.js';
-      import withShowLabel from './components/bar-labels/with-show-label.js';
+      import data from './data/austrian-cities.js';
 
-      var categories = ['Vienna', 'Graz', 'Linz', 'Salzburg', 'Innsbruck', 'Klagenfurt', 'Villach'],
-        values = [1691, 222, 205, 153, 132, 91, 59],
-        maxValue = Math.max(...values),
-        valueFormatter = (value) => `${value}k`;
+      const cities = data.cities;
+      const populations = data.populations.map((p) => Math.round(p / 1000));
+      const maxPopulation = Math.max(...populations);
+      const populationFormatter = (p) => `${p}k`;
 
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
-      // scales
-      const cityScale = respVis.bandScale();
-      const populationScale = respVis.linearScale();
+      const cityScale = respVis.bandScale().domain(cities).padding(0.1);
+      const populationScale = respVis.linearScale().domain([0, maxPopulation]).nice();
 
-      // bars
-      const bars = withHighlightBar(respVis.bars()).config({
-        categories: categories,
-        categoryScale: { scale: cityScale, padding: 0.1 },
-        values: values,
-        valueScale: { scale: populationScale, domain: [0, maxValue] },
-        orientation: respVis.BarOrientation.Horizontal,
-        transitionDuration: 250,
-        events: {
-          mouseover: (e, d) => hoverBar(d.index, yAxis, xAxis, true),
-          mouseout: (e, d) => hoverBar(d.index, yAxis, xAxis, false),
-        },
-        responsiveConfigs: {
-          [wideMediaQuery]: {
-            orientation: respVis.BarOrientation.Vertical,
-            events: {
-              mouseover: (e, d) => hoverBar(d.index, xAxis, yAxis, true),
-              mouseout: (e, d) => hoverBar(d.index, xAxis, yAxis, false),
-            },
-          },
-        },
-      });
+      const barColor = respVis.BarsDecorator.defaultColor;
+      const bars = new respVis.BarsDecorator(new respVis.GroupComponent())
+        .categories(cities)
+        .categoryScale(cityScale)
+        .values(populations)
+        .valueScale(populationScale)
+        .attr('fill', barColor)
+        .onConfigure((bars) => {
+          bars
+            .orientation(respVis.BarOrientation.Horizontal)
+            .on('mouseover', (e, d) => hoverBar(d.index, leftAxis, bottomAxis, true))
+            .on('mouseout', (e, d) => hoverBar(d.index, leftAxis, bottomAxis, false));
+          if (window.matchMedia(wideMediaQuery).matches)
+            bars
+              .orientation(respVis.BarOrientation.Vertical)
+              .on('mouseover', (e, d) => hoverBar(d.index, bottomAxis, leftAxis, true))
+              .on('mouseout', (e, d) => hoverBar(d.index, bottomAxis, leftAxis, false));
+        });
 
-      // bar labels
-      const barLabels = withShowLabel(respVis.barLabels()).config({
-        attributes: {
-          text: {
-            'dominant-baseline': 'middle',
-            'text-anchor': 'start',
-            transform: 'translate(4, 0)',
-            'pointer-events': 'none',
-          },
-        },
-        bars: bars,
-        labels: values.map(valueFormatter),
-        horizontalPosition: respVis.HorizontalPosition.Left,
-        verticalPosition: respVis.VerticalPosition.Center,
-        transitionDuration: 250,
-        responsiveConfigs: {
-          [wideMediaQuery]: {
-            attributes: {
-              text: {
-                'dominant-baseline': 'auto',
-                'text-anchor': 'middle',
-                transform: 'translate(0, -4)',
-              },
-            },
-            horizontalPosition: respVis.HorizontalPosition.Center,
-            verticalPosition: respVis.VerticalPosition.Top,
-          },
-        },
-      });
+      function hoverBar(barIndex, cityAxis, populationAxis, hover) {
+        barLabels
+          .selection()
+          .select(`text:nth-of-type(${barIndex + 1}`)
+          .attr('font-size', hover ? '1rem' : null);
 
-      // bottom axis
-      const xAxis = withHighlightTick(withBottomAxis(respVis.group()))
-        .call((axis) =>
-          axis.ticks.config({
-            scale: populationScale,
-            labelFormatter: valueFormatter,
-            attributes: {
-              text: {
-                'dominant-baseline': 'hanging',
-                transform: 'translate(0, 7) rotate(-45)',
-                'text-anchor': 'end',
-              },
-            },
-            responsiveConfigs: {
-              [wideMediaQuery]: {
-                scale: cityScale,
-                labelFormatter: (value) => `${value}`,
-                attributes: { text: { transform: 'translate(0, 7)', 'text-anchor': 'middle' } },
-              },
-            },
-          })
-        )
-        .call((axis) =>
-          axis.title.config({
-            text: 'Population',
-            responsiveConfigs: { [wideMediaQuery]: { text: 'Cities' } },
-          })
-        );
+        bars
+          .selection()
+          .select(`rect:nth-of-type(${barIndex + 1})`)
+          .attr('fill', hover ? respVis.chroma.hex(barColor).brighten(0.5).hex() : barColor);
 
-      // left axis
-      const yAxis = withHighlightTick(withLeftAxis(respVis.group()))
-        .call((axis) =>
-          axis.ticks.config({
-            scale: cityScale,
-            responsiveConfigs: {
-              [wideMediaQuery]: { scale: populationScale, labelFormatter: valueFormatter },
-            },
-          })
-        )
-        .call((axis) =>
-          axis.title.config({
-            text: 'Cities',
-            responsiveConfigs: { [wideMediaQuery]: { text: 'Population' } },
-          })
-        );
-
-      const chart = respVis
-        .chart()
-        .root(
-          withPaddingLayout(respVis.group()).config({
-            all: 10,
-            responsiveConfigs: { [wideMediaQuery]: { top: 20 } },
-            children: [
-              respVis.group().config({
-                attributes: { 'grid-template': '1fr auto / auto 1fr' },
-                children: [
-                  // bars
-                  bars.config({ attributes: { 'grid-area': '1 / 2 / 2 / 3' } }),
-
-                  // bar Labels
-                  barLabels.config({ attributes: { 'grid-area': '1 / 2 / 2 / 3' } }),
-
-                  // left axis
-                  yAxis.config({ attributes: { 'grid-area': '1 / 1 / 2 / 2' } }),
-
-                  // bottom axis
-                  xAxis.config({ attributes: { 'grid-area': '2 / 2 / 3 / 3' } }),
-                ],
-              }),
-            ],
-          })
-        )
-        .mount('#chart');
-
-      function hoverBar(barIndex, categoryAxis, valueAxis, hover) {
-        // Clear highlights of wrong axis in case unhighlight never got called
-        valueAxis.clearHighlights();
-
-        bars.highlightBar(barIndex, hover);
-        barLabels.showLabel(barIndex, hover);
-        categoryAxis.highlightTick(barIndex, hover);
-
-        chart.update(false, true);
+        cityAxis
+          .selection()
+          .select(`.tick:nth-of-type(${barIndex + 1})`)
+          .attr('text-decoration', hover ? 'underline' : 'none');
       }
+
+      const barLabels = new respVis.BarLabelsDecorator(bars, new respVis.GroupComponent())
+        .labels(populations.map(populationFormatter))
+        .attr('pointer-events', 'none')
+        .attr('font-size', 0)
+        .onConfigure((barLabels) => {
+          barLabels
+            .widthPercent(0)
+            .heightPercent(0.5)
+            .attr('dominant-baseline', 'middle')
+            .attr('text-anchor', 'start')
+            .attr('transform', 'translate(4, 0)');
+          if (window.matchMedia(wideMediaQuery).matches)
+            barLabels
+              .widthPercent(0.5)
+              .heightPercent(1)
+              .attr('dominant-baseline', 'auto')
+              .attr('text-anchor', 'middle')
+              .attr('transform', 'translate(0, -4)');
+        });
+
+      const leftAxis = new respVis.LeftAxisDecorator(new respVis.GroupComponent()).onConfigure(
+        (axis) => {
+          axis
+            .ticks()
+            .scale(cityScale)
+            .onConfigureAxis((axis) => {});
+          axis.title().text('Cities');
+          if (window.matchMedia(wideMediaQuery).matches) {
+            axis
+              .ticks()
+              .scale(populationScale)
+              .onConfigureAxis((axis) => axis.tickFormat(populationFormatter));
+
+            axis.title().text('Population');
+          }
+        }
+      );
+
+      const bottomAxis = new respVis.BottomAxisDecorator(new respVis.GroupComponent()).onConfigure(
+        (axis) => {
+          axis
+            .ticks()
+            .scale(populationScale)
+            .onConfigureAxis((axis) => axis.tickFormat(populationFormatter));
+          axis.title().text('Population');
+          if (window.matchMedia(wideMediaQuery).matches) {
+            axis
+              .ticks()
+              .scale(cityScale)
+              .onConfigureAxis((axis) => {});
+            axis.title().text('Cities');
+          }
+        }
+      );
+
+      const chart = new respVis.Chart();
+
+      chart
+        .svg()
+        .onConfigure((svg) => {
+          svg.layout('grid-template', '10 1fr auto 10 / 10 auto 1fr 10');
+          if (window.matchMedia(wideMediaQuery).matches)
+            svg.layout('grid-template', '20 1fr auto 10 / 10 auto 1fr 10');
+        })
+        .children([
+          bars.layout('grid-area', '2 / 3 / 3 / 4'),
+          barLabels.layout('grid-area', '2 / 3 / 3 / 4'),
+          leftAxis.layout('grid-area', '2 / 2 / 3 / 3'),
+          bottomAxis.layout('grid-area', '3 / 3 / 4 / 4'),
+        ]),
+        chart.mount('#chart');
     </script>
   </body>
 </html>

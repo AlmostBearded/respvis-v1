@@ -13,14 +13,14 @@ import {
   setBoundAttributes,
 } from '../core';
 import { Selection, BaseType, create } from 'd3-selection';
-import { createBars } from './bars';
+import { createBars } from './bars-decorator';
 import {
   IStackedBarPositioner,
   IStackedBarPositionerConfig,
   StackedBarPositioner,
   DEFAULT_STACKED_BAR_POSITIONER_CONFIG,
 } from './stacked-bar-positioner';
-import { IBars } from './bar-positioner';
+import { IBars } from './bars';
 
 export interface IStackedBarsComponentConfig extends IComponentConfig, IStackedBarPositionerConfig {
   createBars: (

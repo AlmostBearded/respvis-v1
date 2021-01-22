@@ -21,111 +21,148 @@
     <div id="chart"></div>
     <script src="../respvis.js"></script>
     <script type="module">
-      import LeftAxisMixin from './components/axis/left-axis-mixin.js';
-      import BottomAxisMixin from './components/axis/bottom-axis-mixin.js';
-      // import withSwatchLegend from './components/legend/with-swatch-legend.js';
+      import data from './data/austrian-cities.js';
 
-      // var categories = ['Vienna', 'Graz', 'Linz', 'Salzburg', 'Innsbruck', 'Klagenfurt', 'Villach'],
-      //   values = [1691, 222, 205, 153, 132, 91, 59],
-      //   maxValue = Math.max(...values),
-      //   valueFormatter = (value) => `${value}k`;
+      const cities = data.cities;
+      const populations = data.populations.map((p) => Math.round(p / 1000));
+      const maxPopulation = Math.max(...populations);
+      const populationFormatter = (p) => `${p}k`;
 
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
-      // scales
-      // const cityScale = respVis.bandScale();
-      // const populationScale = respVis.linearScale();
+      const cityScale = respVis.bandScale().domain(cities).padding(0.1);
+      const populationScale = respVis.linearScale().domain([0, maxPopulation]).nice();
 
-      // legend
-      // const legend = respVis.group().config({
-      // attributes: { cursor: 'pointer' },
-      // labels: years,
-      // colors: barColors,
-      // rowCount: 1,
-      // columnCount: years.length,
-      // responsiveConfigs: {
-      // [wideMediaQuery]: {
-      // rowCount: years.length, columnCount: 1
-      // },
-      // },
+      const barColor = respVis.BarsDecorator.defaultColor;
+      const bars = new respVis.BarsDecorator(new respVis.GroupComponent())
+        .categories(cities)
+        .categoryScale(cityScale)
+        .values(populations)
+        .valueScale(populationScale)
+        .attr('fill', barColor)
+        .onConfigure((bars) => {
+          bars
+            .orientation(respVis.BarOrientation.Horizontal)
+            .on('mouseover', (e, d) => hoverBar(d.index, leftAxis, bottomAxis, true))
+            .on('mouseout', (e, d) => hoverBar(d.index, leftAxis, bottomAxis, false));
+          if (window.matchMedia(wideMediaQuery).matches)
+            bars
+              .orientation(respVis.BarOrientation.Vertical)
+              .on('mouseover', (e, d) => hoverBar(d.index, bottomAxis, leftAxis, true))
+              .on('mouseout', (e, d) => hoverBar(d.index, bottomAxis, leftAxis, false));
+        });
+
+      function hoverBar(barIndex, cityAxis, populationAxis, hover) {
+        barLabels
+          .selection()
+          .select(`text:nth-of-type(${barIndex + 1}`)
+          .attr('font-size', hover ? '1rem' : null);
+
+        bars
+          .selection()
+          .select(`rect:nth-of-type(${barIndex + 1})`)
+          .attr('fill', hover ? respVis.chroma.hex(barColor).brighten(0.5).hex() : barColor);
+
+        cityAxis
+          .selection()
+          .select(`.tick:nth-of-type(${barIndex + 1})`)
+          .attr('text-decoration', hover ? 'underline' : 'none');
+      }
+
+      const barLabels = new respVis.BarLabelsDecorator(bars, new respVis.GroupComponent())
+        .labels(populations.map(populationFormatter))
+        .attr('pointer-events', 'none')
+        .attr('font-size', 0)
+        .onConfigure((barLabels) => {
+          barLabels
+            .widthPercent(0)
+            .heightPercent(0.5)
+            .attr('dominant-baseline', 'middle')
+            .attr('text-anchor', 'start')
+            .attr('transform', 'translate(4, 0)');
+          if (window.matchMedia(wideMediaQuery).matches)
+            barLabels
+              .widthPercent(0.5)
+              .heightPercent(1)
+              .attr('dominant-baseline', 'auto')
+              .attr('text-anchor', 'middle')
+              .attr('transform', 'translate(0, -4)');
+        });
+
+      const leftAxis = new respVis.LeftAxisDecorator(new respVis.GroupComponent()).onConfigure(
+        (axis) => {
+          axis
+            .ticks()
+            .scale(cityScale)
+            .onConfigureAxis((axis) => {});
+          axis.title().text('Cities');
+          if (window.matchMedia(wideMediaQuery).matches) {
+            axis
+              .ticks()
+              .scale(populationScale)
+              .onConfigureAxis((axis) => axis.tickFormat(populationFormatter));
+
+            axis.title().text('Population');
+          }
+        }
+      );
+
+      const bottomAxis = new respVis.BottomAxisDecorator(new respVis.GroupComponent()).onConfigure(
+        (axis) => {
+          axis
+            .ticks()
+            .scale(populationScale)
+            .onConfigureAxis((axis) => axis.tickFormat(populationFormatter));
+          axis.title().text('Population');
+          if (window.matchMedia(wideMediaQuery).matches) {
+            axis
+              .ticks()
+              .scale(cityScale)
+              .onConfigureAxis((axis) => {});
+            axis.title().text('Cities');
+          }
+        }
+      );
+
+      // const rect = new respVis.RectComponent().onConfigure((r) => {
+      //   r.attr('fill', '#ffff00', 1000).attr('width', 150, 250).attr('height', 75, 250);
+      //   if (window.matchMedia(wideMediaQuery).matches)
+      //     r.attr('fill', '#aa88cc', 1000).attr('width', 200, 250).attr('height', 100, 250);
       // });
 
-      const categories = ['A', 'B', 'C'];
-      const values = [1, 2, 3];
+      // const text = new respVis.TextComponent().attr('fill', 'green').onConfigure((t) => {
+      //   text.attr('font-size', '1rem', 250).text('Hello World');
+      //   if (window.matchMedia(wideMediaQuery).matches)
+      //     text.attr('font-size', '2rem', 250).text('Hellooooo Woooorld!');
+      // });
 
-      const categoryScale = respVis.bandScale().domain(categories).padding(0.1);
-      const valueScale = respVis.linearScale().domain([0, 3]).nice();
+      const chart = new respVis.Chart();
 
-      const bars = respVis.BarsComponent.create()
-        .categories(categories)
-        .categoryScale(categoryScale)
-        .values(values)
-        .valueScale(valueScale)
-        .orientation(respVis.BarOrientation.Vertical)
-        .onMediaQuery(
-          wideMediaQuery,
-          (bars) => bars.orientation(respVis.BarOrientation.Vertical),
-          (bars) => bars.orientation(respVis.BarOrientation.Horizontal)
-        )
-        .on('mouseover', (e, d) => console.log(e, d));
+      chart
+        .svg()
 
-      const leftAxis = LeftAxisMixin(respVis.GroupComponent)
-        .create()
-        .onMediaQuery(
-          wideMediaQuery,
-          (axis) =>
-            axis
-              .call((axis) => axis.ticks().scale(valueScale))
-              .call((axis) => axis.title().text('Values')),
-          (axis) =>
-            axis
-              .call((axis) => axis.ticks().scale(categoryScale))
-              .call((axis) => axis.title().text('Categories'))
-        );
+        .onConfigure((svg) => {
+          svg.layout('grid-template', '10 1fr 10 / 10 1fr 10');
+          if (window.matchMedia(wideMediaQuery).matches)
+            svg.layout('grid-template', '20 1fr 10 / 10 1fr 10');
+        })
 
-      const bottomAxis = BottomAxisMixin(respVis.GroupComponent)
-        .create()
-        .onMediaQuery(
-          wideMediaQuery,
-          (axis) =>
-            axis
-              .call((axis) => axis.ticks().scale(categoryScale))
-              .call((axis) => axis.title().text('Categories')),
-          (axis) =>
-            axis
-              .call((axis) => axis.ticks().scale(valueScale))
-              .call((axis) => axis.title().text('Values'))
-        );
+        .children([
+          new respVis.GroupComponent()
+            .layout('grid-area', '2 / 2 / 3 / 3')
+            .layout('grid-template', '1fr auto / auto 1fr')
+            .children([
+              bars.layout('grid-area', '1 / 2 / 2 / 3'),
+              barLabels.layout('grid-area', '1 / 2 / 2 / 3'),
+              leftAxis.layout('grid-area', '1 / 1 / 2 / 2'),
+              bottomAxis.layout('grid-area', '2 / 2 / 3 / 3'),
+            ]),
 
-      const text = respVis.TextComponent.create()
-        .attr('fill', 'green')
-        .onMediaQuery(
-          wideMediaQuery,
-          (text) => text.attr('font-size', '2rem').text('Hellooooo Woooorld!'),
-          (text) => text.attr('font-size', '1rem').text('Hello World')
-        );
+          // rect.layout('grid-area', '1 / 2 / 2 / 3').layout('place-self', 'center center'),
+          // text.layout('grid-area', '1 / 2 / 2 / 3').layout('place-self', 'center center'),
+        ]);
 
-      const rect = respVis.RectComponent.create()
-        .attr('fill', 'blue')
-        .onMediaQuery(
-          wideMediaQuery,
-          (rect) => rect.size({ width: 200, height: 100 }),
-          (rect) => rect.size({ width: 150, height: 75 })
-        );
-
-      const chart = respVis.Chart.create()
-        .attr('grid-template', '1fr auto / auto 1fr')
-        .call((chart) => chart.append(bars).attr('grid-area', '1 / 2 / 2 / 3'))
-        .call((chart) => chart.append(leftAxis).attr('grid-area', '1 / 1 / 2 / 2'))
-        .call((chart) => chart.append(bottomAxis).attr('grid-area', '2 / 2 / 3 / 3'))
-        // .call((chart) =>
-        //   chart.append(rect).attr('grid-area', '1 / 2 / 2 / 3').attr('place-self', 'center center')
-        // )
-        // .call((chart) =>
-        //   chart.append(text).attr('grid-area', '1 / 2 / 2 / 3').attr('place-self', 'center center')
-        // )
-
-        .mount('#chart');
+      chart.mount('#chart');
     </script>
   </body>
 </html>

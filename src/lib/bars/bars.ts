@@ -1,111 +1,64 @@
-import {
-  IRect,
-  Rect,
-  colors,
-  transitionBoundAttributes,
-  setBoundAttributes,
-  Component,
-  Chart,
-} from '../core';
-import { Selection, BaseType, create, EnterElement } from 'd3-selection';
-import { BarOrientation, BarPositioner, Bars } from './bar-positioner';
 import { ScaleBand, ScaleContinuousNumeric } from 'd3-scale';
-import { TransitionDurationMixin } from '../core/mixins/transition-duration';
-import { TransitionDelayMixin } from '../core/mixins/transition-delay';
-import { ComponentEventData, EventsMixin } from '../core/mixins/events';
+import { bandScale, linearScale, IRect, utils } from '../core';
 
-export type CreateBarsFunction = (
-  enterSelection: Selection<EnterElement, IRect<number>, any, any>
-) => Selection<BaseType, any, any, any>;
-
-export interface BarsComponentEventData extends ComponentEventData {
-  component: BarsComponent;
-  index: number;
-  element: SVGRectElement;
+export enum BarOrientation {
+  Vertical,
+  Horizontal,
 }
 
-export class BarsComponent
-  extends EventsMixin(TransitionDelayMixin(250, TransitionDurationMixin(250, Component)))
-  implements Bars {
-  private _barPositioner: BarPositioner;
-  private _onCreateBars: CreateBarsFunction;
+export interface Bars {
+  categories(): any[];
+  categories(categories: any[]): this;
+  categoryScale(): ScaleBand<any>;
+  categoryScale(scale: ScaleBand<any>): this;
+  values(): any[];
+  values(values: any[]): this;
+  valueScale(): ScaleContinuousNumeric<number, number>;
+  valueScale(scale: ScaleContinuousNumeric<number, number>): this;
+  orientation(): BarOrientation;
+  orientation(orientation: BarOrientation): this;
+  bars(): IRect<number>[];
+}
 
-  static defaultColor = colors.categorical[0];
+export class BarsCalculator implements Bars {
+  private _categories: any[];
+  private _categoryScale: ScaleBand<any>;
+  private _values: number[];
+  private _valueScale: ScaleContinuousNumeric<number, number>;
+  private _orientation: BarOrientation;
 
-  constructor();
-  constructor(selection: Selection<SVGElement, any, any, any>);
-  constructor(selection?: Selection<SVGElement, any, any, any>) {
-    super(selection || create('svg:g'));
-  }
+  private _bars: IRect<number>[];
 
-  init(): this {
-    super.init();
-    this._barPositioner = new BarPositioner();
-    this._transitionDuration = 250;
-    this._transitionDelay = 250;
-
-    this._onCreateBars = (enter) =>
-      enter
-        .append('rect')
-        .classed('bar', true)
-        .attr('x', (d) => d.x + d.width / 2)
-        .attr('y', (d) => d.y + d.height / 2)
-        .attr('width', 0)
-        .attr('height', 0);
-
-    this.classed('bars', true)
-      .attr('fill', BarsComponent.defaultColor)
-      .attr('layout', '0, 0, 600, 400');
-
-    return this;
-  }
-
-  render(): this {
-    this.selectAll('.bar')
-      .data(this._barPositioner.fitInSize(Rect.fromString(this.attr('layout'))).bars())
-      .join(this._onCreateBars)
-      .call(setBoundAttributes);
-    return super.render();
-  }
-
-  transition(): this {
-    this.selectAll('.bar')
-      .data(this._barPositioner.fitInSize(Rect.fromString(this.attr('layout'))).bars())
-      .join(this._onCreateBars)
-      .transition()
-      .delay(this._transitionDelay)
-      .duration(this._transitionDuration)
-      .call(transitionBoundAttributes);
-    return super.transition();
-  }
-
-  update(): this {
-    super.update();
-    this._barPositioner.fitInSize(Rect.fromString(this.attr('layout')));
-    return this;
+  constructor() {
+    this._categories = [];
+    this._categoryScale = bandScale();
+    this._values = [];
+    this._valueScale = linearScale();
+    this._orientation = BarOrientation.Vertical;
+    this._bars = [];
   }
 
   categories(): any[];
   categories(categories: any[]): this;
   categories(categories?: any[]): any[] | this {
-    if (categories === undefined) return this._barPositioner.categories();
-    this._barPositioner.categories(categories);
+    if (categories === undefined) return this._categories;
+    this._categories = categories;
     return this;
   }
 
   categoryScale(): ScaleBand<any>;
   categoryScale(scale: ScaleBand<any>): this;
   categoryScale(scale?: ScaleBand<any>): ScaleBand<any> | this {
-    if (scale === undefined) return this._barPositioner.categoryScale();
-    this._barPositioner.categoryScale(scale);
+    if (scale === undefined) return this._categoryScale;
+    this._categoryScale = scale;
     return this;
   }
 
   values(): any[];
   values(values: any[]): this;
   values(values?: any[]): any[] | this {
-    if (values === undefined) return this._barPositioner.values();
-    this._barPositioner.values(values);
+    if (values === undefined) return this._values;
+    this._values = values;
     return this;
   }
 
@@ -114,38 +67,59 @@ export class BarsComponent
   valueScale(
     scale?: ScaleContinuousNumeric<number, number>
   ): ScaleContinuousNumeric<number, number> | this {
-    if (scale === undefined) return this._barPositioner.valueScale();
-    this._barPositioner.valueScale(scale);
+    if (scale === undefined) return this._valueScale;
+    this._valueScale = scale;
     return this;
   }
 
   orientation(): BarOrientation;
   orientation(orientation: BarOrientation): this;
   orientation(orientation?: BarOrientation): BarOrientation | this {
-    if (orientation === undefined) return this._barPositioner.orientation();
-    this._barPositioner.orientation(orientation);
+    if (orientation === undefined) return this._orientation;
+    this._orientation = orientation;
     return this;
   }
 
-  onCreateBars(): CreateBarsFunction;
-  onCreateBars(callback: CreateBarsFunction): this;
-  onCreateBars(callback?: CreateBarsFunction): CreateBarsFunction | this {
-    if (callback === undefined) return this._onCreateBars;
-    this._onCreateBars = callback;
+  fitInSize(size: utils.ISize): this {
+    if (this._orientation === BarOrientation.Vertical) {
+      this._categoryScale.range([0, size.width]);
+      this._valueScale.range([size.height, 0]);
+    } else if (this._orientation === BarOrientation.Horizontal) {
+      this._categoryScale.range([0, size.height]);
+      this._valueScale.range([0, size.width]);
+    }
+
+    this._bars = [];
+
+    for (let i = 0; i < this._values.length; ++i) {
+      const c = this._categories[i];
+      const v = this._values[i];
+
+      if (this._orientation === BarOrientation.Vertical) {
+        this._bars.push({
+          x: this._categoryScale(c)!,
+          y: Math.min(this._valueScale(0)!, this._valueScale(v)!),
+          width: this._categoryScale.bandwidth(),
+          height: Math.abs(this._valueScale(0)! - this._valueScale(v)!),
+        });
+      } else if (this._orientation === BarOrientation.Horizontal) {
+        this._bars.push({
+          x: Math.min(this._valueScale(0)!, this._valueScale(v)!),
+          y: this._categoryScale(c)!,
+          width: Math.abs(this._valueScale(0)! - this._valueScale(v)!),
+          height: this._categoryScale.bandwidth(),
+        });
+      }
+    }
+
     return this;
   }
 
   bars(): IRect<number>[] {
-    return this._barPositioner.bars();
+    return this._bars;
   }
+}
 
-  createEventData(event: Event): BarsComponentEventData {
-    const element = event.target as SVGRectElement;
-    const index = Array.prototype.indexOf.call(element.parentNode!.children, element);
-    return {
-      component: this,
-      index: index,
-      element: element,
-    };
-  }
+export function barPositioner(): BarPositioner {
+  return new BarPositioner();
 }

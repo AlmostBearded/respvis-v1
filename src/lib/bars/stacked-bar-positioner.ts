@@ -8,7 +8,7 @@ import {
   IRect,
   utils,
 } from '../core';
-import { BarOrientation, IBars } from './bar-positioner';
+import { BarOrientation, IBars } from './bars';
 
 export interface IStackedBarPositionerConfig {
   categories: string[];
