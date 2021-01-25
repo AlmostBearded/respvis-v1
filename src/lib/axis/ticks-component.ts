@@ -1,8 +1,6 @@
 import { AxisScale, Axis, AxisDomain } from 'd3-axis';
-import { BaseType, create, select, Selection } from 'd3-selection';
-import { ScaleAny, linearScale, ComponentDecorator } from '../core';
-import { ContainerComponent } from '../core/components/container-component';
-import { ISize } from '../core/utils';
+import { BaseType, Selection } from 'd3-selection';
+import { ScaleAny, linearScale, BaseComponent } from '../core';
 
 export type CreateTicksFunction = (
   selection: Selection<SVGElement, any, BaseType, any>
@@ -11,16 +9,16 @@ export type CreateTicksFunction = (
 export type ConfigureAxisFunction = (axis: Axis<AxisDomain>) => void;
 export type FormatLabelsFunction = (label: string) => string;
 
-export abstract class TicksDecorator extends ComponentDecorator<ContainerComponent> {
+export abstract class TicksComponent extends BaseComponent {
   private _scale: ScaleAny<any, any, any>;
   private _transitionDelay: number;
   private _transitionDuration: number;
   private _onConfigureAxis: ConfigureAxisFunction;
 
-  constructor(component: ContainerComponent) {
-    super(component);
+  constructor() {
+    super('g');
     this._onConfigureAxis = () => {};
-    this.component().classed('ticks', true);
+    this.classed('ticks', true);
 
     this._scale = linearScale().domain([0, 1]).range([0, 100]);
     this._transitionDelay = 0;
@@ -63,7 +61,7 @@ export abstract class TicksDecorator extends ComponentDecorator<ContainerCompone
     super.beforeLayout();
     const axis = this.createAxis(this._scale);
     this._onConfigureAxis(axis);
-    this.component().staticCloneSelection().call(axis);
+    this.staticCloneSelection().call(axis);
     return this;
   }
 
@@ -71,7 +69,7 @@ export abstract class TicksDecorator extends ComponentDecorator<ContainerCompone
     super.render();
     const axis = this.createAxis(this._scale);
     this._onConfigureAxis(axis);
-    this.component().selection().call(axis);
+    this.selection().call(axis);
     return this;
   }
 
@@ -80,8 +78,7 @@ export abstract class TicksDecorator extends ComponentDecorator<ContainerCompone
     const axis = this.createAxis(this._scale);
     this._onConfigureAxis(axis);
 
-    this.component()
-      .selection()
+    this.selection()
       .transition()
       .delay(this._transitionDelay)
       .duration(this._transitionDuration)

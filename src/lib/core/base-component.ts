@@ -1,4 +1,4 @@
-import { create, select, selectAll, Selection } from 'd3-selection';
+import { create, select, selectAll, Selection, BaseType } from 'd3-selection';
 import { Chart } from './chart';
 import { Component, ComponentEventData } from './component';
 import { LaidOutElement, LayoutProperties } from './layout/layout';
@@ -24,6 +24,8 @@ export class BaseComponent implements Component {
     const that = this;
     this._combinedSelection.layoutBoundsCalculator(() => that.size());
   }
+
+  init(): void {}
 
   mount(chart: Chart): this {
     return this;
@@ -212,5 +214,13 @@ export class BaseComponent implements Component {
 
   eventData(event: Event): ComponentEventData<this> {
     return { component: this };
+  }
+
+  select<DescElement extends BaseType>(selector: string): Selection<DescElement, any, any, any> {
+    return this._selection.selectAll(selector);
+  }
+
+  selectAll<DescElement extends BaseType>(selector: string): Selection<DescElement, any, any, any> {
+    return this._selection.selectAll(selector);
   }
 }

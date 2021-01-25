@@ -64,13 +64,13 @@
           respVis.group().config({
             children: [
               respVis.rect().config({
-                size: { width: '100', height: 100 },
+                size: { width: 100, height: 100 },
                 attributes: {
                   'grid-area': '1 / 1 / 2 / 2',
                   'place-self': 'center center',
                   fill: '#89aa33',
                   stroke: '#333333',
-                  'stroke-width': 2, // results in 1px stroke because the rect is clipped
+                  'stroke-width': 1, // results in 1px stroke because the rect is clipped
                 },
               }),
               respVis.text().config({

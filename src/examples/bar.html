@@ -33,43 +33,38 @@
       const cityScale = respVis.bandScale().padding(0.1);
       const populationScale = respVis.linearScale().domain([0, maxPopulation]).nice();
 
-      const barColor = respVis.BarsDecorator.defaultColor;
-      const bars = new respVis.BarsDecorator(new respVis.GroupComponent())
+      const barColor = respVis.BarsComponent.defaultColor;
+      const bars = respVis
+        .bars()
         .categories(cities)
         .categoryScale(cityScale)
         .values(populations)
         .valueScale(populationScale)
         .attr('fill', barColor)
+        .on('mouseover', (e, d) => hoverBar(d.index, true))
+        .on('mouseout', (e, d) => hoverBar(d.index, false))
         .onConfigure((bars) => {
-          bars
-            .orientation(respVis.BarOrientation.Horizontal)
-            .on('mouseover', (e, d) => hoverBar(d.index, leftAxis, bottomAxis, true))
-            .on('mouseout', (e, d) => hoverBar(d.index, leftAxis, bottomAxis, false));
+          bars.orientation(respVis.BarOrientation.Horizontal);
           if (window.matchMedia(wideMediaQuery).matches)
-            bars
-              .orientation(respVis.BarOrientation.Vertical)
-              .on('mouseover', (e, d) => hoverBar(d.index, bottomAxis, leftAxis, true))
-              .on('mouseout', (e, d) => hoverBar(d.index, bottomAxis, leftAxis, false));
+            bars.orientation(respVis.BarOrientation.Vertical);
         });
 
-      function hoverBar(barIndex, cityAxis, populationAxis, hover) {
+      function hoverBar(barIndex, hover) {
         barLabels
-          .selection()
           .select(`text:nth-of-type(${barIndex + 1}`)
           .attr('font-size', hover ? '1rem' : null);
 
         bars
-          .selection()
           .select(`rect:nth-of-type(${barIndex + 1})`)
-          .attr('fill', hover ? respVis.chroma.hex(barColor).brighten(0.5).hex() : barColor);
+          .attr('fill', hover ? respVis.chroma.hex(barColor).brighten(0.5).hex() : null);
 
         cityAxis
-          .selection()
           .select(`.tick:nth-of-type(${barIndex + 1})`)
-          .attr('text-decoration', hover ? 'underline' : 'none');
+          .attr('text-decoration', hover ? 'underline' : null);
       }
 
-      const barLabels = new respVis.BarLabelsDecorator(bars, new respVis.GroupComponent())
+      const barLabels = respVis
+        .barLabels(bars)
         .labels(populations.map(populationFormatter))
         .attr('pointer-events', 'none')
         .attr('font-size', 0)
@@ -89,55 +84,57 @@
               .attr('transform', 'translate(0, -4)');
         });
 
-      const leftAxis = new respVis.LeftAxisDecorator(new respVis.GroupComponent()).onConfigure(
-        (axis) => {
-          axis
-            .ticks()
-            .scale(cityScale)
-            .onConfigureAxis((axis) => {});
-          axis.title().text('Cities');
-          if (window.matchMedia(wideMediaQuery).matches) {
-            axis
-              .ticks()
-              .scale(populationScale)
-              .onConfigureAxis((axis) => axis.tickFormat(populationFormatter));
-
-            axis.title().text('Population');
-          }
-        }
-      );
-
-      const bottomAxis = new respVis.BottomAxisDecorator(new respVis.GroupComponent()).onConfigure(
-        (axis) => {
+      const leftAxis = respVis.leftAxis().onConfigure((axis) => {
+        axis
+          .ticks()
+          .scale(cityScale)
+          .onConfigureAxis((axis) => {});
+        axis.title().layout('padding-right', 5).text('Cities');
+        if (window.matchMedia(wideMediaQuery).matches) {
           axis
             .ticks()
             .scale(populationScale)
             .onConfigureAxis((axis) => axis.tickFormat(populationFormatter));
           axis.title().text('Population');
-          if (window.matchMedia(wideMediaQuery).matches) {
-            axis
-              .ticks()
-              .scale(cityScale)
-              .onConfigureAxis((axis) => {});
-            axis.title().text('Cities');
-          }
         }
-      );
+      });
 
-      const chart = new respVis.Chart();
+      const bottomAxis = respVis.bottomAxis().onConfigure((axis) => {
+        axis
+          .ticks()
+          .scale(populationScale)
+          .onConfigureAxis((axis) => axis.tickFormat(populationFormatter));
+        axis.title().layout('padding-top', 5).text('Population');
+        if (window.matchMedia(wideMediaQuery).matches) {
+          axis
+            .ticks()
+            .scale(cityScale)
+            .onConfigureAxis((axis) => {});
+          axis.title().text('Cities');
+        }
+      });
 
+      const chart = respVis.chart();
+
+      let cityAxis, populationAxis;
       chart
-        .svg()
+        .root()
+        .layout('grid-template', '1fr auto / auto 1fr')
+        .layout('padding-horizontal', 20)
+        .layout('padding-top', 20)
         .onConfigure((svg) => {
-          svg.layout('grid-template', '10 1fr auto 10 / 10 auto 1fr 10');
-          if (window.matchMedia(wideMediaQuery).matches)
-            svg.layout('grid-template', '20 1fr auto 10 / 10 auto 1fr 10');
+          cityAxis = leftAxis;
+          populationAxis = bottomAxis;
+          if (window.matchMedia(wideMediaQuery).matches) {
+            cityAxis = bottomAxis;
+            populationAxis = leftAxis;
+          }
         })
         .children([
-          bars.layout('grid-area', '2 / 3 / 3 / 4'),
-          barLabels.layout('grid-area', '2 / 3 / 3 / 4'),
-          leftAxis.layout('grid-area', '2 / 2 / 3 / 3'),
-          bottomAxis.layout('grid-area', '3 / 3 / 4 / 4'),
+          bars.layout('grid-area', '1 / 2 / 2 / 3'),
+          barLabels.layout('grid-area', '1 / 2 / 2 / 3'),
+          leftAxis.layout('grid-area', '1 / 1 / 2 / 2'),
+          bottomAxis.layout('grid-area', '2 / 2 / 3 / 3'),
         ]),
         chart.mount('#chart');
     </script>

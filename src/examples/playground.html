@@ -18,148 +18,43 @@
   </head>
   <body>
     <h1>Bar Chart</h1>
+
     <div id="chart"></div>
     <script src="../respvis.js"></script>
     <script type="module">
-      import data from './data/austrian-cities.js';
-
-      const cities = data.cities;
-      const populations = data.populations.map((p) => Math.round(p / 1000));
-      const maxPopulation = Math.max(...populations);
-      const populationFormatter = (p) => `${p}k`;
-
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
-      const cityScale = respVis.bandScale().domain(cities).padding(0.1);
-      const populationScale = respVis.linearScale().domain([0, maxPopulation]).nice();
+      const rect = respVis.rect().attr('fill', '#066600').attr('width', 150).attr('height', 75);
 
-      const barColor = respVis.BarsDecorator.defaultColor;
-      const bars = new respVis.BarsDecorator(new respVis.GroupComponent())
-        .categories(cities)
-        .categoryScale(cityScale)
-        .values(populations)
-        .valueScale(populationScale)
-        .attr('fill', barColor)
-        .onConfigure((bars) => {
-          bars
-            .orientation(respVis.BarOrientation.Horizontal)
-            .on('mouseover', (e, d) => hoverBar(d.index, leftAxis, bottomAxis, true))
-            .on('mouseout', (e, d) => hoverBar(d.index, leftAxis, bottomAxis, false));
-          if (window.matchMedia(wideMediaQuery).matches)
-            bars
-              .orientation(respVis.BarOrientation.Vertical)
-              .on('mouseover', (e, d) => hoverBar(d.index, bottomAxis, leftAxis, true))
-              .on('mouseout', (e, d) => hoverBar(d.index, bottomAxis, leftAxis, false));
-        });
+      const text = respVis
+        .text()
+        .attr('fill', 'green')
+        .attr('font-size', '1rem')
+        .text('Hello World');
 
-      function hoverBar(barIndex, cityAxis, populationAxis, hover) {
-        barLabels
-          .selection()
-          .select(`text:nth-of-type(${barIndex + 1}`)
-          .attr('font-size', hover ? '1rem' : null);
-
-        bars
-          .selection()
-          .select(`rect:nth-of-type(${barIndex + 1})`)
-          .attr('fill', hover ? respVis.chroma.hex(barColor).brighten(0.5).hex() : barColor);
-
-        cityAxis
-          .selection()
-          .select(`.tick:nth-of-type(${barIndex + 1})`)
-          .attr('text-decoration', hover ? 'underline' : 'none');
-      }
-
-      const barLabels = new respVis.BarLabelsDecorator(bars, new respVis.GroupComponent())
-        .labels(populations.map(populationFormatter))
-        .attr('pointer-events', 'none')
-        .attr('font-size', 0)
-        .onConfigure((barLabels) => {
-          barLabels
-            .widthPercent(0)
-            .heightPercent(0.5)
-            .attr('dominant-baseline', 'middle')
-            .attr('text-anchor', 'start')
-            .attr('transform', 'translate(4, 0)');
-          if (window.matchMedia(wideMediaQuery).matches)
-            barLabels
-              .widthPercent(0.5)
-              .heightPercent(1)
-              .attr('dominant-baseline', 'auto')
-              .attr('text-anchor', 'middle')
-              .attr('transform', 'translate(0, -4)');
-        });
-
-      const leftAxis = new respVis.LeftAxisDecorator(new respVis.GroupComponent()).onConfigure(
-        (axis) => {
-          axis
-            .ticks()
-            .scale(cityScale)
-            .onConfigureAxis((axis) => {});
-          axis.title().text('Cities');
-          if (window.matchMedia(wideMediaQuery).matches) {
-            axis
-              .ticks()
-              .scale(populationScale)
-              .onConfigureAxis((axis) => axis.tickFormat(populationFormatter));
-
-            axis.title().text('Population');
-          }
-        }
-      );
-
-      const bottomAxis = new respVis.BottomAxisDecorator(new respVis.GroupComponent()).onConfigure(
-        (axis) => {
-          axis
-            .ticks()
-            .scale(populationScale)
-            .onConfigureAxis((axis) => axis.tickFormat(populationFormatter));
-          axis.title().text('Population');
-          if (window.matchMedia(wideMediaQuery).matches) {
-            axis
-              .ticks()
-              .scale(cityScale)
-              .onConfigureAxis((axis) => {});
-            axis.title().text('Cities');
-          }
-        }
-      );
-
-      // const rect = new respVis.RectComponent().onConfigure((r) => {
-      //   r.attr('fill', '#ffff00', 1000).attr('width', 150, 250).attr('height', 75, 250);
-      //   if (window.matchMedia(wideMediaQuery).matches)
-      //     r.attr('fill', '#aa88cc', 1000).attr('width', 200, 250).attr('height', 100, 250);
-      // });
-
-      // const text = new respVis.TextComponent().attr('fill', 'green').onConfigure((t) => {
-      //   text.attr('font-size', '1rem', 250).text('Hello World');
-      //   if (window.matchMedia(wideMediaQuery).matches)
-      //     text.attr('font-size', '2rem', 250).text('Hellooooo Woooorld!');
-      // });
-
-      const chart = new respVis.Chart();
+      const chart = respVis.chart();
 
       chart
-        .svg()
-
-        .onConfigure((svg) => {
-          svg.layout('grid-template', '10 1fr 10 / 10 1fr 10');
-          if (window.matchMedia(wideMediaQuery).matches)
-            svg.layout('grid-template', '20 1fr 10 / 10 1fr 10');
-        })
-
+        .root()
+        .layout('grid-template', '1fr / 1fr')
         .children([
-          new respVis.GroupComponent()
-            .layout('grid-area', '2 / 2 / 3 / 3')
-            .layout('grid-template', '1fr auto / auto 1fr')
-            .children([
-              bars.layout('grid-area', '1 / 2 / 2 / 3'),
-              barLabels.layout('grid-area', '1 / 2 / 2 / 3'),
-              leftAxis.layout('grid-area', '1 / 1 / 2 / 2'),
-              bottomAxis.layout('grid-area', '2 / 2 / 3 / 3'),
-            ]),
-
-          // rect.layout('grid-area', '1 / 2 / 2 / 3').layout('place-self', 'center center'),
-          // text.layout('grid-area', '1 / 2 / 2 / 3').layout('place-self', 'center center'),
+          respVis
+            .grid()
+            .layout('grid-area', '1 / 1 / 2 / 2')
+            .layout('justify-content', 'space-between')
+            .rowCount(1)
+            .columnCount(3)
+            .children(
+              [0, 1, 2].map((i) =>
+                respVis
+                  .rect()
+                  .layout('place-self', 'center center')
+                  .layout('padding-left', 10)
+                  .attr('fill', `#${444 * i}`)
+                  .attr('width', 100)
+                  .attr('height', 100)
+              )
+            ),
         ]);
 
       chart.mount('#chart');

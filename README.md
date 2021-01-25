@@ -23,7 +23,7 @@ The build task will create a new build of the whole framework and the examples i
 ```
 gulp build  // Using globally installed gulp
 
-npx gulp build  // Using packaged gulp
+npx gulp build  // Using locally packaged gulp
 ```
 
 ## Development
@@ -33,7 +33,7 @@ For development it is oftentimes very useful to automatically rebuild and reload
 ```
 gulp serve  // Using globally installed gulp
 
-npx gulp serve  // Using packaged gulp
+npx gulp serve  // Using locally packaged gulp
 ```
 
 or simply
@@ -41,5 +41,5 @@ or simply
 ```
 gulp  // Using globally installed gulp
 
-npx gulp  // Using packaged gulp
+npx gulp  // Using locally packaged gulp
 ```

@@ -1,5 +1,6 @@
 import { ScaleBand, ScaleContinuousNumeric } from 'd3-scale';
-import { bandScale, linearScale, IRect, utils } from '../core';
+import { bandScale, linearScale, utils } from '../core';
+import { Rect } from '../core/rect';
 
 export enum BarOrientation {
   Vertical,
@@ -17,7 +18,7 @@ export interface Bars {
   valueScale(scale: ScaleContinuousNumeric<number, number>): this;
   orientation(): BarOrientation;
   orientation(orientation: BarOrientation): this;
-  bars(): IRect<number>[];
+  bars(): Rect<number>[];
 }
 
 export class BarsCalculator implements Bars {
@@ -26,7 +27,7 @@ export class BarsCalculator implements Bars {
   private _values: number[];
   private _valueScale: ScaleContinuousNumeric<number, number>;
   private _orientation: BarOrientation;
-  private _bars: IRect<number>[];
+  private _bars: Rect<number>[];
 
   constructor() {
     this._categories = [];
@@ -116,7 +117,11 @@ export class BarsCalculator implements Bars {
     return this;
   }
 
-  bars(): IRect<number>[] {
+  bars(): Rect<number>[] {
     return this._bars;
   }
+}
+
+export function barsCalculator(): BarsCalculator {
+  return new BarsCalculator();
 }

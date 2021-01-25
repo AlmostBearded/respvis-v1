@@ -1,10 +1,12 @@
 import { BaseComponent } from '../base-component';
-import { Chart } from '../chart';
-import { Component } from '../component';
-import { ContainerComponent } from './container-component';
+import { ChildrenMixin } from '../mixins/children-mixin';
 
-export class SVGComponent extends ContainerComponent {
+export class SVGComponent extends ChildrenMixin(BaseComponent) {
   constructor() {
     super('svg');
   }
+}
+
+export function svg(): SVGComponent {
+  return new SVGComponent();
 }

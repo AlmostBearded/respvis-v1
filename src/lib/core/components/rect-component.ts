@@ -6,3 +6,7 @@ export class RectComponent extends BaseComponent {
     this.layout('width', 'min-content').layout('height', 'min-content');
   }
 }
+
+export function rect(): RectComponent {
+  return new RectComponent();
+}

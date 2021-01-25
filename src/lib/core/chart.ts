@@ -2,16 +2,22 @@ import { select } from 'd3-selection';
 import debounce from 'debounce';
 import { applyLayoutTransforms, computeLayout } from './layout/layout';
 import { SVGComponent } from './components/svg-component';
+import { rectFromString, rectToString } from './rect';
+import { GroupComponent } from './components/group-component';
 
 export type ConfigureFunction = (chart: Chart) => void;
 
 export class Chart {
   private _svg: SVGComponent;
+  private _rootGroup: GroupComponent;
   // private _layoutDuration: number;
   // private _lastLayoutTime: number;
 
   constructor() {
-    this._svg = new SVGComponent();
+    this._svg = new SVGComponent()
+      .layout('grid-template', '1fr / 1fr')
+      .children([(this._rootGroup = new GroupComponent().layout('grid-area', '1 / 1 / 2 / 2'))]);
+
     // this._layoutDuration = 0;
 
     this._svg.selection().classed('chart', true).style('width', '100%').style('height', '100%');
@@ -36,8 +42,11 @@ export class Chart {
     this._svg.beforeLayout();
 
     const bbox = this._svg.selection().node()!.getBoundingClientRect();
-    this._svg.selection().attr('viewBox', `0, 0, ${bbox.width}, ${bbox.height}`);
     computeLayout(this._svg.selection().node()!, bbox);
+    this._svg.attr(
+      'viewBox',
+      rectToString({ ...rectFromString(this._svg.attr('layout')), x: 0, y: 0 })
+    );
 
     this._svg.afterLayout().render();
 
@@ -50,8 +59,11 @@ export class Chart {
     this._svg.configure().beforeLayout();
 
     let bbox = this._svg.selection().node()!.getBoundingClientRect();
-    this._svg.selection().attr('viewBox', `0, 0, ${bbox.width}, ${bbox.height}`);
     computeLayout(this._svg.selection().node()!, bbox);
+    this._svg.attr(
+      'viewBox',
+      rectToString({ ...rectFromString(this._svg.attr('layout')), x: 0, y: 0 })
+    );
 
     this._svg.afterLayout().transition();
 
@@ -62,6 +74,10 @@ export class Chart {
 
   svg(): SVGComponent {
     return this._svg;
+  }
+
+  root(): GroupComponent {
+    return this._rootGroup;
   }
 
   // requestLayout(duration: number): this {
@@ -93,4 +109,8 @@ export class Chart {
   //   window.requestAnimationFrame(layoutStep);
   //   return this;
   // }
+}
+
+export function chart(): Chart {
+  return new Chart();
 }

@@ -1,6 +1,6 @@
 import { range } from 'd3-array';
 import { ScaleBand, ScaleContinuousNumeric } from 'd3-scale';
-import { linearScale, IRect, utils, bandScale } from '../core';
+import { linearScale, Rect, utils, bandScale } from '../core';
 import { ISize } from '../core/utils';
 import { BarOrientation } from './bars';
 
@@ -17,7 +17,7 @@ export interface GroupedBars {
   subcategoryScale(scale: ScaleBand<any>): this;
   orientation(): BarOrientation;
   orientation(orientation: BarOrientation): this;
-  bars(): IRect<number>[];
+  bars(): Rect<number>[];
 }
 
 export class GroupedBarsCalculator implements GroupedBars {
@@ -27,7 +27,7 @@ export class GroupedBarsCalculator implements GroupedBars {
   private _values: number[][];
   private _valueScale: ScaleContinuousNumeric<number, number>;
   private _orientation: BarOrientation;
-  private _bars: IRect<number>[];
+  private _bars: Rect<number>[];
 
   constructor() {
     this._categories = [];
@@ -91,7 +91,7 @@ export class GroupedBarsCalculator implements GroupedBars {
     return this;
   }
 
-  bars(): IRect<number>[] {
+  bars(): Rect<number>[] {
     return this._bars;
   }
 

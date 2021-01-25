@@ -48,7 +48,7 @@ export class PointsComponent extends Component<IPointsComponentConfig> implement
   private _clipRectSelection: Selection<SVGRectElement, unknown, BaseType, unknown>;
   private _inTransition = false;
 
-  static defaultColor = colors.categorical[0];
+  static defaultColor = colors.categoricalColors[0];
 
   static setEventListeners(component: PointsComponent, config: IPointsComponentConfig) {
     for (const typenames in config.events) {

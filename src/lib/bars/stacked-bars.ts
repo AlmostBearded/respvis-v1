@@ -13,7 +13,7 @@ import {
   setBoundAttributes,
 } from '../core';
 import { Selection, BaseType, create } from 'd3-selection';
-import { createBars } from './bars-decorator';
+import { createBars } from './bars-component';
 import {
   IStackedBarPositioner,
   IStackedBarPositionerConfig,
@@ -47,7 +47,7 @@ export class StackedBarsComponent
   implements IStackedBarsComponent {
   private _barPositioner: IStackedBarPositioner = new StackedBarPositioner();
 
-  static defaultColors = colors.categorical;
+  static defaultColors = colors.categoricalColors;
 
   static setEventListeners(component: StackedBarsComponent, config: IStackedBarsComponentConfig) {
     for (const typenames in config.events) {

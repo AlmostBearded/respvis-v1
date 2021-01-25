@@ -1,7 +1,7 @@
-export * from './bars-decorator';
-export * from './grouped-bars-decorator';
+export * from './bars-component';
+export * from './grouped-bars-component';
 // export * from './stacked-bars';
-export * from './bar-labels-decorator';
+export * from './bar-labels-component';
 
 export * from './bars';
 export * from './grouped-bars';

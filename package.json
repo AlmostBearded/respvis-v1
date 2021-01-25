@@ -1,7 +1,7 @@
 {
   "name": "respvis",
   "version": "0.2.0",
-  "description": "A f\u001framework to build responsive Svisualizations ",
+  "description": "A framework to build responsive visualizations ",
   "main": "index.js",
   "scripts": {
     "build": "npx gulp build",

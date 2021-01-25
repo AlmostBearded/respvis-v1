@@ -15,3 +15,7 @@ export class TextComponent extends BaseComponent {
       .attr('font-family', 'sans-serif');
   }
 }
+
+export function text(): TextComponent {
+  return new TextComponent();
+}

@@ -1,4 +1,4 @@
-export * as colors from './colors';
+export * from './colors';
 export * as utils from './utils';
 // export * from './array';
 
@@ -12,19 +12,21 @@ export * from './attributes';
 export * from './scales';
 
 export * from './component';
-export * from './component-decorator';
 export * from './base-component';
 
 export * from './components/svg-component';
 export * from './components/group-component';
 export * from './components/text-component';
 export * from './components/rect-component';
+export * from './components/grid-component';
+export * from './components/padding-component';
 
-export * from './decorators/title-text-decorator';
-export * from './decorators/vertical-text-decorator';
+export * from './utility/title-text-attributes';
+export * from './utility/vertical-text-attributes';
 
 export * from './chart';
 
+// todo: solve Rect naming conflict (maybe namespaces?)
 export * from './rect';
 
 import { transition } from 'd3-transition';

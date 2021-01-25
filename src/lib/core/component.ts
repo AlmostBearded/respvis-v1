@@ -1,6 +1,6 @@
-import { Selection } from 'd3-selection';
+import { BaseType, Selection } from 'd3-selection';
 import { Chart } from './chart';
-import { LayoutData, LayoutProperties } from './layout/layout';
+import { LayoutProperties } from './layout/layout';
 import { ISize } from './utils';
 
 export interface ComponentEventData<TComponent extends Component> {
@@ -8,6 +8,7 @@ export interface ComponentEventData<TComponent extends Component> {
 }
 
 export interface Component {
+  init(): void;
   mount(chart: Chart): this;
   configure(): this;
   beforeLayout(): this;
@@ -51,4 +52,6 @@ export interface Component {
   node(): SVGElement;
   on(typenames: string, callback: null): this;
   on(typenames: string, callback: (event: Event, data: ComponentEventData<this>) => void): this;
+  select<DescElement extends BaseType>(selector: string): Selection<DescElement, any, any, any>;
+  selectAll<DescElement extends BaseType>(selector: string): Selection<DescElement, any, any, any>;
 }

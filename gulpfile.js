@@ -76,15 +76,29 @@ function reloadBrowser(cb) {
   cb();
 }
 
+// ## Clean
+
+function cleanDist() {
+  return del('dist/**', { force: true });
+}
+
+function cleanNodeModules() {
+  return del('node_modules/**', { force: true });
+}
+
 // # Public tasks
 
-exports.clean = function clean() {
-  return del('dist/**', { force: true });
-};
+exports.clean = cleanDist;
+
+exports.cleanAll = gulp.series([cleanDist, cleanNodeModules]);
 
 exports.build = gulp.series([
   exports.clean,
-  gulp.parallel([bundleJSLib, /*bundleJSLibMin, bundleJSLibMinZipped,*/ copyHTMLFiles, copyExampleScripts]),
+  gulp.parallel([
+    bundleJSLib,
+    /*bundleJSLibMin, bundleJSLibMinZipped,*/ copyHTMLFiles,
+    copyExampleScripts,
+  ]),
 ]);
 
 exports.serve = function serve() {

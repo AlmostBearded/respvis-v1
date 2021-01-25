@@ -1,14 +1,19 @@
-import { IRect, Rect, colors, Component, ComponentEventData } from '../core';
+import {
+  Component,
+  ComponentEventData,
+  categoricalColors,
+  BaseComponent,
+  rectFromString,
+} from '../core';
 import { Selection, BaseType, EnterElement } from 'd3-selection';
 import { BarOrientation, Bars, BarsCalculator } from './bars';
 import { ScaleBand, ScaleContinuousNumeric } from 'd3-scale';
-import { ContainerComponent } from '../core/components/container-component';
-import { ComponentDecorator } from '../core/component-decorator';
 import { SelectionOrTransition } from 'd3-transition';
+import { Rect } from '../core/rect';
 
 export interface BarData {
   categoryIndex: number;
-  rect: IRect<number>;
+  rect: Rect<number>;
 }
 
 export type CreateBarsFunction = (
@@ -25,28 +30,25 @@ export interface BarsEventData<TComponent extends Component>
   element: SVGRectElement;
 }
 
-export class BarsDecorator<TComponent extends ContainerComponent>
-  extends ComponentDecorator<TComponent>
-  implements Bars {
+export class BarsComponent extends BaseComponent implements Bars {
   private _barsCalculator: BarsCalculator;
   private _transitionDelay: number;
   private _transitionDuration: number;
   private _onCreateBars: CreateBarsFunction;
   private _onUpdateBars: UpdateBarsFunction;
 
-  static defaultColor = colors.categorical[0];
+  static defaultColor = categoricalColors[0];
 
-  constructor(component: TComponent) {
-    super(component);
+  constructor() {
+    super('g');
 
     this._barsCalculator = new BarsCalculator();
     this._transitionDuration = 250;
     this._transitionDelay = 250;
     this._onCreateBars = createBars;
     this._onUpdateBars = updateBars;
-    this.component()
-      .classed('bars', true)
-      .attr('fill', BarsDecorator.defaultColor)
+    this.classed('bars', true)
+      .attr('fill', BarsComponent.defaultColor)
       .attr('layout', '0, 0, 600, 400');
   }
 
@@ -92,7 +94,7 @@ export class BarsDecorator<TComponent extends ContainerComponent>
     return this;
   }
 
-  bars(): IRect<number>[] {
+  bars(): Rect<number>[] {
     return this._barsCalculator.bars();
   }
 
@@ -130,14 +132,13 @@ export class BarsDecorator<TComponent extends ContainerComponent>
 
   afterLayout(): this {
     super.afterLayout();
-    this._barsCalculator.fitInSize(Rect.fromString(this.component().attr('layout')));
+    this._barsCalculator.fitInSize(rectFromString(this.attr('layout')));
     return this;
   }
 
   render(): this {
     super.render();
-    this.component()
-      .selection()
+    this.selection()
       .selectAll('.bar')
       .data(this._barsCalculator.bars().map((rect, i) => ({ categoryIndex: i, rect: rect })))
       .join(this._onCreateBars)
@@ -147,8 +148,7 @@ export class BarsDecorator<TComponent extends ContainerComponent>
 
   transition(): this {
     super.transition();
-    this.component()
-      .selection()
+    this.selection()
       .selectAll('.bar')
       .data(this._barsCalculator.bars().map((rect, i) => ({ categoryIndex: i, rect: rect })))
       .join(this._onCreateBars)
@@ -168,6 +168,10 @@ export class BarsDecorator<TComponent extends ContainerComponent>
       element: element,
     };
   }
+}
+
+export function bars(): BarsComponent {
+  return new BarsComponent();
 }
 
 export function createBars(

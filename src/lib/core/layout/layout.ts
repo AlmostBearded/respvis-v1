@@ -1,11 +1,12 @@
 import { ISize } from '../utils';
 import { computeLayout as faberComputeLayout } from './faberjs';
-import { IRect, Rect } from '../rect';
+import { Rect, rectFromString, rectToString } from '../rect';
 import { BaseType, selection, Selection } from 'd3-selection';
+import { ChildrenMixin } from '../mixins/children-mixin';
 
 type LayoutNode = {
   style: LayoutStyle;
-  layout: IRect<number>;
+  layout: Rect<number>;
   children: LayoutNode[];
 };
 
@@ -24,6 +25,15 @@ export interface LayoutStyle {
   justifySelf?: string;
   alignSelf?: string;
 }
+
+type ContentPlacement =
+  | 'start'
+  | 'center'
+  | 'end'
+  | 'stretch'
+  | 'space-around'
+  | 'space-between'
+  | 'space-evenly';
 
 export interface LayoutProperties {
   'grid-template-rows'?: string;
@@ -45,6 +55,16 @@ export interface LayoutProperties {
   width?: number | string;
   height?: number | string;
   display?: 'grid';
+  'padding-left'?: number;
+  'padding-right'?: number;
+  'padding-top'?: number;
+  'padding-bottom'?: number;
+  'padding-horizontal'?: number;
+  'padding-vertical'?: number;
+  padding?: number;
+  'justify-content'?: ContentPlacement;
+  'align-content'?: ContentPlacement;
+  'place-content'?: string;
 }
 
 export interface LayoutData extends LayoutProperties {
@@ -109,6 +129,7 @@ export function computeLayout(element: LaidOutElement, size: ISize) {
 
   // 2nd Phase
   setCalculatedDimensions(rootLayoutNode);
+  // applyPadding(element, rootLayoutNode);
   faberComputeLayout(rootLayoutNode);
 
   setLayoutAttributes(element, rootLayoutNode);
@@ -117,7 +138,7 @@ export function computeLayout(element: LaidOutElement, size: ISize) {
 export function applyLayoutTransforms(element: Element) {
   const layoutAttribute = element.getAttribute('layout');
   if (layoutAttribute) {
-    const layoutRect = Rect.fromString(layoutAttribute);
+    const layoutRect = rectFromString(layoutAttribute);
     const layoutTransform = `translate(${layoutRect.x}, ${layoutRect.y})`;
 
     const previousTransform = element.getAttribute('previous-transform') || '';
@@ -142,6 +163,12 @@ export function applyLayoutTransforms(element: Element) {
 function parseLayoutStyle(element: LaidOutElement): LayoutStyle | null {
   if (element.__layout === undefined) return null;
   const data = element.__layout;
+
+  // todo: enable toggling of debug attributes
+  for (let key in element.__layout) {
+    if (key === 'getBounds') continue;
+    element.setAttribute(`layout-${key}`, element.__layout[key]);
+  }
 
   const trim = (s: string) => s.trim();
   const parse = (s: string) => parseInt(s);
@@ -195,7 +222,96 @@ function parseLayoutStyle(element: LaidOutElement): LayoutStyle | null {
   return style;
 }
 
-function parseElementHierarchy(element: LaidOutElement): LayoutNode | null {
+function parsePadding(
+  element: LaidOutElement
+): { left: number; right: number; top: number; bottom: number } {
+  return {
+    left:
+      element.__layout?.['padding-left'] ||
+      element.__layout?.['padding-horizontal'] ||
+      element.__layout?.['padding'] ||
+      0,
+    right:
+      element.__layout?.['padding-right'] ||
+      element.__layout?.['padding-horizontal'] ||
+      element.__layout?.['padding'] ||
+      0,
+    top:
+      element.__layout?.['padding-top'] ||
+      element.__layout?.['padding-vertical'] ||
+      element.__layout?.['padding'] ||
+      0,
+    bottom:
+      element.__layout?.['padding-bottom'] ||
+      element.__layout?.['padding-vertical'] ||
+      element.__layout?.['padding'] ||
+      0,
+  };
+}
+
+function parseContentPlacement(
+  element: LaidOutElement
+): { justify: ContentPlacement; align: ContentPlacement } {
+  return {
+    align:
+      element.__layout?.['align-content'] ||
+      (element.__layout?.['place-content']?.split(' ')[0] as ContentPlacement) ||
+      'stretch',
+    justify:
+      element.__layout?.['justify-content'] ||
+      (element.__layout?.['place-content']?.split(' ')[1] as ContentPlacement) ||
+      'stretch',
+  };
+}
+
+function getPositionModifier(placement: ContentPlacement): (position: number) => number {
+  const p = placement;
+  if (p === 'start' || p === 'stretch') return (position) => position;
+  if (p === 'center' || p === 'end') return (position) => position + 1;
+  if (p === 'space-around') return (position) => 2 + (position - 1) * 3;
+  if (p === 'space-between') return (position) => 1 + (position - 1) * 2;
+  if (p === 'space-evenly') return (position) => position * 2;
+
+  console.assert(false, 'should never reach this location');
+  return (position) => position;
+}
+
+function getSpanModifier(placement: ContentPlacement): (span: number) => number {
+  const p = placement;
+  if (p === 'start' || p === 'center' || p === 'end' || p === 'stretch') return (span) => span;
+  if (p === 'space-around') return (span) => span + (span - 1) * 2;
+  if (p === 'space-between' || p === 'space-evenly') return (span) => span + (span - 1);
+
+  console.assert(false, 'should never reach this location');
+  return (span) => span;
+}
+
+function applyContentPlacementToGridTemplate(
+  contentPlacement: ContentPlacement,
+  template: string
+): string {
+  const cells = template.split(' ');
+  const result: string[] = [];
+  if (contentPlacement === 'start') result.push(...cells, '1fr');
+  if (contentPlacement === 'center') result.push('1fr', ...cells, '1fr');
+  if (contentPlacement === 'end') result.push('1fr', ...cells);
+  if (contentPlacement === 'stretch') result.push(...cells);
+  if (contentPlacement === 'space-around') cells.forEach((c) => result.push('1fr', c, '1fr'));
+  if (contentPlacement === 'space-between') result.push(...cells.join(' 1fr ').split(' '));
+  if (contentPlacement === 'space-evenly') {
+    result.push('1fr');
+    cells.forEach((c) => result.push(c, '1fr'));
+  }
+  return result.join(' ');
+}
+
+function parseElementHierarchy(
+  element: LaidOutElement,
+  rowModifier?: (row: number) => number,
+  rowSpanModifier?: (span: number) => number,
+  columnModifier?: (column: number) => number,
+  columnSpanModifier?: (span: number) => number
+): LayoutNode | null {
   const layoutStyle = parseLayoutStyle(element);
 
   if (layoutStyle === null) {
@@ -205,16 +321,77 @@ function parseElementHierarchy(element: LaidOutElement): LayoutNode | null {
 
   element.setAttribute('laidOut', '');
 
-  const layoutNode: LayoutNode = {
+  if (rowModifier && rowSpanModifier && layoutStyle.gridRowStart && layoutStyle.gridRowEnd) {
+    const start = layoutStyle.gridRowStart,
+      end = layoutStyle.gridRowEnd;
+    layoutStyle.gridRowStart = rowModifier(start);
+    layoutStyle.gridRowEnd = layoutStyle.gridRowStart + rowSpanModifier(end - start);
+    // console.log('row', start, layoutStyle.gridRowStart, end, layoutStyle.gridRowEnd);
+  }
+
+  if (
+    columnModifier &&
+    columnSpanModifier &&
+    layoutStyle.gridColumnStart &&
+    layoutStyle.gridColumnEnd
+  ) {
+    const start = layoutStyle.gridColumnStart,
+      end = layoutStyle.gridColumnEnd;
+    layoutStyle.gridColumnStart = columnModifier(start);
+    layoutStyle.gridColumnEnd = layoutStyle.gridColumnStart + columnSpanModifier(end - start);
+    // console.log('col', start, layoutStyle.gridColumnStart, end, layoutStyle.gridColumnEnd);
+  }
+
+  let layoutNode: LayoutNode = {
     style: layoutStyle,
     layout: { x: 0, y: 0, width: 0, height: 0 },
     children: [],
   };
 
+  const contentPlacement = parseContentPlacement(element);
+
   for (var i = 0; i < element.children.length; ++i) {
     const childElement = element.children[i] as LaidOutElement;
-    const childLayoutNode = parseElementHierarchy(childElement);
+    const childLayoutNode = parseElementHierarchy(
+      childElement,
+      getPositionModifier(contentPlacement.align),
+      getSpanModifier(contentPlacement.align),
+      getPositionModifier(contentPlacement.justify),
+      getSpanModifier(contentPlacement.justify)
+    );
     if (childLayoutNode) layoutNode.children.push(childLayoutNode);
+  }
+
+  if (contentPlacement.align !== 'stretch' || contentPlacement.justify !== 'stretch') {
+    const style = layoutNode.style,
+      rows = style.gridTemplateRows!,
+      columns = style.gridTemplateColumns!,
+      align = contentPlacement.align,
+      justify = contentPlacement.justify;
+    style.gridTemplateRows = applyContentPlacementToGridTemplate(align, rows);
+    style.gridTemplateColumns = applyContentPlacementToGridTemplate(justify, columns);
+  }
+
+  const padding = parsePadding(element);
+  if (padding.left > 0 || padding.right > 0 || padding.top > 0 || padding.bottom > 0) {
+    const paddingLayoutNode: LayoutNode = {
+      style: {
+        ...layoutNode.style,
+        gridTemplateRows: `${padding.top} 1fr ${padding.bottom}`,
+        gridTemplateColumns: `${padding.left} 1fr ${padding.right}`,
+        display: 'grid',
+      },
+      layout: { x: 0, y: 0, width: 0, height: 0 },
+      children: [layoutNode],
+    };
+    delete paddingLayoutNode.style.width;
+    delete paddingLayoutNode.style.height;
+    layoutNode.style.gridRowStart = 2;
+    layoutNode.style.gridRowEnd = 3;
+    layoutNode.style.gridColumnStart = 2;
+    layoutNode.style.gridColumnEnd = 3;
+
+    layoutNode = paddingLayoutNode;
   }
 
   return layoutNode;
@@ -232,16 +409,26 @@ function setLayoutAttributes(element: LaidOutElement, layoutNode: LayoutNode): b
   if (element.getAttribute('laidOut') === null) return false;
 
   // todo: set layout as __layout property
-  element.setAttribute('layout', Rect.fromRect(layoutNode.layout).toString());
+  const rect = layoutNode.layout;
+
+  const padding = parsePadding(element);
+  if (padding.left > 0 || padding.right > 0 || padding.top > 0 || padding.bottom > 0) {
+    layoutNode = layoutNode.children[0];
+    const childRect = layoutNode.layout;
+    rect.x += childRect.x;
+    rect.y += childRect.y;
+  }
+
+  element.setAttribute('layout', rectToString(rect));
 
   let notLaidOutChildCount = 0;
   for (let i = 0; i < element.children.length; ++i) {
-    notLaidOutChildCount += setLayoutAttributes(
-      element.children[i] as LaidOutElement,
-      layoutNode.children[i - notLaidOutChildCount]
-    )
-      ? 0
-      : 1;
+    const childElement = element.children[i] as LaidOutElement;
+    let childLayoutNode = layoutNode.children[i - notLaidOutChildCount];
+
+    const childLaidOut = setLayoutAttributes(childElement, childLayoutNode);
+    notLaidOutChildCount += childLaidOut ? 0 : 1;
   }
+
   return true;
 }

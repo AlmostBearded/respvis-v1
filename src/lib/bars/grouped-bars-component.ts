@@ -1,29 +1,29 @@
 import { ScaleBand, ScaleContinuousNumeric } from 'd3-scale';
 import { BaseType, EnterElement, select, selection, Selection } from 'd3-selection';
 import { SelectionOrTransition } from 'd3-transition';
-import { colors, Component, ComponentDecorator, ComponentEventData, IRect, Rect } from '../core';
-import { ContainerComponent } from '../core/components/container-component';
-import { BarOrientation, BarsCalculator } from './bars';
 import {
-  BarData,
-  BarsDecorator,
-  createBars,
-  CreateBarsFunction,
-  updateBars,
-} from './bars-decorator';
+  BaseComponent,
+  categoricalColors,
+  Component,
+  ComponentEventData,
+  Rect,
+  rectFromString,
+} from '../core';
+import { BarOrientation } from './bars';
+import { BarData, createBars, CreateBarsFunction, updateBars } from './bars-component';
 import { GroupedBars, GroupedBarsCalculator } from './grouped-bars';
 
 export interface GroupedBarData extends BarData {
   categoryIndex: number;
   valueIndex: number;
-  rect: IRect<number>;
+  rect: Rect<number>;
 }
 
 export type CreateBarGroupsFunction = (
   enterSelection: Selection<EnterElement, any, any, any>
 ) => Selection<SVGGElement, any, any, any>;
 
-export type UpdateBarsFunction = (
+export type UpdateGroupedBarsFunction = (
   selection: SelectionOrTransition<BaseType, GroupedBarData, any, any>
 ) => void;
 
@@ -35,20 +35,18 @@ export interface GroupedBarsEventData<TComponent extends Component>
   element: SVGRectElement;
 }
 
-export class GroupedBarsDecorator<TComponent extends ContainerComponent>
-  extends ComponentDecorator<TComponent>
-  implements GroupedBars {
+export class GroupedBarsComponent extends BaseComponent implements GroupedBars {
   private _barsCalculator: GroupedBarsCalculator;
   private _transitionDelay: number;
   private _transitionDuration: number;
   private _onCreateBars: CreateBarsFunction;
   private _onCreateBarGroups: CreateBarGroupsFunction;
-  private _onUpdateBars: UpdateBarsFunction;
+  private _onUpdateBars: UpdateGroupedBarsFunction;
 
-  static defaultColors = colors.categorical;
+  static defaultColors = categoricalColors;
 
-  constructor(component: TComponent) {
-    super(component);
+  constructor() {
+    super('g');
     this._barsCalculator = new GroupedBarsCalculator();
     this._transitionDuration = 250;
     this._transitionDelay = 250;
@@ -105,7 +103,7 @@ export class GroupedBarsDecorator<TComponent extends ContainerComponent>
     return this;
   }
 
-  bars(): IRect<number>[] {
+  bars(): Rect<number>[] {
     return this._barsCalculator.bars();
   }
 
@@ -141,8 +139,8 @@ export class GroupedBarsDecorator<TComponent extends ContainerComponent>
     return this;
   }
 
-  onUpdateBars(): UpdateBarsFunction;
-  onUpdateBars(callback: UpdateBarsFunction): this;
+  onUpdateBars(): UpdateGroupedBarsFunction;
+  onUpdateBars(callback: UpdateGroupedBarsFunction): this;
   onUpdateBars(callback?: any) {
     if (callback === undefined) return this._onUpdateBars;
     this._onUpdateBars = callback;
@@ -151,7 +149,7 @@ export class GroupedBarsDecorator<TComponent extends ContainerComponent>
 
   afterLayout(): this {
     super.afterLayout();
-    this._barsCalculator.fitInSize(Rect.fromString(this.component().attr('layout')));
+    this._barsCalculator.fitInSize(rectFromString(this.attr('layout')));
     return this;
   }
 
@@ -169,8 +167,7 @@ export class GroupedBarsDecorator<TComponent extends ContainerComponent>
       );
     }
 
-    this.component()
-      .selection()
+    this.selection()
       .selectAll('.bar-group')
       .data(groupedBars)
       .join(this._onCreateBarGroups)
@@ -197,8 +194,7 @@ export class GroupedBarsDecorator<TComponent extends ContainerComponent>
       ++categoryIndex;
     }
 
-    this.component()
-      .selection()
+    this.selection()
       .selectAll('.bar-group')
       .data(groupedBars)
       .join(this._onCreateBarGroups)
@@ -231,6 +227,10 @@ export class GroupedBarsDecorator<TComponent extends ContainerComponent>
   }
 }
 
+export function groupedBars(): GroupedBarsComponent {
+  return new GroupedBarsComponent();
+}
+
 export function createBarGroups(
   enterSelection: Selection<EnterElement, any, any, any>
 ): Selection<SVGGElement, any, any, any> {
@@ -240,5 +240,5 @@ export function createBarGroups(
 export function updateGroupedBars(
   selection: SelectionOrTransition<BaseType, GroupedBarData, any, any>
 ): void {
-  selection.call(updateBars).attr('fill', (d) => GroupedBarsDecorator.defaultColors[d.valueIndex]);
+  selection.call(updateBars).attr('fill', (d) => GroupedBarsComponent.defaultColors[d.valueIndex]);
 }
