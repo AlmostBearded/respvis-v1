@@ -7,7 +7,7 @@ import { SwatchComponent } from './swatch-component';
 export class LegendComponent extends GridMixin(ChildrenMixin(BaseComponent)) {
   constructor(swatchCount: number) {
     super('g');
-    this.rowCount(swatchCount).columnCount(1);
+    this.rowCount(swatchCount).columnCount(1).layout('place-content', 'center center');
     for (let i = 0; i < swatchCount; ++i) this.children().push(new SwatchComponent());
   }
 

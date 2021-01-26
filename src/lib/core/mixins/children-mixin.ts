@@ -1,6 +1,11 @@
 import { Chart } from '../chart';
-import { Component } from '../component';
+import { Component, ComponentEventData } from '../component';
 import { Constructor } from './types';
+
+export interface ChildrenMixinEventData<TComponent extends Component>
+  extends ComponentEventData<TComponent> {
+  childIndex: number;
+}
 
 export function ChildrenMixin<TBaseComponent extends Constructor<Component>>(
   BaseComponent: TBaseComponent
@@ -53,6 +58,19 @@ export function ChildrenMixin<TBaseComponent extends Constructor<Component>>(
       super.transition();
       this._children.forEach((c) => c.transition());
       return this;
+    }
+
+    eventData(event: Event): ChildrenMixinEventData<this> | null {
+      let childElement = event.target as Element;
+      while (childElement.parentNode !== event.currentTarget) {
+        childElement = childElement.parentNode as Element;
+      }
+      const indexOf = Array.prototype.indexOf;
+      const childIndex = indexOf.call(childElement.parentNode!.children, childElement);
+      return {
+        component: this,
+        childIndex: childIndex,
+      };
     }
   };
 }

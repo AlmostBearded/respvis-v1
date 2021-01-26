@@ -38,7 +38,7 @@
       var revenueFormatter = (value) => `${value}k`;
 
       // to toggle subcategories
-      var subcategoryToggles = [true, true, true];
+      var yearToggles = [true, true, true];
 
       // media query for wide screens
       const wideMediaQuery = 'screen and (min-width: 40rem)';
@@ -87,10 +87,11 @@
 
       const legend = respVis
         .legend(years.length)
-        .layout('justify-content', 'center')
+        .attr('cursor', 'default')
+        .on('mouseover', (event, data) => hoverLegendSwatch(data.childIndex, true))
+        .on('mouseout', (event, data) => hoverLegendSwatch(data.childIndex, false))
         .call((legend) =>
           legend.swatches().forEach((swatch, i) => {
-            swatch.layout('padding', 10);
             swatch.rect().attr('fill', barColors[i]);
             swatch.label().text(years[i]);
           })
@@ -106,14 +107,18 @@
           .ticks()
           .scale(locationScale)
           .attr('cursor', 'default')
-          .onConfigureAxis((axis) => {});
+          .onConfigureAxis((axis) => {})
+          .on('mouseover', (event, data) => hoverLocationAxisTick(data.tickIndex, true))
+          .on('mouseout', (event, data) => hoverLocationAxisTick(data.tickIndex, false));
         axis.title().layout('padding-right', 5).text('Locations');
         if (window.matchMedia(wideMediaQuery).matches) {
           axis
             .ticks()
             .scale(revenueScale)
             .attr('cursor', 'auto')
-            .onConfigureAxis((axis) => axis.tickFormat(revenueFormatter));
+            .onConfigureAxis((axis) => axis.tickFormat(revenueFormatter))
+            .on('mouseover', null)
+            .on('mouseout', null);
           axis.title().text('Revenue');
         }
       });
@@ -123,14 +128,18 @@
           .ticks()
           .scale(revenueScale)
           .attr('cursor', 'auto')
-          .onConfigureAxis((axis) => axis.tickFormat(revenueFormatter).ticks(5));
+          .onConfigureAxis((axis) => axis.tickFormat(revenueFormatter).ticks(5))
+          .on('mouseover', null)
+          .on('mouseout', null);
         axis.title().layout('padding-top', 5).text('Revenues');
         if (window.matchMedia(wideMediaQuery).matches) {
           axis
             .ticks()
             .scale(locationScale)
             .attr('cursor', 'default')
-            .onConfigureAxis((axis) => {});
+            .onConfigureAxis((axis) => {})
+            .on('mouseover', (event, data) => hoverLocationAxisTick(data.tickIndex, true))
+            .on('mouseout', (event, data) => hoverLocationAxisTick(data.tickIndex, false));
           axis.title().text('Locations');
         }
       });
@@ -156,32 +165,19 @@
             revenueAxis = leftAxis;
           }
         })
-        .children([
-          bars,
-          barLabels,
-          legend,
-          // respVis
-          // .padding()
-          // todo: this would be much cleaner if the layout engine supported the align/justify-content properties
-          // .horizontal('99fr')
-          // .bottom(20)
-          // .children([legend]),
-          leftAxis,
-          bottomAxis,
-        ]);
+        .children([bars, barLabels, legend, leftAxis, bottomAxis]);
 
       chart.mount('#chart');
 
-      // function legendSwatchIndexToBarIndex(swatchIndex) {
-      //   return subcategoryToggles.slice(0, swatchIndex).filter((t) => t).length;
-      // }
+      function legendSwatchIndexToBarIndex(swatchIndex) {
+        return yearToggles.slice(0, swatchIndex).filter((t) => t).length;
+      }
 
-      // function barIndexToLegendSwatchIndex(barIndex) {
-      //   let lastIndex = -1;
-      //   for (let i = 0; i <= barIndex; ++i)
-      //     lastIndex = subcategoryToggles.indexOf(true, lastIndex + 1);
-      //   return lastIndex;
-      // }
+      function barIndexToLegendSwatchIndex(barIndex) {
+        let lastIndex = -1;
+        for (let i = 0; i <= barIndex; ++i) lastIndex = yearToggles.indexOf(true, lastIndex + 1);
+        return lastIndex;
+      }
 
       function nthOfType(index) {
         return `:nth-of-type(${index + 1})`;
@@ -194,287 +190,76 @@
           .attr('fill', highlight ? respVis.brighten(c, 0.5) : c);
       }
 
-      function highlightLocationTick(tickIndex, highlight) {
+      function highlightLocationAxisTick(tickIndex, highlight) {
         locationAxis
           .select(`.tick${nthOfType(tickIndex)}`)
           .attr('text-decoration', highlight ? 'underline' : null);
+      }
+
+      function highlightLegendSwatch(swatchIndex, highlight) {
+        const c = barColors[swatchIndex];
+        const swatch = legend.swatches()[swatchIndex];
+        swatch.rect().attr('fill', highlight ? respVis.brighten(c, 0.5) : c);
+        swatch.label().attr('text-decoration', highlight ? 'underline' : null);
       }
 
       function showLabel(labelIndex, show) {
         barLabels.select(`text${nthOfType(labelIndex)} `).attr('font-size', show ? '1rem' : null);
       }
 
-      function hoverBar(categoryIndex, valueIndex, hover) {
-        const flatBarIndex =
-          categoryIndex * subcategoryToggles.filter((t) => t).length + valueIndex;
-        highlightBar(categoryIndex, valueIndex, hover);
+      function hoverBar(categoryIndex, barIndex, hover) {
+        const flatBarIndex = categoryIndex * yearToggles.filter((t) => t).length + barIndex;
+        highlightBar(categoryIndex, barIndex, hover);
         showLabel(flatBarIndex, hover);
-        highlightLocationTick(categoryIndex, hover);
-        // legend.highlightSwatch(barIndexToLegendSwatchIndex(barIndex), hover);
-        // valueAxis.clearHighlights();
-        // categoryAxis.highlightTick(categoryIndex, hover);
-        // chart.update(false, true);
+        highlightLocationAxisTick(categoryIndex, hover);
+        highlightLegendSwatch(barIndexToLegendSwatchIndex(barIndex), hover);
       }
 
-      // const bars = withHighlightBar(respVis.groupedBars()).config({
-      //   categories: categories,
-      //   categoryScale: { scale: locationScale, padding: 0.1 },
-      //   values: values,
-      //   valueScale: { scale: revenueScale, domain: [0, maxValue] },
-      //   orientation: respVis.BarOrientation.Horizontal,
-      //   colors: barColors,
-      //   transitionDuration: 250,
-      //   events: {
-      //     mouseover: (e, d) => hoverBar(d.categoryIndex, d.barIndex, yAxis, xAxis, true),
-      //     mouseout: (e, d) => hoverBar(d.categoryIndex, d.barIndex, yAxis, xAxis, false),
-      //   },
-      //   responsiveConfigs: {
-      //     [wideMediaQuery]: {
-      //       orientation: respVis.BarOrientation.Vertical,
-      //       events: {
-      //         mouseover: (e, d) => hoverBar(d.categoryIndex, d.barIndex, xAxis, yAxis, true),
-      //         mouseout: (e, d) => hoverBar(d.categoryIndex, d.barIndex, xAxis, yAxis, false),
-      //       },
-      //     },
-      //   },
-      // });
+      function hoverLocationAxisTick(tickIndex, hover) {
+        highlightLocationAxisTick(tickIndex, hover);
+        const yearCount = yearToggles.filter((t) => t).length;
+        for (let i = 0; i < yearCount; ++i) {
+          const flatBarIndex = tickIndex * yearCount + i;
+          highlightBar(tickIndex, i, hover);
+          showLabel(flatBarIndex, hover);
+        }
+      }
 
-      // // labels
-      // const labels = withShowLabel(respVis.barLabels()).config({
-      //   attributes: {
-      //     text: {
-      //       'dominant-baseline': 'middle',
-      //       'text-anchor': 'start',
-      //       transform: 'translate(2, 0)',
-      //     },
-      //   },
-      //   bars: bars,
-      //   labels: values.flat().map(valueFormatter),
-      //   horizontalPosition: respVis.HorizontalPosition.Right,
-      //   verticalPosition: respVis.VerticalPosition.Center,
-      //   transitionDuration: 250,
-      //   responsiveConfigs: {
-      //     [wideMediaQuery]: {
-      //       horizontalPosition: respVis.HorizontalPosition.Center,
-      //       verticalPosition: respVis.VerticalPosition.Top,
-      //       attributes: {
-      //         text: {
-      //           'dominant-baseline': 'auto',
-      //           'text-anchor': 'middle',
-      //           transform: 'translate(0, -4)',
-      //         },
-      //       },
-      //     },
-      //   },
-      // });
+      function hoverLegendSwatch(swatchIndex, hover) {
+        if (yearToggles[swatchIndex] === false) return;
 
-      // // legend
-      // const legend = withDisableLegendSwatch(
-      //   withHighlightLegendSwatch(withSwatchLegend(respVis.group()))
-      // ).config({
-      //   attributes: { cursor: 'pointer' },
-      //   labels: years,
-      //   colors: barColors,
-      //   rowCount: 1,
-      //   columnCount: years.length,
-      //   events: {
-      //     mouseover: (e, d) => hoverLegendSwatch(d.childIndex, true),
-      //     mouseout: (e, d) => hoverLegendSwatch(d.childIndex, false),
-      //     click: (e, d) => clickLegendSwatch(d.childIndex),
-      //   },
-      //   responsiveConfigs: { [wideMediaQuery]: { rowCount: years.length, columnCount: 1 } },
-      // });
-
-      // // bottom axis
-      // const xAxis = withHighlightTick(withBottomAxis(respVis.group()))
-      //   .call((axis) =>
-      //     axis.ticks.config({
-      //       attributes: { cursor: 'auto' },
-      //       scale: revenueScale,
-      //       tickValues: [0, Math.floor(maxValue / 3), Math.floor((maxValue * 2) / 3), maxValue],
-      //       labelFormatter: valueFormatter,
-      //       responsiveConfigs: {
-      //         [wideMediaQuery]: {
-      //           scale: locationScale,
-      //           tickValues: undefined,
-      //           labelFormatter: (value) => value.toString(),
-      //           attributes: { cursor: 'default' },
-      //           events: {
-      //             mouseover: (e, d) => hoverCategoryAxisTick(xAxis, yAxis, d.tickIndex, true),
-      //             mouseout: (e, d) => hoverCategoryAxisTick(xAxis, yAxis, d.tickIndex, false),
-      //           },
-      //         },
-      //       },
-      //     })
-      //   )
-      //   .call((axis) =>
-      //     axis.title.config({
-      //       text: 'Revenue',
-      //       responsiveConfigs: { [wideMediaQuery]: { text: 'Locations' } },
-      //     })
-      //   );
-
-      // // left axis
-      // const yAxis = withHighlightTick(withLeftAxis(respVis.group()))
-      //   .call((axis) =>
-      //     axis.ticks.config({
-      //       scale: locationScale,
-      //       attributes: { cursor: 'default' },
-      //       events: {
-      //         mouseover: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, true),
-      //         mouseout: (e, d) => hoverCategoryAxisTick(yAxis, xAxis, d.tickIndex, false),
-      //       },
-      //       responsiveConfigs: {
-      //         [wideMediaQuery]: {
-      //           scale: revenueScale,
-      //           labelFormatter: valueFormatter,
-      //           attributes: { cursor: 'auto' },
-      //           events: {
-      //             // unregister events
-      //             mouseover: undefined,
-      //             mouseout: undefined,
-      //           },
-      //         },
-      //       },
-      //     })
-      //   )
-      //   .call((axis) =>
-      //     axis.title.config({
-      //       text: 'Locations',
-      //       responsiveConfigs: { [wideMediaQuery]: { text: 'Revenue' } },
-      //     })
-      //   );
-
-      // .root(
-      //   withPaddingLayout(respVis.group()).config({
-      //     all: 10,
-      //     children: [
-      //       respVis.group().config({
-      //         attributes: { 'grid-template': 'auto 1fr / auto' },
-      //         responsiveConfigs: {
-      //           [wideMediaQuery]: { attributes: { 'grid-template': '1fr / 1fr auto' } },
-      //         },
-      //         children: [
-      //           withPaddingLayout(respVis.group()).config({
-      //             top: 5,
-      //             right: 20,
-      //             attributes: {
-      //               'grid-area': '2 / 1 / 3 / 2',
-      //             },
-      //             responsiveConfigs: {
-      //               [wideMediaQuery]: {
-      //                 top: 20,
-      //                 right: 5,
-      //                 attributes: { 'grid-area': '1 / 1 / 2 / 2' },
-      //               },
-      //             },
-      //             children: [
-      //               respVis.group().config({
-      //                 attributes: {
-      //                   'grid-template': '1fr auto / auto 1fr',
-      //                 },
-      //                 children: [
-      //                   // bars
-      //                   bars.config({ attributes: { 'grid-area': '1 / 2 / 2 / 3' } }),
-
-      //                   // labels
-      //                   labels.config({ attributes: { 'grid-area': '1 / 2 / 2 / 3' } }),
-
-      //                   // left axis
-      //                   yAxis.config({ attributes: { 'grid-area': '1 / 1 / 2 / 2' } }),
-
-      //                   // bottom axis
-      //                   xAxis.config({ attributes: { 'grid-area': '2 / 2 / 3 / 3' } }),
-      //                 ],
-      //               }),
-      //             ],
-      //           }),
-      //           withPaddingLayout(respVis.group()).config({
-      //             all: '0.5fr',
-      //             attributes: { 'grid-area': '1 / 1 / 2 / 2' },
-      //             responsiveConfigs: {
-      //               [wideMediaQuery]: { attributes: { 'grid-area': '1 / 2 / 2 / 3' } },
-      //             },
-      //             children: [
-      //               // legend
-      //               legend,
-      //             ],
-      //           }),
-      //         ],
-      //       }),
-      //     ],
-      //   })
-      // )
-
-      // function legendSwatchIndexToBarIndex(swatchIndex) {
-      //   return subcategoryToggles.slice(0, swatchIndex).filter((t) => t).length;
-      // }
-
-      // function barIndexToLegendSwatchIndex(barIndex) {
-      //   let lastIndex = -1;
-      //   for (let i = 0; i <= barIndex; ++i)
-      //     lastIndex = subcategoryToggles.indexOf(true, lastIndex + 1);
-      //   return lastIndex;
-      // }
-
-      // function hoverBar(categoryIndex, barIndex, categoryAxis, valueAxis, hover) {
-      //   const flatBarIndex = categoryIndex * subcategoryToggles.filter((t) => t).length + barIndex;
-      //   bars.highlightBar(categoryIndex, barIndex, hover);
-      //   labels.showLabel(flatBarIndex, hover);
-      //   legend.highlightSwatch(barIndexToLegendSwatchIndex(barIndex), hover);
-      //   valueAxis.clearHighlights();
-      //   categoryAxis.highlightTick(categoryIndex, hover);
-      //   chart.update(false, true);
-      // }
-
-      // function hoverCategoryAxisTick(categoryAxis, valueAxis, tickIndex, hover) {
-      //   valueAxis.clearHighlights();
-      //   categoryAxis.highlightTick(tickIndex, hover);
-      //   for (let i = 0; i < subcategoryToggles.filter((t) => t).length; ++i) {
-      //     const flatBarIndex = tickIndex * subcategoryToggles.filter((t) => t).length + i;
-      //     bars.highlightBar(tickIndex, i, hover);
-      //     labels.showLabel(flatBarIndex, hover);
-      //   }
-
-      //   chart.update(false, true);
-      // }
-
-      // function hoverLegendSwatch(swatchIndex, hover) {
-      //   if (subcategoryToggles[swatchIndex] === false) return;
-
-      //   categories.forEach((category, categoryIndex) => {
-      //     let barIndex = legendSwatchIndexToBarIndex(swatchIndex);
-      //     const flatBarIndex =
-      //       categoryIndex * subcategoryToggles.filter((t) => t).length + barIndex;
-      //     bars.highlightBar(categoryIndex, barIndex, hover);
-      //     labels.showLabel(flatBarIndex, hover);
-      //   });
-      //   legend.highlightSwatch(swatchIndex, hover);
-      //   chart.update(false, true);
-      // }
+        highlightLegendSwatch(swatchIndex, hover);
+        const yearCount = yearToggles.filter((t) => t).length;
+        locations.forEach((location, locationIndex) => {
+          let barIndex = legendSwatchIndexToBarIndex(swatchIndex);
+          const flatBarIndex = locationIndex * yearCount + barIndex;
+          highlightBar(locationIndex, barIndex, hover);
+          showLabel(flatBarIndex, hover);
+        });
+      }
 
       // function clickLegendSwatch(swatchIndex) {
       //   // Prevent hiding the last subcategory
       //   if (
-      //     subcategoryToggles.filter((t) => t).length === 1 &&
-      //     subcategoryToggles[swatchIndex] === true
+      //     yearToggles.filter((t) => t).length === 1 &&
+      //     yearToggles[swatchIndex] === true
       //   )
       //     return;
 
       //   hoverLegendSwatch(swatchIndex, false);
 
-      //   subcategoryToggles[swatchIndex] = !subcategoryToggles[swatchIndex];
+      //   yearToggles[swatchIndex] = !yearToggles[swatchIndex];
       //   const newValues = values.map((subcategoryValues) =>
-      //     subcategoryValues.filter((c, i) => subcategoryToggles[i])
+      //     subcategoryValues.filter((c, i) => yearToggles[i])
       //   );
       //   bars.config({
       //     values: newValues,
-      //     colors: barColors.filter((c, i) => subcategoryToggles[i]),
+      //     colors: barColors.filter((c, i) => yearToggles[i]),
       //   });
 
       //   labels.config({ labels: newValues.flat().map(valueFormatter) });
 
-      //   legend.disableSwatch(swatchIndex, !subcategoryToggles[swatchIndex]);
+      //   legend.disableSwatch(swatchIndex, !yearToggles[swatchIndex]);
 
       //   chart.update(false, true);
       // }

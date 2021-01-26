@@ -52,6 +52,7 @@ export interface Component {
   node(): SVGElement;
   on(typenames: string, callback: null): this;
   on(typenames: string, callback: (event: Event, data: ComponentEventData<this>) => void): this;
+  eventData(event: Event): ComponentEventData<this> | null;
   select<DescElement extends BaseType>(selector: string): Selection<DescElement, any, any, any>;
   selectAll<DescElement extends BaseType>(selector: string): Selection<DescElement, any, any, any>;
 }

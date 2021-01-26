@@ -208,11 +208,15 @@ export class BaseComponent implements Component {
   on(typenames: string, callback: (event: Event, data: ComponentEventData<this>) => void): this;
   on(typenames: any, callback?: any) {
     if (callback === null) this._selection.on(typenames, null);
-    else this._selection.on(typenames, (event: Event) => callback(event, this.eventData(event)));
+    else
+      this._selection.on(typenames, (event: Event) => {
+        const data = this.eventData(event);
+        if (data) callback(event, data);
+      });
     return this;
   }
 
-  eventData(event: Event): ComponentEventData<this> {
+  eventData(event: Event): ComponentEventData<this> | null {
     return { component: this };
   }
 

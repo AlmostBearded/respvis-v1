@@ -1,6 +1,6 @@
 import { AxisScale, Axis, AxisDomain } from 'd3-axis';
 import { BaseType, Selection } from 'd3-selection';
-import { ScaleAny, linearScale, BaseComponent } from '../core';
+import { ScaleAny, linearScale, BaseComponent, ComponentEventData, Component } from '../core';
 
 export type CreateTicksFunction = (
   selection: Selection<SVGElement, any, BaseType, any>
@@ -8,6 +8,11 @@ export type CreateTicksFunction = (
 
 export type ConfigureAxisFunction = (axis: Axis<AxisDomain>) => void;
 export type FormatLabelsFunction = (label: string) => string;
+
+export interface TicksEventData<TComponent extends Component>
+  extends ComponentEventData<TComponent> {
+  tickIndex: number;
+}
 
 export abstract class TicksComponent extends BaseComponent {
   private _scale: ScaleAny<any, any, any>;
@@ -86,6 +91,20 @@ export abstract class TicksComponent extends BaseComponent {
       .call(axis);
 
     return this;
+  }
+
+  eventData(event: Event): TicksEventData<this> | null {
+    if (event.target instanceof SVGLineElement || event.target instanceof SVGTextElement) {
+      const tickElement = event.target.parentNode!;
+      const indexOf = Array.prototype.indexOf;
+      const tickIndex = indexOf.call(tickElement.parentNode!.children, tickElement);
+      return {
+        component: this,
+        tickIndex: tickIndex - 1, // -1 because the domain element is always the first child
+      };
+    } else {
+      return null;
+    }
   }
 
   protected abstract createAxis(scale: AxisScale<AxisDomain>): Axis<AxisDomain>;
