@@ -19,7 +19,6 @@ export * from './components/group-component';
 export * from './components/text-component';
 export * from './components/rect-component';
 export * from './components/grid-component';
-export * from './components/padding-component';
 
 export * from './utility/title-text-attributes';
 export * from './utility/vertical-text-attributes';
