@@ -32,6 +32,7 @@
           [30, 24, 28],
           [12, 14, 18],
         ],
+        keys = revenues.map((yearlyRevs, i) => yearlyRevs.map((_, j) => locations[i] + years[j])),
         maxRevenue = Math.max(...revenues.flat());
 
       // formatters
@@ -49,12 +50,15 @@
 
       // bars
       const barColors = respVis.GroupedBarsComponent.defaultColors;
+      let filteredBarColors = barColors;
       const bars = respVis
         .groupedBars()
         .categories(locations)
         .categoryScale(locationScale)
         .values(revenues)
         .valueScale(revenueScale)
+        .keys(keys)
+        .onUpdateBars((selection) => respVis.updateGroupedBars(selection, filteredBarColors))
         .on('mouseover', (e, d) => hoverBar(d.categoryIndex, d.valueIndex, true))
         .on('mouseout', (e, d) => hoverBar(d.categoryIndex, d.valueIndex, false))
         .onConfigure((bars) => {
@@ -90,6 +94,7 @@
         .attr('cursor', 'default')
         .on('mouseover', (event, data) => hoverLegendSwatch(data.childIndex, true))
         .on('mouseout', (event, data) => hoverLegendSwatch(data.childIndex, false))
+        .on('click', (event, data) => clickLegendSwatch(data.childIndex))
         .call((legend) =>
           legend.swatches().forEach((swatch, i) => {
             swatch.rect().attr('fill', barColors[i]);
@@ -98,8 +103,8 @@
         )
         .onConfigure((legend) => {
           legend.rowCount(1).columnCount(years.length);
-          // if (window.matchMedia(wideMediaQuery).matches)
-          //   legend.rowCount(years.length).columnCount(1);
+          if (window.matchMedia(wideMediaQuery).matches)
+            legend.rowCount(years.length).columnCount(1);
         });
 
       const leftAxis = respVis.leftAxis().onConfigure((axis) => {
@@ -155,7 +160,10 @@
           root.layout('grid-template', 'auto 1fr auto / auto 1fr');
           bars.layout('grid-area', '2 / 2 / 3 / 3');
           barLabels.layout('grid-area', '2 / 2 / 3 / 3');
-          legend.layout('grid-area', '1 / 2 / 2 / 3').layout('padding-bottom', 10);
+          legend
+            .layout('grid-area', '1 / 2 / 2 / 3')
+            .layout('padding-bottom', 10)
+            .layout('padding-left', 0);
           leftAxis.layout('grid-area', '2 / 1 / 3 / 2');
           bottomAxis.layout('grid-area', '3 / 2 / 4 / 3');
           locationAxis = leftAxis;
@@ -163,6 +171,15 @@
           if (window.matchMedia(wideMediaQuery).matches) {
             locationAxis = bottomAxis;
             revenueAxis = leftAxis;
+            root.layout('grid-template', '1fr auto / auto 1fr auto');
+            bars.layout('grid-area', '1 / 2 / 2 / 3');
+            barLabels.layout('grid-area', '1 / 2 / 2 / 3');
+            legend
+              .layout('grid-area', '1 / 3 / 2 / 4')
+              .layout('padding-bottom', 0)
+              .layout('padding-left', 10);
+            leftAxis.layout('grid-area', '1 / 1 / 2 / 2');
+            bottomAxis.layout('grid-area', '2 / 2 / 3 / 3');
           }
         })
         .children([bars, barLabels, legend, leftAxis, bottomAxis]);
@@ -173,7 +190,7 @@
         return yearToggles.slice(0, swatchIndex).filter((t) => t).length;
       }
 
-      function barIndexToLegendSwatchIndex(barIndex) {
+      function barIndexToRevenueIndex(barIndex) {
         let lastIndex = -1;
         for (let i = 0; i <= barIndex; ++i) lastIndex = yearToggles.indexOf(true, lastIndex + 1);
         return lastIndex;
@@ -183,10 +200,10 @@
         return `:nth-of-type(${index + 1})`;
       }
 
-      function highlightBar(categoryIndex, valueIndex, highlight) {
-        const c = barColors[valueIndex];
+      function highlightBar(categoryIndex, barIndex, highlight) {
+        const c = filteredBarColors[barIndex];
         bars
-          .select(`.bar-group${nthOfType(categoryIndex)} rect${nthOfType(valueIndex)}`)
+          .select(`.bar-group${nthOfType(categoryIndex)} rect${nthOfType(barIndex)}`)
           .attr('fill', highlight ? respVis.brighten(c, 0.5) : c);
       }
 
@@ -203,6 +220,13 @@
         swatch.label().attr('text-decoration', highlight ? 'underline' : null);
       }
 
+      function disableLegendSwatch(swatchIndex, disable) {
+        const c = barColors[swatchIndex];
+        const swatch = legend.swatches()[swatchIndex];
+        swatch.rect().attr('fill', disable ? respVis.desaturate(c, 4) : c);
+        swatch.label().attr('fill', disable ? '#ababab' : null);
+      }
+
       function showLabel(labelIndex, show) {
         barLabels.select(`text${nthOfType(labelIndex)} `).attr('font-size', show ? '1rem' : null);
       }
@@ -212,7 +236,7 @@
         highlightBar(categoryIndex, barIndex, hover);
         showLabel(flatBarIndex, hover);
         highlightLocationAxisTick(categoryIndex, hover);
-        highlightLegendSwatch(barIndexToLegendSwatchIndex(barIndex), hover);
+        highlightLegendSwatch(barIndexToRevenueIndex(barIndex), hover);
       }
 
       function hoverLocationAxisTick(tickIndex, hover) {
@@ -238,31 +262,24 @@
         });
       }
 
-      // function clickLegendSwatch(swatchIndex) {
-      //   // Prevent hiding the last subcategory
-      //   if (
-      //     yearToggles.filter((t) => t).length === 1 &&
-      //     yearToggles[swatchIndex] === true
-      //   )
-      //     return;
+      function clickLegendSwatch(swatchIndex) {
+        // Prevent hiding the last subcategory
+        if (yearToggles.filter((t) => t).length === 1 && yearToggles[swatchIndex] === true) return;
 
-      //   hoverLegendSwatch(swatchIndex, false);
+        hoverLegendSwatch(swatchIndex, false);
+        yearToggles[swatchIndex] = !yearToggles[swatchIndex];
+        disableLegendSwatch(swatchIndex, !yearToggles[swatchIndex]);
 
-      //   yearToggles[swatchIndex] = !yearToggles[swatchIndex];
-      //   const newValues = values.map((subcategoryValues) =>
-      //     subcategoryValues.filter((c, i) => yearToggles[i])
-      //   );
-      //   bars.config({
-      //     values: newValues,
-      //     colors: barColors.filter((c, i) => yearToggles[i]),
-      //   });
+        const newRevs = revenues.map((yearlyRevs) => yearlyRevs.filter((_, i) => yearToggles[i]));
+        const newKeys = keys.map((yearlyKeys) => yearlyKeys.filter((_, i) => yearToggles[i]));
+        bars.values(newRevs).keys(newKeys);
 
-      //   labels.config({ labels: newValues.flat().map(valueFormatter) });
+        filteredBarColors = barColors.filter((c, i) => yearToggles[i]);
 
-      //   legend.disableSwatch(swatchIndex, !yearToggles[swatchIndex]);
+        barLabels.labels(newRevs.flat().map(revenueFormatter));
 
-      //   chart.update(false, true);
-      // }
+        chart.transition();
+      }
     </script>
   </body>
 </html>

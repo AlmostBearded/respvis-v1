@@ -13,12 +13,15 @@ import { Rect } from '../core/rect';
 
 export interface BarData {
   categoryIndex: number;
+  key: string;
   rect: Rect<number>;
 }
 
 export type CreateBarsFunction = (
   enterSelection: Selection<EnterElement, BarData, any, any>
 ) => Selection<SVGRectElement, any, any, any>;
+
+export type RemoveBarsFunction = (exitSelection: Selection<any, BarData, any, any>) => void;
 
 export type UpdateBarsFunction = (
   selection: SelectionOrTransition<BaseType, BarData, any, any>
@@ -32,9 +35,11 @@ export interface BarsEventData<TComponent extends Component>
 
 export class BarsComponent extends BaseComponent implements Bars {
   private _barsCalculator: BarsCalculator;
+  private _keys: string[] | undefined;
   private _transitionDelay: number;
   private _transitionDuration: number;
   private _onCreateBars: CreateBarsFunction;
+  private _onRemoveBars: RemoveBarsFunction;
   private _onUpdateBars: UpdateBarsFunction;
 
   static defaultColor = categoricalColors[0];
@@ -46,6 +51,7 @@ export class BarsComponent extends BaseComponent implements Bars {
     this._transitionDuration = 250;
     this._transitionDelay = 250;
     this._onCreateBars = createBars;
+    this._onRemoveBars = (selection) => removeBars(selection, this._transitionDuration);
     this._onUpdateBars = updateBars;
     this.classed('bars', true)
       .attr('fill', BarsComponent.defaultColor)
@@ -98,6 +104,16 @@ export class BarsComponent extends BaseComponent implements Bars {
     return this._barsCalculator.bars();
   }
 
+  keys(): string[];
+  keys(keys: null): this;
+  keys(keys: string[]): this;
+  keys(keys?: string[] | null) {
+    if (keys === undefined) return this._keys;
+    if (keys === null) this._keys = undefined;
+    else this._keys = keys;
+    return this;
+  }
+
   transitionDuration(): number;
   transitionDuration(duration: number): this;
   transitionDuration(duration?: number): number | this {
@@ -122,6 +138,14 @@ export class BarsComponent extends BaseComponent implements Bars {
     return this;
   }
 
+  onRemoveBars(): RemoveBarsFunction;
+  onRemoveBars(callback: RemoveBarsFunction): this;
+  onRemoveBars(callback?: RemoveBarsFunction): RemoveBarsFunction | this {
+    if (callback === undefined) return this._onRemoveBars;
+    this._onRemoveBars = callback;
+    return this;
+  }
+
   onUpdateBars(): UpdateBarsFunction;
   onUpdateBars(callback: UpdateBarsFunction): this;
   onUpdateBars(callback?: any) {
@@ -136,12 +160,18 @@ export class BarsComponent extends BaseComponent implements Bars {
     return this;
   }
 
+  barData(): BarData[] {
+    return this._barsCalculator
+      .bars()
+      .map((rect, i) => ({ categoryIndex: i, key: this._keys?.[i] || i.toString(), rect: rect }));
+  }
+
   render(): this {
     super.render();
     this.selection()
       .selectAll('.bar')
-      .data(this._barsCalculator.bars().map((rect, i) => ({ categoryIndex: i, rect: rect })))
-      .join(this._onCreateBars)
+      .data(this.barData())
+      .join(this._onCreateBars, undefined, this._onRemoveBars)
       .call(this._onUpdateBars);
     return this;
   }
@@ -150,18 +180,23 @@ export class BarsComponent extends BaseComponent implements Bars {
     super.transition();
     this.selection()
       .selectAll('.bar')
-      .data(this._barsCalculator.bars().map((rect, i) => ({ categoryIndex: i, rect: rect })))
-      .join(this._onCreateBars)
+      .data(this.barData())
+      .join(this._onCreateBars, undefined, this._onRemoveBars)
       .transition()
       .delay(this._transitionDelay)
-      .duration(this._transitionDuration)
+      .duration(this._transitionDuration) 
       .call(this._onUpdateBars);
     return this;
   }
 
   eventData(event: Event): BarsEventData<this> {
     const element = event.target as SVGRectElement;
-    const index = Array.prototype.indexOf.call(element.parentNode!.children, element);
+    const rootElement = element.parentNode! as Element;
+
+    let index = Array.prototype.indexOf.call(rootElement.children, element);
+    for (let i = 0; i <= index; ++i)
+      if (rootElement.children[i].classList.contains('exiting')) --index;
+
     return {
       component: this,
       index: index,
@@ -184,6 +219,21 @@ export function createBars(
     .attr('y', (d) => d.rect.y + d.rect.height / 2)
     .attr('width', 0)
     .attr('height', 0);
+}
+
+export function removeBars(
+  exitSelection: Selection<any, BarData, any, any>,
+  transitionDuration: number
+): void {
+  exitSelection
+    .classed('exiting', true)
+    .transition()
+    .duration(transitionDuration)
+    .attr('x', (d) => d.rect.x + d.rect.width / 2)
+    .attr('y', (d) => d.rect.y + d.rect.height / 2)
+    .attr('width', 0)
+    .attr('height', 0)
+    .remove();
 }
 
 export function updateBars(selection: SelectionOrTransition<BaseType, BarData, any, any>): void {

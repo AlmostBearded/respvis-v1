@@ -10,7 +10,14 @@ import {
   rectFromString,
 } from '../core';
 import { BarOrientation } from './bars';
-import { BarData, createBars, CreateBarsFunction, updateBars } from './bars-component';
+import {
+  BarData,
+  createBars,
+  CreateBarsFunction,
+  removeBars,
+  RemoveBarsFunction,
+  updateBars,
+} from './bars-component';
 import { GroupedBars, GroupedBarsCalculator } from './grouped-bars';
 
 export interface GroupedBarData extends BarData {
@@ -22,6 +29,8 @@ export interface GroupedBarData extends BarData {
 export type CreateBarGroupsFunction = (
   enterSelection: Selection<EnterElement, any, any, any>
 ) => Selection<SVGGElement, any, any, any>;
+
+export type CreateGroupedBarKeyFunction = (data: GroupedBarData, index: number) => string;
 
 export type UpdateGroupedBarsFunction = (
   selection: SelectionOrTransition<BaseType, GroupedBarData, any, any>
@@ -37,9 +46,11 @@ export interface GroupedBarsEventData<TComponent extends Component>
 
 export class GroupedBarsComponent extends BaseComponent implements GroupedBars {
   private _barsCalculator: GroupedBarsCalculator;
+  private _keys: string[][] | undefined;
   private _transitionDelay: number;
   private _transitionDuration: number;
   private _onCreateBars: CreateBarsFunction;
+  private _onRemoveBars: RemoveBarsFunction;
   private _onCreateBarGroups: CreateBarGroupsFunction;
   private _onUpdateBars: UpdateGroupedBarsFunction;
 
@@ -51,8 +62,10 @@ export class GroupedBarsComponent extends BaseComponent implements GroupedBars {
     this._transitionDuration = 250;
     this._transitionDelay = 250;
     this._onCreateBars = createBars;
+    this._onRemoveBars = (selection) => removeBars(selection, this._transitionDuration);
     this._onCreateBarGroups = createBarGroups;
-    this._onUpdateBars = updateGroupedBars;
+    this._onUpdateBars = (selection) =>
+      updateGroupedBars(selection, GroupedBarsComponent.defaultColors);
   }
 
   categories(): any[];
@@ -107,6 +120,16 @@ export class GroupedBarsComponent extends BaseComponent implements GroupedBars {
     return this._barsCalculator.bars();
   }
 
+  keys(): string[][];
+  keys(keys: null): this;
+  keys(keys: string[][]): this;
+  keys(keys?: string[][] | null) {
+    if (keys === undefined) return this._keys;
+    if (keys === null) this._keys = undefined;
+    else this._keys = keys;
+    return this;
+  }
+
   transitionDuration(): number;
   transitionDuration(duration: number): this;
   transitionDuration(duration?: number): number | this {
@@ -128,6 +151,14 @@ export class GroupedBarsComponent extends BaseComponent implements GroupedBars {
   onCreateBars(callback?: CreateBarsFunction): CreateBarsFunction | this {
     if (callback === undefined) return this._onCreateBars;
     this._onCreateBars = callback;
+    return this;
+  }
+
+  onRemoveBars(): RemoveBarsFunction;
+  onRemoveBars(callback: RemoveBarsFunction): this;
+  onRemoveBars(callback?: RemoveBarsFunction): RemoveBarsFunction | this {
+    if (callback === undefined) return this._onRemoveBars;
+    this._onRemoveBars = callback;
     return this;
   }
 
@@ -156,24 +187,18 @@ export class GroupedBarsComponent extends BaseComponent implements GroupedBars {
   render(): this {
     super.render();
 
-    const bars = [...this._barsCalculator.bars()];
-    const groupedBars: GroupedBarData[][] = [];
-    let categoryIndex = 0;
-    while (bars.length) {
-      groupedBars.push(
-        bars
-          .splice(0, this._barsCalculator.values()[0].length)
-          .map((rect, i) => ({ categoryIndex: categoryIndex++, valueIndex: i, rect: rect }))
-      );
-    }
+    const groupedBarData = this.barData();
 
     this.selection()
       .selectAll('.bar-group')
-      .data(groupedBars)
+      .data(groupedBarData)
       .join(this._onCreateBarGroups)
       .selectAll('.bar')
-      .data((d) => d)
-      .join(this._onCreateBars)
+      .data(
+        (d) => d,
+        (d: GroupedBarData) => d.key
+      )
+      .join(this._onCreateBars, undefined, this._onRemoveBars)
       .call(this._onUpdateBars);
 
     return this;
@@ -182,25 +207,18 @@ export class GroupedBarsComponent extends BaseComponent implements GroupedBars {
   transition(): this {
     super.transition();
 
-    const bars = [...this._barsCalculator.bars()];
-    const groupedBars: GroupedBarData[][] = [];
-    let categoryIndex = 0;
-    while (bars.length) {
-      groupedBars.push(
-        bars
-          .splice(0, this._barsCalculator.values()[0].length)
-          .map((rect, i) => ({ categoryIndex: categoryIndex, valueIndex: i, rect: rect }))
-      );
-      ++categoryIndex;
-    }
+    const groupedBarData = this.barData();
 
     this.selection()
       .selectAll('.bar-group')
-      .data(groupedBars)
+      .data(groupedBarData)
       .join(this._onCreateBarGroups)
       .selectAll('.bar')
-      .data((d) => d)
-      .join(this._onCreateBars)
+      .data(
+        (d) => d,
+        (d: GroupedBarData) => d.key
+      )
+      .join(this._onCreateBars, undefined, this._onRemoveBars)
       .transition()
       .delay(this._transitionDelay)
       .duration(this._transitionDuration)
@@ -209,13 +227,40 @@ export class GroupedBarsComponent extends BaseComponent implements GroupedBars {
     return this;
   }
 
-  eventData(event: Event): GroupedBarsEventData<this> {
+  barData(): GroupedBarData[][] {
+    const bars = [...this._barsCalculator.bars()];
+    const groupedBars: GroupedBarData[][] = [];
+    let categoryIndex = 0;
+    while (bars.length) {
+      groupedBars.push(
+        bars.splice(0, this._barsCalculator.values()[0].length).map((rect, i) => ({
+          categoryIndex: categoryIndex,
+          valueIndex: i,
+          key: this._keys?.[categoryIndex][i] || `${categoryIndex}/${i}`,
+          rect: rect,
+        }))
+      );
+      ++categoryIndex;
+    }
+    return groupedBars;
+  }
+
+  eventData(event: Event): GroupedBarsEventData<this> | null {
     const element = event.target as SVGRectElement;
     const groupElement = element.parentNode! as SVGGElement;
+    const rootElement = groupElement.parentNode! as Element;
 
     const indexOf = Array.prototype.indexOf;
-    const categoryIndex = indexOf.call(groupElement.parentNode!.children, groupElement);
-    const valueIndex = indexOf.call(groupElement.children, element);
+
+    let categoryIndex = indexOf.call(rootElement.children, groupElement);
+    for (let i = 0; i <= categoryIndex; ++i)
+      if (rootElement.children[i].classList.contains('exiting')) --categoryIndex;
+
+    let valueIndex = indexOf.call(groupElement.children, element);
+    for (let i = 0; i <= valueIndex; ++i)
+      if (groupElement.children[i].classList.contains('exiting')) --valueIndex;
+
+    if (categoryIndex < 0 || valueIndex < 0) return null;
 
     return {
       component: this,
@@ -238,7 +283,8 @@ export function createBarGroups(
 }
 
 export function updateGroupedBars(
-  selection: SelectionOrTransition<BaseType, GroupedBarData, any, any>
+  selection: SelectionOrTransition<BaseType, GroupedBarData, any, any>,
+  colors: string[]
 ): void {
-  selection.call(updateBars).attr('fill', (d) => GroupedBarsComponent.defaultColors[d.valueIndex]);
+  selection.call(updateBars).attr('fill', (d) => colors[d.valueIndex]);
 }
