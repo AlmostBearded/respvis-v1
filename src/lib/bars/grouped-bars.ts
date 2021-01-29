@@ -133,3 +133,7 @@ export class GroupedBarsCalculator implements GroupedBars {
     return this;
   }
 }
+
+export function groupedBarsCalculator(): GroupedBarsCalculator {
+  return new GroupedBarsCalculator();
+}

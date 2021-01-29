@@ -30,8 +30,6 @@ export type CreateBarGroupsFunction = (
   enterSelection: Selection<EnterElement, any, any, any>
 ) => Selection<SVGGElement, any, any, any>;
 
-export type CreateGroupedBarKeyFunction = (data: GroupedBarData, index: number) => string;
-
 export type UpdateGroupedBarsFunction = (
   selection: SelectionOrTransition<BaseType, GroupedBarData, any, any>
 ) => void;
@@ -40,6 +38,7 @@ export interface GroupedBarsEventData<TComponent extends Component>
   extends ComponentEventData<TComponent> {
   categoryIndex: number;
   valueIndex: number;
+  key: string;
   groupElement: SVGGElement;
   element: SVGRectElement;
 }
@@ -227,6 +226,10 @@ export class GroupedBarsComponent extends BaseComponent implements GroupedBars {
     return this;
   }
 
+  key(categoryIndex: number, valueIndex: number): string {
+    return this._keys?.[categoryIndex][valueIndex] || `${categoryIndex}/${valueIndex}`;
+  }
+
   barData(): GroupedBarData[][] {
     const bars = [...this._barsCalculator.bars()];
     const groupedBars: GroupedBarData[][] = [];
@@ -236,7 +239,7 @@ export class GroupedBarsComponent extends BaseComponent implements GroupedBars {
         bars.splice(0, this._barsCalculator.values()[0].length).map((rect, i) => ({
           categoryIndex: categoryIndex,
           valueIndex: i,
-          key: this._keys?.[categoryIndex][i] || `${categoryIndex}/${i}`,
+          key: this.key(categoryIndex, i),
           rect: rect,
         }))
       );
@@ -266,6 +269,7 @@ export class GroupedBarsComponent extends BaseComponent implements GroupedBars {
       component: this,
       categoryIndex: categoryIndex,
       valueIndex: valueIndex,
+      key: this.key(categoryIndex, valueIndex),
       groupElement: groupElement,
       element: element,
     };

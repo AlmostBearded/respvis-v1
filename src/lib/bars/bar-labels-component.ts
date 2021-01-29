@@ -26,12 +26,7 @@ export class BarLabelsComponent extends BaseComponent implements BarPoints {
     this._labels = [];
     this._transitionDuration = 250;
     this._transitionDelay = 250;
-    this._onCreateLabels = (enter) =>
-      enter
-        .append('text')
-        .attr('transform', (d) => `translate(${d.position.x}, ${d.position.y})`)
-        .text((d) => d.text);
-
+    this._onCreateLabels = createLabels;
     this.classed('bar-labels', true)
       .attr('text-anchor', 'middle')
       .attr('dominant-baseline', 'middle')
@@ -132,4 +127,13 @@ export class BarLabelsComponent extends BaseComponent implements BarPoints {
 
 export function barLabels(bars: Bars): BarLabelsComponent {
   return new BarLabelsComponent(bars);
+}
+
+export function createLabels(
+  enterSelection: Selection<EnterElement, LabelData, any, any>
+): Selection<BaseType, any, any, any> {
+  return enterSelection
+    .append('text')
+    .attr('transform', (d) => `translate(${d.position.x}, ${d.position.y})`)
+    .text((d) => d.text);
 }

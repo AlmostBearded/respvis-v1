@@ -89,6 +89,7 @@
               .attr('transform', 'translate(0, -4)');
         });
 
+      // legend
       const legend = respVis
         .legend(years.length)
         .attr('cursor', 'default')
@@ -107,6 +108,7 @@
             legend.rowCount(years.length).columnCount(1);
         });
 
+      // left axis
       const leftAxis = respVis.leftAxis().onConfigure((axis) => {
         axis
           .ticks()
@@ -128,6 +130,7 @@
         }
       });
 
+      // bottom axis
       const bottomAxis = respVis.bottomAxis().onConfigure((axis) => {
         axis
           .ticks()
@@ -149,9 +152,9 @@
         }
       });
 
-      const chart = respVis.chart();
-
+      // chart
       let locationAxis, revenueAxis;
+      const chart = respVis.chart();
       chart
         .root()
         .layout('padding-horizontal', 20)
@@ -183,7 +186,6 @@
           }
         })
         .children([bars, barLabels, legend, leftAxis, bottomAxis]);
-
       chart.mount('#chart');
 
       function legendSwatchIndexToBarIndex(swatchIndex) {
