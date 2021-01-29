@@ -20,7 +20,6 @@ export interface Component {
   // todo: implement deleting of configure callbacks
   call(callback: (component: this) => void): this;
   selection(): Selection<SVGElement, any, any, any>;
-  staticCloneSelection(): Selection<SVGElement, any, any, any>;
   size(): ISize;
   layout(name: keyof LayoutProperties): string | number | undefined;
   layout(name: keyof LayoutProperties, value: string | number): this;

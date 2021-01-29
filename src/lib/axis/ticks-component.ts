@@ -1,6 +1,7 @@
 import { AxisScale, Axis, AxisDomain } from 'd3-axis';
 import { BaseType, Selection } from 'd3-selection';
 import { ScaleAny, linearScale, BaseComponent, ComponentEventData, Component } from '../core';
+import { StaticSizeMixin } from '../core/mixins/static-size-mixin';
 
 export type CreateTicksFunction = (
   selection: Selection<SVGElement, any, BaseType, any>
@@ -14,7 +15,7 @@ export interface TicksEventData<TComponent extends Component>
   tickIndex: number;
 }
 
-export abstract class TicksComponent extends BaseComponent {
+export abstract class TicksComponent extends StaticSizeMixin(BaseComponent) {
   private _scale: ScaleAny<any, any, any>;
   private _transitionDelay: number;
   private _transitionDuration: number;

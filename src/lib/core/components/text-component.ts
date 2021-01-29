@@ -1,6 +1,7 @@
 import { BaseComponent } from '../base-component';
+import { StaticSizeMixin } from '../mixins/static-size-mixin';
 
-export class TextComponent extends BaseComponent {
+export class TextComponent extends StaticSizeMixin(BaseComponent) {
   constructor() {
     super('text');
     this

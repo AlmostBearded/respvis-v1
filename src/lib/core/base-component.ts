@@ -6,23 +6,18 @@ import { ISize } from './utils';
 
 export class BaseComponent implements Component {
   private _selection: Selection<SVGElement & LaidOutElement, any, any, any>;
-  private _staticCloneSelection: Selection<SVGElement & LaidOutElement, any, any, any>;
-  private _combinedSelection: Selection<SVGElement & LaidOutElement, any, any, any>;
   private _onConfigure: (component: this) => void;
 
   constructor(tag: string) {
     this._selection = create(`svg:${tag}`);
-    this._staticCloneSelection = create(`svg:${tag}`);
-    this._combinedSelection = selectAll([
-      this._selection.node()!,
-      this._staticCloneSelection.node()!,
-    ]);
 
     this._onConfigure = () => {};
 
     // can't access 'this' within the bounds calculator callback
     const that = this;
-    this._combinedSelection.layoutBoundsCalculator(() => that.size());
+    this._selection.layoutBoundsCalculator(() => that.size());
+
+    this.init();
   }
 
   init(): void {}
@@ -69,15 +64,8 @@ export class BaseComponent implements Component {
     return this._selection;
   }
 
-  staticCloneSelection(): Selection<SVGElement, any, any, any> {
-    return this._staticCloneSelection;
-  }
-
   size(): ISize {
-    select(this.node().parentElement).append(() => this._staticCloneSelection.node());
-    const bounds = this._staticCloneSelection.node()!.getBoundingClientRect();
-    this._staticCloneSelection.remove();
-    return bounds;
+    return this.node().getBoundingClientRect();
   }
 
   attr(name: string): string;
@@ -97,19 +85,15 @@ export class BaseComponent implements Component {
     transitionDelay?: number
   ): string | this {
     if (value === undefined) return this.selection().attr(name);
-    if (value === null) this._combinedSelection.attr(name, null);
+    if (value === null) this.selection().attr(name, null);
     else {
-      if (transitionDuration === undefined) this._combinedSelection.attr(name, value);
+      if (transitionDuration === undefined) this.selection().attr(name, value);
       else {
-        // transition attribute
         this._selection
           .transition(name)
           .delay(transitionDelay || 0)
           .duration(transitionDuration)
           .attr(name, value);
-
-        // set attribute without transition on clone
-        this._staticCloneSelection.attr(name, value);
       }
     }
 
@@ -132,8 +116,8 @@ export class BaseComponent implements Component {
   classed(names: string): boolean;
   classed(names: string, value: boolean): this;
   classed(names: string, value?: boolean): boolean | this {
-    if (value === undefined) return this._combinedSelection.classed(names);
-    this._combinedSelection.classed(names, value);
+    if (value === undefined) return this._selection.classed(names);
+    this._selection.classed(names, value);
     return this;
   }
 
@@ -145,9 +129,9 @@ export class BaseComponent implements Component {
     value?: null | string | number | boolean,
     priority?: 'important' | null
   ): string | this {
-    if (value === undefined) return this._combinedSelection.style(name);
-    if (value === null) this._combinedSelection.style(name, null);
-    else this._combinedSelection.style(name, value, priority);
+    if (value === undefined) return this._selection.style(name);
+    if (value === null) this._selection.style(name, null);
+    else this._selection.style(name, value, priority);
     return this;
   }
 
@@ -155,8 +139,8 @@ export class BaseComponent implements Component {
   property(name: string, value: null): this;
   property(name: string, value: any): this;
   property(name: string, value?: any): any {
-    if (value === undefined) return this._combinedSelection.property(name);
-    this._combinedSelection.property(name, value);
+    if (value === undefined) return this._selection.property(name);
+    this._selection.property(name, value);
     return this;
   }
 
@@ -170,17 +154,16 @@ export class BaseComponent implements Component {
     transitionDuration?: number,
     transitionDelay?: number
   ): string | this {
-    if (value === undefined) return this._combinedSelection.text();
-    if (value === null) this._combinedSelection.text(null);
+    if (value === undefined) return this._selection.text();
+    if (value === null) this._selection.text(null);
     else {
-      if (transitionDuration === undefined) this._combinedSelection.text(value);
+      if (transitionDuration === undefined) this._selection.text(value);
       else {
         this._selection
           .transition('text')
           .delay(transitionDelay || 0)
           .duration(transitionDuration)
           .text(value);
-        this._staticCloneSelection.text(value);
       }
     }
     return this;
