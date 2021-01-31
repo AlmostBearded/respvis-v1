@@ -57,12 +57,30 @@
         .yScale(priceScale)
         .radiuses(radiuses)
         .radiusScale(radiusScale)
-        .attr('stroke', '#000000');
+        .attr('stroke', '#000000')
+        .attr('clip-path', 'url(#drawAreaClipPath)');
 
       // brush
       const brush = respVis
         .brush()
-        .on('end', (e, d) => (d.selectionRect ? zoomToRect(d.selectionRect) : resetZoom()));
+        .on('end', (e, d) =>
+          d.selectionRect ? zoomToRect(d.selectionRect) : resetZoom()
+        );
+
+      // draw area clip path
+      const drawAreaClipPath = respVis
+        .clipPath()
+        .attr('id', 'drawAreaClipPath')
+        .children([
+          respVis.rect().attr('width', '100%').attr('height', '100%'),
+        ]);
+
+      // draw area
+      const drawArea = respVis.svg().children([
+        respVis.defs().children([drawAreaClipPath]),
+        brush, // brush before points so that points can still be hovered
+        points,
+      ]);
 
       // y axis
       const yAxis = respVis.leftAxis();
@@ -87,9 +105,7 @@
         .layout('grid-template', '1fr auto / auto 1fr')
         .layout('padding', 20)
         .children([
-          // brush before points so that points can still be hovered
-          brush.layout('grid-area', '1 / 2 / 2 / 3'),
-          points.layout('grid-area', '1 / 2 / 2 / 3'),
+          drawArea.layout('grid-area', '1 / 2 / 2 / 3'),
           yAxis.layout('grid-area', '1 / 1 / 2 / 2'),
           xAxis.layout('grid-area', '2 / 2 / 3 / 3'),
         ]);
@@ -99,7 +115,10 @@
         // clear point highlights because mouseout events might not be called during transition.
         // points.clearHighlights();
 
-        const zoomedAreaDomain = [areaScale.invert(rect.x), areaScale.invert(rect.x + rect.width)];
+        const zoomedAreaDomain = [
+          areaScale.invert(rect.x),
+          areaScale.invert(rect.x + rect.width),
+        ];
         const zoomedPriceDomain = [
           priceScale.invert(rect.y + rect.height),
           priceScale.invert(rect.y),

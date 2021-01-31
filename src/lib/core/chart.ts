@@ -43,10 +43,6 @@ export class Chart {
 
     const bbox = this._svg.selection().node()!.getBoundingClientRect();
     computeLayout(this._svg.selection().node()!, bbox);
-    this._svg.attr(
-      'viewBox',
-      rectToString({ ...rectFromString(this._svg.attr('layout')), x: 0, y: 0 })
-    );
 
     this._svg.afterLayout().render();
 
@@ -60,10 +56,6 @@ export class Chart {
 
     let bbox = this._svg.selection().node()!.getBoundingClientRect();
     computeLayout(this._svg.selection().node()!, bbox);
-    this._svg.attr(
-      'viewBox',
-      rectToString({ ...rectFromString(this._svg.attr('layout')), x: 0, y: 0 })
-    );
 
     this._svg.afterLayout().transition();
 
