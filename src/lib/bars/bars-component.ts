@@ -170,7 +170,7 @@ export class BarsComponent extends BaseComponent implements Bars {
     super.render();
     this.selection()
       .selectAll('.bar')
-      .data(this.barData())
+      .data(this.barData(), (d: BarData) => d.key)
       .join(this._onCreateBars, undefined, this._onRemoveBars)
       .call(this._onUpdateBars);
     return this;
@@ -180,11 +180,11 @@ export class BarsComponent extends BaseComponent implements Bars {
     super.transition();
     this.selection()
       .selectAll('.bar')
-      .data(this.barData())
+      .data(this.barData(), (d: BarData) => d.key)
       .join(this._onCreateBars, undefined, this._onRemoveBars)
       .transition()
       .delay(this._transitionDelay)
-      .duration(this._transitionDuration) 
+      .duration(this._transitionDuration)
       .call(this._onUpdateBars);
     return this;
   }

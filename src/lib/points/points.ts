@@ -1,176 +1,172 @@
-import { BaseType, create, Selection } from 'd3-selection';
-import {
-  chainedTransition,
-  clipByItself,
-  clipBySelection,
-  colors,
-  Component,
-  IAttributes,
-  IComponent,
-  IComponentConfig,
-  IComponentEventData,
-  Rect,
-  IRect,
-  setAttributes,
-  setBoundAttributes,
-  setUniformAttributes,
-  setUniformNestedAttributes,
-  transitionBoundAttributes,
-  utils,
-} from '../core';
-import { linearScale } from '../core';
-import {
-  IPointPositioner,
-  IPointPositionerConfig,
-  IPoints,
-  PointPositioner,
-} from './point-positioner';
+import { bandScale, linearScale, ScaleAny } from '../core';
+import { IPosition, ISize } from '../core/utils';
 
-export interface IPointsComponentConfig extends IComponentConfig, IPointPositionerConfig {
-  createCircles: (
-    selection: Selection<BaseType, IAttributes, any, unknown>
-  ) => Selection<SVGCircleElement, IAttributes, any, unknown>;
-  transitionDuration: number;
-  events: utils.IDictionary<(event: Event, data: IPointsEventData) => void>;
+export interface Points {
+  xValues(): any[];
+  xValues(values: any[]): this;
+  xScale(): ScaleAny<string | number | Date, number, number>;
+  xScale(scale: ScaleAny<string | number | Date, number, number>): this;
+  yValues(): any[];
+  yValues(values: any[]): this;
+  yScale(): ScaleAny<string | number | Date, number, number>;
+  yScale(scale: ScaleAny<string | number | Date, number, number>): this;
+  radiuses(): any[];
+  radiuses(values: any[]): this;
+  radiusScale(): ScaleAny<string | number | Date, number, number>;
+  radiusScale(scale: ScaleAny<string | number | Date, number, number>): this;
+  points(): { center: IPosition; radius: number }[];
 }
 
-export interface IPointsEventData extends IComponentEventData {
-  index: number;
-  element: SVGCircleElement;
-}
-
-export interface IPointsComponent extends IComponent<IPointsComponentConfig>, IPoints {
-  inTransition(): boolean;
-}
-
-export class PointsComponent extends Component<IPointsComponentConfig> implements IPointsComponent {
-  private _pointPositioner: IPointPositioner = new PointPositioner();
-  private _clipRectSelection: Selection<SVGRectElement, unknown, BaseType, unknown>;
-  private _inTransition = false;
-
-  static defaultColor = colors.categoricalColors[0];
-
-  static setEventListeners(component: PointsComponent, config: IPointsComponentConfig) {
-    for (const typenames in config.events) {
-      component.selection().on(typenames, (e: Event) => {
-        const element = e.target as SVGCircleElement;
-        const index = Array.prototype.indexOf.call(element.parentNode!.children, element);
-        config.events[typenames](e, {
-          component: component,
-          index: index,
-          element: element,
-        });
-      });
-    }
-  }
+export class PointsCalculator implements Points {
+  private _xValues: any[];
+  private _xScale: ScaleAny<string | number | Date, number, number>;
+  private _yValues: any[];
+  private _yScale: ScaleAny<string | number | Date, number, number>;
+  private _radiuses: any[];
+  private _radiusScale: ScaleAny<string | number | Date, number, number>;
+  private _points: { center: IPosition; radius: number }[];
 
   constructor() {
-    super(
-      create<SVGElement>('svg:g').classed('points', true),
-      {
-        categories: [],
-        categoryScale: { scale: linearScale<number>(), domain: [], nice: true },
-        values: [],
-        valueScale: { scale: linearScale<number>(), domain: [], nice: true },
-        attributes: {
-          fill: PointsComponent.defaultColor,
-          stroke: '#232323',
-          'stroke-width': 1,
-          '.point': {
-            r: 4,
-          },
-        },
-        transitionDuration: 0,
-        events: {},
-        responsiveConfigs: {},
-        createCircles: createCircles,
-        parseConfig: (
-          previousConfig: IPointsComponentConfig,
-          newConfig: IPointsComponentConfig
-        ) => {},
-        applyConfig: (
-          previousConfig: IPointsComponentConfig,
-          newConfig: IPointsComponentConfig
-        ) => {
-          PointsComponent.clearEventListeners(this, previousConfig);
-          PointsComponent.setEventListeners(this, newConfig);
-          this._pointPositioner.config(newConfig);
-          // TODO: delete all points if the createCircles property changes?
-        },
-      },
-      Component.mergeConfigs
-    );
-    this._clipRectSelection = create<SVGRectElement>('svg:rect');
+    this._xValues = [];
+    this._xScale = bandScale();
+    this._yValues = [];
+    this._yScale = linearScale<number, number>();
+    this._radiuses = [];
+    this._radiusScale = linearScale<number, number>().domain([0, 1]).range([5, 10]);
+    this._points = [];
   }
 
-  mount(selection: Selection<SVGElement, unknown, BaseType, unknown>): this {
-    selection.append(() => this.selection().node()).call(clipBySelection, this._clipRectSelection);
+  xValues(): any[];
+  xValues(values: any[]): this;
+  xValues(values?: any) {
+    if (values === undefined) return this._xValues;
+    this._xValues = values;
     return this;
   }
 
-  render(animated: boolean): this {
-    const layoutRect = Rect.fromString(this.selection().attr('layout') || '0, 0, 600, 400');
-    this._pointPositioner.fitInSize(layoutRect);
-
-    this._clipRectSelection.call(setUniformAttributes, {
-      x: 0,
-      y: 0,
-      width: layoutRect.width,
-      height: layoutRect.height,
-    });
-
-    const config = this.activeConfig();
-
-    const attributes: IAttributes[] = this._pointPositioner
-      .points()
-      .map((center) => ({ cx: center.x, cy: center.y }));
-
-    const circlesSelection = this.selection()
-      .selectAll<SVGElement, IAttributes>('circle')
-      .data(attributes)
-      .join(config.createCircles);
-
-    if (animated && config.transitionDuration > 0) {
-      this._inTransition = true;
-      circlesSelection
-        .transition()
-        .duration(config.transitionDuration)
-        .call(transitionBoundAttributes)
-        .end()
-        .then(() => (this._inTransition = false))
-        .catch(() => ({}));
-    } else circlesSelection.call(setBoundAttributes);
-
-    this.selection().call(setUniformNestedAttributes, config.attributes);
-
+  xScale(): ScaleAny<string | number | Date, number, number>;
+  xScale(scale: ScaleAny<string | number | Date, number, number>): this;
+  xScale(scale?: any) {
+    if (scale === undefined) return this._xScale;
+    this._xScale = scale;
     return this;
   }
 
-  points(): utils.IPosition[] {
-    return this._pointPositioner.points();
+  yValues(): any[];
+  yValues(values: any[]): this;
+  yValues(values?: any) {
+    if (values === undefined) return this._yValues;
+    this._yValues = values;
+    return this;
   }
 
-  inTransition(): boolean {
-    return this._inTransition;
+  yScale(): ScaleAny<string | number | Date, number, number>;
+  yScale(scale: ScaleAny<string | number | Date, number, number>): this;
+  yScale(scale?: any) {
+    if (scale === undefined) return this._yScale;
+    this._yScale = scale;
+    return this;
+  }
+
+  radiuses(): any[];
+  radiuses(values: any[]): this;
+  radiuses(values?: any) {
+    if (values === undefined) return this._radiuses;
+    this._radiuses = values;
+    return this;
+  }
+
+  radiusScale(): ScaleAny<string | number | Date, number, number>;
+  radiusScale(scale: ScaleAny<string | number | Date, number, number>): this;
+  radiusScale(scale?: any) {
+    if (scale === undefined) return this._radiusScale;
+    this._radiusScale = scale;
+    return this;
+  }
+
+  points(): { center: IPosition; radius: number }[] {
+    return this._points;
+  }
+
+  fitInSize(size: ISize): this {
+    this._xScale.range([0, size.width]);
+    this._yScale.range([size.height, 0]);
+
+    this._points = [];
+
+    for (let i = 0; i < this._xValues.length; ++i) {
+      const x = this._xValues[i],
+        y = this._yValues[i],
+        r = this._radiuses[i] || 0;
+      this._points.push({
+        center: {
+          x: this._xScale(x)!,
+          y: this._yScale(y)!,
+        },
+        radius: this._radiusScale(r)!,
+      });
+    }
+
+    return this;
   }
 }
 
-export function points(): PointsComponent {
-  return new PointsComponent();
+export function pointsCalculator(): PointsCalculator {
+  return new PointsCalculator();
 }
 
-export function createCircles(
-  selection: Selection<BaseType, IAttributes, SVGElement, unknown>
-): Selection<SVGCircleElement, IAttributes, SVGElement, unknown> {
-  return selection.append('circle').classed('point', true).call(setBoundAttributes);
-}
+// export interface IPointPositioner extends IPoints {
+//   config(config: IPointPositionerConfig): this;
+//   config(): IPointPositionerConfig;
+//   fitInSize(size: utils.ISize): this;
+// }
 
-export function createClippedCircles(
-  selection: Selection<BaseType, IAttributes, SVGElement, unknown>
-): Selection<SVGCircleElement, IAttributes, SVGElement, unknown> {
-  return selection
-    .append('circle')
-    .classed('point', true)
-    .call(clipByItself)
-    .call(setBoundAttributes);
-}
+// export class PointPositioner implements IPointPositioner {
+//   private _config: IPointPositionerConfig;
+//   private _points: utils.IPosition[] = [];
+
+//   constructor() {
+//     this._config = {
+//       categories: [],
+//       categoryScale: { scale: linearScale<number>(), domain: [] },
+//       values: [],
+//       valueScale: { scale: linearScale<number>(), domain: [] },
+//     };
+//   }
+
+//   config(config: IPointPositionerConfig): this;
+//   config(): IPointPositionerConfig;
+//   config(config?: IPointPositionerConfig): any {
+//     if (config === undefined) return this._config;
+//     utils.deepExtend(this._config, config);
+//     applyScaleConfig(this._config.categoryScale);
+//     applyScaleConfig(this._config.valueScale);
+//     return this;
+//   }
+
+//   fitInSize(size: utils.ISize): this {
+//     this._config.categoryScale.scale.range([0, size.width]);
+//     this._config.valueScale.scale.range([size.height, 0]);
+
+//     this._points = [];
+
+//     for (let i = 0; i < this._config.categories.length; ++i) {
+//       const c = this._config.categories[i],
+//         v = this._config.values[i];
+//       this._points.push({
+//         x: this._config.categoryScale.scale(c)!,
+//         y: this._config.valueScale.scale(v)!,
+//       });
+//     }
+
+//     return this;
+//   }
+
+//   points(): utils.IPosition[] {
+//     return this._points;
+//   }
+// }
+
+// export function pointPositioner(): PointPositioner {
+//   return new PointPositioner();
+// }
