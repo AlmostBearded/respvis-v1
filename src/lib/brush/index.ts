@@ -1,1 +1,1 @@
-export * from './brush';
+export * from './brush-component';

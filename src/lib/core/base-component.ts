@@ -51,9 +51,7 @@ export class BaseComponent implements Component {
 
   onConfigure(): (component: this) => void;
   onConfigure(callback: (component: this) => void): this;
-  onConfigure(
-    callback?: (component: this) => void
-  ): ((component: this) => void) | this {
+  onConfigure(callback?: (component: this) => void): ((component: this) => void) | this {
     if (callback === undefined) return this._onConfigure;
     this._onConfigure = callback;
     return this;
@@ -75,11 +73,7 @@ export class BaseComponent implements Component {
   attr(name: string): string;
   attr(name: string, value: null): this;
   attr(name: string, value: string | number | boolean): this;
-  attr(
-    name: string,
-    value: string | number | boolean,
-    transitionDuration: number
-  ): this;
+  attr(name: string, value: string | number | boolean, transitionDuration: number): this;
   attr(
     name: string,
     value: string | number | boolean,
@@ -131,11 +125,7 @@ export class BaseComponent implements Component {
 
   style(name: string): string;
   style(name: string, value: null): this;
-  style(
-    name: string,
-    value: string | number | boolean,
-    priority?: 'important' | null
-  ): this;
+  style(name: string, value: string | number | boolean, priority?: 'important' | null): this;
   style(
     name: string,
     value?: null | string | number | boolean,
@@ -160,11 +150,7 @@ export class BaseComponent implements Component {
   text(value: null): this;
   text(value: string | number | boolean): this;
   text(value: string | number | boolean, transitionDuration: number): this;
-  text(
-    value: string | number | boolean,
-    transitionDuration: number,
-    transitionDelay: number
-  ): this;
+  text(value: string | number | boolean, transitionDuration: number, transitionDelay: number): this;
   text(
     value?: null | string | number | boolean,
     transitionDuration?: number,
@@ -204,11 +190,8 @@ export class BaseComponent implements Component {
   }
 
   on(typenames: string, callback: null): this;
-  on(
-    typenames: string,
-    callback: (event: Event, data: ComponentEventData<this>) => void
-  ): this;
-  on(typenames: any, callback?: any) {
+  on(typenames: string, callback: (event: Event, data: ComponentEventData<this>) => void): this;
+  on(typenames: any, callback: ((event: Event, data: ComponentEventData<this>) => void) | null) {
     if (callback === null) this._selection.on(typenames, null);
     else
       this._selection.on(typenames, (event: Event) => {
@@ -222,15 +205,11 @@ export class BaseComponent implements Component {
     return { component: this };
   }
 
-  select<DescElement extends BaseType>(
-    selector: string
-  ): Selection<DescElement, any, any, any> {
+  select<DescElement extends BaseType>(selector: string): Selection<DescElement, any, any, any> {
     return this._selection.selectAll(selector);
   }
 
-  selectAll<DescElement extends BaseType>(
-    selector: string
-  ): Selection<DescElement, any, any, any> {
+  selectAll<DescElement extends BaseType>(selector: string): Selection<DescElement, any, any, any> {
     return this._selection.selectAll(selector);
   }
 }

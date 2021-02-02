@@ -1,5 +1,6 @@
 import {
   ScaleBand,
+  ScaleContinuousNumeric,
   ScaleLinear,
   ScaleLogarithmic,
   ScaleOrdinal,
@@ -11,12 +12,13 @@ import {
   ScaleTime,
 } from 'd3-scale';
 
+export type ScaleContinuous<TRange, TOutput> =
+  | ScaleContinuousNumeric<TRange, TOutput>
+  | ScaleTime<TRange, TOutput>;
+
 export type ScaleAny<TDomain extends string | number | Date, TRange, TOutput> =
   // continuous input and continuous output
-  | ScaleLinear<TRange, TOutput>
-  | ScalePower<TRange, TOutput>
-  | ScaleLogarithmic<TRange, TOutput>
-  | ScaleTime<TRange, TOutput>
+  | ScaleContinuous<TRange, TOutput>
   // continuous input and discrete output
   | ScaleQuantize<TRange>
   | ScaleQuantile<TRange>

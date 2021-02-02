@@ -41,12 +41,12 @@
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
       // scales
-      const areaScale = respVis.linearScale().domain(areaDomain);
-      const priceScale = respVis.linearScale().domain(priceDomain);
+      let areaScale = respVis.linearScale().domain(areaDomain);
+      let priceScale = respVis.linearScale().domain(priceDomain);
       const radiusScale = respVis.linearScale().domain([0, 1]).range([5, 5]);
 
-      let resetZoomTimeoutDuration = 300,
-        resetZoomTimeoutHandle;
+      // chart
+      const chart = respVis.chart();
 
       // points
       const points = respVis
@@ -59,28 +59,19 @@
         .radiusScale(radiusScale)
         .attr('stroke', '#000000')
         .attr('clip-path', 'url(#drawAreaClipPath)');
-
-      // brush
-      const brush = respVis
-        .brush()
-        .on('end', (e, d) =>
-          d.selectionRect ? zoomToRect(d.selectionRect) : resetZoom()
-        );
+      // .on('mouseover', (e, d) => console.log('mouse over point', e, d));
 
       // draw area clip path
       const drawAreaClipPath = respVis
         .clipPath()
         .attr('id', 'drawAreaClipPath')
-        .children([
-          respVis.rect().attr('width', '100%').attr('height', '100%'),
-        ]);
+        .children([respVis.rect().attr('width', '100%').attr('height', '100%')]);
 
-      // draw area
-      const drawArea = respVis.svg().children([
-        respVis.defs().children([drawAreaClipPath]),
-        brush, // brush before points so that points can still be hovered
-        points,
-      ]);
+      // zoom
+      const zoom = respVis
+        .zoom()
+        .scaleExtent([1, 30])
+        .on('zoom', (e, d) => handleZoom(d.zoomEvent));
 
       // y axis
       const yAxis = respVis.leftAxis();
@@ -99,203 +90,29 @@
       xAxis.title().layout('padding-top', 5).text('Area');
 
       // chart
-      const chart = respVis.chart();
       chart
         .root()
         .layout('grid-template', '1fr auto / auto 1fr')
         .layout('padding', 20)
         .children([
-          drawArea.layout('grid-area', '1 / 2 / 2 / 3'),
+          zoom
+            .layout('grid-area', '1 / 2 / 2 / 3')
+            .children([respVis.defs().children([drawAreaClipPath]), points]),
           yAxis.layout('grid-area', '1 / 1 / 2 / 2'),
           xAxis.layout('grid-area', '2 / 2 / 3 / 3'),
         ]);
+
       chart.mount('#chart');
 
-      function zoomToRect(rect) {
+      function handleZoom(zoomEvent) {
         // clear point highlights because mouseout events might not be called during transition.
         // points.clearHighlights();
 
-        const zoomedAreaDomain = [
-          areaScale.invert(rect.x),
-          areaScale.invert(rect.x + rect.width),
-        ];
-        const zoomedPriceDomain = [
-          priceScale.invert(rect.y + rect.height),
-          priceScale.invert(rect.y),
-        ];
+        respVis.rescaleX(zoomEvent.transform, areaScale, areaDomain);
+        respVis.rescaleY(zoomEvent.transform, priceScale, priceDomain);
 
-        areaScale.domain(zoomedAreaDomain);
-        priceScale.domain(zoomedPriceDomain);
-
-        chart.transition();
+        chart.render();
       }
-
-      function resetZoom() {
-        // requires a double invocation of this function within a duration to
-        // actually reset the zoom.
-        //
-        // this is needed because the brush selection is removed immediately after
-        // zooming which would cause this function to be called and immediately reset
-        // the zoom again if not for this double invocation requirement.
-        if (!resetZoomTimeoutHandle) {
-          resetZoomTimeoutHandle = setTimeout(
-            () => (resetZoomTimeoutHandle = null),
-            resetZoomTimeoutDuration
-          );
-          return;
-        }
-        resetZoomTimeoutHandle = null;
-
-        // clear point highlights because mouseout events might not be called during transition.
-        // points.clearHighlights();
-
-        areaScale.domain(areaDomain);
-        priceScale.domain(priceDomain);
-
-        chart.transition();
-      }
-
-      // // points
-      // const points = withHightlightPoint(respVis.points()).config({
-      //   categories: data.area,
-      //   categoryScale: {
-      //     scale: areaScale,
-      //     domain: areaDomain,
-      //   },
-      //   values: data.price,
-      //   valueScale: {
-      //     scale: priceScale,
-      //     domain: priceDomain,
-      //   },
-      //   events: {
-      //     mouseover: (e, d) => hoverPoint(d.index, true),
-      //     mouseout: (e, d) => hoverPoint(d.index, false),
-      //   },
-      // });
-
-      // // brush
-      // const brush = respVis.brush().config({
-      //   events: {
-      //     end: (e, d) => (d.selectionRect ? zoomToRect(d.selectionRect) : resetZoom()),
-      //   },
-      // });
-
-      // // bottom axis
-      // const xAxis = withHighlightTick(withBottomAxis(respVis.group()))
-      //   .call((axis) =>
-      //     axis.ticks.config({
-      //       scale: areaScale,
-      //       ticks: 3,
-      //       labelFormatter: areaFormatter,
-      //       responsiveConfigs: {
-      //         [wideMediaQuery]: {
-      //           ticks: 6,
-      //         },
-      //       },
-      //     })
-      //   )
-      //   .call((axis) =>
-      //     axis.title.config({
-      //       text: 'Area',
-      //     })
-      //   );
-
-      // // left axis
-      // const yAxis = withHighlightTick(withLeftAxis(respVis.group()))
-      //   .call((axis) =>
-      //     axis.ticks.config({
-      //       scale: priceScale,
-      //       labelFormatter: priceFormatter,
-      //     })
-      //   )
-      //   .call((axis) =>
-      //     axis.title.config({
-      //       text: 'Price',
-      //     })
-      //   );
-
-      // const chart = respVis
-      //   .chart()
-      //   .root(
-      //     withPaddingLayout(respVis.group()).config({
-      //       all: 10,
-      //       children: [
-      //         respVis.group().config({
-      //           attributes: { 'grid-template': '1fr auto / auto 1fr' },
-      //           children: [
-      //             // brush
-      //             // added before points so that points can still be hovered
-      //             brush.config({ attributes: { 'grid-area': '1 / 2 / 2 / 3' } }),
-
-      //             // points
-      //             points.config({ attributes: { 'grid-area': '1 / 2 / 2 / 3' } }),
-
-      //             // bar Labels
-      //             // barLabels.config({ attributes: { 'grid-area': '1 / 2 / 2 / 3' } }),
-
-      //             // left axis
-      //             yAxis.config({ attributes: { 'grid-area': '1 / 1 / 2 / 2' } }),
-
-      //             // bottom axis
-      //             xAxis.config({ attributes: { 'grid-area': '2 / 2 / 3 / 3' } }),
-      //           ],
-      //         }),
-      //       ],
-      //     })
-      //   )
-      //   .mount('#chart');
-
-      // function hoverPoint(pointIndex, hover) {
-      //   if (points.inTransition()) return;
-      //   points.highlightPoint(pointIndex, hover);
-      //   // barLabels.showLabel(barIndex, hover);
-      //   // categoryAxis.highlightTick(barIndex, hover);
-
-      //   chart.update(false, false);
-      // }
-
-      // function resetZoom() {
-      //   // requires a double invocation of this function within a duration to
-      //   // actually reset the zoom.
-      //   //
-      //   // this is needed because the brush selection is removed immediately after
-      //   // zooming which would cause this function to be called and immediately reset
-      //   // the zoom again if not for this double invocation requirement.
-      //   if (!resetZoomTimeoutHandle) {
-      //     resetZoomTimeoutHandle = setTimeout(
-      //       () => (resetZoomTimeoutHandle = null),
-      //       resetZoomTimeoutDuration
-      //     );
-      //     return;
-      //   }
-      //   resetZoomTimeoutHandle = null;
-
-      //   // clear point highlights because mouseout events might not be called during transition.
-      //   points.clearHighlights();
-
-      //   points.config({
-      //     categoryScale: { domain: areaDomain },
-      //     valueScale: { domain: priceDomain },
-      //   });
-
-      //   chart.update(true, true);
-      // }
-
-      // function zoomToRect(rect) {
-      //   // clear point highlights because mouseout events might not be called during transition.
-      //   points.clearHighlights();
-
-      //   const zoomedAreaDomain = [areaScale.invert(rect.x), areaScale.invert(rect.x + rect.width)];
-      //   const zoomedPriceDomain = [
-      //     priceScale.invert(rect.y + rect.height),
-      //     priceScale.invert(rect.y),
-      //   ];
-      //   points.config({
-      //     categoryScale: { domain: zoomedAreaDomain },
-      //     valueScale: { domain: zoomedPriceDomain },
-      //   });
-      //   chart.update(true, true);
-      // }
     </script>
   </body>
 </html>
