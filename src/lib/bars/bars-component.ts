@@ -19,12 +19,14 @@ export interface BarData {
 
 export type CreateBarsFunction = (
   enterSelection: Selection<EnterElement, BarData, any, any>
-) => Selection<SVGRectElement, any, any, any>;
+) => Selection<SVGRectElement, BarData, any, any>;
 
-export type RemoveBarsFunction = (exitSelection: Selection<any, BarData, any, any>) => void;
+export type RemoveBarsFunction = (
+  exitSelection: Selection<SVGRectElement, BarData, any, any>
+) => void;
 
 export type UpdateBarsFunction = (
-  selection: SelectionOrTransition<BaseType, BarData, any, any>
+  selection: SelectionOrTransition<SVGRectElement, BarData, any, any>
 ) => void;
 
 export interface BarsEventData<TComponent extends Component>

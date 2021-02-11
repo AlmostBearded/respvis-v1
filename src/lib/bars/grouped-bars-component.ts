@@ -26,9 +26,17 @@ export interface GroupedBarData extends BarData {
   rect: Rect<number>;
 }
 
+export type CreateGroupedBarsFunction = (
+  enterSelection: Selection<EnterElement, GroupedBarData, any, any>
+) => Selection<SVGRectElement, GroupedBarData, any, any>;
+
+export type RemoveGroupedBarsFunction = (
+  exitSelection: Selection<SVGRectElement, GroupedBarData, any, any>
+) => void;
+
 export type CreateBarGroupsFunction = (
-  enterSelection: Selection<EnterElement, any, any, any>
-) => Selection<SVGGElement, any, any, any>;
+  enterSelection: Selection<EnterElement, GroupedBarData[], any, any>
+) => Selection<SVGGElement, GroupedBarData[], any, any>;
 
 export type UpdateGroupedBarsFunction = (
   selection: SelectionOrTransition<BaseType, GroupedBarData, any, any>
@@ -48,8 +56,8 @@ export class GroupedBarsComponent extends BaseComponent implements GroupedBars {
   private _keys: string[][] | undefined;
   private _transitionDelay: number;
   private _transitionDuration: number;
-  private _onCreateBars: CreateBarsFunction;
-  private _onRemoveBars: RemoveBarsFunction;
+  private _onCreateBars: CreateGroupedBarsFunction;
+  private _onRemoveBars: RemoveGroupedBarsFunction;
   private _onCreateBarGroups: CreateBarGroupsFunction;
   private _onUpdateBars: UpdateGroupedBarsFunction;
 
@@ -145,17 +153,17 @@ export class GroupedBarsComponent extends BaseComponent implements GroupedBars {
     return this;
   }
 
-  onCreateBars(): CreateBarsFunction;
-  onCreateBars(callback: CreateBarsFunction): this;
-  onCreateBars(callback?: CreateBarsFunction): CreateBarsFunction | this {
+  onCreateBars(): CreateGroupedBarsFunction;
+  onCreateBars(callback: CreateGroupedBarsFunction): this;
+  onCreateBars(callback?: CreateGroupedBarsFunction): CreateGroupedBarsFunction | this {
     if (callback === undefined) return this._onCreateBars;
     this._onCreateBars = callback;
     return this;
   }
 
-  onRemoveBars(): RemoveBarsFunction;
-  onRemoveBars(callback: RemoveBarsFunction): this;
-  onRemoveBars(callback?: RemoveBarsFunction): RemoveBarsFunction | this {
+  onRemoveBars(): RemoveGroupedBarsFunction;
+  onRemoveBars(callback: RemoveGroupedBarsFunction): this;
+  onRemoveBars(callback?: RemoveGroupedBarsFunction): RemoveGroupedBarsFunction | this {
     if (callback === undefined) return this._onRemoveBars;
     this._onRemoveBars = callback;
     return this;

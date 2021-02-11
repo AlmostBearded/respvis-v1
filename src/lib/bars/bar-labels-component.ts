@@ -19,6 +19,7 @@ export class BarLabelsComponent extends BaseComponent implements BarPoints {
   private _transitionDelay: number;
   private _transitionDuration: number;
   private _onCreateLabels: CreateLabelsFunction;
+  // todo: add customizable removeLabels and updateLabels callbacks
 
   constructor(bars: Bars) {
     super('g');
