@@ -37,13 +37,13 @@
       const barColor = respVis.BarsComponent.defaultColor;
       const bars = respVis
         .bars()
-        .categories(cities)
-        .categoryScale(cityScale)
-        .values(populations)
-        .valueScale(populationScale)
+        .mainValues(cities)
+        .mainScale(cityScale)
+        .crossValues(populations)
+        .crossScale(populationScale)
         .attr('fill', barColor)
-        .on('mouseover', (e, d) => hoverBar(d.categoryIndex, true))
-        .on('mouseout', (e, d) => hoverBar(d.categoryIndex, false))
+        .on('mouseover', (e, d) => hoverBar(d.mainIndex, true))
+        .on('mouseout', (e, d) => hoverBar(d.mainIndex, false))
         .onConfigure((bars) => {
           bars.orientation(respVis.BarOrientation.Horizontal);
           if (window.matchMedia(wideMediaQuery).matches)
@@ -122,7 +122,7 @@
         .root()
         .layout('grid-template', '1fr 15 auto / auto 1fr')
         .layout('padding-horizontal', 20)
-        .layout('padding-top', 20)
+        .layout('padding-vertical', 20)
         .onConfigure((svg) => {
           cityAxis = leftAxis;
           populationAxis = bottomAxis;

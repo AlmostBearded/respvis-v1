@@ -54,14 +54,14 @@
       let filteredBarColors = barColors;
       const bars = respVis
         .groupedBars()
-        .categories(locations)
-        .categoryScale(locationScale)
-        .values(revenues)
-        .valueScale(revenueScale)
+        .mainValues(locations)
+        .mainScale(locationScale)
+        .crossValues(revenues)
+        .crossScale(revenueScale)
         .keys(keys)
         .onUpdateBars((selection) => respVis.updateGroupedBars(selection, filteredBarColors))
-        .on('mouseover', (e, d) => hoverBar(d.categoryIndex, d.valueIndex, true))
-        .on('mouseout', (e, d) => hoverBar(d.categoryIndex, d.valueIndex, false))
+        .on('mouseover', (e, d) => hoverBar(d.mainIndex, d.crossIndex, true))
+        .on('mouseout', (e, d) => hoverBar(d.mainIndex, d.crossIndex, false))
         .onConfigure((bars) => {
           bars.orientation(respVis.BarOrientation.Horizontal);
           if (window.matchMedia(wideMediaQuery).matches)
@@ -276,7 +276,7 @@
 
         const newRevs = revenues.map((yearlyRevs) => yearlyRevs.filter((_, i) => yearToggles[i]));
         const newKeys = keys.map((yearlyKeys) => yearlyKeys.filter((_, i) => yearToggles[i]));
-        bars.values(newRevs).keys(newKeys);
+        bars.crossValues(newRevs).keys(newKeys);
 
         filteredBarColors = barColors.filter((c, i) => yearToggles[i]);
 

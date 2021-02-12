@@ -4,14 +4,14 @@ import { ISize } from '../core/utils';
 import { BarOrientation } from './bars';
 
 export interface StackedBars {
-  categories(): any[];
-  categories(categories: any[]): this;
-  categoryScale(): ScaleBand<any>;
-  categoryScale(scale: ScaleBand<any>): this;
-  values(): any[][];
-  values(values: any[][]): this;
-  valueScale(): ScaleContinuousNumeric<number, number>;
-  valueScale(scale: ScaleContinuousNumeric<number, number>): this;
+  mainValues(): any[];
+  mainValues(categories: any[]): this;
+  mainScale(): ScaleBand<any>;
+  mainScale(scale: ScaleBand<any>): this;
+  crossValues(): any[][];
+  crossValues(values: any[][]): this;
+  crossScale(): ScaleContinuousNumeric<number, number>;
+  crossScale(scale: ScaleContinuousNumeric<number, number>): this;
   orientation(): BarOrientation;
   orientation(orientation: BarOrientation): this;
   bars(): Rect<number>[];
@@ -34,35 +34,35 @@ export class StackedBarsCalculator implements StackedBars {
     this._bars = [];
   }
 
-  categories(): any[];
-  categories(categories: any[]): this;
-  categories(categories?: any) {
+  mainValues(): any[];
+  mainValues(categories: any[]): this;
+  mainValues(categories?: any) {
     if (categories === undefined) return this._categories;
     this._categories = categories;
     this._categoryScale.domain(this._categories);
     return this;
   }
 
-  categoryScale(): ScaleBand<any>;
-  categoryScale(scale: ScaleBand<any>): this;
-  categoryScale(scale?: any) {
+  mainScale(): ScaleBand<any>;
+  mainScale(scale: ScaleBand<any>): this;
+  mainScale(scale?: any) {
     if (scale === undefined) return this._categoryScale;
     this._categoryScale = scale;
     this._categoryScale.domain(this._categories);
     return this;
   }
 
-  values(): any[][];
-  values(values: any[][]): this;
-  values(values?: any) {
+  crossValues(): any[][];
+  crossValues(values: any[][]): this;
+  crossValues(values?: any) {
     if (values === undefined) return this._values;
     this._values = values;
     return this;
   }
 
-  valueScale(): ScaleContinuousNumeric<number, number>;
-  valueScale(scale: ScaleContinuousNumeric<number, number>): this;
-  valueScale(scale?: any) {
+  crossScale(): ScaleContinuousNumeric<number, number>;
+  crossScale(scale: ScaleContinuousNumeric<number, number>): this;
+  crossScale(scale?: any) {
     if (scale === undefined) return this._valueScale;
     this._valueScale = scale;
     return this;

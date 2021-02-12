@@ -4,7 +4,6 @@ import {
   categoricalColors,
   BaseComponent,
   rectFromString,
-  TextComponent,
 } from '../core';
 import { Selection, BaseType, EnterElement, select, selectAll } from 'd3-selection';
 import { BarOrientation, Bars, BarsCalculator } from './bars';
@@ -13,7 +12,7 @@ import { SelectionOrTransition } from 'd3-transition';
 import { Rect } from '../core/rect';
 
 export interface BarData {
-  categoryIndex: number;
+  mainIndex: number;
   key: string;
   rect: Rect<number>;
 }
@@ -57,37 +56,37 @@ export class BarsComponent extends BaseComponent implements Bars {
       .attr('layout', '0, 0, 600, 400');
   }
 
-  categories(): any[];
-  categories(categories: any[]): this;
-  categories(categories?: any[]): any[] | this {
-    if (categories === undefined) return this._barsCalculator.categories();
-    this._barsCalculator.categories(categories);
+  mainValues(): any[];
+  mainValues(values: any[]): this;
+  mainValues(values?: any[]): any[] | this {
+    if (values === undefined) return this._barsCalculator.mainValues();
+    this._barsCalculator.mainValues(values);
     return this;
   }
 
-  categoryScale(): ScaleBand<any>;
-  categoryScale(scale: ScaleBand<any>): this;
-  categoryScale(scale?: ScaleBand<any>): ScaleBand<any> | this {
-    if (scale === undefined) return this._barsCalculator.categoryScale();
-    this._barsCalculator.categoryScale(scale);
+  mainScale(): ScaleBand<any>;
+  mainScale(scale: ScaleBand<any>): this;
+  mainScale(scale?: ScaleBand<any>): ScaleBand<any> | this {
+    if (scale === undefined) return this._barsCalculator.mainScale();
+    this._barsCalculator.mainScale(scale);
     return this;
   }
 
-  values(): any[];
-  values(values: any[]): this;
-  values(values?: any[]): any[] | this {
-    if (values === undefined) return this._barsCalculator.values();
-    this._barsCalculator.values(values);
+  crossValues(): any[];
+  crossValues(values: any[]): this;
+  crossValues(values?: any[]): any[] | this {
+    if (values === undefined) return this._barsCalculator.crossValues();
+    this._barsCalculator.crossValues(values);
     return this;
   }
 
-  valueScale(): ScaleContinuousNumeric<number, number>;
-  valueScale(scale: ScaleContinuousNumeric<number, number>): this;
-  valueScale(
+  crossScale(): ScaleContinuousNumeric<number, number>;
+  crossScale(scale: ScaleContinuousNumeric<number, number>): this;
+  crossScale(
     scale?: ScaleContinuousNumeric<number, number>
   ): ScaleContinuousNumeric<number, number> | this {
-    if (scale === undefined) return this._barsCalculator.valueScale();
-    this._barsCalculator.valueScale(scale);
+    if (scale === undefined) return this._barsCalculator.crossScale();
+    this._barsCalculator.crossScale(scale);
     return this;
   }
 
@@ -162,7 +161,7 @@ export class BarsComponent extends BaseComponent implements Bars {
   barData(): BarData[] {
     return this._barsCalculator
       .bars()
-      .map((rect, i) => ({ categoryIndex: i, key: this._keys?.[i] || i.toString(), rect: rect }));
+      .map((rect, i) => ({ mainIndex: i, key: this._keys?.[i] || i.toString(), rect: rect }));
   }
 
   render(): this {

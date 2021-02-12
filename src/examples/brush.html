@@ -52,10 +52,10 @@
       // points
       const points = respVis
         .points()
-        .xValues(areas)
-        .xScale(areaScale)
-        .yValues(prices)
-        .yScale(priceScale)
+        .mainValues(areas)
+        .mainScale(areaScale)
+        .crossValues(prices)
+        .crossScale(priceScale)
         .radiuses(radiuses)
         .radiusScale(radiusScale)
         .attr('stroke', '#000000')

@@ -10,19 +10,12 @@ import {
   rectFromString,
 } from '../core';
 import { BarOrientation } from './bars';
-import {
-  BarData,
-  createBars,
-  CreateBarsFunction,
-  removeBars,
-  RemoveBarsFunction,
-  updateBars,
-} from './bars-component';
+import { BarData, createBars, removeBars, updateBars } from './bars-component';
 import { GroupedBars, GroupedBarsCalculator } from './grouped-bars';
 
 export interface GroupedBarData extends BarData {
-  categoryIndex: number;
-  valueIndex: number;
+  mainIndex: number;
+  crossIndex: number;
   rect: Rect<number>;
 }
 
@@ -69,43 +62,43 @@ export class GroupedBarsComponent extends BaseComponent implements GroupedBars {
       updateGroupedBars(selection, GroupedBarsComponent.defaultColors);
   }
 
-  categories(): any[];
-  categories(categories: any[]): this;
-  categories(categories?: any) {
-    if (categories === undefined) return this._barsCalculator.categories();
-    this._barsCalculator.categories(categories);
+  mainValues(): any[];
+  mainValues(categories: any[]): this;
+  mainValues(categories?: any) {
+    if (categories === undefined) return this._barsCalculator.mainValues();
+    this._barsCalculator.mainValues(categories);
     return this;
   }
 
-  categoryScale(): ScaleBand<any>;
-  categoryScale(scale: ScaleBand<any>): this;
-  categoryScale(scale?: any) {
-    if (scale === undefined) return this._barsCalculator.categoryScale();
-    this._barsCalculator.categoryScale(scale);
+  mainScale(): ScaleBand<any>;
+  mainScale(scale: ScaleBand<any>): this;
+  mainScale(scale?: any) {
+    if (scale === undefined) return this._barsCalculator.mainScale();
+    this._barsCalculator.mainScale(scale);
     return this;
   }
 
-  values(): any[][];
-  values(values: any[][]): this;
-  values(values?: any) {
-    if (values === undefined) return this._barsCalculator.values();
-    this._barsCalculator.values(values);
+  crossValues(): any[][];
+  crossValues(values: any[][]): this;
+  crossValues(values?: any) {
+    if (values === undefined) return this._barsCalculator.crossValues();
+    this._barsCalculator.crossValues(values);
     return this;
   }
 
-  valueScale(): ScaleContinuousNumeric<number, number>;
-  valueScale(scale: ScaleContinuousNumeric<number, number>): this;
-  valueScale(scale?: any) {
-    if (scale === undefined) return this._barsCalculator.valueScale();
-    this._barsCalculator.valueScale(scale);
+  crossScale(): ScaleContinuousNumeric<number, number>;
+  crossScale(scale: ScaleContinuousNumeric<number, number>): this;
+  crossScale(scale?: any) {
+    if (scale === undefined) return this._barsCalculator.crossScale();
+    this._barsCalculator.crossScale(scale);
     return this;
   }
 
-  subcategoryScale(): ScaleBand<any>;
-  subcategoryScale(scale: ScaleBand<any>): this;
-  subcategoryScale(scale?: any) {
-    if (scale === undefined) return this._barsCalculator.subcategoryScale();
-    this._barsCalculator.subcategoryScale(scale);
+  mainInnerScale(): ScaleBand<any>;
+  mainInnerScale(scale: ScaleBand<any>): this;
+  mainInnerScale(scale?: any) {
+    if (scale === undefined) return this._barsCalculator.mainInnerScale();
+    this._barsCalculator.mainInnerScale(scale);
     return this;
   }
 
@@ -228,24 +221,20 @@ export class GroupedBarsComponent extends BaseComponent implements GroupedBars {
     return this;
   }
 
-  key(categoryIndex: number, valueIndex: number): string {
-    return this._keys?.[categoryIndex][valueIndex] || `${categoryIndex}/${valueIndex}`;
-  }
-
   barData(): GroupedBarData[][] {
     const bars = [...this._barsCalculator.bars()];
     const groupedBars: GroupedBarData[][] = [];
-    let categoryIndex = 0;
+    let mainIndex = 0;
     while (bars.length) {
       groupedBars.push(
-        bars.splice(0, this._barsCalculator.values()[0].length).map((rect, i) => ({
-          categoryIndex: categoryIndex,
-          valueIndex: i,
-          key: this.key(categoryIndex, i),
+        bars.splice(0, this._barsCalculator.crossValues()[0].length).map((rect, i) => ({
+          mainIndex: mainIndex,
+          crossIndex: i,
+          key: this._keys?.[mainIndex][i] || `${mainIndex}/${i}`,
           rect: rect,
         }))
       );
-      ++categoryIndex;
+      ++mainIndex;
     }
     return groupedBars;
   }
@@ -275,5 +264,5 @@ export function updateGroupedBars(
   selection: SelectionOrTransition<BaseType, GroupedBarData, any, any>,
   colors: string[]
 ): void {
-  selection.call(updateBars).attr('fill', (d) => colors[d.valueIndex]);
+  selection.call(updateBars).attr('fill', (d) => colors[d.crossIndex]);
 }

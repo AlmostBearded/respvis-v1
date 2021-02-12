@@ -56,35 +56,35 @@ export class PointsComponent extends BaseComponent implements Points {
       .attr('layout', '0, 0, 600, 400');
   }
 
-  xValues(): any[];
-  xValues(values: any[]): this;
-  xValues(values?: any) {
-    if (values === undefined) return this._calculator.xValues();
-    this._calculator.xValues(values);
+  mainValues(): any[];
+  mainValues(values: any[]): this;
+  mainValues(values?: any) {
+    if (values === undefined) return this._calculator.mainValues();
+    this._calculator.mainValues(values);
     return this;
   }
 
-  xScale(): ScaleAny<string | number | Date, number, number>;
-  xScale(scale: ScaleAny<string | number | Date, number, number>): this;
-  xScale(scale?: any) {
-    if (scale === undefined) return this._calculator.xScale();
-    this._calculator.xScale(scale);
+  mainScale(): ScaleAny<string | number | Date, number, number>;
+  mainScale(scale: ScaleAny<string | number | Date, number, number>): this;
+  mainScale(scale?: any) {
+    if (scale === undefined) return this._calculator.mainScale();
+    this._calculator.mainScale(scale);
     return this;
   }
 
-  yValues(): any[];
-  yValues(values: any[]): this;
-  yValues(values?: any) {
-    if (values === undefined) return this._calculator.yValues();
-    this._calculator.yValues(values);
+  crossValues(): any[];
+  crossValues(values: any[]): this;
+  crossValues(values?: any) {
+    if (values === undefined) return this._calculator.crossValues();
+    this._calculator.crossValues(values);
     return this;
   }
 
-  yScale(): ScaleAny<string | number | Date, number, number>;
-  yScale(scale: ScaleAny<string | number | Date, number, number>): this;
-  yScale(scale?: any) {
-    if (scale === undefined) return this._calculator.yScale();
-    this._calculator.yScale(scale);
+  crossScale(): ScaleAny<string | number | Date, number, number>;
+  crossScale(scale: ScaleAny<string | number | Date, number, number>): this;
+  crossScale(scale?: any) {
+    if (scale === undefined) return this._calculator.crossScale();
+    this._calculator.crossScale(scale);
     return this;
   }
 

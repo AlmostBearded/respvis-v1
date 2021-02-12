@@ -56,14 +56,14 @@
       let filteredBarColors = barColors;
       const bars = respVis
         .stackedBars()
-        .categories(years)
-        .categoryScale(yearScale)
-        .values(shares)
-        .valueScale(shareScale)
+        .mainValues(years)
+        .mainScale(yearScale)
+        .crossValues(shares)
+        .crossScale(shareScale)
         .keys(keys)
         .onUpdateBars((selection) => respVis.updateStackedBars(selection, filteredBarColors))
-        .on('mouseover', (e, d) => hoverBar(d.categoryIndex, d.valueIndex, true))
-        .on('mouseout', (e, d) => hoverBar(d.categoryIndex, d.valueIndex, false))
+        .on('mouseover', (e, d) => hoverBar(d.mainIndex, d.crossIndex, true))
+        .on('mouseout', (e, d) => hoverBar(d.mainIndex, d.crossIndex, false))
         .onConfigure((bars) => {
           bars.orientation(respVis.BarOrientation.Horizontal);
           if (window.matchMedia(wideMediaQuery).matches)
@@ -285,7 +285,7 @@
         const newKeys = keys.map((platformKeys) =>
           platformKeys.filter((_, i) => platformToggles[i])
         );
-        bars.values(newShares).keys(newKeys);
+        bars.crossValues(newShares).keys(newKeys);
 
         filteredBarColors = barColors.filter((c, i) => platformToggles[i]);
 
