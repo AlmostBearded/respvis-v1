@@ -4,8 +4,6 @@ export * as utils from './utils';
 
 export { v4 as uuid } from 'uuid';
 
-// export * from './clip';
-export * from './attributes';
 export * from './scales';
 
 export * from './component';
@@ -27,5 +25,4 @@ export * from './chart';
 // todo: solve Rect naming conflict (maybe namespaces?)
 export * from './rect';
 
-import { transition } from 'd3-transition';
 import 'd3-transition';
