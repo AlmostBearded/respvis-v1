@@ -42,14 +42,8 @@ export type UpdateGroupedBarsFunction = (
   selection: SelectionOrTransition<BaseType, GroupedBarData, any, any>
 ) => void;
 
-export interface GroupedBarsEventData<TComponent extends Component>
-  extends ComponentEventData<TComponent> {
-  categoryIndex: number;
-  valueIndex: number;
-  key: string;
-  groupElement: SVGGElement;
-  element: SVGRectElement;
-}
+export type GroupedBarsEventData<TComponent extends Component> = ComponentEventData<TComponent> &
+  GroupedBarData;
 
 export class GroupedBarsComponent extends BaseComponent implements GroupedBars {
   private _barsCalculator: GroupedBarsCalculator;
@@ -257,29 +251,12 @@ export class GroupedBarsComponent extends BaseComponent implements GroupedBars {
   }
 
   eventData(event: Event): GroupedBarsEventData<this> | null {
-    const element = event.target as SVGRectElement;
-    const groupElement = element.parentNode! as SVGGElement;
-    const rootElement = groupElement.parentNode! as Element;
-
-    const indexOf = Array.prototype.indexOf;
-
-    let categoryIndex = indexOf.call(rootElement.children, groupElement);
-    for (let i = 0; i <= categoryIndex; ++i)
-      if (rootElement.children[i].classList.contains('exiting')) --categoryIndex;
-
-    let valueIndex = indexOf.call(groupElement.children, element);
-    for (let i = 0; i <= valueIndex; ++i)
-      if (groupElement.children[i].classList.contains('exiting')) --valueIndex;
-
-    if (categoryIndex < 0 || valueIndex < 0) return null;
-
+    const barElement = event.target as SVGRectElement;
+    const barSelection = select<SVGRectElement, GroupedBarData>(barElement);
+    if (barSelection.classed('exiting')) return null;
     return {
       component: this,
-      categoryIndex: categoryIndex,
-      valueIndex: valueIndex,
-      key: this.key(categoryIndex, valueIndex),
-      groupElement: groupElement,
-      element: element,
+      ...barSelection.datum(),
     };
   }
 }

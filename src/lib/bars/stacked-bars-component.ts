@@ -1,5 +1,5 @@
 import { ScaleBand, ScaleContinuousNumeric } from 'd3-scale';
-import { BaseType, EnterElement, Selection } from 'd3-selection';
+import { BaseType, EnterElement, select, Selection } from 'd3-selection';
 import { SelectionOrTransition } from 'd3-transition';
 import {
   BaseComponent,
@@ -42,14 +42,8 @@ export type UpdateStackedBarsFunction = (
   selection: SelectionOrTransition<BaseType, StackedBarData, any, any>
 ) => void;
 
-export interface StackedBarsEventData<TComponent extends Component>
-  extends ComponentEventData<TComponent> {
-  stackIndex: number;
-  barIndex: number;
-  key: string;
-  stackElement: SVGGElement;
-  element: SVGRectElement;
-}
+export type StackedBarsEventData<TComponent extends Component> = ComponentEventData<TComponent> &
+  StackedBarData;
 
 export class StackedBarsComponent extends BaseComponent implements StackedBars {
   private _barsCalculator: StackedBarsCalculator;
@@ -250,28 +244,11 @@ export class StackedBarsComponent extends BaseComponent implements StackedBars {
 
   eventData(event: Event): StackedBarsEventData<this> | null {
     const element = event.target as SVGRectElement;
-    const stackElement = element.parentNode! as SVGGElement;
-    const rootElement = stackElement.parentNode! as Element;
-
-    const indexOf = Array.prototype.indexOf;
-
-    let stackIndex = indexOf.call(rootElement.children, stackElement);
-    for (let i = 0; i <= stackIndex; ++i)
-      if (rootElement.children[i].classList.contains('exiting')) --stackIndex;
-
-    let barIndex = indexOf.call(stackElement.children, element);
-    for (let i = 0; i <= barIndex; ++i)
-      if (stackElement.children[i].classList.contains('exiting')) --barIndex;
-
-    if (stackIndex < 0 || barIndex < 0) return null;
-
+    const barSelection = select<SVGRectElement, StackedBarData>(element);
+    if (barSelection.classed('exiting')) return null;
     return {
       component: this,
-      stackIndex: stackIndex,
-      barIndex: barIndex,
-      key: this.key(stackIndex, barIndex),
-      stackElement: stackElement,
-      element: element,
+      ...barSelection.datum(),
     };
   }
 }

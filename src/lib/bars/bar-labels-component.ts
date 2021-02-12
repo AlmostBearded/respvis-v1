@@ -13,6 +13,8 @@ export type CreateLabelsFunction = (
   enterSelection: Selection<EnterElement, LabelData, any, any>
 ) => Selection<BaseType, any, any, any>;
 
+// todo: add custom BarLabelEventData (or just LabelEventData?)
+
 export class BarLabelsComponent extends BaseComponent implements BarPoints {
   private _barPoints: BarPoints;
   private _labels: IStringable[];

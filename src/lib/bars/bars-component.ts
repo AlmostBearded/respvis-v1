@@ -4,8 +4,9 @@ import {
   categoricalColors,
   BaseComponent,
   rectFromString,
+  TextComponent,
 } from '../core';
-import { Selection, BaseType, EnterElement } from 'd3-selection';
+import { Selection, BaseType, EnterElement, select, selectAll } from 'd3-selection';
 import { BarOrientation, Bars, BarsCalculator } from './bars';
 import { ScaleBand, ScaleContinuousNumeric } from 'd3-scale';
 import { SelectionOrTransition } from 'd3-transition';
@@ -29,11 +30,7 @@ export type UpdateBarsFunction = (
   selection: SelectionOrTransition<SVGRectElement, BarData, any, any>
 ) => void;
 
-export interface BarsEventData<TComponent extends Component>
-  extends ComponentEventData<TComponent> {
-  index: number;
-  element: SVGRectElement;
-}
+export type BarsEventData<TComponent extends Component> = ComponentEventData<TComponent> & BarData;
 
 export class BarsComponent extends BaseComponent implements Bars {
   private _barsCalculator: BarsCalculator;
@@ -191,18 +188,13 @@ export class BarsComponent extends BaseComponent implements Bars {
     return this;
   }
 
-  eventData(event: Event): BarsEventData<this> {
+  eventData(event: Event): BarsEventData<this> | null {
     const element = event.target as SVGRectElement;
-    const rootElement = element.parentNode! as Element;
-
-    let index = Array.prototype.indexOf.call(rootElement.children, element);
-    for (let i = 0; i <= index; ++i)
-      if (rootElement.children[i].classList.contains('exiting')) --index;
-
+    const barSelection = select<SVGRectElement, BarData>(element);
+    if (barSelection.classed('exiting')) return null;
     return {
       component: this,
-      index: index,
-      element: element,
+      ...barSelection.datum(),
     };
   }
 }

@@ -42,8 +42,8 @@
         .values(populations)
         .valueScale(populationScale)
         .attr('fill', barColor)
-        .on('mouseover', (e, d) => hoverBar(d.index, true))
-        .on('mouseout', (e, d) => hoverBar(d.index, false))
+        .on('mouseover', (e, d) => hoverBar(d.categoryIndex, true))
+        .on('mouseout', (e, d) => hoverBar(d.categoryIndex, false))
         .onConfigure((bars) => {
           bars.orientation(respVis.BarOrientation.Horizontal);
           if (window.matchMedia(wideMediaQuery).matches)
