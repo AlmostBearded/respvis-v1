@@ -98,7 +98,7 @@
         .on('mouseover', (event, data) => hoverLegendSwatch(data.childIndex, true))
         .on('mouseout', (event, data) => hoverLegendSwatch(data.childIndex, false))
         .on('click', (event, data) => clickLegendSwatch(data.childIndex))
-        .layout('place-content', 'start stretch')
+        .layout('place-content', 'start end')
         .call((legend) =>
           legend.swatches().forEach((swatch, i) => {
             swatch.rect().attr('fill', barColors[i]);
