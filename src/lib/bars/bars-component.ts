@@ -171,8 +171,8 @@ export class BarsComponent extends BaseComponent implements Bars {
   render(): this {
     super.render();
     this.selection()
-      .selectAll('.bar')
-      .data(this.barData(), (d: BarData) => d.key)
+      .selectAll<SVGRectElement, BarData>('.bar')
+      .data(this.barData(), (d) => d.key)
       .join(this._onCreateBars, undefined, this._onRemoveBars)
       .call(this._onUpdateBars);
     return this;
@@ -181,8 +181,8 @@ export class BarsComponent extends BaseComponent implements Bars {
   transition(): this {
     super.transition();
     this.selection()
-      .selectAll('.bar')
-      .data(this.barData(), (d: BarData) => d.key)
+      .selectAll<SVGRectElement, BarData>('.bar')
+      .data(this.barData(), (d) => d.key)
       .join(this._onCreateBars, undefined, this._onRemoveBars)
       .transition()
       .delay(this._transitionDelay)

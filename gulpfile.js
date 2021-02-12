@@ -36,12 +36,30 @@ async function bundleJSLibWithSettings(minify, zip) {
 
   const bundle = await rollup.rollup({
     input: 'src/lib/index.ts',
+    external: [
+      'd3-selection',
+      'd3-array',
+      'd3-axis',
+      'd3-brush',
+      'd3-scale',
+      'd3-transition',
+      'd3-zoom',
+    ],
     plugins: [rollupNodeResolve({ browser: true }), rollupCommonJs(), rollupTypescript()],
   });
   return bundle.write({
     file: `dist/respvis${minify ? '.min' : ''}.js`,
     format: 'iife',
     name: 'respVis',
+    globals: {
+      'd3-selection': 'd3',
+      'd3-array': 'd3',
+      'd3-axis': 'd3',
+      'd3-brush': 'd3',
+      'd3-scale': 'd3',
+      'd3-transition': 'd3',
+      'd3-zoom': 'd3',
+    },
     plugins: outputPlugins,
     sourcemap: true,
   });
@@ -96,7 +114,9 @@ exports.build = gulp.series([
   exports.clean,
   gulp.parallel([
     bundleJSLib,
-    /*bundleJSLibMin, bundleJSLibMinZipped,*/ copyHTMLFiles,
+    bundleJSLibMin,
+    bundleJSLibMinZipped,
+    copyHTMLFiles,
     copyExampleScripts,
   ]),
 ]);

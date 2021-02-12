@@ -19,6 +19,7 @@
   <body>
     <h1>Bar Chart</h1>
     <div id="chart"></div>
+    <script src="./d3/d3.v6.js"></script>
     <script src="../respvis.js"></script>
     <script type="module">
       import data from './data/austrian-cities.js';
@@ -56,7 +57,7 @@
 
         bars
           .select(`rect:nth-of-type(${barIndex + 1})`)
-          .attr('fill', hover ? respVis.chroma.hex(barColor).brighten(0.5).hex() : null);
+          .attr('fill', hover ? respVis.brighten(barColor, 0.5) : null);
 
         cityAxis
           .select(`.tick:nth-of-type(${barIndex + 1})`)
@@ -119,7 +120,7 @@
       let cityAxis, populationAxis;
       chart
         .root()
-        .layout('grid-template', '1fr auto / auto 1fr')
+        .layout('grid-template', '1fr 15 auto / auto 1fr')
         .layout('padding-horizontal', 20)
         .layout('padding-top', 20)
         .onConfigure((svg) => {

@@ -2,10 +2,7 @@ export * from './colors';
 export * as utils from './utils';
 // export * from './array';
 
-import chroma from 'chroma-js';
-export { chroma };
-
-export * as uuid from 'uuid';
+export { v4 as uuid } from 'uuid';
 
 // export * from './clip';
 export * from './attributes';

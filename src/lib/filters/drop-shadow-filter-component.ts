@@ -19,7 +19,7 @@ export class DropShadowFilterComponent extends ChildrenMixin(BaseComponent) {
   ) {
     super('filter');
     this.classed('drop-shadow', true)
-      .attr('id', uuid.v4())
+      .attr('id', uuid())
       .attr('x', rect.x)
       .attr('y', rect.y)
       .attr('width', rect.width)

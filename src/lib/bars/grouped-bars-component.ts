@@ -200,10 +200,10 @@ export class GroupedBarsComponent extends BaseComponent implements GroupedBars {
       .selectAll('.bar-group')
       .data(groupedBarData)
       .join(this._onCreateBarGroups)
-      .selectAll('.bar')
+      .selectAll<SVGRectElement, GroupedBarData>('.bar')
       .data(
         (d) => d,
-        (d: GroupedBarData) => d.key
+        (d) => d.key
       )
       .join(this._onCreateBars, undefined, this._onRemoveBars)
       .call(this._onUpdateBars);
@@ -220,10 +220,10 @@ export class GroupedBarsComponent extends BaseComponent implements GroupedBars {
       .selectAll('.bar-group')
       .data(groupedBarData)
       .join(this._onCreateBarGroups)
-      .selectAll('.bar')
+      .selectAll<SVGRectElement, GroupedBarData>('.bar')
       .data(
         (d) => d,
-        (d: GroupedBarData) => d.key
+        (d) => d.key
       )
       .join(this._onCreateBars, undefined, this._onRemoveBars)
       .transition()

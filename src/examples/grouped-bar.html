@@ -20,6 +20,7 @@
     <h1>Grouped Bar Chart</h1>
 
     <div id="chart"></div>
+    <script src="./d3/d3.v6.js"></script>
     <script src="../respvis.js"></script>
     <script type="module">
       // data
@@ -89,6 +90,7 @@
               .attr('transform', 'translate(0, -4)');
         });
 
+
       // legend
       const legend = respVis
         .legend(years.length)
@@ -96,6 +98,7 @@
         .on('mouseover', (event, data) => hoverLegendSwatch(data.childIndex, true))
         .on('mouseout', (event, data) => hoverLegendSwatch(data.childIndex, false))
         .on('click', (event, data) => clickLegendSwatch(data.childIndex))
+        .layout('place-content', 'start stretch')
         .call((legend) =>
           legend.swatches().forEach((swatch, i) => {
             swatch.rect().attr('fill', barColors[i]);

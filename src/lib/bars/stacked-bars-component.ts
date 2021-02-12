@@ -214,10 +214,10 @@ export class StackedBarsComponent extends BaseComponent implements StackedBars {
       .selectAll('.bar-stack')
       .data(barData)
       .join(this._onCreateBarStacks)
-      .selectAll('.bar')
+      .selectAll<SVGRectElement, StackedBarData>('.bar')
       .data(
         (d) => d,
-        (d: StackedBarData) => d.key
+        (d) => d.key
       )
       .join(this._onCreateBars, undefined, this._onRemoveBars)
       .call(this._onUpdateBars);
@@ -234,10 +234,10 @@ export class StackedBarsComponent extends BaseComponent implements StackedBars {
       .selectAll('.bar-stack')
       .data(groupedBarData)
       .join(this._onCreateBarStacks)
-      .selectAll('.bar')
+      .selectAll<SVGRectElement, StackedBarData>('.bar')
       .data(
         (d) => d,
-        (d: StackedBarData) => d.key
+        (d) => d.key
       )
       .join(this._onCreateBars, undefined, this._onRemoveBars)
       .transition()
