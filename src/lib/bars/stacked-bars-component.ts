@@ -60,6 +60,7 @@ export class StackedBarsComponent extends BaseComponent implements StackedBars {
     this._onCreateBarStacks = createBarStacks;
     this._onUpdateBars = (selection) =>
       updateStackedBars(selection, StackedBarsComponent.defaultColors);
+    this.classed('bars', true).classed('stacked-bars', true).attr('layout', '0, 0, 600, 400');
   }
 
   mainValues(): any[];

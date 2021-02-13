@@ -60,6 +60,7 @@ export class GroupedBarsComponent extends BaseComponent implements GroupedBars {
     this._onCreateBarGroups = createBarGroups;
     this._onUpdateBars = (selection) =>
       updateGroupedBars(selection, GroupedBarsComponent.defaultColors);
+    this.classed('bars', true).classed('grouped-bars', true).attr('layout', '0, 0, 600, 400');
   }
 
   mainValues(): any[];
