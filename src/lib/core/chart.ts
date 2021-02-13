@@ -2,7 +2,6 @@ import { select } from 'd3-selection';
 import debounce from 'debounce';
 import { applyLayoutTransforms, computeLayout } from './layout/layout';
 import { SVGComponent } from './components/svg-component';
-import { rectFromString, rectToString } from './rect';
 import { GroupComponent } from './components/group-component';
 
 export type ConfigureFunction = (chart: Chart) => void;
@@ -10,15 +9,11 @@ export type ConfigureFunction = (chart: Chart) => void;
 export class Chart {
   private _svg: SVGComponent;
   private _rootGroup: GroupComponent;
-  // private _layoutDuration: number;
-  // private _lastLayoutTime: number;
 
   constructor() {
     this._svg = new SVGComponent()
       .layout('grid-template', '1fr / 1fr')
       .children([(this._rootGroup = new GroupComponent().layout('grid-area', '1 / 1 / 2 / 2'))]);
-
-    // this._layoutDuration = 0;
 
     this._svg.selection().classed('chart', true).style('width', '100%').style('height', '100%');
   }
@@ -27,7 +22,9 @@ export class Chart {
     select(containerSelector).append(() => this._svg.selection().node());
     this._svg.mount(this);
 
-    this.transition();
+    // first transition to initialize layout
+    // second transition to actually configure with correct layout
+    this.transition().transition();
 
     window.addEventListener('resize', () => this.render());
     window.addEventListener(
