@@ -45,69 +45,67 @@
         .crossScale(populationScale)
         .attr('fill', barColor)
         .on('mouseover', (e, d) => hoverBar(d.mainIndex, true))
-        .on('mouseout', (e, d) => hoverBar(d.mainIndex, false))
-        .onConfigure((bars) => {
-          bars.orientation(respVis.BarOrientation.Horizontal);
-          if (window.matchMedia(wideMediaQuery).matches)
-            bars.orientation(respVis.BarOrientation.Vertical);
-        });
+        .on('mouseout', (e, d) => hoverBar(d.mainIndex, false));
 
       const barLabels = respVis
         .barLabels(bars)
         .labels(populations.map(populationFormatter))
         .attr('pointer-events', 'none')
-        .attr('font-size', 0)
-        .onConfigure((barLabels) => {
-          barLabels
-            .widthPercent(0)
-            .heightPercent(0.5)
-            .attr('dominant-baseline', 'middle')
-            .attr('text-anchor', 'start')
-            .attr('transform', 'translate(4, 0)');
-          if (window.matchMedia(wideMediaQuery).matches)
-            barLabels
-              .widthPercent(0.5)
-              .heightPercent(1)
-              .attr('dominant-baseline', 'auto')
-              .attr('text-anchor', 'middle')
-              .attr('transform', 'translate(0, -4)');
-        });
+        .attr('font-size', 0);
 
       barChart.drawArea().children([bars, barLabels]);
 
       let cityAxis, populationAxis;
       barChart.onConfigure((c) => {
-        c.yAxis()
-          .ticks()
-          .scale(cityScale)
-          .onConfigureAxis((yAxis) => {});
-        c.xAxis()
-          .ticks()
-          .scale(populationScale)
-          .onConfigureAxis((xAxis) => xAxis.tickFormat(populationFormatter));
-        c.yAxis().title().text('Cities');
-        c.xAxis().title().text('Population');
-        cityAxis = c.yAxis();
-        populationAxis = c.xAxis();
+        bars.orientation(respVis.BarOrientation.Horizontal);
+        barLabels.call(configureHorizontalBarLabel);
+        populationAxis = c.xAxis().call(configurePopulationAxis);
+        cityAxis = c.yAxis().call(configureCityAxis);
         if (window.matchMedia(wideMediaQuery).matches) {
-          c.yAxis()
-            .ticks()
-            .scale(populationScale)
-            .onConfigureAxis((yAxis) => yAxis.tickFormat(populationFormatter));
-          c.xAxis()
-            .ticks()
-            .scale(cityScale)
-            .onConfigureAxis((xAxis) => {});
-          c.yAxis().title().text('Population');
-          c.xAxis().title().text('Cities');
-          cityAxis = c.xAxis();
-          populationAxis = c.yAxis();
+          bars.orientation(respVis.BarOrientation.Vertical);
+          barLabels.call(configureVerticalBarLabel);
+          cityAxis = c.xAxis().call(configureCityAxis);
+          populationAxis = c.yAxis().call(configurePopulationAxis);
         }
       });
 
       const chart = respVis.chart();
       chart.root().children([barChart]);
       chart.mount('#chart');
+
+      function configureCityAxis(axis) {
+        axis
+          .ticks()
+          .scale(cityScale)
+          .onConfigureAxis((axis) => {});
+        axis.title().text('Cities');
+      }
+
+      function configurePopulationAxis(axis) {
+        axis
+          .ticks()
+          .scale(populationScale)
+          .onConfigureAxis((axis) => axis.tickFormat(populationFormatter));
+        axis.title().text('Population');
+      }
+
+      function configureVerticalBarLabel(barLabels) {
+        barLabels
+          .widthPercent(0.5)
+          .heightPercent(1)
+          .attr('dominant-baseline', 'auto')
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(0, -4)');
+      }
+
+      function configureHorizontalBarLabel(barLabels) {
+        barLabels
+          .widthPercent(0)
+          .heightPercent(0.5)
+          .attr('dominant-baseline', 'middle')
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(4, 0)');
+      }
 
       function hoverBar(barIndex, hover) {
         barLabels
