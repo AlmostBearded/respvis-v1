@@ -15,6 +15,7 @@ export class LeftAxisComponent extends ChildrenMixin(BaseComponent) {
         titleTextAttributes(new TextComponent())
           .layout('grid-area', '1 / 1 / 2 / 2')
           .layout('place-self', 'center')
+          .layout('padding-right', 5)
       )),
     ]);
   }

@@ -13,7 +13,8 @@ export class RightAxisComponent extends ChildrenMixin(BaseComponent) {
       (this._ticks = new RightTicksComponent().layout('grid-area', '1 / 1 / 2 / 2')),
       (this._title = verticalTextAttributes(titleTextAttributes(new TextComponent()))
         .layout('grid-area', '1 / 2 / 2 / 3')
-        .layout('place-self', 'center')),
+        .layout('place-self', 'center')
+        .layout('padding-left', 5)),
     ]);
   }
 

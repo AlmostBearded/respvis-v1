@@ -12,7 +12,8 @@ export class BottomAxisComponent extends ChildrenMixin(BaseComponent) {
       (this._ticks = new BottomTicksComponent().layout('grid-area', '1 / 1 / 2 / 2')),
       (this._title = titleTextAttributes(new TextComponent())
         .layout('grid-area', '2 / 1 / 3 / 2')
-        .layout('place-self', 'center')),
+        .layout('place-self', 'center')
+        .layout('padding-top', 5)),
     ]);
   }
 

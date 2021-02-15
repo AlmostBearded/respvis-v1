@@ -34,6 +34,8 @@
       const cityScale = respVis.bandScale().padding(0.1);
       const populationScale = respVis.linearScale().domain([0, maxPopulation]).nice();
 
+      const barChart = respVis.cartesianChart();
+
       const barColor = respVis.BarsComponent.defaultColor;
       const bars = respVis
         .bars()
@@ -49,20 +51,6 @@
           if (window.matchMedia(wideMediaQuery).matches)
             bars.orientation(respVis.BarOrientation.Vertical);
         });
-
-      function hoverBar(barIndex, hover) {
-        barLabels
-          .select(`text:nth-of-type(${barIndex + 1}`)
-          .attr('font-size', hover ? '1rem' : null);
-
-        bars
-          .select(`rect:nth-of-type(${barIndex + 1})`)
-          .attr('fill', hover ? respVis.brighten(barColor, 0.5) : null);
-
-        cityAxis
-          .select(`.tick:nth-of-type(${barIndex + 1})`)
-          .attr('text-decoration', hover ? 'underline' : null);
-      }
 
       const barLabels = respVis
         .barLabels(bars)
@@ -85,59 +73,55 @@
               .attr('transform', 'translate(0, -4)');
         });
 
-      const leftAxis = respVis.leftAxis().onConfigure((axis) => {
-        axis
+      barChart.drawArea().children([bars, barLabels]);
+
+      let cityAxis, populationAxis;
+      barChart.onConfigure((c) => {
+        c.yAxis()
           .ticks()
           .scale(cityScale)
-          .onConfigureAxis((axis) => {});
-        axis.title().layout('padding-right', 5).text('Cities');
-        if (window.matchMedia(wideMediaQuery).matches) {
-          axis
-            .ticks()
-            .scale(populationScale)
-            .onConfigureAxis((axis) => axis.tickFormat(populationFormatter));
-          axis.title().text('Population');
-        }
-      });
-
-      const bottomAxis = respVis.bottomAxis().onConfigure((axis) => {
-        axis
+          .onConfigureAxis((yAxis) => {});
+        c.xAxis()
           .ticks()
           .scale(populationScale)
-          .onConfigureAxis((axis) => axis.tickFormat(populationFormatter));
-        axis.title().layout('padding-top', 5).text('Population');
+          .onConfigureAxis((xAxis) => xAxis.tickFormat(populationFormatter));
+        c.yAxis().title().text('Cities');
+        c.xAxis().title().text('Population');
+        cityAxis = c.yAxis();
+        populationAxis = c.xAxis();
         if (window.matchMedia(wideMediaQuery).matches) {
-          axis
+          c.yAxis()
+            .ticks()
+            .scale(populationScale)
+            .onConfigureAxis((yAxis) => yAxis.tickFormat(populationFormatter));
+          c.xAxis()
             .ticks()
             .scale(cityScale)
-            .onConfigureAxis((axis) => {});
-          axis.title().text('Cities');
+            .onConfigureAxis((xAxis) => {});
+          c.yAxis().title().text('Population');
+          c.xAxis().title().text('Cities');
+          cityAxis = c.xAxis();
+          populationAxis = c.yAxis();
         }
       });
 
       const chart = respVis.chart();
+      chart.root().children([barChart]);
+      chart.mount('#chart');
 
-      let cityAxis, populationAxis;
-      chart
-        .root()
-        .layout('grid-template', '1fr 15 auto / auto 1fr')
-        .layout('padding-horizontal', 20)
-        .layout('padding-vertical', 20)
-        .onConfigure((svg) => {
-          cityAxis = leftAxis;
-          populationAxis = bottomAxis;
-          if (window.matchMedia(wideMediaQuery).matches) {
-            cityAxis = bottomAxis;
-            populationAxis = leftAxis;
-          }
-        })
-        .children([
-          bars.layout('grid-area', '1 / 2 / 2 / 3'),
-          barLabels.layout('grid-area', '1 / 2 / 2 / 3'),
-          leftAxis.layout('grid-area', '1 / 1 / 2 / 2'),
-          bottomAxis.layout('grid-area', '2 / 2 / 3 / 3'),
-        ]),
-        chart.mount('#chart');
+      function hoverBar(barIndex, hover) {
+        barLabels
+          .select(`text:nth-of-type(${barIndex + 1}`)
+          .attr('font-size', hover ? '1rem' : null);
+
+        bars
+          .select(`rect:nth-of-type(${barIndex + 1})`)
+          .attr('fill', hover ? respVis.brighten(barColor, 0.5) : null);
+
+        cityAxis
+          .select(`.tick:nth-of-type(${barIndex + 1})`)
+          .attr('text-decoration', hover ? 'underline' : null);
+      }
     </script>
   </body>
 </html>

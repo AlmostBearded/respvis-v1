@@ -7,13 +7,14 @@ export class TopAxisComponent extends ChildrenMixin(BaseComponent) {
   private _title: TextComponent;
 
   constructor() {
-    super('t');
+    super('g');
 
     this.layout('grid-template', 'auto auto / auto').children([
       (this._ticks = new TopTicksComponent().layout('grid-area', '2 / 1 / 3 / 2')),
       (this._title = titleTextAttributes(new TextComponent())
         .layout('grid-area', '1 / 1 / 2 / 2')
-        .layout('place-self', 'center')),
+        .layout('place-self', 'center')
+        .layout('padding-bottom', 5)),
     ]);
   }
 

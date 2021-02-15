@@ -6,3 +6,4 @@ export * from './filters';
 export * from './points';
 export * from './brush';
 export * from './zoom';
+export * from './cartesian-chart';
