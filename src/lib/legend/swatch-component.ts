@@ -7,7 +7,7 @@ export class SwatchComponent extends ChildrenMixin(BaseComponent) {
 
   constructor() {
     super('g');
-    this.layout('grid-template', `auto / auto auto`).layout('padding', 10);
+    this.layout('grid-template', `auto / auto auto`).layout('margin', 10);
     this.children([
       (this._rect = new RectComponent()
         .layout('grid-area', '1 / 1 / 2 / 2')
@@ -17,7 +17,7 @@ export class SwatchComponent extends ChildrenMixin(BaseComponent) {
       (this._label = new TextComponent()
         .layout('grid-area', '1 / 2 / 2 / 3')
         .layout('place-self', 'center start')
-        .layout('padding-left', 5)),
+        .layout('margin-left', 5)),
     ]);
   }
 

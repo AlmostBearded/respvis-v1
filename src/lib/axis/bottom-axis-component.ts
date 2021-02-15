@@ -13,7 +13,7 @@ export class BottomAxisComponent extends ChildrenMixin(BaseComponent) {
       (this._title = titleTextAttributes(new TextComponent())
         .layout('grid-area', '2 / 1 / 3 / 2')
         .layout('place-self', 'center')
-        .layout('padding-top', 5)),
+        .layout('margin-top', 5)),
     ]);
   }
 

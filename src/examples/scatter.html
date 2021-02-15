@@ -80,7 +80,7 @@
         .ticks()
         .scale(priceScale)
         .onConfigureAxis((axis) => axis.tickFormat(priceFormatter));
-      yAxis.title().layout('padding-right', 5).text('Price');
+      yAxis.title().layout('margin-right', 5).text('Price');
 
       // x axis
       const xAxis = respVis.bottomAxis();
@@ -88,13 +88,13 @@
         .ticks()
         .scale(areaScale)
         .onConfigureAxis((axis) => axis.tickFormat(areaFormatter).ticks(3));
-      xAxis.title().layout('padding-top', 5).text('Area');
+      xAxis.title().layout('margin-top', 5).text('Area');
 
       // chart
       chart
         .root()
         .layout('grid-template', '1fr auto / auto 1fr')
-        .layout('padding', 20)
+        .layout('margin', 20)
         .children([
           zoom
             .layout('grid-area', '1 / 2 / 2 / 3')

@@ -55,6 +55,13 @@ export interface LayoutProperties {
   width?: number | string;
   height?: number | string;
   display?: 'grid';
+  'margin-left'?: number;
+  'margin-right'?: number;
+  'margin-top'?: number;
+  'margin-bottom'?: number;
+  'margin-horizontal'?: number;
+  'margin-vertical'?: number;
+  margin?: number;
   'padding-left'?: number;
   'padding-right'?: number;
   'padding-top'?: number;
@@ -129,7 +136,6 @@ export function computeLayout(element: LaidOutElement, size: ISize) {
 
   // 2nd Phase
   setCalculatedDimensions(rootLayoutNode);
-  // applyPadding(element, rootLayoutNode);
   faberComputeLayout(rootLayoutNode);
 
   setLayoutAttributes(element, rootLayoutNode);
@@ -222,29 +228,29 @@ function parseLayoutStyle(element: LaidOutElement): LayoutStyle | null {
   return style;
 }
 
-function parsePadding(
+function parseMargin(
   element: LaidOutElement
 ): { left: number; right: number; top: number; bottom: number } {
   return {
     left:
-      element.__layout?.['padding-left'] ||
-      element.__layout?.['padding-horizontal'] ||
-      element.__layout?.['padding'] ||
+      element.__layout?.['margin-left'] ||
+      element.__layout?.['margin-horizontal'] ||
+      element.__layout?.['margin'] ||
       0,
     right:
-      element.__layout?.['padding-right'] ||
-      element.__layout?.['padding-horizontal'] ||
-      element.__layout?.['padding'] ||
+      element.__layout?.['margin-right'] ||
+      element.__layout?.['margin-horizontal'] ||
+      element.__layout?.['margin'] ||
       0,
     top:
-      element.__layout?.['padding-top'] ||
-      element.__layout?.['padding-vertical'] ||
-      element.__layout?.['padding'] ||
+      element.__layout?.['margin-top'] ||
+      element.__layout?.['margin-vertical'] ||
+      element.__layout?.['margin'] ||
       0,
     bottom:
-      element.__layout?.['padding-bottom'] ||
-      element.__layout?.['padding-vertical'] ||
-      element.__layout?.['padding'] ||
+      element.__layout?.['margin-bottom'] ||
+      element.__layout?.['margin-vertical'] ||
+      element.__layout?.['margin'] ||
       0,
   };
 }
@@ -372,26 +378,26 @@ function parseElementHierarchy(
     style.gridTemplateColumns = applyContentPlacementToGridTemplate(justify, columns);
   }
 
-  const padding = parsePadding(element);
-  if (padding.left > 0 || padding.right > 0 || padding.top > 0 || padding.bottom > 0) {
-    const paddingLayoutNode: LayoutNode = {
+  const margin = parseMargin(element);
+  if (margin.left > 0 || margin.right > 0 || margin.top > 0 || margin.bottom > 0) {
+    const marginLayoutNode: LayoutNode = {
       style: {
         ...layoutNode.style,
-        gridTemplateRows: `${padding.top} 1fr ${padding.bottom}`,
-        gridTemplateColumns: `${padding.left} 1fr ${padding.right}`,
+        gridTemplateRows: `${margin.top} 1fr ${margin.bottom}`,
+        gridTemplateColumns: `${margin.left} 1fr ${margin.right}`,
         display: 'grid',
       },
       layout: { x: 0, y: 0, width: 0, height: 0 },
       children: [layoutNode],
     };
-    delete paddingLayoutNode.style.width;
-    delete paddingLayoutNode.style.height;
+    delete marginLayoutNode.style.width;
+    delete marginLayoutNode.style.height;
     layoutNode.style.gridRowStart = 2;
     layoutNode.style.gridRowEnd = 3;
     layoutNode.style.gridColumnStart = 2;
     layoutNode.style.gridColumnEnd = 3;
 
-    layoutNode = paddingLayoutNode;
+    layoutNode = marginLayoutNode;
   }
 
   return layoutNode;
@@ -411,8 +417,8 @@ function setLayoutAttributes(element: LaidOutElement, layoutNode: LayoutNode): b
   // todo: set layout as __layout property
   const rect = layoutNode.layout;
 
-  const padding = parsePadding(element);
-  if (padding.left > 0 || padding.right > 0 || padding.top > 0 || padding.bottom > 0) {
+  const margin = parseMargin(element);
+  if (margin.left > 0 || margin.right > 0 || margin.top > 0 || margin.bottom > 0) {
     layoutNode = layoutNode.children[0];
     const childRect = layoutNode.layout;
     rect.x += childRect.x;

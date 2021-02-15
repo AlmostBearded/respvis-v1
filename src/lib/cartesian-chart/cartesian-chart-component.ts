@@ -1,21 +1,22 @@
 import { BottomAxisComponent, LeftAxisComponent } from '../axis';
-import { GroupComponent, SVGComponent } from '../core';
+import { BaseComponent, GroupComponent, SVGComponent } from '../core';
+import { ChildrenMixin } from '../core/mixins/children-mixin';
 
-export class CartesianChartComponent extends GroupComponent {
+export class CartesianChartComponent extends ChildrenMixin(BaseComponent) {
   private _xAxis: BottomAxisComponent;
   private _yAxis: LeftAxisComponent;
   private _drawArea: SVGComponent;
 
   constructor() {
-    super();
+    super('g');
 
     this._xAxis = new BottomAxisComponent();
     this._yAxis = new LeftAxisComponent();
     this._drawArea = new SVGComponent();
 
     this.layout('grid-template', '1fr auto / auto 1fr')
-      .layout('padding-horizontal', 20)
-      .layout('padding-vertical', 20)
+      .layout('margin-horizontal', 20)
+      .layout('margin-vertical', 20)
       .children([
         this._drawArea.layout('grid-area', '1 / 2 / 2 / 3'),
         this._yAxis.layout('grid-area', '1 / 1 / 2 / 2'),

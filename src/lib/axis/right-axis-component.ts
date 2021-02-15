@@ -14,7 +14,7 @@ export class RightAxisComponent extends ChildrenMixin(BaseComponent) {
       (this._title = verticalTextAttributes(titleTextAttributes(new TextComponent()))
         .layout('grid-area', '1 / 2 / 2 / 3')
         .layout('place-self', 'center')
-        .layout('padding-left', 5)),
+        .layout('margin-left', 5)),
     ]);
   }
 

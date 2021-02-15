@@ -119,7 +119,7 @@
           .onConfigureAxis((axis) => {})
           .on('mouseover', (event, data) => hoverLocationAxisTick(data.tickIndex, true))
           .on('mouseout', (event, data) => hoverLocationAxisTick(data.tickIndex, false));
-        axis.title().layout('padding-right', 5).text('Locations');
+        axis.title().layout('margin-right', 5).text('Locations');
         if (window.matchMedia(wideMediaQuery).matches) {
           axis
             .ticks()
@@ -141,7 +141,7 @@
           .onConfigureAxis((axis) => axis.tickFormat(revenueFormatter).ticks(5))
           .on('mouseover', null)
           .on('mouseout', null);
-        axis.title().layout('padding-top', 5).text('Revenues');
+        axis.title().layout('margin-top', 5).text('Revenues');
         if (window.matchMedia(wideMediaQuery).matches) {
           axis
             .ticks()
@@ -159,16 +159,16 @@
       const chart = respVis.chart();
       chart
         .root()
-        .layout('padding-horizontal', 20)
-        .layout('padding-top', 5)
+        .layout('margin-horizontal', 20)
+        .layout('margin-top', 5)
         .onConfigure((root) => {
-          root.layout('grid-template', 'auto 1fr auto / auto 1fr').layout('padding-top', 20);
+          root.layout('grid-template', 'auto 1fr auto / auto 1fr').layout('margin-top', 20);
           bars.layout('grid-area', '2 / 2 / 3 / 3');
           barLabels.layout('grid-area', '2 / 2 / 3 / 3');
           legend
             .layout('grid-area', '1 / 2 / 2 / 3')
-            .layout('padding-bottom', 10)
-            .layout('padding-left', 0);
+            .layout('margin-bottom', 10)
+            .layout('margin-left', 0);
           leftAxis.layout('grid-area', '2 / 1 / 3 / 2');
           bottomAxis.layout('grid-area', '3 / 2 / 4 / 3');
           locationAxis = leftAxis;
@@ -181,8 +181,8 @@
             barLabels.layout('grid-area', '1 / 2 / 2 / 3');
             legend
               .layout('grid-area', '1 / 3 / 2 / 4')
-              .layout('padding-bottom', 0)
-              .layout('padding-left', 10);
+              .layout('margin-bottom', 0)
+              .layout('margin-left', 10);
             leftAxis.layout('grid-area', '1 / 1 / 2 / 2');
             bottomAxis.layout('grid-area', '2 / 2 / 3 / 3');
           }
