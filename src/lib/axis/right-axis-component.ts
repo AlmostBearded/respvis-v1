@@ -9,13 +9,18 @@ export class RightAxisComponent extends ChildrenMixin(BaseComponent) {
   constructor() {
     super('g');
 
-    this.layout('grid-template', 'auto / auto auto').children([
-      (this._ticks = new RightTicksComponent().layout('grid-area', '1 / 1 / 2 / 2')),
-      (this._title = verticalTextAttributes(titleTextAttributes(new TextComponent()))
-        .layout('grid-area', '1 / 2 / 2 / 3')
-        .layout('place-self', 'center')
-        .layout('margin-left', 5)),
-    ]);
+    this.layout('grid-template', 'auto / auto auto')
+      .child(
+        'ticks',
+        (this._ticks = new RightTicksComponent().layout('grid-area', '1 / 1 / 2 / 2'))
+      )
+      .child(
+        'title',
+        (this._title = verticalTextAttributes(titleTextAttributes(new TextComponent()))
+          .layout('grid-area', '1 / 2 / 2 / 3')
+          .layout('place-self', 'center')
+          .layout('margin-left', 5))
+      );
   }
 
   ticks(): RightTicksComponent {

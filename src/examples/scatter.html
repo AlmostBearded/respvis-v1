@@ -66,7 +66,7 @@
       const drawAreaClipPath = respVis
         .clipPath()
         .attr('id', 'drawAreaClipPath')
-        .children([respVis.rect().attr('width', '100%').attr('height', '100%')]);
+        .child('rect', respVis.rect().attr('width', '100%').attr('height', '100%'));
 
       // zoom
       const zoom = respVis
@@ -95,13 +95,15 @@
         .root()
         .layout('grid-template', '1fr auto / auto 1fr')
         .layout('margin', 20)
-        .children([
+        .child(
+          'zoom',
           zoom
             .layout('grid-area', '1 / 2 / 2 / 3')
-            .children([respVis.defs().children([drawAreaClipPath]), points]),
-          yAxis.layout('grid-area', '1 / 1 / 2 / 2'),
-          xAxis.layout('grid-area', '2 / 2 / 3 / 3'),
-        ]);
+            .child('defs', respVis.defs().child('draw-area-clip-path', drawAreaClipPath))
+            .child('points', points)
+        )
+        .child('y-axis', yAxis.layout('grid-area', '1 / 1 / 2 / 2'))
+        .child('x-axis', xAxis.layout('grid-area', '2 / 2 / 3 / 3'));
 
       chart.mount('#chart');
 

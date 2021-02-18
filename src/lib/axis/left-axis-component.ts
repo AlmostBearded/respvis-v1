@@ -9,15 +9,17 @@ export class LeftAxisComponent extends ChildrenMixin(BaseComponent) {
   constructor() {
     super('g');
 
-    this.layout('grid-template', 'auto / auto auto').children([
-      (this._ticks = new LeftTicksComponent().layout('grid-area', '1 / 2 / 2 / 3')),
-      (this._title = verticalTextAttributes(
-        titleTextAttributes(new TextComponent())
-          .layout('grid-area', '1 / 1 / 2 / 2')
-          .layout('place-self', 'center')
-          .layout('margin-right', 5)
-      )),
-    ]);
+    this.layout('grid-template', 'auto / auto auto')
+      .child('ticks', (this._ticks = new LeftTicksComponent().layout('grid-area', '1 / 2 / 2 / 3')))
+      .child(
+        'title',
+        (this._title = verticalTextAttributes(
+          titleTextAttributes(new TextComponent())
+            .layout('grid-area', '1 / 1 / 2 / 2')
+            .layout('place-self', 'center')
+            .layout('margin-right', 5)
+        ))
+      );
   }
 
   ticks(): LeftTicksComponent {

@@ -48,7 +48,7 @@ export class ZoomComponent extends SVGComponent {
       [0, 0],
       [1, 1],
     ];
-    this.children([this._rect]);
+    this.child('rect', this._rect);
     this.selection().call(this._zoomBehavior);
   }
 
@@ -75,17 +75,6 @@ export class ZoomComponent extends SVGComponent {
   }
 
   // todo: add further missing methods
-
-  children(): Component[];
-  children(children: Component[]): this;
-  children(children?: Component[]): Component[] | this {
-    if (children === undefined) return super.children();
-    if (children.indexOf(this._rect) < 0) {
-      children.unshift(this._rect);
-    }
-    super.children(children);
-    return this;
-  }
 
   afterLayout(): this {
     super.afterLayout();

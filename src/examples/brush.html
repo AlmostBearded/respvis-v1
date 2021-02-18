@@ -70,14 +70,14 @@
       const drawAreaClipPath = respVis
         .clipPath()
         .attr('id', 'drawAreaClipPath')
-        .children([respVis.rect().attr('width', '100%').attr('height', '100%')]);
+        .child('rect', respVis.rect().attr('width', '100%').attr('height', '100%'));
 
       // draw area
-      const drawArea = respVis.svg().children([
-        respVis.defs().children([drawAreaClipPath]),
-        brush, // brush before points so that points can still be hovered
-        points,
-      ]);
+      const drawArea = respVis
+        .svg()
+        .child('defs', respVis.defs().child('draw-area-clip-path', drawAreaClipPath))
+        .child('brush', brush) // brush before points so that points can still be hovered
+        .child('points', points);
 
       // y axis
       const yAxis = respVis.leftAxis();
@@ -101,11 +101,9 @@
         .root()
         .layout('grid-template', '1fr auto / auto 1fr')
         .layout('margin', 20)
-        .children([
-          drawArea.layout('grid-area', '1 / 2 / 2 / 3'),
-          yAxis.layout('grid-area', '1 / 1 / 2 / 2'),
-          xAxis.layout('grid-area', '2 / 2 / 3 / 3'),
-        ]);
+        .child('draw-area', drawArea.layout('grid-area', '1 / 2 / 2 / 3'))
+        .child('y-axis', yAxis.layout('grid-area', '1 / 1 / 2 / 2'))
+        .child('x-axis', xAxis.layout('grid-area', '2 / 2 / 3 / 3'));
       chart.mount('#chart');
 
       function zoomToRect(rect) {

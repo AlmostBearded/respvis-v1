@@ -49,7 +49,7 @@
       // filters
       const defs = respVis.defs();
       const labelDropShadow = respVis.dropShadowFilter({ x: 0, y: 0 }, 3);
-      defs.children([labelDropShadow]);
+      defs.child('label-drop-shadow', labelDropShadow);
 
       // bars
       const barColors = respVis.StackedBarsComponent.defaultColors;
@@ -180,7 +180,12 @@
             bottomAxis.layout('grid-area', '2 / 2 / 3 / 3');
           }
         })
-        .children([defs, bars, barLabels, legend, leftAxis, bottomAxis]);
+        .child('defs', defs)
+        .child('bars', bars)
+        .child('bar-labels', barLabels)
+        .child('legend', legend)
+        .child('left-axis', leftAxis)
+        .child('bottom-axis', bottomAxis);
       chart.mount('#chart');
 
       function platformIndexToBarIndex(platformIndex) {

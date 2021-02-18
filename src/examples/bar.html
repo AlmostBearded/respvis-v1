@@ -34,8 +34,6 @@
       const cityScale = respVis.bandScale().padding(0.1);
       const populationScale = respVis.linearScale().domain([0, maxPopulation]).nice();
 
-      const barChart = respVis.cartesianChart();
-
       const barColor = respVis.BarsComponent.defaultColor;
       const bars = respVis
         .bars()
@@ -53,7 +51,8 @@
         .attr('pointer-events', 'none')
         .attr('font-size', 0);
 
-      barChart.drawArea().children([bars, barLabels]);
+      const barChart = respVis.cartesianChart();
+      barChart.drawArea().child('bars', bars).child('bar-labels', barLabels);
 
       let cityAxis, populationAxis;
       barChart.onConfigure((c) => {
@@ -70,7 +69,7 @@
       });
 
       const chart = respVis.chart();
-      chart.root().children([barChart]);
+      chart.root().child('bar-chart', barChart);
       chart.mount('#chart');
 
       function configureCityAxis(axis) {

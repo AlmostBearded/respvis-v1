@@ -24,26 +24,36 @@ export class DropShadowFilterComponent extends ChildrenMixin(BaseComponent) {
       .attr('y', rect.y)
       .attr('width', rect.width)
       .attr('height', rect.height);
-    this.children([
+    this.child(
+      'offset',
       (this._offset = new OffsetComponent()
         .attr('in', 'SourceGraphic')
         .attr('result', 'offOut')
         .attr('dx', offset.x)
-        .attr('dy', offset.y)),
-      (this._colorMatrix = new ColorMatrixComponent()
-        .attr('result', 'matrixOut')
-        .attr('in', 'offOut')
-        .attr('type', 'matrix')
-        .attr('values', '0.1 0 0 0 0 0 0.1 0 0 0 0 0 0.1 0 0 0 0 0 1 0')),
-      (this._blur = new GaussianBlurComponent()
-        .attr('in', 'matrixOut')
-        .attr('result', 'blurOut')
-        .attr('stdDeviation', blurStdDeviation)),
-      (this._blend = new BlendComponent()
-        .attr('in', 'SourceGraphic')
-        .attr('in2', 'blurOut')
-        .attr('mode', 'normal')),
-    ]);
+        .attr('dy', offset.y))
+    )
+      .child(
+        'color-matrix',
+        (this._colorMatrix = new ColorMatrixComponent()
+          .attr('result', 'matrixOut')
+          .attr('in', 'offOut')
+          .attr('type', 'matrix')
+          .attr('values', '0.1 0 0 0 0 0 0.1 0 0 0 0 0 0.1 0 0 0 0 0 1 0'))
+      )
+      .child(
+        'blur',
+        (this._blur = new GaussianBlurComponent()
+          .attr('in', 'matrixOut')
+          .attr('result', 'blurOut')
+          .attr('stdDeviation', blurStdDeviation))
+      )
+      .child(
+        'blend',
+        (this._blend = new BlendComponent()
+          .attr('in', 'SourceGraphic')
+          .attr('in2', 'blurOut')
+          .attr('mode', 'normal'))
+      );
   }
 
   offset(): OffsetComponent {

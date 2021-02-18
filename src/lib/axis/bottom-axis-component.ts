@@ -8,13 +8,18 @@ export class BottomAxisComponent extends ChildrenMixin(BaseComponent) {
 
   constructor() {
     super('g');
-    this.layout('grid-template', 'auto auto / auto').children([
-      (this._ticks = new BottomTicksComponent().layout('grid-area', '1 / 1 / 2 / 2')),
-      (this._title = titleTextAttributes(new TextComponent())
-        .layout('grid-area', '2 / 1 / 3 / 2')
-        .layout('place-self', 'center')
-        .layout('margin-top', 5)),
-    ]);
+    this.layout('grid-template', 'auto auto / auto')
+      .child(
+        'ticks',
+        (this._ticks = new BottomTicksComponent().layout('grid-area', '1 / 1 / 2 / 2'))
+      )
+      .child(
+        'title',
+        (this._title = titleTextAttributes(new TextComponent())
+          .layout('grid-area', '2 / 1 / 3 / 2')
+          .layout('place-self', 'center')
+          .layout('margin-top', 5))
+      );
   }
 
   ticks(): BottomTicksComponent {

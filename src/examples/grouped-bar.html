@@ -187,7 +187,11 @@
             bottomAxis.layout('grid-area', '2 / 2 / 3 / 3');
           }
         })
-        .children([bars, barLabels, legend, leftAxis, bottomAxis]);
+        .child('bars', bars)
+        .child('bar-labels', barLabels)
+        .child('legend', legend)
+        .child('left-axis', leftAxis)
+        .child('bottom-axis', bottomAxis);
       chart.mount('#chart');
 
       function legendSwatchIndexToBarIndex(swatchIndex) {

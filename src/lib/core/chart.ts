@@ -13,7 +13,7 @@ export class Chart {
   constructor() {
     this._svg = new SVGComponent()
       .layout('grid-template', '1fr / 1fr')
-      .children([(this._rootGroup = new GroupComponent().layout('grid-area', '1 / 1 / 2 / 2'))]);
+      .child('root', (this._rootGroup = new GroupComponent().layout('grid-area', '1 / 1 / 2 / 2')));
 
     this._svg.selection().classed('chart', true).style('width', '100%').style('height', '100%');
   }

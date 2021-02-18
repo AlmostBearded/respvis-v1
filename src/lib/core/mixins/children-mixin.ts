@@ -11,18 +11,31 @@ export function ChildrenMixin<TBaseComponent extends Constructor<Component>>(
   BaseComponent: TBaseComponent
 ) {
   return class ChildrenMixin extends BaseComponent {
-    private _children: Component[] = [];
+    private _children: Map<string, Component>;
 
-    children(): Component[];
-    children(children: Component[]): this;
-    children(children?: Component[]): Component[] | this {
-      if (children === undefined) return this._children;
-      this._children = children;
+    constructor(...args: any[]) {
+      super(...args);
+      this._children = new Map();
+    }
+
+    child(name: string): Component | undefined;
+    child(name: string, component: null): this;
+    child(name: string, component: Component): this;
+    child(name: string, component?: Component | null): Component | undefined | this {
+      if (component === undefined) return this._children.get(name);
+      else if (component === null) this._children.delete(name);
+      else this._children.set(name, component);
       return this;
+    }
+
+    children(): Component[] {
+      return Array.from(this._children.values());
     }
 
     mount(chart: Chart): this {
       super.mount(chart);
+
+      // todo: ordering of children
       this._children.forEach((c) => {
         this.selection().append(() => c.selection().node());
         c.mount(chart);

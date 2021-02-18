@@ -8,14 +8,16 @@ export class LegendComponent extends GridMixin(ChildrenMixin(BaseComponent)) {
   constructor(swatchCount: number) {
     super('g');
     this.rowCount(swatchCount).columnCount(1).layout('place-content', 'center center');
-    for (let i = 0; i < swatchCount; ++i) this.children().push(new SwatchComponent());
+    for (let i = 0; i < swatchCount; ++i) this.child(`swatch-${i}`, new SwatchComponent());
   }
 
   swatchCount(): number;
   swatchCount(count: number): this;
   swatchCount(count?: number) {
     if (count === undefined) return this.children().length;
-    for (let i = 0; i < count; ++i) this.children([]).children().push(new SwatchComponent());
+    for (let i = count; i < this.children().length; ++i) this.child(`swatch-${i}`, null);
+    for (let i = this.children().length; i < count; ++i)
+      this.child(`swatch-${i}`, new SwatchComponent());
     return this;
   }
 

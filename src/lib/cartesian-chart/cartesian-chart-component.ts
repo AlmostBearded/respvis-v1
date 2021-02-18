@@ -17,11 +17,9 @@ export class CartesianChartComponent extends ChildrenMixin(BaseComponent) {
     this.layout('grid-template', '1fr auto / auto 1fr')
       .layout('margin-horizontal', 20)
       .layout('margin-vertical', 20)
-      .children([
-        this._drawArea.layout('grid-area', '1 / 2 / 2 / 3'),
-        this._yAxis.layout('grid-area', '1 / 1 / 2 / 2'),
-        this._xAxis.layout('grid-area', '2 / 2 / 3 / 3'),
-      ]);
+      .child('draw-area', this._drawArea.layout('grid-area', '1 / 2 / 2 / 3'))
+      .child('y-axis', this._yAxis.layout('grid-area', '1 / 1 / 2 / 2'))
+      .child('x-axis', this._xAxis.layout('grid-area', '2 / 2 / 3 / 3'));
   }
 
   xAxis(): BottomAxisComponent {
