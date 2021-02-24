@@ -24,69 +24,57 @@
     <script type="module">
       import data from './data/austrian-cities.js';
 
-      const cities = data.cities;
-      const populations = data.populations.map((p) => Math.round(p / 1000));
-      const maxPopulation = Math.max(...populations);
-      const populationFormatter = (p) => `${p}k`;
+      const cities = data.cities,
+        cityScale = respVis.bandScale().padding(0.1),
+        populations = data.populations.map((p) => Math.round(p / 1000)),
+        maxPopulation = Math.max(...populations),
+        populationScale = respVis.linearScale().domain([0, maxPopulation]).nice(),
+        populationFormatter = (p) => `${p}k`,
+        wideMediaQuery = 'screen and (min-width: 40rem)',
+        barColor = respVis.BarsComponent.defaultColor;
 
-      const wideMediaQuery = 'screen and (min-width: 40rem)';
+      const barChart = respVis
+          .barChart()
+          .mainValues(cities)
+          .mainScale(cityScale)
+          .mainTitle('Cities')
+          .crossValues(populations)
+          .crossScale(populationScale)
+          .crossTitle('Population'),
+        drawArea = barChart.drawArea(),
+        bars = barChart
+          .bars()
+          .on('mouseover', (e, d) => hoverBar(d.mainIndex, true))
+          .on('mouseout', (e, d) => hoverBar(d.mainIndex, false)),
+        barLabels = respVis
+          .barLabels(() => bars.barData().map((bD) => bD.rect))
+          .labels(populations.map(populationFormatter))
+          .attr('pointer-events', 'none')
+          .attr('font-size', 0);
 
-      const cityScale = respVis.bandScale().padding(0.1);
-      const populationScale = respVis.linearScale().domain([0, maxPopulation]).nice();
+      drawArea.child('bar-labels', barLabels);
 
-      const barColor = respVis.BarsComponent.defaultColor;
-      const bars = respVis
-        .bars()
-        .mainValues(cities)
-        .mainScale(cityScale)
-        .crossValues(populations)
-        .crossScale(populationScale)
-        .attr('fill', barColor)
-        .on('mouseover', (e, d) => hoverBar(d.mainIndex, true))
-        .on('mouseout', (e, d) => hoverBar(d.mainIndex, false));
-
-      const barLabels = respVis
-        .barLabels(bars)
-        .labels(populations.map(populationFormatter))
-        .attr('pointer-events', 'none')
-        .attr('font-size', 0);
-
-      const barChart = respVis.cartesianChart();
-      barChart.drawArea().child('bars', bars).child('bar-labels', barLabels);
-
-      let cityAxis, populationAxis;
-      barChart.onConfigure((c) => {
-        bars.orientation(respVis.BarOrientation.Horizontal);
+      barChart.onConfigure((_) => {
+        barChart.orientation(respVis.BarOrientation.Horizontal);
         barLabels.call(configureHorizontalBarLabel);
-        populationAxis = c.xAxis().call(configurePopulationAxis);
-        cityAxis = c.yAxis().call(configureCityAxis);
         if (window.matchMedia(wideMediaQuery).matches) {
-          bars.orientation(respVis.BarOrientation.Vertical);
+          barChart.orientation(respVis.BarOrientation.Vertical);
           barLabels.call(configureVerticalBarLabel);
-          cityAxis = c.xAxis().call(configureCityAxis);
-          populationAxis = c.yAxis().call(configurePopulationAxis);
         }
+
+        barChart
+          .mainAxis()
+          .ticks()
+          .onConfigureAxis((axis) => {});
+        barChart
+          .crossAxis()
+          .ticks()
+          .onConfigureAxis((axis) => axis.tickFormat(populationFormatter));
       });
 
       const chart = respVis.chart();
       chart.root().child('bar-chart', barChart);
       chart.mount('#chart');
-
-      function configureCityAxis(axis) {
-        axis
-          .ticks()
-          .scale(cityScale)
-          .onConfigureAxis((axis) => {});
-        axis.title().text('Cities');
-      }
-
-      function configurePopulationAxis(axis) {
-        axis
-          .ticks()
-          .scale(populationScale)
-          .onConfigureAxis((axis) => axis.tickFormat(populationFormatter));
-        axis.title().text('Population');
-      }
 
       function configureVerticalBarLabel(barLabels) {
         barLabels
@@ -115,7 +103,9 @@
           .select(`rect:nth-of-type(${barIndex + 1})`)
           .attr('fill', hover ? respVis.brighten(barColor, 0.5) : null);
 
-        cityAxis
+        barChart
+          .mainAxis()
+          .ticks()
           .select(`.tick:nth-of-type(${barIndex + 1})`)
           .attr('text-decoration', hover ? 'underline' : null);
       }

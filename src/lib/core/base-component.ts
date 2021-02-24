@@ -57,8 +57,8 @@ export class BaseComponent implements Component {
     return this;
   }
 
-  call(callback: (component: this) => void): this {
-    callback(this);
+  call(callback: (component: this, ...args: any[]) => void, ...args: any[]): this {
+    callback(this, ...args);
     return this;
   }
 

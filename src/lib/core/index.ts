@@ -9,6 +9,11 @@ export * from './scales';
 export * from './component';
 export * from './base-component';
 
+export * from './mixins/types';
+export * from './mixins/children-mixin';
+export * from './mixins/grid-mixin';
+export * from './mixins/static-size-mixin';
+
 export * from './components/svg-component';
 export * from './components/group-component';
 export * from './components/text-component';

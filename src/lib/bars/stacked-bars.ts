@@ -1,7 +1,7 @@
 import { ScaleBand, ScaleContinuousNumeric } from 'd3-scale';
 import { bandScale, linearScale, Rect } from '../core';
 import { ISize } from '../core/utils';
-import { BarOrientation } from './bars';
+import { BarData, BarOrientation } from './bars';
 
 export interface StackedBars {
   mainValues(): any[];
@@ -14,7 +14,13 @@ export interface StackedBars {
   crossScale(scale: ScaleContinuousNumeric<number, number>): this;
   orientation(): BarOrientation;
   orientation(orientation: BarOrientation): this;
-  bars(): Rect<number>[];
+  barData(): StackedBarData[][];
+}
+
+export interface StackedBarData extends BarData {
+  mainIndex: number;
+  crossIndex: number;
+  rect: Rect<number>;
 }
 
 export class StackedBarsCalculator implements StackedBars {
@@ -23,7 +29,8 @@ export class StackedBarsCalculator implements StackedBars {
   private _values: number[][];
   private _valueScale: ScaleContinuousNumeric<number, number>;
   private _orientation: BarOrientation;
-  private _bars: Rect<number>[];
+  private _keys: string[][] | undefined;
+  private _bars: StackedBarData[][];
 
   constructor() {
     this._categories = [];
@@ -76,7 +83,17 @@ export class StackedBarsCalculator implements StackedBars {
     return this;
   }
 
-  bars(): Rect<number>[] {
+  keys(): string[][];
+  keys(keys: null): this;
+  keys(keys: string[][]): this;
+  keys(keys?: string[][] | null) {
+    if (keys === undefined) return this._keys;
+    if (keys === null) this._keys = undefined;
+    else this._keys = keys;
+    return this;
+  }
+
+  barData(): StackedBarData[][] {
     return this._bars;
   }
 
@@ -91,6 +108,9 @@ export class StackedBarsCalculator implements StackedBars {
 
     this._bars = [];
     for (let i = 0; i < this._categories.length; ++i) {
+      const barStack: StackedBarData[] = [];
+      this._bars.push(barStack);
+
       const subcategoryValues = this._values[i];
       let sum = 0;
       for (let j = 0; j < subcategoryValues.length; ++j) {
@@ -98,21 +118,33 @@ export class StackedBarsCalculator implements StackedBars {
         const v = subcategoryValues[j];
 
         if (this._orientation === BarOrientation.Vertical) {
-          this._bars.push({
-            x: this._categoryScale(c)!,
-            y: -sum + Math.min(this._valueScale(0)!, this._valueScale(v)!),
-            width: this._categoryScale.bandwidth(),
-            height: Math.abs(this._valueScale(0)! - this._valueScale(v)!),
-          });
-          sum += this._bars[this._bars.length - 1].height;
+          const bar: StackedBarData = {
+            mainIndex: i,
+            crossIndex: j,
+            key: this._keys?.[i][j] || `${i}/${j}`,
+            rect: {
+              x: this._categoryScale(c)!,
+              y: -sum + Math.min(this._valueScale(0)!, this._valueScale(v)!),
+              width: this._categoryScale.bandwidth(),
+              height: Math.abs(this._valueScale(0)! - this._valueScale(v)!),
+            },
+          };
+          barStack.push(bar);
+          sum += bar.rect.height;
         } else if (this._orientation === BarOrientation.Horizontal) {
-          this._bars.push({
-            x: sum + Math.min(this._valueScale(0)!, this._valueScale(v)!),
-            y: this._categoryScale(c)!,
-            width: Math.abs(this._valueScale(0)! - this._valueScale(v)!),
-            height: this._categoryScale.bandwidth(),
-          });
-          sum += this._bars[this._bars.length - 1].width;
+          const bar: StackedBarData = {
+            mainIndex: i,
+            crossIndex: j,
+            key: this._keys?.[i][j] || `${i}/${j}`,
+            rect: {
+              x: sum + Math.min(this._valueScale(0)!, this._valueScale(v)!),
+              y: this._categoryScale(c)!,
+              width: Math.abs(this._valueScale(0)! - this._valueScale(v)!),
+              height: this._categoryScale.bandwidth(),
+            },
+          };
+          barStack.push(bar);
+          sum += bar.rect.width;
         }
       }
     }

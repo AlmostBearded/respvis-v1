@@ -6,18 +6,11 @@ import {
   categoricalColors,
   Component,
   ComponentEventData,
-  Rect,
   rectFromString,
 } from '../core';
 import { BarOrientation } from './bars';
-import { BarData, createBars, removeBars, updateBars } from './bars-component';
-import { StackedBars, StackedBarsCalculator } from './stacked-bars';
-
-export interface StackedBarData extends BarData {
-  mainIndex: number;
-  crossIndex: number;
-  rect: Rect<number>;
-}
+import { createBars, removeBars, updateBars } from './bars-component';
+import { StackedBarData, StackedBars, StackedBarsCalculator } from './stacked-bars';
 
 export type CreateStackedBarsFunction = (
   enterSelection: Selection<EnterElement, StackedBarData, any, any>
@@ -40,7 +33,6 @@ export type StackedBarsEventData<TComponent extends Component> = ComponentEventD
 
 export class StackedBarsComponent extends BaseComponent implements StackedBars {
   private _barsCalculator: StackedBarsCalculator;
-  private _keys: string[][] | undefined;
   private _transitionDelay: number;
   private _transitionDuration: number;
   private _onCreateBars: CreateStackedBarsFunction;
@@ -103,17 +95,17 @@ export class StackedBarsComponent extends BaseComponent implements StackedBars {
     return this;
   }
 
-  bars(): Rect<number>[] {
-    return this._barsCalculator.bars();
+  barData(): StackedBarData[][] {
+    return this._barsCalculator.barData();
   }
 
   keys(): string[][];
   keys(keys: null): this;
   keys(keys: string[][]): this;
   keys(keys?: string[][] | null) {
-    if (keys === undefined) return this._keys;
-    if (keys === null) this._keys = undefined;
-    else this._keys = keys;
+    if (keys === undefined) return this._barsCalculator.keys();
+    if (keys === null) this._barsCalculator.keys(null);
+    else this._barsCalculator.keys(keys);
     return this;
   }
 
@@ -165,24 +157,6 @@ export class StackedBarsComponent extends BaseComponent implements StackedBars {
     return this;
   }
 
-  barData(): StackedBarData[][] {
-    const bars = [...this._barsCalculator.bars()];
-    const data: StackedBarData[][] = [];
-    let mainIndex = 0;
-    while (bars.length) {
-      data.push(
-        bars.splice(0, this._barsCalculator.crossValues()[0].length).map((rect, i) => ({
-          mainIndex: mainIndex,
-          crossIndex: i,
-          key: this._keys?.[mainIndex][i] || `${mainIndex}/${i}`,
-          rect: rect,
-        }))
-      );
-      ++mainIndex;
-    }
-    return data;
-  }
-
   afterLayout(): this {
     super.afterLayout();
     this._barsCalculator.fitInSize(rectFromString(this.attr('layout')));
@@ -192,11 +166,9 @@ export class StackedBarsComponent extends BaseComponent implements StackedBars {
   render(): this {
     super.render();
 
-    const barData = this.barData();
-
     this.selection()
       .selectAll('.bar-stack')
-      .data(barData)
+      .data(this.barData())
       .join(this._onCreateBarStacks)
       .selectAll<SVGRectElement, StackedBarData>('.bar')
       .data(
@@ -212,11 +184,9 @@ export class StackedBarsComponent extends BaseComponent implements StackedBars {
   transition(): this {
     super.transition();
 
-    const groupedBarData = this.barData();
-
     this.selection()
       .selectAll('.bar-stack')
-      .data(groupedBarData)
+      .data(this.barData())
       .join(this._onCreateBarStacks)
       .selectAll<SVGRectElement, StackedBarData>('.bar')
       .data(

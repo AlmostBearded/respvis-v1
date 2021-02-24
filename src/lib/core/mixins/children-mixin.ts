@@ -1,6 +1,6 @@
 import { Chart } from '../chart';
 import { Component, ComponentEventData } from '../component';
-import { Constructor } from './types';
+import { Constructor, Mixin } from './types';
 
 export interface ChildrenMixinEventData<TComponent extends Component>
   extends ComponentEventData<TComponent> {
@@ -18,11 +18,14 @@ export function ChildrenMixin<TBaseComponent extends Constructor<Component>>(
       this._children = new Map();
     }
 
-    child(name: string): Component | undefined;
+    child<T extends Component = Component>(name: string): T | undefined;
     child(name: string, component: null): this;
     child(name: string, component: Component): this;
-    child(name: string, component?: Component | null): Component | undefined | this {
-      if (component === undefined) return this._children.get(name);
+    child<T extends Component = Component>(
+      name: string,
+      component?: T | null
+    ): T | undefined | this {
+      if (component === undefined) return this._children.get(name) as T;
       else if (component === null) this._children.delete(name);
       else this._children.set(name, component);
       return this;
@@ -87,3 +90,5 @@ export function ChildrenMixin<TBaseComponent extends Constructor<Component>>(
     }
   };
 }
+
+export type ComponentWithChildren = Mixin<typeof ChildrenMixin>;

@@ -7,3 +7,4 @@ export * from './points';
 export * from './brush';
 export * from './zoom';
 export * from './cartesian-chart';
+export * from './bar-charts';

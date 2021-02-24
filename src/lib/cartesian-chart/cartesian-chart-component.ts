@@ -1,33 +1,55 @@
-import { BottomAxisComponent, LeftAxisComponent } from '../axis';
-import { BaseComponent, GroupComponent, SVGComponent } from '../core';
+import { AxisComponent, BottomAxisComponent, LeftAxisComponent } from '../axis';
+import { BaseComponent, GroupComponent, Mixin, SVGComponent } from '../core';
 import { ChildrenMixin } from '../core/mixins/children-mixin';
 
 export class CartesianChartComponent extends ChildrenMixin(BaseComponent) {
-  private _xAxis: BottomAxisComponent;
-  private _yAxis: LeftAxisComponent;
   private _drawArea: SVGComponent;
 
   constructor() {
     super('g');
 
-    this._xAxis = new BottomAxisComponent();
-    this._yAxis = new LeftAxisComponent();
     this._drawArea = new SVGComponent();
 
-    this.layout('grid-template', '1fr auto / auto 1fr')
+    this.layout('grid-template', 'auto 1fr auto / auto 1fr auto')
       .layout('margin-horizontal', 20)
       .layout('margin-vertical', 20)
-      .child('draw-area', this._drawArea.layout('grid-area', '1 / 2 / 2 / 3'))
-      .child('y-axis', this._yAxis.layout('grid-area', '1 / 1 / 2 / 2'))
-      .child('x-axis', this._xAxis.layout('grid-area', '2 / 2 / 3 / 3'));
+      .child('draw-area', this._drawArea.layout('grid-area', '2 / 2 / 3 / 3'));
   }
 
-  xAxis(): BottomAxisComponent {
-    return this._xAxis;
+  leftAxis(): AxisComponent | undefined;
+  leftAxis(axis: AxisComponent | null): this;
+  leftAxis(axis?: AxisComponent | null): AxisComponent | undefined | this {
+    if (axis === undefined) return this.child<AxisComponent>('left-axis');
+    else if (axis === null) this.child('left-axis', null);
+    else this.child('left-axis', axis.layout('grid-area', '2 / 1 / 3 / 2'));
+    return this;
   }
 
-  yAxis(): LeftAxisComponent {
-    return this._yAxis;
+  bottomAxis(): AxisComponent | undefined;
+  bottomAxis(axis: AxisComponent | null): this;
+  bottomAxis(axis?: AxisComponent | null): AxisComponent | undefined | this {
+    if (axis === undefined) return this.child<AxisComponent>('bottom-axis');
+    else if (axis === null) this.child('bottom-axis', null);
+    else this.child('bottom-axis', axis.layout('grid-area', '3 / 2 / 4 / 3'));
+    return this;
+  }
+
+  rightAxis(): AxisComponent | undefined;
+  rightAxis(axis: AxisComponent | null): this;
+  rightAxis(axis?: AxisComponent | null): AxisComponent | undefined | this {
+    if (axis === undefined) return this.child<AxisComponent>('right-axis');
+    else if (axis === null) this.child('right-axis', null);
+    else this.child('right-axis', axis.layout('grid-area', '2 / 3 / 3 / 4'));
+    return this;
+  }
+
+  topAxis(): AxisComponent | undefined;
+  topAxis(axis: AxisComponent | null): this;
+  topAxis(axis?: AxisComponent | null): AxisComponent | undefined | this {
+    if (axis === undefined) return this.child<AxisComponent>('top-axis');
+    else if (axis === null) this.child('top-axis', null);
+    else this.child('top-axis', axis.layout('grid-area', '1 / 2 / 2 / 3'));
+    return this;
   }
 
   drawArea(): SVGComponent {

@@ -5,17 +5,10 @@ import {
   BaseComponent,
   rectFromString,
 } from '../core';
-import { Selection, BaseType, EnterElement, select, selectAll } from 'd3-selection';
-import { BarOrientation, Bars, BarsCalculator } from './bars';
+import { Selection, BaseType, EnterElement, select } from 'd3-selection';
+import { BarData, BarOrientation, Bars, BarsCalculator } from './bars';
 import { ScaleBand, ScaleContinuousNumeric } from 'd3-scale';
 import { SelectionOrTransition } from 'd3-transition';
-import { Rect } from '../core/rect';
-
-export interface BarData {
-  mainIndex: number;
-  key: string;
-  rect: Rect<number>;
-}
 
 export type CreateBarsFunction = (
   enterSelection: Selection<EnterElement, BarData, any, any>
@@ -33,7 +26,6 @@ export type BarsEventData<TComponent extends Component> = ComponentEventData<TCo
 
 export class BarsComponent extends BaseComponent implements Bars {
   private _barsCalculator: BarsCalculator;
-  private _keys: string[] | undefined;
   private _transitionDelay: number;
   private _transitionDuration: number;
   private _onCreateBars: CreateBarsFunction;
@@ -98,17 +90,17 @@ export class BarsComponent extends BaseComponent implements Bars {
     return this;
   }
 
-  bars(): Rect<number>[] {
-    return this._barsCalculator.bars();
+  barData(): BarData[] {
+    return this._barsCalculator.barData();
   }
 
   keys(): string[];
   keys(keys: null): this;
   keys(keys: string[]): this;
   keys(keys?: string[] | null) {
-    if (keys === undefined) return this._keys;
-    if (keys === null) this._keys = undefined;
-    else this._keys = keys;
+    if (keys === undefined) return this._barsCalculator.keys();
+    if (keys === null) this._barsCalculator.keys(null);
+    else this._barsCalculator.keys(keys);
     return this;
   }
 
@@ -158,17 +150,11 @@ export class BarsComponent extends BaseComponent implements Bars {
     return this;
   }
 
-  barData(): BarData[] {
-    return this._barsCalculator
-      .bars()
-      .map((rect, i) => ({ mainIndex: i, key: this._keys?.[i] || i.toString(), rect: rect }));
-  }
-
   render(): this {
     super.render();
     this.selection()
       .selectAll<SVGRectElement, BarData>('.bar')
-      .data(this.barData(), (d) => d.key)
+      .data(this._barsCalculator.barData(), (d) => d.key)
       .join(this._onCreateBars, undefined, this._onRemoveBars)
       .call(this._onUpdateBars);
     return this;
@@ -178,7 +164,7 @@ export class BarsComponent extends BaseComponent implements Bars {
     super.transition();
     this.selection()
       .selectAll<SVGRectElement, BarData>('.bar')
-      .data(this.barData(), (d) => d.key)
+      .data(this._barsCalculator.barData(), (d) => d.key)
       .join(this._onCreateBars, undefined, this._onRemoveBars)
       .transition()
       .delay(this._transitionDelay)

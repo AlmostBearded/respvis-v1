@@ -9,15 +9,9 @@ import {
   Rect,
   rectFromString,
 } from '../core';
-import { BarOrientation } from './bars';
-import { BarData, createBars, removeBars, updateBars } from './bars-component';
-import { GroupedBars, GroupedBarsCalculator } from './grouped-bars';
-
-export interface GroupedBarData extends BarData {
-  mainIndex: number;
-  crossIndex: number;
-  rect: Rect<number>;
-}
+import { BarOrientation, barsCalculator } from './bars';
+import { createBars, removeBars, updateBars } from './bars-component';
+import { GroupedBarData, GroupedBars, GroupedBarsCalculator } from './grouped-bars';
 
 export type CreateGroupedBarsFunction = (
   enterSelection: Selection<EnterElement, GroupedBarData, any, any>
@@ -40,7 +34,6 @@ export type GroupedBarsEventData<TComponent extends Component> = ComponentEventD
 
 export class GroupedBarsComponent extends BaseComponent implements GroupedBars {
   private _barsCalculator: GroupedBarsCalculator;
-  private _keys: string[][] | undefined;
   private _transitionDelay: number;
   private _transitionDuration: number;
   private _onCreateBars: CreateGroupedBarsFunction;
@@ -111,17 +104,17 @@ export class GroupedBarsComponent extends BaseComponent implements GroupedBars {
     return this;
   }
 
-  bars(): Rect<number>[] {
-    return this._barsCalculator.bars();
+  barData(): GroupedBarData[][] {
+    return this._barsCalculator.barData();
   }
 
   keys(): string[][];
   keys(keys: null): this;
   keys(keys: string[][]): this;
   keys(keys?: string[][] | null) {
-    if (keys === undefined) return this._keys;
-    if (keys === null) this._keys = undefined;
-    else this._keys = keys;
+    if (keys === undefined) return this._barsCalculator.keys();
+    if (keys === null) this._barsCalculator.keys(null);
+    else this._barsCalculator.keys(keys);
     return this;
   }
 
@@ -186,7 +179,7 @@ export class GroupedBarsComponent extends BaseComponent implements GroupedBars {
 
     this.selection()
       .selectAll('.bar-group')
-      .data(groupedBarData)
+      .data(this._barsCalculator.barData())
       .join(this._onCreateBarGroups)
       .selectAll<SVGRectElement, GroupedBarData>('.bar')
       .data(
@@ -206,7 +199,7 @@ export class GroupedBarsComponent extends BaseComponent implements GroupedBars {
 
     this.selection()
       .selectAll('.bar-group')
-      .data(groupedBarData)
+      .data(this._barsCalculator.barData())
       .join(this._onCreateBarGroups)
       .selectAll<SVGRectElement, GroupedBarData>('.bar')
       .data(
@@ -220,24 +213,6 @@ export class GroupedBarsComponent extends BaseComponent implements GroupedBars {
       .call(this._onUpdateBars);
 
     return this;
-  }
-
-  barData(): GroupedBarData[][] {
-    const bars = [...this._barsCalculator.bars()];
-    const groupedBars: GroupedBarData[][] = [];
-    let mainIndex = 0;
-    while (bars.length) {
-      groupedBars.push(
-        bars.splice(0, this._barsCalculator.crossValues()[0].length).map((rect, i) => ({
-          mainIndex: mainIndex,
-          crossIndex: i,
-          key: this._keys?.[mainIndex][i] || `${mainIndex}/${i}`,
-          rect: rect,
-        }))
-      );
-      ++mainIndex;
-    }
-    return groupedBars;
   }
 
   eventData(event: Event): GroupedBarsEventData<this> | null {

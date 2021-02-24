@@ -70,7 +70,12 @@
 
       // bar labels
       const barLabels = respVis
-        .barLabels(bars)
+        .barLabels(() =>
+          bars
+            .barData()
+            .flat()
+            .map((bD) => bD.rect)
+        )
         .labels(revenues.flat().map(revenueFormatter))
         .attr('pointer-events', 'none')
         .attr('font-size', 0)

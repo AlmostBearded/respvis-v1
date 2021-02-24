@@ -1,8 +1,9 @@
 import { BaseComponent, TextComponent, titleTextAttributes } from '../core';
 import { ChildrenMixin } from '../core/mixins/children-mixin';
+import { AxisComponent } from './axis-component';
 import { TopTicksComponent } from './top-ticks-component';
 
-export class TopAxisComponent extends ChildrenMixin(BaseComponent) {
+export class TopAxisComponent extends ChildrenMixin(BaseComponent) implements AxisComponent {
   private _ticks: TopTicksComponent;
   private _title: TextComponent;
 

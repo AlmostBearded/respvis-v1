@@ -1,6 +1,6 @@
 import { Selection, BaseType, EnterElement, namespace } from 'd3-selection';
 import { BaseComponent } from '../core';
-import { BarPoints, BarPointsCalculator } from './bar-points';
+import { BarPoints, BarPointsCalculator, BarsAccessor } from './bar-points';
 import { Bars } from './bars';
 import { IPosition, IStringable } from '../core/utils';
 
@@ -23,9 +23,9 @@ export class BarLabelsComponent extends BaseComponent implements BarPoints {
   private _onCreateLabels: CreateLabelsFunction;
   // todo: add customizable removeLabels and updateLabels callbacks
 
-  constructor(bars: Bars) {
+  constructor(barsAccessor: BarsAccessor) {
     super('g');
-    this._barPoints = new BarPointsCalculator(bars);
+    this._barPoints = new BarPointsCalculator(barsAccessor);
     this._labels = [];
     this._transitionDuration = 250;
     this._transitionDelay = 250;
@@ -36,11 +36,11 @@ export class BarLabelsComponent extends BaseComponent implements BarPoints {
       .attr('font-weight', 'normal');
   }
 
-  bars(): Bars;
-  bars(bars: Bars): this;
-  bars(bars?: any): this | Bars {
-    if (bars === undefined) return this._barPoints.bars();
-    this._barPoints.bars(bars);
+  barsAccessor(): BarsAccessor;
+  barsAccessor(accessor: BarsAccessor): this;
+  barsAccessor(accessor?: BarsAccessor): this | BarsAccessor {
+    if (accessor === undefined) return this._barPoints.barsAccessor();
+    this._barPoints.barsAccessor(accessor);
     return this;
   }
 
@@ -128,8 +128,8 @@ export class BarLabelsComponent extends BaseComponent implements BarPoints {
   }
 }
 
-export function barLabels(bars: Bars): BarLabelsComponent {
-  return new BarLabelsComponent(bars);
+export function barLabels(barsAccessor: BarsAccessor): BarLabelsComponent {
+  return new BarLabelsComponent(barsAccessor);
 }
 
 export function createLabels(

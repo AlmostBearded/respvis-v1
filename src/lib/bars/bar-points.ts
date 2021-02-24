@@ -1,9 +1,10 @@
+import { Rect } from '../core';
 import { IPosition } from '../core/utils';
 import { Bars } from './bars';
 
 export interface BarPoints {
-  bars(): Bars;
-  bars(bars: Bars): this;
+  barsAccessor(): BarsAccessor;
+  barsAccessor(accessor: BarsAccessor): this;
   widthPercent(): number;
   widthPercent(percent: number): this;
   heightPercent(): number;
@@ -11,24 +12,26 @@ export interface BarPoints {
   points(): IPosition[];
 }
 
+export type BarsAccessor = () => Rect<number>[];
+
 export class BarPointsCalculator implements BarPoints {
-  private _bars: Bars;
+  private _barsAccessor: BarsAccessor;
   private _heightPercent: number;
   private _widthPercent: number;
   private _points: IPosition[];
 
-  constructor(bars: Bars) {
-    this._bars = bars;
+  constructor(barsAccessor: BarsAccessor) {
+    this._barsAccessor = barsAccessor;
     this._heightPercent = 0.5;
     this._widthPercent = 0.5;
     this._points = [];
   }
 
-  bars(): Bars;
-  bars(bars: Bars): this;
-  bars(bars?: any) {
-    if (bars === undefined) return this._bars;
-    this._bars = bars;
+  barsAccessor(): BarsAccessor;
+  barsAccessor(accessor: BarsAccessor): this;
+  barsAccessor(accessor?: BarsAccessor): BarsAccessor | this {
+    if (accessor === undefined) return this._barsAccessor;
+    this._barsAccessor = accessor;
     return this;
   }
 
@@ -49,7 +52,7 @@ export class BarPointsCalculator implements BarPoints {
   }
 
   points(): IPosition[] {
-    const bars = this._bars.bars();
+    const bars = this._barsAccessor();
     const points: IPosition[] = [];
     for (let i = 0; i < bars.length; ++i) {
       points.push({

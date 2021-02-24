@@ -72,7 +72,12 @@
 
       // bar labels
       const barLabels = respVis
-        .barLabels(bars)
+        .barLabels(() =>
+          bars
+            .barData()
+            .flat()
+            .map((bD) => bD.rect)
+        )
         .labels(shares.flat().map(shareFormatter))
         .attr('pointer-events', 'none')
         .attr('font-size', 0)

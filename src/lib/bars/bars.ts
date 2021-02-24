@@ -18,7 +18,13 @@ export interface Bars {
   crossScale(scale: ScaleContinuousNumeric<number, number>): this;
   orientation(): BarOrientation;
   orientation(orientation: BarOrientation): this;
-  bars(): Rect<number>[];
+  barData(): BarData[];
+}
+
+export interface BarData {
+  mainIndex: number;
+  key: string;
+  rect: Rect<number>;
 }
 
 export class BarsCalculator implements Bars {
@@ -27,7 +33,8 @@ export class BarsCalculator implements Bars {
   private _crossValues: number[];
   private _crossScale: ScaleContinuousNumeric<number, number>;
   private _orientation: BarOrientation;
-  private _bars: Rect<number>[];
+  private _keys: string[] | undefined;
+  private _bars: BarData[];
 
   constructor() {
     this._mainValues = [];
@@ -82,6 +89,16 @@ export class BarsCalculator implements Bars {
     return this;
   }
 
+  keys(): string[];
+  keys(keys: null): this;
+  keys(keys: string[]): this;
+  keys(keys?: string[] | null) {
+    if (keys === undefined) return this._keys;
+    if (keys === null) this._keys = undefined;
+    else this._keys = keys;
+    return this;
+  }
+
   fitInSize(size: utils.ISize): this {
     if (this._orientation === BarOrientation.Vertical) {
       this._mainScale.range([0, size.width]);
@@ -99,17 +116,25 @@ export class BarsCalculator implements Bars {
 
       if (this._orientation === BarOrientation.Vertical) {
         this._bars.push({
-          x: this._mainScale(mv)!,
-          y: Math.min(this._crossScale(0)!, this._crossScale(cv)!),
-          width: this._mainScale.bandwidth(),
-          height: Math.abs(this._crossScale(0)! - this._crossScale(cv)!),
+          mainIndex: i,
+          key: this._keys?.[i] || i.toString(),
+          rect: {
+            x: this._mainScale(mv)!,
+            y: Math.min(this._crossScale(0)!, this._crossScale(cv)!),
+            width: this._mainScale.bandwidth(),
+            height: Math.abs(this._crossScale(0)! - this._crossScale(cv)!),
+          },
         });
       } else if (this._orientation === BarOrientation.Horizontal) {
         this._bars.push({
-          x: Math.min(this._crossScale(0)!, this._crossScale(cv)!),
-          y: this._mainScale(mv)!,
-          width: Math.abs(this._crossScale(0)! - this._crossScale(cv)!),
-          height: this._mainScale.bandwidth(),
+          mainIndex: i,
+          key: this._keys?.[i] || i.toString(),
+          rect: {
+            x: Math.min(this._crossScale(0)!, this._crossScale(cv)!),
+            y: this._mainScale(mv)!,
+            width: Math.abs(this._crossScale(0)! - this._crossScale(cv)!),
+            height: this._mainScale.bandwidth(),
+          },
         });
       }
     }
@@ -117,7 +142,7 @@ export class BarsCalculator implements Bars {
     return this;
   }
 
-  bars(): Rect<number>[] {
+  barData(): BarData[] {
     return this._bars;
   }
 }

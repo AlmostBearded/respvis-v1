@@ -18,7 +18,7 @@ export interface Component {
   onConfigure(): (component: this) => void;
   onConfigure(callback: (component: this) => void): this;
   // todo: implement deleting of configure callbacks
-  call(callback: (component: this) => void): this;
+  call(callback: (component: this, ...args: any[]) => void): this;
   selection(): Selection<SVGElement, any, any, any>;
   size(): ISize;
   layout(name: keyof LayoutProperties): string | number | undefined;

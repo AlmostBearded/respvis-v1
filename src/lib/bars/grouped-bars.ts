@@ -2,7 +2,8 @@ import { range } from 'd3-array';
 import { ScaleBand, ScaleContinuousNumeric } from 'd3-scale';
 import { linearScale, Rect, utils, bandScale } from '../core';
 import { ISize } from '../core/utils';
-import { BarOrientation } from './bars';
+import { BarData, BarOrientation } from './bars';
+import { bars } from './bars-component';
 
 export interface GroupedBars {
   mainValues(): any[];
@@ -17,7 +18,13 @@ export interface GroupedBars {
   mainInnerScale(scale: ScaleBand<any>): this;
   orientation(): BarOrientation;
   orientation(orientation: BarOrientation): this;
-  bars(): Rect<number>[];
+  barData(): GroupedBarData[][];
+}
+
+export interface GroupedBarData extends BarData {
+  mainIndex: number;
+  crossIndex: number;
+  rect: Rect<number>;
 }
 
 export class GroupedBarsCalculator implements GroupedBars {
@@ -26,8 +33,9 @@ export class GroupedBarsCalculator implements GroupedBars {
   private _mainInnerScale: ScaleBand<any>;
   private _crossValues: number[][];
   private _crossScale: ScaleContinuousNumeric<number, number>;
+  private _keys: string[][] | undefined;
   private _orientation: BarOrientation;
-  private _bars: Rect<number>[];
+  private _bars: GroupedBarData[][];
 
   constructor() {
     this._mainValues = [];
@@ -91,7 +99,17 @@ export class GroupedBarsCalculator implements GroupedBars {
     return this;
   }
 
-  bars(): Rect<number>[] {
+  keys(): string[][];
+  keys(keys: null): this;
+  keys(keys: string[][]): this;
+  keys(keys?: string[][] | null) {
+    if (keys === undefined) return this._keys;
+    if (keys === null) this._keys = undefined;
+    else this._keys = keys;
+    return this;
+  }
+
+  barData(): GroupedBarData[][] {
     return this._bars;
   }
 
@@ -107,24 +125,37 @@ export class GroupedBarsCalculator implements GroupedBars {
 
     this._bars = [];
     for (let i = 0; i < this._crossValues.length; ++i) {
+      const barGroup: GroupedBarData[] = [];
+      this._bars.push(barGroup);
+
       const subcategoryValues = this._crossValues[i];
       for (let j = 0; j < subcategoryValues.length; ++j) {
         const c = this._mainValues[i];
         const v = subcategoryValues[j];
 
         if (this._orientation === BarOrientation.Vertical) {
-          this._bars.push({
-            x: this._mainScale(c)! + this._mainInnerScale(j)!,
-            y: Math.min(this._crossScale(0)!, this._crossScale(v)!),
-            width: this._mainInnerScale.bandwidth(),
-            height: Math.abs(this._crossScale(0)! - this._crossScale(v)!),
+          barGroup.push({
+            mainIndex: i,
+            crossIndex: j,
+            key: this._keys?.[i][j] || `${i}/${j}`,
+            rect: {
+              x: this._mainScale(c)! + this._mainInnerScale(j)!,
+              y: Math.min(this._crossScale(0)!, this._crossScale(v)!),
+              width: this._mainInnerScale.bandwidth(),
+              height: Math.abs(this._crossScale(0)! - this._crossScale(v)!),
+            },
           });
         } else if (this._orientation === BarOrientation.Horizontal) {
-          this._bars.push({
-            x: Math.min(this._crossScale(0)!, this._crossScale(v)!),
-            y: this._mainScale(c)! + this._mainInnerScale(j)!,
-            width: Math.abs(this._crossScale(0)! - this._crossScale(v)!),
-            height: this._mainInnerScale.bandwidth(),
+          barGroup.push({
+            mainIndex: i,
+            crossIndex: j,
+            key: this._keys?.[i][j] || `${i}/${j}`,
+            rect: {
+              x: Math.min(this._crossScale(0)!, this._crossScale(v)!),
+              y: this._mainScale(c)! + this._mainInnerScale(j)!,
+              width: Math.abs(this._crossScale(0)! - this._crossScale(v)!),
+              height: this._mainInnerScale.bandwidth(),
+            },
           });
         }
       }
