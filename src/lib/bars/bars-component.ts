@@ -9,6 +9,8 @@ import { Selection, BaseType, EnterElement, select } from 'd3-selection';
 import { BarData, BarOrientation, Bars, BarsCalculator } from './bars';
 import { ScaleBand, ScaleContinuousNumeric } from 'd3-scale';
 import { SelectionOrTransition } from 'd3-transition';
+import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
+import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
 
 export type CreateBarsFunction = (
   enterSelection: Selection<EnterElement, BarData, any, any>
@@ -24,7 +26,9 @@ export type UpdateBarsFunction = (
 
 export type BarsEventData<TComponent extends Component> = ComponentEventData<TComponent> & BarData;
 
-export class BarsComponent extends BaseComponent implements Bars {
+export class BarsComponent
+  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(BaseComponent))
+  implements Bars {
   private _barsCalculator: BarsCalculator;
   private _transitionDelay: number;
   private _transitionDuration: number;

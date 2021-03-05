@@ -1,9 +1,13 @@
 import { BaseComponent, TextComponent, titleTextAttributes, verticalTextAttributes } from '../core';
 import { ChildrenMixin } from '../core/mixins/children-mixin';
+import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
+import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
 import { AxisComponent } from './axis-component';
 import { RightTicksComponent } from './right-ticks-component';
 
-export class RightAxisComponent extends ChildrenMixin(BaseComponent) implements AxisComponent {
+export class RightAxisComponent
+  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(ChildrenMixin(BaseComponent)))
+  implements AxisComponent {
   private _ticks: RightTicksComponent;
   private _title: TextComponent;
 

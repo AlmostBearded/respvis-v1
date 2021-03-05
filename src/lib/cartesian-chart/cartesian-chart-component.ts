@@ -1,8 +1,13 @@
 import { AxisComponent, BottomAxisComponent, LeftAxisComponent } from '../axis';
+import { BarsComponent } from '../bars';
 import { BaseComponent, GroupComponent, Mixin, SVGComponent } from '../core';
 import { ChildrenMixin } from '../core/mixins/children-mixin';
+import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
+import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
 
-export class CartesianChartComponent extends ChildrenMixin(BaseComponent) {
+export class CartesianChartComponent extends MediaQueryConfiguratorsMixin(
+  ConfiguratorsMixin(ChildrenMixin(BaseComponent))
+) {
   private _drawArea: SVGComponent;
 
   constructor() {

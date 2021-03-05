@@ -1,23 +1,11 @@
-import { ScaleContinuousNumeric } from 'd3-scale';
+import { D3ZoomEvent, zoom as d3Zoom, ZoomBehavior, ZoomScale, ZoomTransform } from 'd3-zoom';
 import {
-  D3ZoomEvent,
-  zoom as d3Zoom,
-  ZoomBehavior,
-  zoomIdentity,
-  ZoomScale,
-  ZoomTransform,
-} from 'd3-zoom';
-import {
-  BaseComponent,
   Component,
   ComponentEventData,
   RectComponent,
   rectFromString,
-  ScaleAny,
-  ScaleContinuous,
   SVGComponent,
 } from '../core';
-import { arraysEqual } from '../core/array';
 
 export interface ZoomEventData<TComponent extends Component>
   extends ComponentEventData<TComponent> {

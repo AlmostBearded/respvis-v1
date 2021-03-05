@@ -8,6 +8,8 @@ import {
   rectFromString,
   ScaleAny,
 } from '../core';
+import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
+import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
 import { IPosition } from '../core/utils';
 import { Points, PointsCalculator } from './points';
 
@@ -31,7 +33,9 @@ export type UpdatePointsFunction = (
   selection: SelectionOrTransition<BaseType, PointData, any, any>
 ) => void;
 
-export class PointsComponent extends BaseComponent implements Points {
+export class PointsComponent
+  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(BaseComponent))
+  implements Points {
   private _calculator: PointsCalculator;
   private _keys: string[] | undefined;
   private _transitionDelay: number;

@@ -40,7 +40,15 @@
           .mainTitle('Cities')
           .crossValues(populations)
           .crossScale(populationScale)
-          .crossTitle('Population'),
+          .crossTitle('Population')
+          .configurator(0, (barChart) => {
+            barChart.orientation(respVis.BarOrientation.Horizontal).call(configureBarChartAxes);
+            barLabels.call(configureHorizontalBarLabel);
+          })
+          .mediaQueryConfigurator(1, wideMediaQuery, (barChart) => {
+            barChart.orientation(respVis.BarOrientation.Vertical).call(configureBarChartAxes);
+            barLabels.call(configureVerticalBarLabel);
+          }),
         drawArea = barChart.drawArea(),
         bars = barChart
           .bars()
@@ -53,24 +61,6 @@
           .attr('font-size', 0);
 
       drawArea.child('bar-labels', barLabels);
-
-      barChart.onConfigure((_) => {
-        barChart.orientation(respVis.BarOrientation.Horizontal);
-        barLabels.call(configureHorizontalBarLabel);
-        if (window.matchMedia(wideMediaQuery).matches) {
-          barChart.orientation(respVis.BarOrientation.Vertical);
-          barLabels.call(configureVerticalBarLabel);
-        }
-
-        barChart
-          .mainAxis()
-          .ticks()
-          .onConfigureAxis((axis) => {});
-        barChart
-          .crossAxis()
-          .ticks()
-          .onConfigureAxis((axis) => axis.tickFormat(populationFormatter));
-      });
 
       const chart = respVis.chart();
       chart.root().child('bar-chart', barChart);
@@ -92,6 +82,17 @@
           .attr('dominant-baseline', 'middle')
           .attr('text-anchor', 'start')
           .attr('transform', 'translate(4, 0)');
+      }
+
+      function configureBarChartAxes(barChart) {
+        barChart
+          .mainAxis()
+          .ticks()
+          .onConfigureAxis((axis) => {});
+        barChart
+          .crossAxis()
+          .ticks()
+          .onConfigureAxis((axis) => axis.tickFormat(populationFormatter));
       }
 
       function hoverBar(barIndex, hover) {

@@ -6,6 +6,8 @@ import {
 } from 'd3-brush';
 import { BaseComponent, Component, ComponentEventData, Rect, rectFromString } from '../core';
 import { arraysEqual } from '../core/array';
+import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
+import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
 
 export interface BrushEventData<TComponent extends Component>
   extends ComponentEventData<TComponent> {
@@ -13,7 +15,9 @@ export interface BrushEventData<TComponent extends Component>
   selectionRect: Rect<number> | undefined;
 }
 
-export class BrushComponent extends BaseComponent {
+export class BrushComponent extends MediaQueryConfiguratorsMixin(
+  ConfiguratorsMixin(BaseComponent)
+) {
   private _brush: BrushBehavior<any>;
   private _selectionRect: Rect<number> | undefined;
 

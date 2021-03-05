@@ -1,10 +1,14 @@
 import { range } from 'd3-array';
 import { BaseComponent } from '../core';
 import { ChildrenMixin } from '../core/mixins/children-mixin';
+import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
 import { GridMixin } from '../core/mixins/grid-mixin';
+import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
 import { SwatchComponent } from './swatch-component';
 
-export class LegendComponent extends GridMixin(ChildrenMixin(BaseComponent)) {
+export class LegendComponent extends MediaQueryConfiguratorsMixin(
+  ConfiguratorsMixin(GridMixin(ChildrenMixin(BaseComponent)))
+) {
   constructor(swatchCount: number) {
     super('g');
     this.rowCount(swatchCount).columnCount(1).layout('place-content', 'center center');

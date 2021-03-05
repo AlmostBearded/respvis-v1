@@ -6,14 +6,11 @@ import { ISize } from './utils';
 
 export class BaseComponent implements Component {
   private _selection: Selection<SVGElement & LaidOutElement, any, any, any>;
-  private _onConfigure: (component: this) => void;
 
   constructor(tag: string) {
     this._selection = create(`svg:${tag}`);
 
     this.layout('grid-area', '1 / 1 / 2 / 2');
-
-    this._onConfigure = () => {};
 
     // can't access 'this' within the bounds calculator callback
     const that = this;
@@ -29,7 +26,6 @@ export class BaseComponent implements Component {
   }
 
   configure(): this {
-    this._onConfigure(this);
     return this;
   }
 
@@ -46,14 +42,6 @@ export class BaseComponent implements Component {
   }
 
   transition(): this {
-    return this;
-  }
-
-  onConfigure(): (component: this) => void;
-  onConfigure(callback: (component: this) => void): this;
-  onConfigure(callback?: (component: this) => void): ((component: this) => void) | this {
-    if (callback === undefined) return this._onConfigure;
-    this._onConfigure = callback;
     return this;
   }
 

@@ -1,7 +1,11 @@
 import { BaseComponent } from '../base-component';
+import { ConfiguratorsMixin } from '../mixins/configurators-mixin';
+import { MediaQueryConfiguratorsMixin } from '../mixins/media-query-configurators-mixin';
 import { StaticSizeMixin } from '../mixins/static-size-mixin';
 
-export class RectComponent extends StaticSizeMixin(BaseComponent) {
+export class RectComponent extends MediaQueryConfiguratorsMixin(
+  ConfiguratorsMixin(StaticSizeMixin(BaseComponent))
+) {
   constructor() {
     super('rect');
     this.layout('width', 'min-content').layout('height', 'min-content');

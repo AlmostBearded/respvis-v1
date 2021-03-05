@@ -8,6 +8,8 @@ import {
   ComponentEventData,
   rectFromString,
 } from '../core';
+import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
+import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
 import { BarOrientation } from './bars';
 import { createBars, removeBars, updateBars } from './bars-component';
 import { StackedBarData, StackedBars, StackedBarsCalculator } from './stacked-bars';
@@ -31,7 +33,9 @@ export type UpdateStackedBarsFunction = (
 export type StackedBarsEventData<TComponent extends Component> = ComponentEventData<TComponent> &
   StackedBarData;
 
-export class StackedBarsComponent extends BaseComponent implements StackedBars {
+export class StackedBarsComponent
+  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(BaseComponent))
+  implements StackedBars {
   private _barsCalculator: StackedBarsCalculator;
   private _transitionDelay: number;
   private _transitionDuration: number;

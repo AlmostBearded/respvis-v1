@@ -9,6 +9,8 @@ import {
   Rect,
   rectFromString,
 } from '../core';
+import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
+import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
 import { BarOrientation, barsCalculator } from './bars';
 import { createBars, removeBars, updateBars } from './bars-component';
 import { GroupedBarData, GroupedBars, GroupedBarsCalculator } from './grouped-bars';
@@ -32,7 +34,9 @@ export type UpdateGroupedBarsFunction = (
 export type GroupedBarsEventData<TComponent extends Component> = ComponentEventData<TComponent> &
   GroupedBarData;
 
-export class GroupedBarsComponent extends BaseComponent implements GroupedBars {
+export class GroupedBarsComponent
+  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(BaseComponent))
+  implements GroupedBars {
   private _barsCalculator: GroupedBarsCalculator;
   private _transitionDelay: number;
   private _transitionDuration: number;

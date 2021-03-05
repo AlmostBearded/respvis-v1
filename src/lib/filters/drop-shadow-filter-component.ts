@@ -1,12 +1,16 @@
 import { BaseComponent, Rect, uuid } from '../core';
 import { ChildrenMixin } from '../core/mixins/children-mixin';
+import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
+import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
 import { IPosition } from '../core/utils';
 import { BlendComponent } from './blend-component';
 import { ColorMatrixComponent } from './color-matrix-component';
 import { GaussianBlurComponent } from './gaussian-blur-component';
 import { OffsetComponent } from './offset-component';
 
-export class DropShadowFilterComponent extends ChildrenMixin(BaseComponent) {
+export class DropShadowFilterComponent extends MediaQueryConfiguratorsMixin(
+  ConfiguratorsMixin(ChildrenMixin(BaseComponent))
+) {
   private _offset: OffsetComponent;
   private _blur: GaussianBlurComponent;
   private _colorMatrix: ColorMatrixComponent;

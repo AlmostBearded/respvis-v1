@@ -3,6 +3,8 @@ import { BaseComponent } from '../core';
 import { BarPoints, BarPointsCalculator, BarsAccessor } from './bar-points';
 import { Bars } from './bars';
 import { IPosition, IStringable } from '../core/utils';
+import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
+import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
 
 export interface LabelData {
   position: IPosition;
@@ -15,7 +17,9 @@ export type CreateLabelsFunction = (
 
 // todo: add custom BarLabelEventData (or just LabelEventData?)
 
-export class BarLabelsComponent extends BaseComponent implements BarPoints {
+export class BarLabelsComponent
+  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(BaseComponent))
+  implements BarPoints {
   private _barPoints: BarPoints;
   private _labels: IStringable[];
   private _transitionDelay: number;
