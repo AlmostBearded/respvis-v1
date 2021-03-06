@@ -16,6 +16,9 @@ export interface GroupedBars {
   crossScale(scale: ScaleContinuousNumeric<number, number>): this;
   mainInnerScale(): ScaleBand<any>;
   mainInnerScale(scale: ScaleBand<any>): this;
+  keys(): string[][];
+  keys(keys: null): this;
+  keys(keys: string[][]): this;
   orientation(): BarOrientation;
   orientation(orientation: BarOrientation): this;
   barData(): GroupedBarData[][];

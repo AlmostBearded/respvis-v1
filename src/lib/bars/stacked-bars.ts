@@ -12,6 +12,9 @@ export interface StackedBars {
   crossValues(values: any[][]): this;
   crossScale(): ScaleContinuousNumeric<number, number>;
   crossScale(scale: ScaleContinuousNumeric<number, number>): this;
+  keys(): string[][];
+  keys(keys: null): this;
+  keys(keys: string[][]): this;
   orientation(): BarOrientation;
   orientation(orientation: BarOrientation): this;
   barData(): StackedBarData[][];

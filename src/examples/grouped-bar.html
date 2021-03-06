@@ -23,52 +23,41 @@
     <script src="./d3/d3.v6.js"></script>
     <script src="../respvis.js"></script>
     <script type="module">
-      // data
-      const locations = ['Vienna', 'Rome', 'Paris', 'Berlin', 'Amsterdam'],
-        years = ['2018', '2019', '2020'],
-        revenues = [
-          [23, 27, 29],
-          [15, 13, 16],
-          [43, 55, 70],
-          [30, 24, 28],
-          [12, 14, 18],
-        ],
-        keys = revenues.map((yearlyRevs, i) => yearlyRevs.map((_, j) => locations[i] + years[j])),
-        maxRevenue = Math.max(...revenues.flat());
+      import data from './data/company.js';
 
-      // formatters
-      var revenueFormatter = (value) => `${value}k`;
+      const sites = data.sites,
+        siteScale = respVis.bandScale().padding(0.1),
+        revenues = data.revenues,
+        maxRevenue = Math.max(...revenues.flat()),
+        revenueScale = respVis.linearScale().domain([0, maxRevenue]).nice(),
+        revenueFormatter = (value) => `${value}k`,
+        years = data.years,
+        keys = revenues.map((yearlyRevs, i) => yearlyRevs.map((_, j) => sites[i] + years[j])),
+        wideMediaQuery = 'screen and (min-width: 40rem)',
+        barColors = respVis.GroupedBarsComponent.defaultColors;
+      let yearToggles = [true, true, true], // to toggle subcategories
+        filteredBarColors = barColors;
 
-      // to toggle subcategories
-      var yearToggles = [true, true, true];
+      const chart = respVis.chart(),
+        root = chart.root().layout('margin-horizontal', 20).layout('margin-top', 5);
 
-      // media query for wide screens
-      const wideMediaQuery = 'screen and (min-width: 40rem)';
+      const barChart = respVis
+          .groupedBarChart()
+          .mainValues(sites)
+          .mainScale(siteScale)
+          .mainTitle('Sites')
+          .crossValues(revenues)
+          .crossScale(revenueScale)
+          .crossTitle('Revenues')
+          .keys(keys),
+        bars = barChart
+          .bars()
+          .onUpdateBars((selection) => respVis.updateGroupedBars(selection, filteredBarColors))
+          .on('mouseover', (e, d) => hoverBar(d.mainIndex, d.crossIndex, true))
+          .on('mouseout', (e, d) => hoverBar(d.mainIndex, d.crossIndex, false)),
+        drawArea = barChart.drawArea();
+      root.child('bar-chart', barChart);
 
-      // scales
-      const locationScale = respVis.bandScale().padding(0.1);
-      const revenueScale = respVis.linearScale().domain([0, maxRevenue]).nice();
-
-      // bars
-      const barColors = respVis.GroupedBarsComponent.defaultColors;
-      let filteredBarColors = barColors;
-      const bars = respVis
-        .groupedBars()
-        .mainValues(locations)
-        .mainScale(locationScale)
-        .crossValues(revenues)
-        .crossScale(revenueScale)
-        .keys(keys)
-        .onUpdateBars((selection) => respVis.updateGroupedBars(selection, filteredBarColors))
-        .on('mouseover', (e, d) => hoverBar(d.mainIndex, d.crossIndex, true))
-        .on('mouseout', (e, d) => hoverBar(d.mainIndex, d.crossIndex, false))
-        .onConfigure((bars) => {
-          bars.orientation(respVis.BarOrientation.Horizontal);
-          if (window.matchMedia(wideMediaQuery).matches)
-            bars.orientation(respVis.BarOrientation.Vertical);
-        });
-
-      // bar labels
       const barLabels = respVis
         .barLabels(() =>
           bars
@@ -78,24 +67,9 @@
         )
         .labels(revenues.flat().map(revenueFormatter))
         .attr('pointer-events', 'none')
-        .attr('font-size', 0)
-        .onConfigure((barLabels) => {
-          barLabels
-            .widthPercent(0)
-            .heightPercent(0.5)
-            .attr('dominant-baseline', 'middle')
-            .attr('text-anchor', 'start')
-            .attr('transform', 'translate(4, 0)');
-          if (window.matchMedia(wideMediaQuery).matches)
-            barLabels
-              .widthPercent(0.5)
-              .heightPercent(1)
-              .attr('dominant-baseline', 'auto')
-              .attr('text-anchor', 'middle')
-              .attr('transform', 'translate(0, -4)');
-        });
+        .attr('font-size', 0);
+      drawArea.child('bar-labels', barLabels);
 
-      // legend
       const legend = respVis
         .legend(years.length)
         .attr('cursor', 'default')
@@ -108,96 +82,74 @@
             swatch.rect().attr('fill', barColors[i]);
             swatch.label().text(years[i]);
           })
-        )
-        .onConfigure((legend) => {
-          legend.rowCount(1).columnCount(years.length);
-          if (window.matchMedia(wideMediaQuery).matches)
-            legend.rowCount(years.length).columnCount(1);
+        );
+      root.child('legend', legend);
+
+      barChart
+        .configurator(0, (bC) => {
+          root.layout('grid-template', 'auto 1fr / 1fr'); //.layout('margin-top', 20);
+          bC.layout('grid-area', '2 / 1 / 3 / 2')
+            .orientation(respVis.BarOrientation.Horizontal)
+            .call(configureBarChartAxes);
+          barLabels.call(configureHorizontalBarLabels);
+          legend
+            .layout('grid-area', '1 / 1 / 2 / 2')
+            .layout('margin-bottom', 10)
+            .layout('margin-left', 0)
+            .rowCount(1)
+            .columnCount(years.length);
+        })
+        .mediaQueryConfigurator(1, wideMediaQuery, (bC) => {
+          root.layout('grid-template', '1fr / 1fr auto');
+          bC.layout('grid-area', '1 / 1 / 2 / 2')
+            .orientation(respVis.BarOrientation.Vertical)
+            .call(configureBarChartAxes);
+          barLabels.call(configureVerticalBarLabels);
+          legend
+            .layout('grid-area', '1 / 2 / 2 / 3')
+            .layout('margin-bottom', 0)
+            .layout('margin-left', 10)
+            .rowCount(years.length)
+            .columnCount(1);
         });
 
-      // left axis
-      const leftAxis = respVis.leftAxis().onConfigure((axis) => {
-        axis
+      chart.mount('#chart');
+
+      function configureHorizontalBarLabels(barLabels) {
+        barLabels
+          .widthPercent(0)
+          .heightPercent(0.5)
+          .attr('dominant-baseline', 'middle')
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(4, 0)');
+      }
+
+      function configureVerticalBarLabels(barLabels) {
+        barLabels
+          .widthPercent(0.5)
+          .heightPercent(1)
+          .attr('dominant-baseline', 'auto')
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(0, -4)');
+      }
+
+      function configureBarChartAxes(barChart) {
+        barChart
+          .mainAxis()
           .ticks()
-          .scale(locationScale)
           .attr('cursor', 'default')
           .onConfigureAxis((axis) => {})
-          .on('mouseover', (event, data) => hoverLocationAxisTick(data.tickIndex, true))
-          .on('mouseout', (event, data) => hoverLocationAxisTick(data.tickIndex, false));
-        axis.title().layout('margin-right', 5).text('Locations');
-        if (window.matchMedia(wideMediaQuery).matches) {
-          axis
-            .ticks()
-            .scale(revenueScale)
-            .attr('cursor', 'auto')
-            .onConfigureAxis((axis) => axis.tickFormat(revenueFormatter))
-            .on('mouseover', null)
-            .on('mouseout', null);
-          axis.title().text('Revenue');
-        }
-      });
+          .on('mouseover', (event, data) => hoverMainAxisTick(data.tickIndex, true))
+          .on('mouseout', (event, data) => hoverMainAxisTick(data.tickIndex, false));
 
-      // bottom axis
-      const bottomAxis = respVis.bottomAxis().onConfigure((axis) => {
-        axis
+        barChart
+          .crossAxis()
           .ticks()
-          .scale(revenueScale)
           .attr('cursor', 'auto')
           .onConfigureAxis((axis) => axis.tickFormat(revenueFormatter).ticks(5))
           .on('mouseover', null)
           .on('mouseout', null);
-        axis.title().layout('margin-top', 5).text('Revenues');
-        if (window.matchMedia(wideMediaQuery).matches) {
-          axis
-            .ticks()
-            .scale(locationScale)
-            .attr('cursor', 'default')
-            .onConfigureAxis((axis) => {})
-            .on('mouseover', (event, data) => hoverLocationAxisTick(data.tickIndex, true))
-            .on('mouseout', (event, data) => hoverLocationAxisTick(data.tickIndex, false));
-          axis.title().text('Locations');
-        }
-      });
-
-      // chart
-      let locationAxis, revenueAxis;
-      const chart = respVis.chart();
-      chart
-        .root()
-        .layout('margin-horizontal', 20)
-        .layout('margin-top', 5)
-        .onConfigure((root) => {
-          root.layout('grid-template', 'auto 1fr auto / auto 1fr').layout('margin-top', 20);
-          bars.layout('grid-area', '2 / 2 / 3 / 3');
-          barLabels.layout('grid-area', '2 / 2 / 3 / 3');
-          legend
-            .layout('grid-area', '1 / 2 / 2 / 3')
-            .layout('margin-bottom', 10)
-            .layout('margin-left', 0);
-          leftAxis.layout('grid-area', '2 / 1 / 3 / 2');
-          bottomAxis.layout('grid-area', '3 / 2 / 4 / 3');
-          locationAxis = leftAxis;
-          revenueAxis = bottomAxis;
-          if (window.matchMedia(wideMediaQuery).matches) {
-            locationAxis = bottomAxis;
-            revenueAxis = leftAxis;
-            root.layout('grid-template', '1fr auto / auto 1fr auto');
-            bars.layout('grid-area', '1 / 2 / 2 / 3');
-            barLabels.layout('grid-area', '1 / 2 / 2 / 3');
-            legend
-              .layout('grid-area', '1 / 3 / 2 / 4')
-              .layout('margin-bottom', 0)
-              .layout('margin-left', 10);
-            leftAxis.layout('grid-area', '1 / 1 / 2 / 2');
-            bottomAxis.layout('grid-area', '2 / 2 / 3 / 3');
-          }
-        })
-        .child('bars', bars)
-        .child('bar-labels', barLabels)
-        .child('legend', legend)
-        .child('left-axis', leftAxis)
-        .child('bottom-axis', bottomAxis);
-      chart.mount('#chart');
+      }
 
       function legendSwatchIndexToBarIndex(swatchIndex) {
         return yearToggles.slice(0, swatchIndex).filter((t) => t).length;
@@ -220,8 +172,9 @@
           .attr('fill', highlight ? respVis.brighten(c, 0.5) : c);
       }
 
-      function highlightLocationAxisTick(tickIndex, highlight) {
-        locationAxis
+      function highlightMainAxisTick(tickIndex, highlight) {
+        barChart
+          .mainAxis()
           .select(`.tick${nthOfType(tickIndex)}`)
           .attr('text-decoration', highlight ? 'underline' : null);
       }
@@ -248,12 +201,12 @@
         const flatBarIndex = categoryIndex * yearToggles.filter((t) => t).length + barIndex;
         highlightBar(categoryIndex, barIndex, hover);
         showLabel(flatBarIndex, hover);
-        highlightLocationAxisTick(categoryIndex, hover);
+        highlightMainAxisTick(categoryIndex, hover);
         highlightLegendSwatch(barIndexToRevenueIndex(barIndex), hover);
       }
 
-      function hoverLocationAxisTick(tickIndex, hover) {
-        highlightLocationAxisTick(tickIndex, hover);
+      function hoverMainAxisTick(tickIndex, hover) {
+        highlightMainAxisTick(tickIndex, hover);
         const yearCount = yearToggles.filter((t) => t).length;
         for (let i = 0; i < yearCount; ++i) {
           const flatBarIndex = tickIndex * yearCount + i;
@@ -267,10 +220,10 @@
 
         highlightLegendSwatch(swatchIndex, hover);
         const yearCount = yearToggles.filter((t) => t).length;
-        locations.forEach((location, locationIndex) => {
+        sites.forEach((site, siteIndex) => {
           let barIndex = legendSwatchIndexToBarIndex(swatchIndex);
-          const flatBarIndex = locationIndex * yearCount + barIndex;
-          highlightBar(locationIndex, barIndex, hover);
+          const flatBarIndex = siteIndex * yearCount + barIndex;
+          highlightBar(siteIndex, barIndex, hover);
           showLabel(flatBarIndex, hover);
         });
       }

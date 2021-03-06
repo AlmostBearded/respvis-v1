@@ -43,11 +43,11 @@
           .crossTitle('Population')
           .configurator(0, (barChart) => {
             barChart.orientation(respVis.BarOrientation.Horizontal).call(configureBarChartAxes);
-            barLabels.call(configureHorizontalBarLabel);
+            barLabels.call(configureHorizontalBarLabels);
           })
           .mediaQueryConfigurator(1, wideMediaQuery, (barChart) => {
             barChart.orientation(respVis.BarOrientation.Vertical).call(configureBarChartAxes);
-            barLabels.call(configureVerticalBarLabel);
+            barLabels.call(configureVerticalBarLabels);
           }),
         drawArea = barChart.drawArea(),
         bars = barChart
@@ -66,7 +66,7 @@
       chart.root().child('bar-chart', barChart);
       chart.mount('#chart');
 
-      function configureVerticalBarLabel(barLabels) {
+      function configureVerticalBarLabels(barLabels) {
         barLabels
           .widthPercent(0.5)
           .heightPercent(1)
@@ -75,7 +75,7 @@
           .attr('transform', 'translate(0, -4)');
       }
 
-      function configureHorizontalBarLabel(barLabels) {
+      function configureHorizontalBarLabels(barLabels) {
         barLabels
           .widthPercent(0)
           .heightPercent(0.5)

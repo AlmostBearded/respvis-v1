@@ -179,8 +179,6 @@ export class GroupedBarsComponent
   render(): this {
     super.render();
 
-    const groupedBarData = this.barData();
-
     this.selection()
       .selectAll('.bar-group')
       .data(this._barsCalculator.barData())
@@ -198,8 +196,6 @@ export class GroupedBarsComponent
 
   transition(): this {
     super.transition();
-
-    const groupedBarData = this.barData();
 
     this.selection()
       .selectAll('.bar-group')
