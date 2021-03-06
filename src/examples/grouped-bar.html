@@ -35,7 +35,9 @@
         keys = revenues.map((yearlyRevs, i) => yearlyRevs.map((_, j) => sites[i] + years[j])),
         wideMediaQuery = 'screen and (min-width: 40rem)',
         barColors = respVis.GroupedBarsComponent.defaultColors;
-      let yearToggles = [true, true, true], // to toggle subcategories
+
+      // needed to toggle years
+      let yearToggles = [true, true, true], 
         filteredBarColors = barColors;
 
       const chart = respVis.chart(),

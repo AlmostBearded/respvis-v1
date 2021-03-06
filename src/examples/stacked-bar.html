@@ -27,47 +27,50 @@
       // data
       const platforms = ['Desktop', 'Mobile', 'Tablet'],
         years = data.years,
+        yearScale = respVis.bandScale().padding(0.1),
         shares = data.desktop.map((d, i) => [data.desktop[i], data.mobile[i], data.tablet[i]]),
-        keys = shares.map((platformShares, i) =>
-          platformShares.map((_, j) => `${platforms[i]}${years[j]}`)
-        ),
+        shareScale = respVis.linearScale().domain([0, 100]),
+        shareFormatter = (value) => `${Math.round(parseFloat(value) * 10) / 10}%`,
+        keys = shares.map((pS, i) => pS.map((_, j) => `${platforms[i]}${years[j]}`)),
         labels = shares.flat();
 
-      // formatters
-      var shareFormatter = (value) => `${Math.round(parseFloat(value) * 10) / 10}%`;
-
-      // to toggle platforms
-      var platformToggles = [true, true, true];
-
-      // media query for wide screens
       const wideMediaQuery = 'screen and (min-width: 40rem)';
+      const barColors = respVis.StackedBarsComponent.defaultColors;
 
-      // scales
-      const yearScale = respVis.bandScale().padding(0.1);
-      const shareScale = respVis.linearScale().domain([0, 100]);
+      // needed to toggle platforms
+      let platformToggles = [true, true, true],
+        filteredBarColors = barColors;
 
-      // filters
-      const defs = respVis.defs();
-      const labelDropShadow = respVis.dropShadowFilter({ x: 0, y: 0 }, 3);
-      defs.child('label-drop-shadow', labelDropShadow);
+      // create chart
+      const chart = respVis.chart(),
+        root = chart.root().layout('margin-horizontal', 20).layout('margin-top', 5);
+
+      // create bar chart
+      const barChart = respVis
+          .stackedBarChart()
+          .mainValues(years)
+          .mainScale(yearScale)
+          .mainTitle('Years')
+          .crossValues(shares)
+          .crossScale(shareScale)
+          .crossTitle('Market Share')
+          .keys(keys)
+          .onConfigure((bars) => {
+            bars.orientation(respVis.BarOrientation.Horizontal);
+            if (window.matchMedia(wideMediaQuery).matches)
+              bars.orientation(respVis.BarOrientation.Vertical);
+          }),
+        bars = barChart
+          .bars()
+          .onUpdateBars((selection) => respVis.updateStackedBars(selection, filteredBarColors))
+          .on('mouseover', (e, d) => hoverBar(d.mainIndex, d.crossIndex, true))
+          .on('mouseout', (e, d) => hoverBar(d.mainIndex, d.crossIndex, false)),
+        drawArea = barChart.drawArea;
 
       // bars
-      const barColors = respVis.StackedBarsComponent.defaultColors;
-      let filteredBarColors = barColors;
       const bars = respVis
         .stackedBars()
-        .mainValues(years)
-        .mainScale(yearScale)
-        .crossValues(shares)
-        .crossScale(shareScale)
-        .keys(keys)
-        .onUpdateBars((selection) => respVis.updateStackedBars(selection, filteredBarColors))
-        .on('mouseover', (e, d) => hoverBar(d.mainIndex, d.crossIndex, true))
-        .on('mouseout', (e, d) => hoverBar(d.mainIndex, d.crossIndex, false))
         .onConfigure((bars) => {
-          bars.orientation(respVis.BarOrientation.Horizontal);
-          if (window.matchMedia(wideMediaQuery).matches)
-            bars.orientation(respVis.BarOrientation.Vertical);
         });
 
       // bar labels
@@ -88,6 +91,11 @@
           respVis.createLabels(selection).attr('filter', `url(#${labelDropShadow.attr('id')})`)
         );
 
+      // filters
+      const defs = respVis.defs();
+      const labelDropShadow = respVis.dropShadowFilter({ x: 0, y: 0 }, 3);
+      defs.child('label-drop-shadow', labelDropShadow);
+
       // legend
       const legend = respVis
         .legend(platforms.length)
@@ -107,6 +115,13 @@
           if (window.matchMedia(wideMediaQuery).matches)
             legend.rowCount(platforms.length).columnCount(1);
         });
+
+      // responsive configuration
+      barChart.configurator(0, (bC) => {
+        bars.orientation(respVis.BarOrientation.Horizontal);
+          if (window.matchMedia(wideMediaQuery).matches)
+            bars.orientation(respVis.BarOrientation.Vertical);
+      }).mediaQueryConfigurator(1, wideMediaQuery, (bC) => {});
 
       // left axis
       const leftAxis = respVis.leftAxis().onConfigure((axis) => {
@@ -154,11 +169,8 @@
 
       // chart
       const chart = respVis.chart();
-      let yearAxis, shareAxis;
       chart
         .root()
-        .layout('margin-horizontal', 20)
-        .layout('margin-top', 5)
         .onConfigure((root) => {
           root.layout('grid-template', 'auto 1fr auto / auto 1fr').layout('margin-top', 20);
           bars.layout('grid-area', '2 / 2 / 3 / 3');
@@ -169,11 +181,7 @@
             .layout('margin-left', 0);
           leftAxis.layout('grid-area', '2 / 1 / 3 / 2');
           bottomAxis.layout('grid-area', '3 / 2 / 4 / 3');
-          yearAxis = leftAxis;
-          shareAxis = bottomAxis;
           if (window.matchMedia(wideMediaQuery).matches) {
-            yearAxis = bottomAxis;
-            shareAxis = leftAxis;
             root.layout('grid-template', '1fr auto / auto 1fr auto');
             bars.layout('grid-area', '1 / 2 / 2 / 3');
             barLabels.layout('grid-area', '1 / 2 / 2 / 3');
@@ -192,6 +200,27 @@
         .child('left-axis', leftAxis)
         .child('bottom-axis', bottomAxis);
       chart.mount('#chart');
+
+      function configureBarChartAxes(barChart) {
+        barChart
+          .crossAxis()
+          .ticks()
+          .attr('cursor', 'auto')
+          .onConfigureAxis((axis) => axis.tickFormat(shareFormatter).ticks(5))
+          .on('mouseover', null)
+          .on('mouseout', null);
+        axis.title().layout('margin-top', 5).text();
+        if (window.matchMedia(wideMediaQuery).matches) {
+          axis
+            .ticks()
+            .scale(yearScale)
+            .attr('cursor', 'default')
+            .onConfigureAxis((axis) => {})
+            .on('mouseover', (event, data) => hoverYearAxisTick(data.tickIndex, true))
+            .on('mouseout', (event, data) => hoverYearAxisTick(data.tickIndex, false));
+          axis.title().text('Years');
+        }
+      }
 
       function platformIndexToBarIndex(platformIndex) {
         return platformToggles.slice(0, platformIndex).filter((t) => t).length;
