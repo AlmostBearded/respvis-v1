@@ -41,7 +41,7 @@
         filteredBarColors = barColors;
 
       const chart = respVis.chart(),
-        root = chart.root().layout('margin-horizontal', 20).layout('margin-top', 5);
+        root = chart.root().layout('margin-horizontal', 20).layout('margin-top', 20);
 
       const barChart = respVis
           .groupedBarChart()
@@ -89,7 +89,7 @@
 
       barChart
         .configurator(0, (bC) => {
-          root.layout('grid-template', 'auto 1fr / 1fr'); //.layout('margin-top', 20);
+          root.layout('grid-template', 'auto 1fr / 1fr');
           bC.layout('grid-area', '2 / 1 / 3 / 2')
             .orientation(respVis.BarOrientation.Horizontal)
             .call(configureBarChartAxes);
