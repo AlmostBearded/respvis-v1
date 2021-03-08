@@ -8,12 +8,12 @@ import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configu
 export class CartesianChartComponent extends MediaQueryConfiguratorsMixin(
   ConfiguratorsMixin(ChildrenMixin(BaseComponent))
 ) {
-  private _drawArea: SVGComponent;
+  private _drawArea: GroupComponent;
 
   constructor() {
     super('g');
 
-    this._drawArea = new SVGComponent();
+    this._drawArea = new GroupComponent();
 
     this.layout('grid-template', 'auto 1fr auto / auto 1fr auto')
       .layout('margin-horizontal', 20)
@@ -57,7 +57,7 @@ export class CartesianChartComponent extends MediaQueryConfiguratorsMixin(
     return this;
   }
 
-  drawArea(): SVGComponent {
+  drawArea(): GroupComponent {
     return this._drawArea;
   }
 }
