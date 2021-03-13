@@ -43,7 +43,7 @@
 
       // create chart
       const chart = respVis.chart(),
-        root = chart.root().layout('margin-horizontal', 20).layout('margin-top', 5);
+        root = chart.root().layout('margin-horizontal', 20).layout('margin-top', 20);
 
       // create bar chart
       const barChart = respVis
@@ -54,24 +54,14 @@
           .crossValues(shares)
           .crossScale(shareScale)
           .crossTitle('Market Share')
-          .keys(keys)
-          .onConfigure((bars) => {
-            bars.orientation(respVis.BarOrientation.Horizontal);
-            if (window.matchMedia(wideMediaQuery).matches)
-              bars.orientation(respVis.BarOrientation.Vertical);
-          }),
+          .keys(keys),
         bars = barChart
           .bars()
           .onUpdateBars((selection) => respVis.updateStackedBars(selection, filteredBarColors))
           .on('mouseover', (e, d) => hoverBar(d.mainIndex, d.crossIndex, true))
           .on('mouseout', (e, d) => hoverBar(d.mainIndex, d.crossIndex, false)),
-        drawArea = barChart.drawArea;
-
-      // bars
-      const bars = respVis
-        .stackedBars()
-        .onConfigure((bars) => {
-        });
+        drawArea = barChart.drawArea();
+      root.child('bar-chart', barChart);
 
       // bar labels
       const barLabels = respVis
@@ -90,11 +80,13 @@
         .onCreateLabels((selection) =>
           respVis.createLabels(selection).attr('filter', `url(#${labelDropShadow.attr('id')})`)
         );
+      drawArea.child('bar-labels', barLabels);
 
-      // filters
+      // label drop shadow filter
       const defs = respVis.defs();
       const labelDropShadow = respVis.dropShadowFilter({ x: 0, y: 0 }, 3);
       defs.child('label-drop-shadow', labelDropShadow);
+      root.child('defs', defs);
 
       // legend
       const legend = respVis
@@ -109,96 +101,36 @@
             swatch.rect().attr('fill', barColors[i]);
             swatch.label().text(platforms[i]);
           })
-        )
-        .onConfigure((legend) => {
-          legend.rowCount(1).columnCount(platforms.length);
-          if (window.matchMedia(wideMediaQuery).matches)
-            legend.rowCount(platforms.length).columnCount(1);
-        });
+        );
+      root.child('legend', legend);
 
       // responsive configuration
-      barChart.configurator(0, (bC) => {
-        bars.orientation(respVis.BarOrientation.Horizontal);
-          if (window.matchMedia(wideMediaQuery).matches)
-            bars.orientation(respVis.BarOrientation.Vertical);
-      }).mediaQueryConfigurator(1, wideMediaQuery, (bC) => {});
-
-      // left axis
-      const leftAxis = respVis.leftAxis().onConfigure((axis) => {
-        axis
-          .ticks()
-          .scale(yearScale)
-          .attr('cursor', 'default')
-          .onConfigureAxis((axis) => {})
-          .on('mouseover', (event, data) => hoverYearAxisTick(data.tickIndex, true))
-          .on('mouseout', (event, data) => hoverYearAxisTick(data.tickIndex, false));
-        axis.title().layout('margin-right', 5).text('Years');
-        if (window.matchMedia(wideMediaQuery).matches) {
-          axis
-            .ticks()
-            .scale(shareScale)
-            .attr('cursor', 'auto')
-            .onConfigureAxis((axis) => axis.tickFormat(shareFormatter))
-            .on('mouseover', null)
-            .on('mouseout', null);
-          axis.title().text('Market Shares');
-        }
-      });
-
-      // bottom axis
-      const bottomAxis = respVis.bottomAxis().onConfigure((axis) => {
-        axis
-          .ticks()
-          .scale(shareScale)
-          .attr('cursor', 'auto')
-          .onConfigureAxis((axis) => axis.tickFormat(shareFormatter).ticks(5))
-          .on('mouseover', null)
-          .on('mouseout', null);
-        axis.title().layout('margin-top', 5).text('Market Share');
-        if (window.matchMedia(wideMediaQuery).matches) {
-          axis
-            .ticks()
-            .scale(yearScale)
-            .attr('cursor', 'default')
-            .onConfigureAxis((axis) => {})
-            .on('mouseover', (event, data) => hoverYearAxisTick(data.tickIndex, true))
-            .on('mouseout', (event, data) => hoverYearAxisTick(data.tickIndex, false));
-          axis.title().text('Years');
-        }
-      });
-
-      // chart
-      const chart = respVis.chart();
-      chart
-        .root()
-        .onConfigure((root) => {
-          root.layout('grid-template', 'auto 1fr auto / auto 1fr').layout('margin-top', 20);
-          bars.layout('grid-area', '2 / 2 / 3 / 3');
-          barLabels.layout('grid-area', '2 / 2 / 3 / 3');
+      barChart
+        .configurator(0, (bC) => {
+          root.layout('grid-template', 'auto 1fr / 1fr');
+          bC.layout('grid-area', '2 / 1 / 3 / 2')
+            .orientation(respVis.BarOrientation.Horizontal)
+            .call(configureBarChartAxes);
+          legend
+            .layout('grid-area', '1 / 1 / 2 / 2')
+            .layout('margin-bottom', 10)
+            .layout('margin-left', 0)
+            .rowCount(1)
+            .columnCount(platforms.length);
+        })
+        .mediaQueryConfigurator(1, wideMediaQuery, (bC) => {
+          root.layout('grid-template', '1fr / 1fr auto');
+          bC.layout('grid-area', '1 / 1 / 2 / 2')
+            .orientation(respVis.BarOrientation.Vertical)
+            .call(configureBarChartAxes);
           legend
             .layout('grid-area', '1 / 2 / 2 / 3')
-            .layout('margin-bottom', 10)
-            .layout('margin-left', 0);
-          leftAxis.layout('grid-area', '2 / 1 / 3 / 2');
-          bottomAxis.layout('grid-area', '3 / 2 / 4 / 3');
-          if (window.matchMedia(wideMediaQuery).matches) {
-            root.layout('grid-template', '1fr auto / auto 1fr auto');
-            bars.layout('grid-area', '1 / 2 / 2 / 3');
-            barLabels.layout('grid-area', '1 / 2 / 2 / 3');
-            legend
-              .layout('grid-area', '1 / 3 / 2 / 4')
-              .layout('margin-bottom', 0)
-              .layout('margin-left', 10);
-            leftAxis.layout('grid-area', '1 / 1 / 2 / 2');
-            bottomAxis.layout('grid-area', '2 / 2 / 3 / 3');
-          }
-        })
-        .child('defs', defs)
-        .child('bars', bars)
-        .child('bar-labels', barLabels)
-        .child('legend', legend)
-        .child('left-axis', leftAxis)
-        .child('bottom-axis', bottomAxis);
+            .layout('margin-bottom', 0)
+            .layout('margin-left', 10)
+            .rowCount(platforms.length)
+            .columnCount(1);
+        });
+
       chart.mount('#chart');
 
       function configureBarChartAxes(barChart) {
@@ -206,20 +138,16 @@
           .crossAxis()
           .ticks()
           .attr('cursor', 'auto')
-          .onConfigureAxis((axis) => axis.tickFormat(shareFormatter).ticks(5))
+          .onConfigureAxis((axis) => axis.tickFormat(shareFormatter))
           .on('mouseover', null)
           .on('mouseout', null);
-        axis.title().layout('margin-top', 5).text();
-        if (window.matchMedia(wideMediaQuery).matches) {
-          axis
-            .ticks()
-            .scale(yearScale)
-            .attr('cursor', 'default')
-            .onConfigureAxis((axis) => {})
-            .on('mouseover', (event, data) => hoverYearAxisTick(data.tickIndex, true))
-            .on('mouseout', (event, data) => hoverYearAxisTick(data.tickIndex, false));
-          axis.title().text('Years');
-        }
+        barChart
+          .mainAxis()
+          .ticks()
+          .attr('cursor', 'default')
+          .onConfigureAxis((axis) => {})
+          .on('mouseover', (event, data) => hoverMainAxisTick(data.tickIndex, true))
+          .on('mouseout', (event, data) => hoverMainAxisTick(data.tickIndex, false));
       }
 
       function platformIndexToBarIndex(platformIndex) {
@@ -244,8 +172,9 @@
           .attr('fill', highlight ? respVis.brighten(c, 0.5) : c);
       }
 
-      function highlightYearAxisTick(tickIndex, highlight) {
-        yearAxis
+      function highlightMainAxisTick(tickIndex, highlight) {
+        barChart
+          .mainAxis()
           .select(`.tick${nthOfType(tickIndex)}`)
           .attr('text-decoration', highlight ? 'underline' : null);
       }
@@ -272,12 +201,12 @@
         const flatBarIndex = stackIndex * platformToggles.filter((t) => t).length + barIndex;
         highlightBar(stackIndex, barIndex, hover);
         showLabel(flatBarIndex, hover);
-        highlightYearAxisTick(stackIndex, hover);
+        highlightMainAxisTick(stackIndex, hover);
         highlightLegendSwatch(barIndexToPlatformIndex(barIndex), hover);
       }
 
-      function hoverYearAxisTick(tickIndex, hover) {
-        highlightYearAxisTick(tickIndex, hover);
+      function hoverMainAxisTick(tickIndex, hover) {
+        highlightMainAxisTick(tickIndex, hover);
         const platformCount = platformToggles.filter((t) => t).length;
         for (let i = 0; i < platformCount; ++i) {
           if (shares[tickIndex][i] === 0) return;
