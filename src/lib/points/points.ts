@@ -14,7 +14,17 @@ export interface Points {
   radiuses(values: any[]): this;
   radiusScale(): ScaleAny<string | number | Date, number, number>;
   radiusScale(scale: ScaleAny<string | number | Date, number, number>): this;
-  points(): { center: IPosition; radius: number }[];
+  keys(): string[];
+  keys(keys: null): this;
+  keys(keys: string[]): this;
+  pointData(): PointData[];
+}
+
+export interface PointData {
+  index: number;
+  key: string;
+  center: IPosition;
+  radius: number;
 }
 
 export class PointsCalculator implements Points {
@@ -24,7 +34,8 @@ export class PointsCalculator implements Points {
   private _crossScale: ScaleAny<string | number | Date, number, number>;
   private _radiuses: any[];
   private _radiusScale: ScaleAny<string | number | Date, number, number>;
-  private _points: { center: IPosition; radius: number }[];
+  private _keys: string[] | undefined;
+  private _points: PointData[];
 
   constructor() {
     this._mainValues = [];
@@ -84,7 +95,17 @@ export class PointsCalculator implements Points {
     return this;
   }
 
-  points(): { center: IPosition; radius: number }[] {
+  keys(): string[];
+  keys(keys: null): this;
+  keys(keys: string[]): this;
+  keys(keys?: string[] | null) {
+    if (keys === undefined) return this._keys;
+    if (keys === null) this._keys = undefined;
+    else this._keys = keys;
+    return this;
+  }
+
+  pointData(): PointData[] {
     return this._points;
   }
 
@@ -99,6 +120,8 @@ export class PointsCalculator implements Points {
         y = this._crossValues[i],
         r = this._radiuses[i] || 0;
       this._points.push({
+        index: i,
+        key: this._keys?.[i] || i.toString(),
         center: {
           x: this._mainScale(x)!,
           y: this._crossScale(y)!,

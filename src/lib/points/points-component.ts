@@ -11,14 +11,7 @@ import {
 import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
 import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
 import { IPosition } from '../core/utils';
-import { Points, PointsCalculator } from './points';
-
-export interface PointData {
-  index: number;
-  key: string;
-  center: IPosition;
-  radius: number;
-}
+import { PointData, Points, PointsCalculator } from './points';
 
 export type PointsEventData<TComponent extends Component> = ComponentEventData<TComponent> &
   PointData;
@@ -37,7 +30,6 @@ export class PointsComponent
   extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(BaseComponent))
   implements Points {
   private _calculator: PointsCalculator;
-  private _keys: string[] | undefined;
   private _transitionDelay: number;
   private _transitionDuration: number;
   private _onCreatePoints: CreatePointsFunction;
@@ -108,17 +100,17 @@ export class PointsComponent
     return this;
   }
 
-  points(): { center: IPosition; radius: number }[] {
-    return this._calculator.points();
+  pointData(): PointData[] {
+    return this._calculator.pointData();
   }
 
   keys(): string[];
   keys(keys: null): this;
   keys(keys: string[]): this;
   keys(keys?: string[] | null) {
-    if (keys === undefined) return this._keys;
-    if (keys === null) this._keys = undefined;
-    else this._keys = keys;
+    if (keys === undefined) return this._calculator.keys();
+    if (keys === null) this._calculator.keys(null);
+    else this._calculator.keys(keys);
     return this;
   }
 
@@ -166,14 +158,6 @@ export class PointsComponent
     super.afterLayout();
     this._calculator.fitInSize(rectFromString(this.attr('layout')));
     return this;
-  }
-
-  pointData(): PointData[] {
-    return this._calculator.points().map((p, i) => ({
-      index: i,
-      key: this._keys?.[i] || i.toString(),
-      ...p,
-    }));
   }
 
   render(): this {
