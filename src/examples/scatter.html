@@ -25,29 +25,53 @@
       import data from './data/houses.js';
 
       const areas = data.area,
-        prices = data.price.map((price) => price / 1000),
         minArea = Math.min(...areas),
         maxArea = Math.max(...areas),
         areaSpan = maxArea - minArea,
         areaDomain = [0, maxArea + areaSpan * 0.2],
+        areaFormatter = (area) => `${area}ft²`,
+        areaScale = respVis.linearScale().domain(areaDomain),
+        areaAxisTitle = 'Area';
+
+      const prices = data.price.map((price) => price / 1000),
         minPrice = Math.min(...prices),
         maxPrice = Math.max(...prices),
         priceSpan = maxPrice - minPrice,
         priceDomain = [0, maxPrice + priceSpan * 0.2],
-        radiuses = prices.map((_) => 1);
+        priceFormatter = (price) => `$${price}k`,
+        priceScale = respVis.linearScale().domain(priceDomain),
+        priceAxisTitle = 'Price';
 
-      const areaFormatter = (area) => `${area}ft²`;
-      const priceFormatter = (price) => `$${price}k`;
+      const radiuses = prices.map((_) => 1),
+        radiusScale = respVis.linearScale().domain([0, 1]).range([5, 5]);
 
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
-      // scales
-      let areaScale = respVis.linearScale().domain(areaDomain);
-      let priceScale = respVis.linearScale().domain(priceDomain);
-      const radiusScale = respVis.linearScale().domain([0, 1]).range([5, 5]);
-
       // chart
-      const chart = respVis.chart();
+      const chart = respVis.chart(),
+        root = chart.root().layout('margin-horizontal', 20).layout('margin-top', 20);
+
+      // scatter chart
+      const scatterChart = respVis.cartesianChart(),
+        drawArea = scatterChart.drawArea();
+      root.child('scatterChart', scatterChart);
+
+      // zoom
+      const zoom = respVis
+        .zoom()
+        .scaleExtent([1, 30])
+        .on('zoom', (e, d) => handleZoom(d.zoomEvent));
+      drawArea.child('zoom', zoom);
+
+      // todo: maybe the zoom clip rect should be part of the zoom component?
+      // zoom clip rect
+      const zoomDefs = respVis.defs(),
+        zoomClipPath = respVis
+          .clipPath()
+          .attr('id', 'zoomClipPath')
+          .child('rect', respVis.rect().attr('width', '100%').attr('height', '100%'));
+      zoomDefs.child('clip-path', zoomClipPath);
+      zoom.child('defs', zoomDefs);
 
       // points
       const points = respVis
@@ -59,58 +83,35 @@
         .radiuses(radiuses)
         .radiusScale(radiusScale)
         .attr('stroke', '#000000')
-        .attr('clip-path', 'url(#drawAreaClipPath)');
+        .attr('clip-path', 'url(#zoomClipPath)');
       // .on('mouseover', (e, d) => console.log('mouse over point', e, d));
+      zoom.child('points', points);
 
-      // draw area clip path
-      const drawAreaClipPath = respVis
-        .clipPath()
-        .attr('id', 'drawAreaClipPath')
-        .child('rect', respVis.rect().attr('width', '100%').attr('height', '100%'));
+      // responsive configuration
+      scatterChart
+        .configurator(0, (c) => c.call(configureAxes, 5))
+        .mediaQueryConfigurator(1, wideMediaQuery, (c) => c.call(configureAxes, 10));
 
-      // zoom
-      const zoom = respVis
-        .zoom()
-        .scaleExtent([1, 30])
-        .on('zoom', (e, d) => handleZoom(d.zoomEvent));
-
-      // y axis
-      const yAxis = respVis.leftAxis();
-      yAxis
-        .ticks()
-        .scale(priceScale)
-        .onConfigureAxis((axis) => axis.tickFormat(priceFormatter));
-      yAxis.title().layout('margin-right', 5).text('Price');
-
-      // x axis
-      const xAxis = respVis.bottomAxis();
-      xAxis
-        .ticks()
-        .scale(areaScale)
-        .onConfigureAxis((axis) => axis.tickFormat(areaFormatter).ticks(3));
-      xAxis.title().layout('margin-top', 5).text('Area');
-
-      // chart
-      chart
-        .root()
-        .layout('grid-template', '1fr auto / auto 1fr')
-        .layout('margin', 20)
-        .child(
-          'zoom',
-          zoom
-            .layout('grid-area', '1 / 2 / 2 / 3')
-            .child('defs', respVis.defs().child('draw-area-clip-path', drawAreaClipPath))
-            .child('points', points)
-        )
-        .child('y-axis', yAxis.layout('grid-area', '1 / 1 / 2 / 2'))
-        .child('x-axis', xAxis.layout('grid-area', '2 / 2 / 3 / 3'));
-
+      // mount chart
       chart.mount('#chart');
 
-      function handleZoom(zoomEvent) {
-        // clear point highlights because mouseout events might not be called during transition.
-        // points.clearHighlights();
+      function configureAxes(chart, xAxisTicks) {
+        chart
+          .xAxis()
+          .ticks()
+          .scale(areaScale)
+          .onConfigureAxis((axis) => axis.tickFormat(areaFormatter).ticks(xAxisTicks));
+        chart.xAxis().title().text(areaAxisTitle);
 
+        chart
+          .yAxis()
+          .ticks()
+          .scale(priceScale)
+          .onConfigureAxis((axis) => axis.tickFormat(priceFormatter));
+        chart.yAxis().title().text(priceAxisTitle);
+      }
+
+      function handleZoom(zoomEvent) {
         respVis.rescaleX(zoomEvent.transform, areaScale, areaDomain);
         respVis.rescaleY(zoomEvent.transform, priceScale, priceDomain);
 
