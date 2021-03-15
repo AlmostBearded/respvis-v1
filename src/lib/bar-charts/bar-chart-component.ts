@@ -13,67 +13,14 @@ import { CartesianChartComponent } from '../cartesian-chart';
 
 export class BarChartComponent extends CartesianChartComponent implements Bars {
   private _bars: BarsComponent;
-  private _xAxisPosition: XAxisPosition;
-  private _yAxisPosition: YAxisPosition;
 
   constructor() {
     super();
-
     this.drawArea().child('bars', (this._bars = new BarsComponent()));
-
-    this._xAxisPosition = XAxisPosition.Bottom;
-    this._yAxisPosition = YAxisPosition.Left;
-    this.bottomAxis(new BottomAxisComponent()).leftAxis(new LeftAxisComponent());
   }
 
   bars(): BarsComponent {
     return this._bars;
-  }
-
-  xAxisPosition(): XAxisPosition;
-  xAxisPosition(position: XAxisPosition): this;
-  xAxisPosition(position?: XAxisPosition): XAxisPosition | this {
-    if (position === undefined) return this._xAxisPosition;
-
-    const title = this.xAxis().title().text(),
-      scale = this.xAxis().ticks().scale();
-
-    if (this._xAxisPosition === XAxisPosition.Bottom) this.bottomAxis(null);
-    if (this._xAxisPosition === XAxisPosition.Top) this.topAxis(null);
-
-    if (position === XAxisPosition.Bottom) this.bottomAxis(new BottomAxisComponent());
-    if (position === XAxisPosition.Top) this.topAxis(new TopAxisComponent());
-
-    this._xAxisPosition = position;
-
-    this.xAxis()
-      .call((a) => a.ticks().scale(scale))
-      .call((a) => a.title().text(title));
-
-    return this;
-  }
-
-  yAxisPosition(): YAxisPosition;
-  yAxisPosition(position: YAxisPosition): this;
-  yAxisPosition(position?: YAxisPosition): YAxisPosition | this {
-    if (position === undefined) return this._yAxisPosition;
-
-    const title = this.yAxis().title().text(),
-      scale = this.yAxis().ticks().scale();
-
-    if (this._yAxisPosition === YAxisPosition.Left) this.leftAxis(null);
-    if (this._yAxisPosition === YAxisPosition.Right) this.rightAxis(null);
-
-    if (position === YAxisPosition.Left) this.leftAxis(new LeftAxisComponent());
-    if (position === YAxisPosition.Right) this.rightAxis(new RightAxisComponent());
-
-    this._yAxisPosition = position;
-
-    this.yAxis()
-      .call((a) => a.ticks().scale(scale))
-      .call((a) => a.title().text(title));
-
-    return this;
   }
 
   mainAxis(): AxisComponent {
@@ -84,16 +31,6 @@ export class BarChartComponent extends CartesianChartComponent implements Bars {
   crossAxis(): AxisComponent {
     if (this.orientation() === BarOrientation.Vertical) return this.yAxis();
     else return this.xAxis();
-  }
-
-  xAxis(): AxisComponent {
-    if (this._xAxisPosition === XAxisPosition.Bottom) return this.bottomAxis()!;
-    else return this.topAxis()!;
-  }
-
-  yAxis(): AxisComponent {
-    if (this._yAxisPosition === YAxisPosition.Left) return this.leftAxis()!;
-    else return this.rightAxis()!;
   }
 
   mainValues(): any[];
