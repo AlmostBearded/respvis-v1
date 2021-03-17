@@ -21,6 +21,7 @@ export * from './components/rect-component';
 export * from './components/grid-component';
 export * from './components/defs-component';
 export * from './components/clip-path-component';
+export * from './components/use-component';
 
 export * from './utility/title-text-attributes';
 export * from './utility/vertical-text-attributes';
