@@ -58,7 +58,7 @@ export class BaseComponent implements Component {
     return this.node().getBoundingClientRect();
   }
 
-  attr(name: string): string;
+  attr(name: string): string | null;
   attr(name: string, value: null): this;
   attr(name: string, value: string | number | boolean): this;
   attr(name: string, value: string | number | boolean, transitionDuration: number): this;
@@ -73,7 +73,7 @@ export class BaseComponent implements Component {
     value?: null | string | number | boolean,
     transitionDuration?: number,
     transitionDelay?: number
-  ): string | this {
+  ): string | null | this {
     if (value === undefined) return this.selection().attr(name);
     if (value === null) this.selection().attr(name, null);
     else {
@@ -111,14 +111,14 @@ export class BaseComponent implements Component {
     return this;
   }
 
-  style(name: string): string;
+  style(name: string): string | null;
   style(name: string, value: null): this;
   style(name: string, value: string | number | boolean, priority?: 'important' | null): this;
   style(
     name: string,
     value?: null | string | number | boolean,
     priority?: 'important' | null
-  ): string | this {
+  ): string | null | this {
     if (value === undefined) return this._selection.style(name);
     if (value === null) this._selection.style(name, null);
     else this._selection.style(name, value, priority);

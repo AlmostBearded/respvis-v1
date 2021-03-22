@@ -22,7 +22,7 @@ export interface Component {
   layout(name: keyof LayoutProperties): string | number | undefined;
   layout(name: keyof LayoutProperties, value: string | number): this;
   layout(name: keyof LayoutProperties, value: null): this;
-  attr(name: string): string;
+  attr(name: string): string | null;
   attr(name: string, value: null): this;
   attr(name: string, value: string | number | boolean): this;
   attr(name: string, value: string | number | boolean, transitionDuration: number): this;
@@ -32,7 +32,7 @@ export interface Component {
     transitionDuration: number,
     transitionDelay: number
   ): this;
-  style(name: string): string;
+  style(name: string): string | null;
   style(name: string, value: null): this;
   style(name: string, value: string | number | boolean, priority?: 'important' | null): this;
   // todo: add style transition support
