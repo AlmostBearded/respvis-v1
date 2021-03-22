@@ -72,7 +72,10 @@
           .heightPercent(1)
           .attr('dominant-baseline', 'auto')
           .attr('text-anchor', 'middle')
-          .attr('transform', 'translate(0, -4)');
+          .onUpdateLabels((selection) =>
+            selection.call(respVis.updateLabels).attr('dx', null).attr('dy', '-0.25em')
+          ); // todo: replace with negative margin when supported
+        // .layout('margin-top', '-0.25rem') // todo: first needs negative margin and rem unit support in layouter
       }
 
       function configureHorizontalBarLabels(barLabels) {
@@ -81,7 +84,9 @@
           .heightPercent(0.5)
           .attr('dominant-baseline', 'middle')
           .attr('text-anchor', 'start')
-          .attr('transform', 'translate(4, 0)');
+          .onUpdateLabels((selection) =>
+            selection.call(respVis.updateLabels).attr('dx', '0.25em').attr('dy', null)
+          );
       }
 
       function configureBarChartAxes(barChart) {
