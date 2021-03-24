@@ -1,11 +1,12 @@
 import { create, select, selectAll, Selection } from 'd3-selection';
+import { BaseComponent } from '../base-component';
 import { Chart } from '../chart';
 import { Component, ComponentEventData } from '../component';
 import { LaidOutElement } from '../layout/layout';
 import { ISize } from '../utils';
 import { Constructor } from './types';
 
-export function StaticSizeMixin<TBaseComponent extends Constructor<Component>>(
+export function StaticSizeMixin<TBaseComponent extends Constructor<BaseComponent>>(
   BaseComponent: TBaseComponent
 ) {
   return class StaticSizeMixin extends BaseComponent {
@@ -25,40 +26,27 @@ export function StaticSizeMixin<TBaseComponent extends Constructor<Component>>(
       this._combinedSelection.layoutBoundsCalculator(() => that.size());
     }
 
-    attr(name: string): string;
-    attr(name: string, value: null): this;
-    attr(name: string, value: string | number | boolean): this;
-    attr(name: string, value: string | number | boolean, transitionDuration: number): this;
-    attr(
+    protected _removeAttr(name: string): void {
+      super._removeAttr(name);
+      this._staticCloneSelection.attr(name, null);
+    }
+
+    protected _setAttr(name: string, value: string | number | boolean): void {
+      super._setAttr(name, value);
+      this._staticCloneSelection.attr(name, value);
+    }
+
+    protected _transitionAttr(
       name: string,
       value: string | number | boolean,
       transitionDuration: number,
       transitionDelay: number
-    ): this;
-    attr(
-      name: string,
-      value?: null | string | number | boolean,
-      transitionDuration?: number,
-      transitionDelay?: number
-    ): string | this {
-      if (value === undefined) return this.selection().attr(name);
-      if (value === null) this._combinedSelection.attr(name, null);
-      else {
-        if (transitionDuration === undefined) this._combinedSelection.attr(name, value);
-        else {
-          // transition attribute
-          this.selection()
-            .transition(name)
-            .delay(transitionDelay || 0)
-            .duration(transitionDuration)
-            .attr(name, value);
+    ): void {
+      // transition attribute
+      super._transitionAttr(name, value, transitionDuration, transitionDelay);
 
-          // set attribute without transition on clone
-          this._staticCloneSelection.attr(name, value);
-        }
-      }
-
-      return this;
+      // set attribute without transition on clone
+      this._staticCloneSelection.attr(name, value);
     }
 
     classed(names: string): boolean;

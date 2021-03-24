@@ -74,21 +74,39 @@ export class BaseComponent implements Component {
     transitionDuration?: number,
     transitionDelay?: number
   ): string | null | this {
-    if (value === undefined) return this.selection().attr(name);
-    if (value === null) this.selection().attr(name, null);
-    else {
-      if (transitionDuration === undefined) this.selection().attr(name, value);
-      else {
-        this._selection
-          .transition(name)
-          .delay(transitionDelay || 0)
-          .duration(transitionDuration)
-          .attr(name, value);
-      }
-    }
-
+    if (value === undefined) return this._getAttr(name);
+    if (value === null) this._removeAttr(name);
+    else if (transitionDuration === undefined) this._setAttr(name, value);
+    else this._transitionAttr(name, value, transitionDuration, transitionDelay || 0);
     return this;
   }
+
+  protected _getAttr(name: string): string | null {
+    return this.selection().attr(name);
+  }
+
+  protected _removeAttr(name: string): void {
+    this.selection().attr(name, null);
+  }
+
+  protected _setAttr(name: string, value: string | number | boolean): void {
+    this.selection().attr(name, value);
+  }
+
+  protected _transitionAttr(
+    name: string,
+    value: string | number | boolean,
+    transitionDuration: number,
+    transitionDelay: number
+  ): void {
+    this._selection
+      .transition(name)
+      .delay(transitionDelay)
+      .duration(transitionDuration)
+      .attr(name, value);
+  }
+
+  // todo: refactor style/layout/property/... methods to protected submethod style like _setAttr/_getAttr/... 
 
   layout(name: keyof LayoutProperties): string | number | undefined;
   layout(name: keyof LayoutProperties, value: string | number): this;
