@@ -5,7 +5,6 @@ import { Bars } from './bars';
 import { IPosition, IStringable } from '../core/utils';
 import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
 import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
-import { SelectionOrTransition } from 'd3-transition';
 
 export interface LabelData {
   position: IPosition;
@@ -14,15 +13,7 @@ export interface LabelData {
 
 export type CreateLabelsFunction = (
   enterSelection: Selection<EnterElement, LabelData, any, any>
-) => Selection<SVGTextElement, any, any, any>;
-
-export type RemoveLabelsFunction = (
-  exitSelection: Selection<SVGTextElement, LabelData, any, any>
-) => void;
-
-export type UpdateLabelsFunction = (
-  selection: SelectionOrTransition<SVGTextElement, LabelData, any, any>
-) => void;
+) => Selection<BaseType, any, any, any>;
 
 // todo: add custom BarLabelEventData (or just LabelEventData?)
 
@@ -34,8 +25,7 @@ export class BarLabelsComponent
   private _transitionDelay: number;
   private _transitionDuration: number;
   private _onCreateLabels: CreateLabelsFunction;
-  private _onRemoveLabels: RemoveLabelsFunction;
-  private _onUpdateLabels: UpdateLabelsFunction;
+  // todo: add customizable removeLabels and updateLabels callbacks
 
   constructor(barsAccessor: BarsAccessor) {
     super('g');
@@ -44,8 +34,6 @@ export class BarLabelsComponent
     this._transitionDuration = 250;
     this._transitionDelay = 250;
     this._onCreateLabels = createLabels;
-    this._onRemoveLabels = removeLabels;
-    this._onUpdateLabels = updateLabels;
     this.classed('bar-labels', true)
       .attr('text-anchor', 'middle')
       .attr('dominant-baseline', 'middle')
@@ -112,32 +100,17 @@ export class BarLabelsComponent
     return this;
   }
 
-  onRemoveLabels(): RemoveLabelsFunction;
-  onRemoveLabels(callback: RemoveLabelsFunction): this;
-  onRemoveLabels(callback?: RemoveLabelsFunction): RemoveLabelsFunction | this {
-    if (callback === undefined) return this._onRemoveLabels;
-    this._onRemoveLabels = callback;
-    return this;
-  }
-
-  onUpdateLabels(): UpdateLabelsFunction;
-  onUpdateLabels(callback: UpdateLabelsFunction): this;
-  onUpdateLabels(callback?: UpdateLabelsFunction): UpdateLabelsFunction | this {
-    if (callback === undefined) return this._onUpdateLabels;
-    this._onUpdateLabels = callback;
-    return this;
-  }
-
   render(): this {
     super.render();
     const labelData: LabelData[] = this._barPoints
       .points()
       .map((p, i) => ({ position: p, text: this._labels[i].toString() }));
     this.selection()
-      .selectAll<SVGTextElement, LabelData>('text')
+      .selectAll('text')
       .data(labelData)
-      .join(this._onCreateLabels, undefined, this._onRemoveLabels)
-      .call(this._onUpdateLabels);
+      .join(this._onCreateLabels)
+      .attr('transform', (d) => `translate(${d.position.x}, ${d.position.y})`)
+      .text((d) => d.text);
     return this;
   }
 
@@ -147,13 +120,14 @@ export class BarLabelsComponent
       .points()
       .map((p, i) => ({ position: p, text: this._labels[i].toString() }));
     this.selection()
-      .selectAll<SVGTextElement, LabelData>('text')
+      .selectAll('text')
       .data(labelData)
-      .join(this._onCreateLabels, undefined, this._onRemoveLabels)
+      .join(this._onCreateLabels)
       .transition()
       .delay(this._transitionDelay)
       .duration(this._transitionDuration)
-      .call(this._onUpdateLabels);
+      .attr('transform', (d) => `translate(${d.position.x}, ${d.position.y})`)
+      .text((d) => d.text);
     return this;
   }
 }
@@ -164,17 +138,9 @@ export function barLabels(barsAccessor: BarsAccessor): BarLabelsComponent {
 
 export function createLabels(
   enterSelection: Selection<EnterElement, LabelData, any, any>
-): Selection<SVGTextElement, any, any, any> {
-  return enterSelection.append('text').call(updateLabels);
-}
-
-export function updateLabels(selection: Selection<SVGTextElement, LabelData, any, any>): void {
-  selection
-    .attr('x', (d) => d.position.x)
-    .attr('y', (d) => d.position.y)
+): Selection<BaseType, any, any, any> {
+  return enterSelection
+    .append('text')
+    .attr('transform', (d) => `translate(${d.position.x}, ${d.position.y})`)
     .text((d) => d.text);
-}
-
-export function removeLabels(exitSelection: Selection<SVGTextElement, LabelData, any, any>): void {
-  exitSelection.remove();
 }
