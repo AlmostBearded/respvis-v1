@@ -43,7 +43,7 @@ export class Chart {
 
     this._svg.afterLayout().render();
 
-    applyLayoutTransforms(this._svg.selection().node()!);
+    // applyLayoutTransforms(this._svg.selection().node()!);
 
     return this;
   }
@@ -56,7 +56,7 @@ export class Chart {
 
     this._svg.afterLayout().transition();
 
-    applyLayoutTransforms(this._svg.selection().node()!);
+    // applyLayoutTransforms(this._svg.selection().node()!);
 
     return this;
   }
