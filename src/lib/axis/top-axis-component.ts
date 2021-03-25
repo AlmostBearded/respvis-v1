@@ -1,4 +1,4 @@
-import { BaseComponent, TextComponent, titleTextAttributes } from '../core';
+import { BaseComponent, LayoutTransformMixin, TextComponent, titleTextAttributes } from '../core';
 import { ChildrenMixin } from '../core/mixins/children-mixin';
 import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
 import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
@@ -6,7 +6,9 @@ import { AxisComponent } from './axis-component';
 import { TopTicksComponent } from './top-ticks-component';
 
 export class TopAxisComponent
-  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(ChildrenMixin(BaseComponent)))
+  extends MediaQueryConfiguratorsMixin(
+    ConfiguratorsMixin(ChildrenMixin(LayoutTransformMixin(BaseComponent)))
+  )
   implements AxisComponent {
   private _ticks: TopTicksComponent;
   private _title: TextComponent;

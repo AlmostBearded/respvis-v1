@@ -14,12 +14,14 @@ export class SVGComponent extends MediaQueryConfiguratorsMixin(
 
   afterLayout(): this {
     super.afterLayout();
-    const layout = rectFromString(this.attr('layout'));
-    this.attr('viewBox', rectToString({ ...layout, x: 0, y: 0 }))
-      .attr('x', layout.x)
-      .attr('y', layout.y)
-      .attr('width', layout.width)
-      .attr('height', layout.height);
+    if (this.attr('laidOut') !== null) {
+      const layout = rectFromString(this.attr('layout')!);
+      this.attr('viewBox', rectToString({ ...layout, x: 0, y: 0 }))
+        .attr('x', layout.x)
+        .attr('y', layout.y)
+        .attr('width', layout.width)
+        .attr('height', layout.height);
+    }
 
     return this;
   }

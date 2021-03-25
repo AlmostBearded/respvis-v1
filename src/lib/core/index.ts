@@ -11,6 +11,7 @@ export * from './base-component';
 
 export * from './mixins/types';
 export * from './mixins/children-mixin';
+export * from './mixins/layout-transform-mixin';
 export * from './mixins/grid-mixin';
 export * from './mixins/static-size-mixin';
 

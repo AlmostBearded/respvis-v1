@@ -6,6 +6,7 @@ import {
   categoricalColors,
   Component,
   ComponentEventData,
+  LayoutTransformMixin,
   Rect,
   rectFromString,
 } from '../core';
@@ -35,7 +36,7 @@ export type GroupedBarsEventData<TComponent extends Component> = ComponentEventD
   GroupedBarData;
 
 export class GroupedBarsComponent
-  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(BaseComponent))
+  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(LayoutTransformMixin(BaseComponent)))
   implements GroupedBars {
   private _barsCalculator: GroupedBarsCalculator;
   private _transitionDelay: number;

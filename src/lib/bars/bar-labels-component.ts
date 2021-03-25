@@ -1,5 +1,5 @@
 import { Selection, BaseType, EnterElement, namespace } from 'd3-selection';
-import { BaseComponent } from '../core';
+import { BaseComponent, LayoutTransformMixin } from '../core';
 import { BarPoints, BarPointsCalculator, BarsAccessor } from './bar-points';
 import { Bars } from './bars';
 import { IPosition, IStringable } from '../core/utils';
@@ -27,7 +27,7 @@ export type UpdateLabelsFunction = (
 // todo: add custom BarLabelEventData (or just LabelEventData?)
 
 export class BarLabelsComponent
-  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(BaseComponent))
+  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(LayoutTransformMixin(BaseComponent)))
   implements BarPoints {
   private _barPoints: BarPoints;
   private _labels: IStringable[];

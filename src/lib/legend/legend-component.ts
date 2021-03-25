@@ -1,5 +1,5 @@
 import { range } from 'd3-array';
-import { BaseComponent } from '../core';
+import { BaseComponent, LayoutTransformMixin } from '../core';
 import { ChildrenMixin } from '../core/mixins/children-mixin';
 import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
 import { GridMixin } from '../core/mixins/grid-mixin';
@@ -7,7 +7,7 @@ import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configu
 import { SwatchComponent } from './swatch-component';
 
 export class LegendComponent extends MediaQueryConfiguratorsMixin(
-  ConfiguratorsMixin(GridMixin(ChildrenMixin(BaseComponent)))
+  ConfiguratorsMixin(GridMixin(ChildrenMixin(LayoutTransformMixin(BaseComponent))))
 ) {
   constructor(swatchCount: number) {
     super('g');

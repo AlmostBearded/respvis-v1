@@ -5,6 +5,7 @@ import {
   categoricalColors,
   Component,
   ComponentEventData,
+  LayoutTransformMixin,
   rectFromString,
   ScaleAny,
 } from '../core';
@@ -27,7 +28,7 @@ export type UpdatePointsFunction = (
 ) => void;
 
 export class PointsComponent
-  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(BaseComponent))
+  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(LayoutTransformMixin(BaseComponent)))
   implements Points {
   private _calculator: PointsCalculator;
   private _transitionDelay: number;
