@@ -1,6 +1,6 @@
 import { select } from 'd3-selection';
 import debounce from 'debounce';
-import { applyLayoutTransforms, computeLayout } from './layout/layout';
+import { computeLayout } from './layout/layout';
 import { SVGComponent } from './components/svg-component';
 import { GroupComponent } from './components/group-component';
 
@@ -43,8 +43,6 @@ export class Chart {
 
     this._svg.afterLayout().render();
 
-    // applyLayoutTransforms(this._svg.selection().node()!);
-
     return this;
   }
 
@@ -55,8 +53,6 @@ export class Chart {
     computeLayout(this._svg.selection().node()!, bbox);
 
     this._svg.afterLayout().transition();
-
-    // applyLayoutTransforms(this._svg.selection().node()!);
 
     return this;
   }

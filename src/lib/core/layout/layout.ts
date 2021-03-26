@@ -141,31 +141,6 @@ export function computeLayout(element: LaidOutElement, size: ISize) {
   setLayoutAttributes(element, rootLayoutNode);
 }
 
-export function applyLayoutTransforms(element: Element) {
-  const layoutAttribute = element.getAttribute('layout');
-  if (layoutAttribute) {
-    const layoutRect = rectFromString(layoutAttribute);
-    const layoutTransform = `translate(${layoutRect.x}, ${layoutRect.y})`;
-
-    const previousTransform = element.getAttribute('previous-transform') || '';
-
-    let transform = element.getAttribute('transform') || '';
-
-    if (previousTransform === transform) {
-      transform = transform.substring(transform.indexOf(')') + 1);
-    }
-
-    transform = layoutTransform.concat(transform);
-
-    element.setAttribute('transform', transform);
-    element.setAttribute('previous-transform', transform);
-  }
-
-  for (let i = 0; i < element.children.length; ++i) {
-    applyLayoutTransforms(element.children[i]);
-  }
-}
-
 function parseLayoutStyle(element: LaidOutElement): LayoutStyle | null {
   if (element.__layout === undefined) return null;
   const data = element.__layout;
