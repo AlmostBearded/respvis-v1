@@ -247,7 +247,7 @@
           yearlyShares.reduce((a, b) => a + b)
         );
         newShares = newShares.map((yearlyShares, yearIndex) =>
-          yearlyShares.map((share) => (share / newShareTotals[yearIndex]) * 100)
+          yearlyShares.map((share) => (share / Math.max(0.01, newShareTotals[yearIndex])) * 100)
         );
 
         const newKeys = keys.map((platformKeys) =>
