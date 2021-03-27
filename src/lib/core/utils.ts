@@ -1,7 +1,4 @@
 import { Primitive } from 'd3-array';
-import { BaseType, select, Selection } from 'd3-selection';
-import { SelectionOrTransition, Transition } from 'd3-transition';
-import { applyLayoutTransforms } from './layout/layout';
 
 export function nullFunction() {}
 
