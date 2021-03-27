@@ -4,7 +4,14 @@ import {
   brush as d3Brush,
   brushSelection as d3BrushSelection,
 } from 'd3-brush';
-import { BaseComponent, Component, ComponentEventData, LayoutTransformMixin, Rect, rectFromString } from '../core';
+import {
+  BaseComponent,
+  Component,
+  ComponentEventData,
+  LayoutTransformMixin,
+  Rect,
+  rectFromString,
+} from '../core';
 import { arraysEqual } from '../core/array';
 import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
 import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
@@ -23,10 +30,9 @@ export class BrushComponent extends MediaQueryConfiguratorsMixin(
 
   constructor() {
     super('g');
-
     this._brush = d3Brush();
-
-    this.classed('brush', true).attr('layout', '0, 0, 600, 400');
+    this.classed('brush', true);
+    // .attr('layout', '0, 0, 600, 400');
   }
 
   render(): this {
