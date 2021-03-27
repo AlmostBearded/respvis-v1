@@ -1,10 +1,22 @@
-import { D3ZoomEvent, zoom as d3Zoom, ZoomBehavior, ZoomScale, ZoomTransform } from 'd3-zoom';
 import {
+  D3ZoomEvent,
+  zoom as d3Zoom,
+  ZoomBehavior,
+  zoomIdentity,
+  ZoomScale,
+  ZoomTransform,
+} from 'd3-zoom';
+import {
+  ClipPathComponent,
   Component,
   ComponentEventData,
+  DefsComponent,
+  GroupComponent,
   RectComponent,
   rectFromString,
   SVGComponent,
+  UseComponent,
+  uuid,
 } from '../core';
 
 export interface ZoomEventData<TComponent extends Component>
@@ -14,29 +26,37 @@ export interface ZoomEventData<TComponent extends Component>
 
 export class ZoomComponent extends SVGComponent {
   private _zoomBehavior: ZoomBehavior<any, any>;
-  private _rect: RectComponent;
+  private _areaRect: RectComponent;
   private _translateExtentFactors: [[number, number], [number, number]];
 
   constructor() {
     super();
+
     this.attr('pointer-events', 'all');
+
     this._zoomBehavior = d3Zoom()
       .extent([
         [0, 0],
         [1, 1],
       ])
       .scaleExtent([1, 20]);
-    this._rect = new RectComponent()
-      .layout('width', '100%')
-      .layout('height', '100%')
-      .attr('width', '100%')
-      .attr('height', '100%')
-      .attr('fill', 'none');
+
     this._translateExtentFactors = [
       [0, 0],
       [1, 1],
     ];
-    this.child('rect', this._rect);
+
+    this.child(
+      'rect',
+      (this._areaRect = new RectComponent())
+        .attr('id', uuid())
+        .layout('width', '100%')
+        .layout('height', '100%')
+        .attr('width', '100%')
+        .attr('height', '100%')
+        .attr('opacity', 0)
+    );
+
     this.selection().call(this._zoomBehavior);
   }
 
@@ -60,6 +80,10 @@ export class ZoomComponent extends SVGComponent {
     if (extent === undefined) return this._translateExtentFactors;
     this._translateExtentFactors = extent;
     return this;
+  }
+
+  areaRect(): RectComponent {
+    return this._areaRect;
   }
 
   // todo: add further missing methods
