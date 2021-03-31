@@ -64,36 +64,6 @@ export class Chart {
   root(): GroupComponent {
     return this._rootGroup;
   }
-
-  // requestLayout(duration: number): this {
-  //   // add a few milliseconds to the requested layouting duration to make sure
-  //   // transitions have ended when stopping layouting.
-  //   duration += 25;
-  //   this._layoutDuration = Math.max(this._layoutDuration, duration);
-  //   this._lastLayoutTime = Date.now();
-
-  //   const layoutStep = () => {
-  //     let bbox = Rect.fromString(this.attr('viewBox'));
-  //     computeLayout(this.node(), bbox);
-
-  //     super.layout();
-
-  //     applyLayoutTransforms(this.node());
-
-  //     const currentTime = Date.now();
-  //     const msSinceLastLayout = currentTime - this._lastLayoutTime;
-
-  //     this._layoutDuration -= msSinceLastLayout;
-
-  //     if (this._layoutDuration >= 0) {
-  //       window.requestAnimationFrame(layoutStep);
-  //     }
-  //     this._lastLayoutTime = currentTime;
-  //   };
-
-  //   window.requestAnimationFrame(layoutStep);
-  //   return this;
-  // }
 }
 
 export function chart(): Chart {

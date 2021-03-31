@@ -90,7 +90,8 @@ export class ZoomComponent extends SVGComponent {
 
   afterLayout(): this {
     super.afterLayout();
-    const layout = rectFromString(this.attr('layout'));
+    console.assert(this.attr('layout') !== null, 'layout attribute must be specified');
+    const layout = rectFromString(this.attr('layout')!);
     this._zoomBehavior
       .extent([
         [0, 0],

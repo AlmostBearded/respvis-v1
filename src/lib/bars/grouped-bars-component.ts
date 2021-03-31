@@ -173,7 +173,8 @@ export class GroupedBarsComponent
 
   afterLayout(): this {
     super.afterLayout();
-    this._barsCalculator.fitInSize(rectFromString(this.attr('layout')));
+    console.assert(this.attr('layout') !== null, 'layout attribute must be specified');
+    this._barsCalculator.fitInSize(rectFromString(this.attr('layout')!));
     return this;
   }
 

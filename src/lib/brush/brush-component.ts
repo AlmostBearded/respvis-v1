@@ -38,7 +38,8 @@ export class BrushComponent extends MediaQueryConfiguratorsMixin(
   render(): this {
     super.render();
 
-    const layoutRect = rectFromString(this.attr('layout'));
+    console.assert(this.attr('layout') !== null, 'layout attribute must be specified');
+    const layoutRect = rectFromString(this.attr('layout')!);
 
     this._brush.extent([
       [0, 0],
@@ -75,7 +76,8 @@ export class BrushComponent extends MediaQueryConfiguratorsMixin(
   transition(): this {
     super.transition();
 
-    const layoutRect = rectFromString(this.attr('layout'));
+    console.assert(this.attr('layout') !== null, 'layout attribute must be specified');
+    const layoutRect = rectFromString(this.attr('layout')!);
 
     this._brush.extent([
       [0, 0],

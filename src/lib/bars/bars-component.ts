@@ -151,9 +151,8 @@ export class BarsComponent
 
   afterLayout(): this {
     super.afterLayout();
-    // todo: what if the bars component isn't laid out?
-    //   the best solution is probably to expose the fitInSize method of the calculator
-    this._barsCalculator.fitInSize(rectFromString(this.attr('layout')));
+    console.assert(this.attr('layout') !== null, 'layout attribute must be specified');
+    this._barsCalculator.fitInSize(rectFromString(this.attr('layout')!));
     return this;
   }
 
