@@ -31,8 +31,7 @@ export class BrushComponent extends MediaQueryConfiguratorsMixin(
   constructor() {
     super('g');
     this._brush = d3Brush();
-    this.classed('brush', true);
-    // .attr('layout', '0, 0, 600, 400');
+    this.classed('brush', true).attr('layout', '0, 0, 600, 400');
   }
 
   afterLayout(): this {

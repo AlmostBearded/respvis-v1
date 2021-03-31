@@ -32,7 +32,7 @@ export class ZoomComponent extends SVGComponent {
   constructor() {
     super();
 
-    this.attr('pointer-events', 'all');
+    this.attr('pointer-events', 'all').attr('layout', '0, 0, 600, 400');
 
     this._zoomBehavior = d3Zoom()
       .extent([
