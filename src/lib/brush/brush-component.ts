@@ -35,6 +35,11 @@ export class BrushComponent extends MediaQueryConfiguratorsMixin(
     // .attr('layout', '0, 0, 600, 400');
   }
 
+  afterLayout(): this {
+    // todo: unify duplicate code in render and transition methods?
+    return this;
+  }
+
   render(): this {
     super.render();
 
