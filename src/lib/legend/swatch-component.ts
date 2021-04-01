@@ -1,10 +1,4 @@
-import {
-  BaseComponent,
-  Component,
-  LayoutTransformMixin,
-  RectComponent,
-  TextComponent,
-} from '../core';
+import { BaseComponent, LayoutTransformMixin, RectComponent, TextComponent } from '../core';
 import { ChildrenMixin } from '../core/mixins/children-mixin';
 import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
 import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';

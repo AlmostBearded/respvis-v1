@@ -1,5 +1,3 @@
-import { Chart } from '../chart';
-import { Component } from '../component';
 import { ChildrenMixin } from './children-mixin';
 import { Constructor, Mixin } from './types';
 

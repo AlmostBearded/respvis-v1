@@ -1,7 +1,5 @@
 import { BaseComponent } from '../base-component';
-import { Component } from '../component';
 import { rectFromString } from '../rect';
-import { ChildrenMixin } from './children-mixin';
 import { Constructor, Mixin } from './types';
 
 // prepends the translation that represents the layout to the transform attribute

@@ -1,7 +1,5 @@
 import { create, select, selectAll, Selection } from 'd3-selection';
 import { BaseComponent } from '../base-component';
-import { Chart } from '../chart';
-import { Component, ComponentEventData } from '../component';
 import { LaidOutElement } from '../layout/layout';
 import { ISize } from '../utils';
 import { Constructor } from './types';
