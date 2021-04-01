@@ -15,6 +15,8 @@ export function ConfiguratorsMixin<TBaseComponent extends Constructor<Component>
       this._configuratorOrders = [];
     }
 
+    // todo: what happens when multiple configurators with the same order are added?
+    
     configurator(order: number): ((component: this) => void) | undefined;
     configurator(order: number, callback: null): this;
     configurator(order: number, callback: (component: this) => void): this;
