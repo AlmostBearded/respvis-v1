@@ -3,9 +3,8 @@ import { BaseType, Selection } from 'd3-selection';
 import {
   ScaleAny,
   linearScale,
-  BaseComponent,
-  ComponentEventData,
   Component,
+  ComponentEventData,
   LayoutTransformMixin,
 } from '../core';
 import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
@@ -25,7 +24,7 @@ export interface TicksEventData<TComponent extends Component>
 }
 
 export abstract class TicksComponent extends MediaQueryConfiguratorsMixin(
-  ConfiguratorsMixin(LayoutTransformMixin(StaticSizeMixin(BaseComponent)))
+  ConfiguratorsMixin(LayoutTransformMixin(StaticSizeMixin(Component)))
 ) {
   private _scale: ScaleAny<any, any, any>;
   private _transitionDelay: number;

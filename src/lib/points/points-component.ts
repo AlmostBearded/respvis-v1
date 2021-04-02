@@ -1,9 +1,8 @@
 import { BaseType, EnterElement, select, Selection } from 'd3-selection';
 import { SelectionOrTransition } from 'd3-transition';
 import {
-  BaseComponent,
-  categoricalColors,
   Component,
+  categoricalColors,
   ComponentEventData,
   LayoutTransformMixin,
   rectFromString,
@@ -11,7 +10,6 @@ import {
 } from '../core';
 import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
 import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
-import { IPosition } from '../core/utils';
 import { PointData, Points, PointsCalculator } from './points';
 
 export type PointsEventData<TComponent extends Component> = ComponentEventData<TComponent> &
@@ -28,7 +26,7 @@ export type UpdatePointsFunction = (
 ) => void;
 
 export class PointsComponent
-  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(LayoutTransformMixin(BaseComponent)))
+  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(LayoutTransformMixin(Component)))
   implements Points {
   private _calculator: PointsCalculator;
   private _transitionDelay: number;

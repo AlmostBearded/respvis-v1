@@ -1,11 +1,11 @@
-import { BaseComponent } from '../base-component';
+import { Component } from '../component';
 import { ChildrenMixin } from '../mixins/children-mixin';
 import { ConfiguratorsMixin } from '../mixins/configurators-mixin';
 import { MediaQueryConfiguratorsMixin } from '../mixins/media-query-configurators-mixin';
 import { rectFromString, rectToString } from '../rect';
 
 export class SVGComponent extends MediaQueryConfiguratorsMixin(
-  ConfiguratorsMixin(ChildrenMixin(BaseComponent))
+  ConfiguratorsMixin(ChildrenMixin(Component))
 ) {
   constructor() {
     super('svg');

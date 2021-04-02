@@ -1,10 +1,10 @@
 import { create, select, selectAll, Selection } from 'd3-selection';
-import { BaseComponent } from '../base-component';
+import { Component } from '../component';
 import { LaidOutElement } from '../layout/layout';
 import { ISize } from '../utils';
 import { Constructor } from './types';
 
-export function StaticSizeMixin<TBaseComponent extends Constructor<BaseComponent>>(
+export function StaticSizeMixin<TBaseComponent extends Constructor<Component>>(
   BaseComponent: TBaseComponent
 ) {
   return class StaticSizeMixin extends BaseComponent {

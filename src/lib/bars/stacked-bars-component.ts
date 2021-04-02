@@ -2,9 +2,8 @@ import { ScaleBand, ScaleContinuousNumeric } from 'd3-scale';
 import { BaseType, EnterElement, select, Selection } from 'd3-selection';
 import { SelectionOrTransition } from 'd3-transition';
 import {
-  BaseComponent,
-  categoricalColors,
   Component,
+  categoricalColors,
   ComponentEventData,
   LayoutTransformMixin,
   rectFromString,
@@ -35,7 +34,7 @@ export type StackedBarsEventData<TComponent extends Component> = ComponentEventD
   StackedBarData;
 
 export class StackedBarsComponent
-  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(LayoutTransformMixin(BaseComponent)))
+  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(LayoutTransformMixin(Component)))
   implements StackedBars {
   private _barsCalculator: StackedBarsCalculator;
   private _transitionDelay: number;

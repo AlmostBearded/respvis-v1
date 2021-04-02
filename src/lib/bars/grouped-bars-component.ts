@@ -2,12 +2,10 @@ import { ScaleBand, ScaleContinuousNumeric } from 'd3-scale';
 import { BaseType, EnterElement, select, selection, Selection } from 'd3-selection';
 import { SelectionOrTransition } from 'd3-transition';
 import {
-  BaseComponent,
-  categoricalColors,
   Component,
+  categoricalColors,
   ComponentEventData,
   LayoutTransformMixin,
-  Rect,
   rectFromString,
 } from '../core';
 import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
@@ -36,7 +34,7 @@ export type GroupedBarsEventData<TComponent extends Component> = ComponentEventD
   GroupedBarData;
 
 export class GroupedBarsComponent
-  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(LayoutTransformMixin(BaseComponent)))
+  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(LayoutTransformMixin(Component)))
   implements GroupedBars {
   private _barsCalculator: GroupedBarsCalculator;
   private _transitionDelay: number;

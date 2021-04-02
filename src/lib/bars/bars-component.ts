@@ -2,7 +2,6 @@ import {
   Component,
   ComponentEventData,
   categoricalColors,
-  BaseComponent,
   rectFromString,
   LayoutTransformMixin,
 } from '../core';
@@ -28,7 +27,7 @@ export type UpdateBarsFunction = (
 export type BarsEventData<TComponent extends Component> = ComponentEventData<TComponent> & BarData;
 
 export class BarsComponent
-  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(LayoutTransformMixin(BaseComponent)))
+  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(LayoutTransformMixin(Component)))
   implements Bars {
   private _barsCalculator: BarsCalculator;
   private _transitionDelay: number;

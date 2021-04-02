@@ -1,5 +1,5 @@
 import {
-  BaseComponent,
+  Component,
   LayoutTransformMixin,
   TextComponent,
   titleTextAttributes,
@@ -13,7 +13,7 @@ import { LeftTicksComponent } from './left-ticks-component';
 
 export class LeftAxisComponent
   extends MediaQueryConfiguratorsMixin(
-    ConfiguratorsMixin(ChildrenMixin(LayoutTransformMixin(BaseComponent)))
+    ConfiguratorsMixin(ChildrenMixin(LayoutTransformMixin(Component)))
   )
   implements AxisComponent {
   private _ticks: LeftTicksComponent;

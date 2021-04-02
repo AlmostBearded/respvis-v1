@@ -1,4 +1,4 @@
-import { BaseComponent } from '../base-component';
+import { Component } from '../component';
 import { ChildrenMixin } from '../mixins/children-mixin';
 import { ConfiguratorsMixin } from '../mixins/configurators-mixin';
 import { LayoutTransformMixin } from '../mixins/layout-transform-mixin';
@@ -7,7 +7,7 @@ import { MediaQueryConfiguratorsMixin } from '../mixins/media-query-configurator
 // todo: needs the static clone mixin?
 //   probably better not to because it would clone the whole subtree 🤔
 export class GroupComponent extends MediaQueryConfiguratorsMixin(
-  ConfiguratorsMixin(ChildrenMixin(LayoutTransformMixin(BaseComponent)))
+  ConfiguratorsMixin(ChildrenMixin(LayoutTransformMixin(Component)))
 ) {
   constructor() {
     super('g');

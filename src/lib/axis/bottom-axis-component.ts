@@ -1,4 +1,4 @@
-import { BaseComponent, LayoutTransformMixin, TextComponent, titleTextAttributes } from '../core';
+import { Component, LayoutTransformMixin, TextComponent, titleTextAttributes } from '../core';
 import { ChildrenMixin } from '../core/mixins/children-mixin';
 import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
 import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
@@ -7,7 +7,7 @@ import { BottomTicksComponent } from './bottom-ticks-component';
 
 export class BottomAxisComponent
   extends MediaQueryConfiguratorsMixin(
-    ConfiguratorsMixin(ChildrenMixin(LayoutTransformMixin(BaseComponent)))
+    ConfiguratorsMixin(ChildrenMixin(LayoutTransformMixin(Component)))
   )
   implements AxisComponent {
   private _ticks: BottomTicksComponent;

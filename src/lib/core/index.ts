@@ -7,7 +7,6 @@ export { v4 as uuid } from 'uuid';
 export * from './scales';
 
 export * from './component';
-export * from './base-component';
 
 export * from './mixins/types';
 export * from './mixins/children-mixin';
