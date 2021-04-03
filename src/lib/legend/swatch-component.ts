@@ -1,10 +1,10 @@
-import { Component, LayoutTransformMixin, RectComponent, TextComponent } from '../core';
+import { ChartComponent, LayoutTransformMixin, RectComponent, TextComponent } from '../core';
 import { ChildrenMixin } from '../core/mixins/children-mixin';
 import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
 import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
 
 export class SwatchComponent extends MediaQueryConfiguratorsMixin(
-  ConfiguratorsMixin(ChildrenMixin(LayoutTransformMixin(Component)))
+  ConfiguratorsMixin(ChildrenMixin(LayoutTransformMixin(ChartComponent)))
 ) {
   private _rect: RectComponent;
   private _label: TextComponent;

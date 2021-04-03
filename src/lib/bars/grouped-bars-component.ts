@@ -7,6 +7,7 @@ import {
   ComponentEventData,
   LayoutTransformMixin,
   rectFromString,
+  ChartComponent,
 } from '../core';
 import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
 import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
@@ -34,7 +35,7 @@ export type GroupedBarsEventData<TComponent extends Component> = ComponentEventD
   GroupedBarData;
 
 export class GroupedBarsComponent
-  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(LayoutTransformMixin(Component)))
+  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(LayoutTransformMixin(ChartComponent)))
   implements GroupedBars {
   private _barsCalculator: GroupedBarsCalculator;
   private _transitionDelay: number;

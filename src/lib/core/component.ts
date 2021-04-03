@@ -1,6 +1,4 @@
-import { create, select, selectAll, Selection, BaseType } from 'd3-selection';
-import { Chart } from './chart';
-import { LaidOutElement, LayoutProperties } from './layout/layout';
+import { create, Selection } from 'd3-selection';
 import { ISize } from './utils';
 
 export interface ComponentEventData<TComponent extends Component> {
@@ -8,43 +6,44 @@ export interface ComponentEventData<TComponent extends Component> {
 }
 
 export class Component {
-  private _selection: Selection<SVGElement & LaidOutElement, any, any, any>;
+  private _selection: Selection<Element, any, any, any>;
+  // private _children: Map<string, Component>;
 
   constructor(tag: string) {
-    this._selection = create(`svg:${tag}`);
- 
-    this.layout('grid-area', '1 / 1 / 2 / 2');
-
-    // can't access 'this' within the bounds calculator callback
-    const that = this;
-    this._selection.layoutBoundsCalculator(() => that.size());
-
-    this.init();
+    this._selection = create(tag);
+    // this._children = new Map();
   }
 
-  init(): void {}
+  // todo: 'index' or 'order' instead of 'name'?
+  // - would solve the issue of child order
+  // - 'index' would have to be unique, 'order' not a good idea?
+  // child<TChild extends Component = Component>(name: string): TChild | undefined;
+  // child(name: string, component: null): this;
+  // child(name: string, component: Component): this;
+  // child<TChild extends Component = Component>(
+  //   name: string,
+  //   component?: TChild | null
+  // ): TChild | undefined | this {
+  //   if (component === undefined) return this._children.get(name) as TChild;
+  //   else if (component === null) this._children.delete(name);
+  //   else this._children.set(name, component);
+  //   return this;
+  // }
 
-  mount(chart: Chart): this {
-    return this;
-  }
+  // todo: this is probably very heavy on performance
+  // - if the children would be accessed by index they could be
+  //   stored as an array and this method wouldn't have to create
+  //   artificial ones on every invokation.
+  // children(): Component[] {
+  //   return Array.from(this._children.values());
+  // }
 
-  configure(): this {
-    return this;
-  }
-
-  beforeLayout(): this {
-    return this;
-  }
-
-  afterLayout(): this {
-    return this;
-  }
-
-  render(): this {
-    return this;
-  }
-
-  transition(): this {
+  mount(container: Element): this;
+  mount(container: Component): this;
+  mount(container: Element | Component): this {
+    const containerElement = container instanceof Element ? container : container.node();
+    containerElement.appendChild(this.node());
+    // this.children().forEach((c) => c.mount(this));
     return this;
   }
 
@@ -53,7 +52,7 @@ export class Component {
     return this;
   }
 
-  selection(): Selection<SVGElement, any, any, any> {
+  selection(): Selection<Element, any, any, any> {
     return this._selection;
   }
 
@@ -109,20 +108,7 @@ export class Component {
       .attr(name, value);
   }
 
-  // todo: refactor style/layout/property/... methods to protected submethod style like _setAttr/_getAttr/...
-
-  layout(name: keyof LayoutProperties): string | number | undefined;
-  layout(name: keyof LayoutProperties, value: string | number): this;
-  layout(name: keyof LayoutProperties, value: null): this;
-  layout(
-    name: keyof LayoutProperties,
-    value?: string | number | null
-  ): string | number | undefined | this {
-    if (value === undefined) return this._selection.layout(name);
-    if (value === null) this._selection.layout(name, null);
-    else this._selection.layout(name, value);
-    return this;
-  }
+  // todo: refactor style/property/... methods to protected submethod style like _setAttr/_getAttr/...
 
   classed(names: string): boolean;
   classed(names: string, value: boolean): this;
@@ -194,7 +180,7 @@ export class Component {
     return this;
   }
 
-  node(): SVGElement & LaidOutElement {
+  node(): Element {
     return this.selection().node()!;
   }
 
@@ -214,11 +200,11 @@ export class Component {
     return { component: this };
   }
 
-  select<DescElement extends BaseType>(selector: string): Selection<DescElement, any, any, any> {
+  select<DescElement extends Element>(selector: string): Selection<DescElement, any, any, any> {
     return this._selection.selectAll(selector);
   }
 
-  selectAll<DescElement extends BaseType>(selector: string): Selection<DescElement, any, any, any> {
+  selectAll<DescElement extends Element>(selector: string): Selection<DescElement, any, any, any> {
     return this._selection.selectAll(selector);
   }
 }

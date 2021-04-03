@@ -1,7 +1,7 @@
-import { ChildrenMixin } from './children-mixin';
-import { Constructor, Mixin } from './types';
+import { ComponentWithChildren } from './children-mixin';
+import { Constructor } from './types';
 
-export function GridMixin<TBaseComponent extends Constructor<Mixin<typeof ChildrenMixin>>>(
+export function GridMixin<TBaseComponent extends Constructor<ComponentWithChildren>>(
   BaseComponent: TBaseComponent
 ) {
   return class GridMixin extends BaseComponent {

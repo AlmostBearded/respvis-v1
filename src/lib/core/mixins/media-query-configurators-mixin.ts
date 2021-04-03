@@ -1,6 +1,3 @@
-import { Chart } from '../chart';
-import { Component, ComponentEventData } from '../component';
-import { ComponentWithChildren } from './children-mixin';
 import { Constructor, Mixin } from './types';
 import { ComponentWithConfigurators } from './configurators-mixin';
 

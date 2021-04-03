@@ -1,10 +1,10 @@
 import { create, select, selectAll, Selection } from 'd3-selection';
-import { Component } from '../component';
+import { ChartComponent } from '../chart-component';
 import { LaidOutElement } from '../layout/layout';
 import { ISize } from '../utils';
 import { Constructor } from './types';
 
-export function StaticSizeMixin<TBaseComponent extends Constructor<Component>>(
+export function StaticSizeMixin<TBaseComponent extends Constructor<ChartComponent>>(
   BaseComponent: TBaseComponent
 ) {
   return class StaticSizeMixin extends BaseComponent {
@@ -19,9 +19,12 @@ export function StaticSizeMixin<TBaseComponent extends Constructor<Component>>(
         this._staticCloneSelection.node()!,
       ]);
 
+      // todo: i think the following code could be removed because it's already
+      // handled in the ChartComponent
+
       // can't access 'this' within the bounds calculator callback
-      const that = this;
-      this._combinedSelection.layoutBoundsCalculator(() => that.size());
+      // const that = this;
+      // this._combinedSelection.layoutBoundsCalculator(() => that.size());
     }
 
     protected _removeAttr(name: string): void {

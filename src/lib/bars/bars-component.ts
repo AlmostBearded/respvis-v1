@@ -4,6 +4,7 @@ import {
   categoricalColors,
   rectFromString,
   LayoutTransformMixin,
+  ChartComponent,
 } from '../core';
 import { Selection, BaseType, EnterElement, select } from 'd3-selection';
 import { BarData, BarOrientation, Bars, BarsCalculator } from './bars';
@@ -27,7 +28,7 @@ export type UpdateBarsFunction = (
 export type BarsEventData<TComponent extends Component> = ComponentEventData<TComponent> & BarData;
 
 export class BarsComponent
-  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(LayoutTransformMixin(Component)))
+  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(LayoutTransformMixin(ChartComponent)))
   implements Bars {
   private _barsCalculator: BarsCalculator;
   private _transitionDelay: number;

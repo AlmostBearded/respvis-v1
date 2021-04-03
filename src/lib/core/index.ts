@@ -1,12 +1,13 @@
 export * from './colors';
 export * as utils from './utils';
-// export * from './array';
+export * from './array';
 
 export { v4 as uuid } from 'uuid';
 
 export * from './scales';
 
 export * from './component';
+export * from './chart-component';
 
 export * from './mixins/types';
 export * from './mixins/children-mixin';
@@ -28,7 +29,6 @@ export * from './utility/vertical-text-attributes';
 
 export * from './chart';
 
-// todo: solve Rect naming conflict (maybe namespaces?)
 export * from './rect';
 
 import 'd3-transition';

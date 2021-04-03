@@ -1,46 +1,25 @@
-import {
-  Component,
-  LayoutTransformMixin,
-  TextComponent,
-  titleTextAttributes,
-  verticalTextAttributes,
-} from '../core';
-import { ChildrenMixin } from '../core/mixins/children-mixin';
-import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
-import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
+import { TextComponent, titleTextAttributes, verticalTextAttributes } from '../core';
 import { AxisComponent } from './axis-component';
 import { LeftTicksComponent } from './left-ticks-component';
+import { TicksComponent } from './ticks-component';
 
-export class LeftAxisComponent
-  extends MediaQueryConfiguratorsMixin(
-    ConfiguratorsMixin(ChildrenMixin(LayoutTransformMixin(Component)))
-  )
-  implements AxisComponent {
-  private _ticks: LeftTicksComponent;
-  private _title: TextComponent;
-
+export class LeftAxisComponent extends AxisComponent {
   constructor() {
-    super('g');
-
-    this.layout('grid-template', 'auto / auto auto')
-      .child('ticks', (this._ticks = new LeftTicksComponent().layout('grid-area', '1 / 2 / 2 / 3')))
-      .child(
-        'title',
-        (this._title = verticalTextAttributes(
-          titleTextAttributes(new TextComponent())
-            .layout('grid-area', '1 / 1 / 2 / 2')
-            .layout('place-self', 'center')
-            .layout('margin-right', 5)
-        ))
-      );
+    super();
+    this.layout('grid-template', 'auto / auto auto');
   }
 
-  ticks(): LeftTicksComponent {
-    return this._ticks;
+  protected _createTicks(): TicksComponent {
+    return new LeftTicksComponent().layout('grid-area', '1 / 2 / 2 / 3');
   }
 
-  title(): TextComponent {
-    return this._title;
+  protected _createTitle(): TextComponent {
+    return verticalTextAttributes(
+      titleTextAttributes(new TextComponent())
+        .layout('grid-area', '1 / 1 / 2 / 2')
+        .layout('place-self', 'center')
+        .layout('margin-right', 5)
+    );
   }
 }
 

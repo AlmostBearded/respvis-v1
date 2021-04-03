@@ -6,6 +6,7 @@ import {
   Component,
   ComponentEventData,
   LayoutTransformMixin,
+  ChartComponent,
 } from '../core';
 import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
 import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
@@ -24,7 +25,7 @@ export interface TicksEventData<TComponent extends Component>
 }
 
 export abstract class TicksComponent extends MediaQueryConfiguratorsMixin(
-  ConfiguratorsMixin(LayoutTransformMixin(StaticSizeMixin(Component)))
+  ConfiguratorsMixin(LayoutTransformMixin(StaticSizeMixin(ChartComponent)))
 ) {
   private _scale: ScaleAny<any, any, any>;
   private _transitionDelay: number;

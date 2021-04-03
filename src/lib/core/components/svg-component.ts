@@ -1,12 +1,10 @@
-import { Component } from '../component';
+import { ChartComponent } from '../chart-component';
 import { ChildrenMixin } from '../mixins/children-mixin';
 import { ConfiguratorsMixin } from '../mixins/configurators-mixin';
 import { MediaQueryConfiguratorsMixin } from '../mixins/media-query-configurators-mixin';
 import { rectFromString, rectToString } from '../rect';
 
-export class SVGComponent extends MediaQueryConfiguratorsMixin(
-  ConfiguratorsMixin(ChildrenMixin(Component))
-) {
+export class SVGComponent extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(ChartComponent)) {
   constructor() {
     super('svg');
     this.layout('grid-template', '1fr / 1fr');

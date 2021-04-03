@@ -7,6 +7,7 @@ import {
   LayoutTransformMixin,
   rectFromString,
   ScaleAny,
+  ChartComponent,
 } from '../core';
 import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
 import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
@@ -26,7 +27,7 @@ export type UpdatePointsFunction = (
 ) => void;
 
 export class PointsComponent
-  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(LayoutTransformMixin(Component)))
+  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(LayoutTransformMixin(ChartComponent)))
   implements Points {
   private _calculator: PointsCalculator;
   private _transitionDelay: number;

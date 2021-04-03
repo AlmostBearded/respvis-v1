@@ -3,14 +3,16 @@ import debounce from 'debounce';
 import { computeLayout } from './layout/layout';
 import { SVGComponent } from './components/svg-component';
 import { GroupComponent } from './components/group-component';
+import { Component } from './component';
 
 export type ConfigureFunction = (chart: Chart) => void;
 
-export class Chart {
+export class Chart extends Component {
   private _svg: SVGComponent;
   private _rootGroup: GroupComponent;
 
   constructor() {
+    super('div');
     this._svg = new SVGComponent()
       .layout('grid-template', '1fr / 1fr')
       .child('root', (this._rootGroup = new GroupComponent().layout('grid-area', '1 / 1 / 2 / 2')));

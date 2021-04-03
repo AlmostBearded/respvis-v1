@@ -7,6 +7,7 @@ import {
   ComponentEventData,
   LayoutTransformMixin,
   rectFromString,
+  ChartComponent,
 } from '../core';
 import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
 import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
@@ -34,7 +35,7 @@ export type StackedBarsEventData<TComponent extends Component> = ComponentEventD
   StackedBarData;
 
 export class StackedBarsComponent
-  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(LayoutTransformMixin(Component)))
+  extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(LayoutTransformMixin(ChartComponent)))
   implements StackedBars {
   private _barsCalculator: StackedBarsCalculator;
   private _transitionDelay: number;

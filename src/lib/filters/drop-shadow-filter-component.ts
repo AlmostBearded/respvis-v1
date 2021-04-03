@@ -1,4 +1,4 @@
-import { Component, Rect, uuid } from '../core';
+import { ChartComponent, Rect, uuid } from '../core';
 import { ChildrenMixin } from '../core/mixins/children-mixin';
 import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
 import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
@@ -9,7 +9,7 @@ import { GaussianBlurComponent } from './gaussian-blur-component';
 import { OffsetComponent } from './offset-component';
 
 export class DropShadowFilterComponent extends MediaQueryConfiguratorsMixin(
-  ConfiguratorsMixin(ChildrenMixin(Component))
+  ConfiguratorsMixin(ChildrenMixin(ChartComponent))
 ) {
   private _offset: OffsetComponent;
   private _blur: GaussianBlurComponent;

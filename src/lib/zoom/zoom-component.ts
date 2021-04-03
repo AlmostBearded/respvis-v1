@@ -1,21 +1,10 @@
+import { D3ZoomEvent, zoom as d3Zoom, ZoomBehavior, ZoomScale, ZoomTransform } from 'd3-zoom';
 import {
-  D3ZoomEvent,
-  zoom as d3Zoom,
-  ZoomBehavior,
-  zoomIdentity,
-  ZoomScale,
-  ZoomTransform,
-} from 'd3-zoom';
-import {
-  ClipPathComponent,
   Component,
   ComponentEventData,
-  DefsComponent,
-  GroupComponent,
   RectComponent,
   rectFromString,
   SVGComponent,
-  UseComponent,
   uuid,
 } from '../core';
 

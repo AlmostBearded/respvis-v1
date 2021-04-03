@@ -1,4 +1,4 @@
-import { Component } from '../component';
+import { ChartComponent } from '../chart-component';
 import { rectFromString } from '../rect';
 import { Constructor, Mixin } from './types';
 
@@ -6,7 +6,7 @@ import { Constructor, Mixin } from './types';
 //
 // must be mixed-in on a higher level than e.g. the static clone mixin.
 
-export function LayoutTransformMixin<TBaseComponent extends Constructor<Component>>(
+export function LayoutTransformMixin<TBaseComponent extends Constructor<ChartComponent>>(
   BaseComponent: TBaseComponent
 ) {
   return class LayoutTransformMixin extends BaseComponent {

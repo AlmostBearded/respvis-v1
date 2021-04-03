@@ -1,37 +1,22 @@
-import { Component, LayoutTransformMixin, TextComponent, titleTextAttributes } from '../core';
-import { ChildrenMixin } from '../core/mixins/children-mixin';
-import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
-import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
+import { TextComponent, titleTextAttributes } from '../core';
 import { AxisComponent } from './axis-component';
+import { TicksComponent } from './ticks-component';
 import { TopTicksComponent } from './top-ticks-component';
 
-export class TopAxisComponent
-  extends MediaQueryConfiguratorsMixin(
-    ConfiguratorsMixin(ChildrenMixin(LayoutTransformMixin(Component)))
-  )
-  implements AxisComponent {
-  private _ticks: TopTicksComponent;
-  private _title: TextComponent;
-
+export class TopAxisComponent extends AxisComponent {
   constructor() {
-    super('g');
-
-    this.layout('grid-template', 'auto auto / auto')
-      .child('ticks', (this._ticks = new TopTicksComponent().layout('grid-area', '2 / 1 / 3 / 2')))
-      .child(
-        'title',
-        (this._title = titleTextAttributes(new TextComponent())
-          .layout('grid-area', '1 / 1 / 2 / 2')
-          .layout('place-self', 'center')
-          .layout('margin-bottom', 5))
-      );
+    super();
+    this.layout('grid-template', 'auto auto / auto');
   }
 
-  ticks(): TopTicksComponent {
-    return this._ticks;
+  protected _createTicks(): TicksComponent {
+    return new TopTicksComponent().layout('grid-area', '2 / 1 / 3 / 2');
   }
 
-  title(): TextComponent {
-    return this._title;
+  protected _createTitle(): TextComponent {
+    return titleTextAttributes(new TextComponent())
+      .layout('grid-area', '1 / 1 / 2 / 2')
+      .layout('place-self', 'center')
+      .layout('margin-bottom', 5);
   }
 }

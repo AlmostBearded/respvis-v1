@@ -7,13 +7,13 @@ import {
   XAxisPosition,
   YAxisPosition,
 } from '../axis';
-import { Component, GroupComponent, LayoutTransformMixin, Mixin, SVGComponent } from '../core';
+import { ChartComponent, GroupComponent, LayoutTransformMixin } from '../core';
 import { ChildrenMixin } from '../core/mixins/children-mixin';
 import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
 import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
 
 export class CartesianChartComponent extends MediaQueryConfiguratorsMixin(
-  ConfiguratorsMixin(ChildrenMixin(LayoutTransformMixin(Component)))
+  ConfiguratorsMixin(ChildrenMixin(LayoutTransformMixin(ChartComponent)))
 ) {
   private _drawArea: GroupComponent;
   private _xAxisPosition: XAxisPosition;
