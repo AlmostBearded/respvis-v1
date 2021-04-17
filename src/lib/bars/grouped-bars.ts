@@ -1,7 +1,7 @@
 import { range } from 'd3-array';
 import { ScaleBand, ScaleContinuousNumeric } from 'd3-scale';
 import { linearScale, Rect, utils, bandScale } from '../core';
-import { ISize } from '../core/utils';
+import { Size } from '../core/utils';
 import { BarData, BarOrientation } from './bars';
 import { bars } from './bars-component';
 
@@ -116,7 +116,7 @@ export class GroupedBarsCalculator implements GroupedBars {
     return this._bars;
   }
 
-  fitInSize(size: ISize): this {
+  fitInSize(size: Size): this {
     if (this._orientation === BarOrientation.Vertical) {
       this._mainScale.range([0, size.width]);
       this._crossScale.range([size.height, 0]);

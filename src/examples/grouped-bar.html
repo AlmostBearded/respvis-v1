@@ -20,13 +20,13 @@
     <h1>Grouped Bar Chart</h1>
 
     <div id="chart"></div>
-    <script src="./d3/d3.v6.js"></script>
+    <script src="./vendor/d3.v6.js"></script>
     <script src="../respvis.js"></script>
     <script type="module">
       import data from './data/company.js';
 
       const sites = data.sites,
-        siteScale = respVis.bandScale().padding(0.1),
+        siteScale = respVis.bandScale().domain(sites).padding(0.1),
         revenues = data.revenues,
         maxRevenue = Math.max(...revenues.flat()),
         revenueScale = respVis.linearScale().domain([0, maxRevenue]).nice(),
@@ -37,7 +37,7 @@
         barColors = respVis.GroupedBarsComponent.defaultColors;
 
       // needed to toggle years
-      let yearToggles = [true, true, true], 
+      let yearToggles = [true, true, true],
         filteredBarColors = barColors;
 
       const chart = respVis.chart(),

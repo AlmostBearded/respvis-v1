@@ -42,29 +42,29 @@ export abstract class TicksComponent extends MediaQueryConfiguratorsMixin(
     this._transitionDuration = 250;
   }
 
-  scale(): ScaleAny<any, any, any>;
-  scale(scale: ScaleAny<any, any, any>): this;
-  scale(scale?: ScaleAny<any, any, any>): ScaleAny<any, any, any> | this {
-    if (scale === undefined) return this._scale;
-    this._scale = scale;
-    return this;
-  }
+  // scale(): ScaleAny<any, any, any>;
+  // scale(scale: ScaleAny<any, any, any>): this;
+  // scale(scale?: ScaleAny<any, any, any>): ScaleAny<any, any, any> | this {
+  //   if (scale === undefined) return this._scale;
+  //   this._scale = scale;
+  //   return this;
+  // }
 
-  transitionDuration(): number;
-  transitionDuration(duration: number): this;
-  transitionDuration(duration?: number): number | this {
-    if (duration === undefined) return this._transitionDuration;
-    this._transitionDuration = duration;
-    return this;
-  }
+  // transitionDuration(): number;
+  // transitionDuration(duration: number): this;
+  // transitionDuration(duration?: number): number | this {
+  //   if (duration === undefined) return this._transitionDuration;
+  //   this._transitionDuration = duration;
+  //   return this;
+  // }
 
-  transitionDelay(): number;
-  transitionDelay(delay: number): this;
-  transitionDelay(delay?: number): number | this {
-    if (delay === undefined) return this._transitionDelay;
-    this._transitionDelay = delay;
-    return this;
-  }
+  // transitionDelay(): number;
+  // transitionDelay(delay: number): this;
+  // transitionDelay(delay?: number): number | this {
+  //   if (delay === undefined) return this._transitionDelay;
+  //   this._transitionDelay = delay;
+  //   return this;
+  // }
 
   onConfigureAxis(): ConfigureAxisFunction;
   onConfigureAxis(callback: ConfigureAxisFunction): this;

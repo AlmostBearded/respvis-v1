@@ -1,7 +1,7 @@
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
-import { BaseType, select, Selection } from 'd3-selection';
+import { BaseType, EnterElement, select, Selection } from 'd3-selection';
 import { SelectionOrTransition } from 'd3-transition';
-import { categoricalColors, initG, mergeDatumReverse } from '../core';
+import { categoricalColors, initG } from '../core';
 import { Rect } from '../core/rect';
 import { Size } from '../core/utils';
 
@@ -236,38 +236,37 @@ export interface SeriesData {
 
 export const DEFAULT_COLOR = categoricalColors[0];
 
-export const DEFAULT_SERIES_DATA: SeriesData = {
-  mainValues: [],
-  mainScale: scaleBand(),
-  crossValues: [],
-  crossScale: scaleLinear(),
-  keys: undefined,
-  orientation: Orientation.Vertical,
-  bounds: { width: 600, height: 400 },
-  joinBars: joinBars,
-};
+export function series() {
 
-export function createSeriesData(): SeriesData;
-export function createSeriesData(data: Partial<SeriesData>): SeriesData;
-export function createSeriesData(data?: Partial<SeriesData>): SeriesData {
-  return { ...DEFAULT_SERIES_DATA, ...data };
+  return function(selection) {
+    
+  }
 }
 
 export function appendSeries<GElement extends BaseType, Datum, PElement extends BaseType, PDatum>(
   selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<SVGGElement, Datum & SeriesData, PElement, PDatum> {
+): Selection<SVGGElement, SeriesData, PElement, PDatum> {
   return initSeries(selection.append('g').call(initG));
 }
 
 export function initSeries<GElement extends BaseType, Datum, PElement extends BaseType, PDatum>(
   selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<GElement, Datum & SeriesData, PElement, PDatum> {
+): Selection<GElement, SeriesData, PElement, PDatum> {
   return selection
-    .transformDatum((d) => Object.assign({}, DEFAULT_SERIES_DATA, d))
-    .classed('bar-series', true)
+    .datum<SeriesData>({
+      mainValues: [],
+      mainScale: scaleBand(),
+      crossValues: [],
+      crossScale: scaleLinear(),
+      keys: undefined,
+      orientation: Orientation.Vertical,
+      bounds: { width: 600, height: 400 },
+      joinBars: joinBars,
+    })
     .attr('fill', DEFAULT_COLOR)
-    .on('afterlayout.barseries', function (e, d) {
-      d.bounds = select<GElement, SeriesData>(this).layout()!;
+    .on('afterlayout.barseries', function () {
+      const s = select<GElement, SeriesData>(this);
+      s.dataProperty('bounds', s.layout()!);
     })
     .on('render.barseries', function () {
       select<GElement, SeriesData>(this).call(renderSeries);
@@ -337,11 +336,11 @@ export function joinBars<PElement extends BaseType, PDatum>(
     .enter()
     .append('rect')
     .classed('bar', true)
-    .call(minimizedRectAttrs)
+    .call(setMinimizedRectAttributes)
     .merge(selection)
     .transition()
     .duration(250)
-    .call(rectAttrs);
+    .call(setRectAttributes);
 
   selection
     .exit<Data>()
@@ -349,11 +348,11 @@ export function joinBars<PElement extends BaseType, PDatum>(
     .classed('exiting', true)
     .transition()
     .duration(250)
-    .call(minimizedRectAttrs)
+    .call(setMinimizedRectAttributes)
     .remove();
 }
 
-export function minimizedRectAttrs(
+export function setMinimizedRectAttributes(
   selection: SelectionOrTransition<SVGRectElement, Data, any, any>
 ) {
   selection
@@ -363,7 +362,7 @@ export function minimizedRectAttrs(
     .attr('height', 0);
 }
 
-export function rectAttrs(
+export function setRectAttributes(
   selection: SelectionOrTransition<SVGRectElement, Data, any, any>
 ) {
   selection

@@ -2,7 +2,7 @@ import { ChartComponent, Rect, uuid } from '../core';
 import { ChildrenMixin } from '../core/mixins/children-mixin';
 import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
 import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
-import { IPosition } from '../core/utils';
+import { Position } from '../core/utils';
 import { BlendComponent } from './blend-component';
 import { ColorMatrixComponent } from './color-matrix-component';
 import { GaussianBlurComponent } from './gaussian-blur-component';
@@ -17,7 +17,7 @@ export class DropShadowFilterComponent extends MediaQueryConfiguratorsMixin(
   private _blend: BlendComponent;
 
   constructor(
-    offset: IPosition,
+    offset: Position,
     blurStdDeviation: number,
     rect: Rect<string> = { x: '-100%', y: '-100%', width: '300%', height: '300%' }
   ) {
@@ -78,7 +78,7 @@ export class DropShadowFilterComponent extends MediaQueryConfiguratorsMixin(
 }
 
 export function dropShadowFilter(
-  offset: IPosition,
+  offset: Position,
   blurStdDeviation: number,
   rect: Rect<string> = { x: '-25%', y: '-25%', width: '150%', height: '150%' }
 ): DropShadowFilterComponent {

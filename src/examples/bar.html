@@ -19,13 +19,13 @@
   <body>
     <h1>Bar Chart</h1>
     <div id="chart"></div>
-    <script src="./d3/d3.v6.js"></script>
+    <script src="./vendor/d3.v6.js"></script>
     <script src="../respvis.js"></script>
     <script type="module">
       import data from './data/austrian-cities.js';
 
       const cities = data.cities,
-        cityScale = respVis.bandScale().padding(0.1),
+        cityScale = respVis.bandScale().domain(cities).padding(0.1),
         populations = data.populations.map((p) => Math.round(p / 1000)),
         maxPopulation = Math.max(...populations),
         populationScale = respVis.linearScale().domain([0, maxPopulation]).nice(),

@@ -1,13 +1,13 @@
 import { Selection, EnterElement } from 'd3-selection';
 import { ChartComponent, LayoutTransformMixin } from '../core';
 import { BarPoints, BarPointsCalculator, BarsAccessor } from './bar-points';
-import { IPosition, IStringable } from '../core/utils';
+import { Position, Stringable } from '../core/utils';
 import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
 import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
 import { SelectionOrTransition } from 'd3-transition';
 
 export interface LabelData {
-  position: IPosition;
+  position: Position;
   text: string;
 }
 
@@ -29,7 +29,7 @@ export class BarLabelsComponent
   extends MediaQueryConfiguratorsMixin(ConfiguratorsMixin(LayoutTransformMixin(ChartComponent)))
   implements BarPoints {
   private _barPoints: BarPoints;
-  private _labels: IStringable[];
+  private _labels: Stringable[];
   private _transitionDelay: number;
   private _transitionDuration: number;
   private _onCreateLabels: CreateLabelsFunction;
@@ -59,8 +59,8 @@ export class BarLabelsComponent
     return this;
   }
 
-  labels(): IStringable[];
-  labels(labels: IStringable[]): this;
+  labels(): Stringable[];
+  labels(labels: Stringable[]): this;
   labels(labels?: any) {
     if (labels === undefined) return this._labels;
     this._labels = labels;
@@ -83,7 +83,7 @@ export class BarLabelsComponent
     return this;
   }
 
-  points(): IPosition[] {
+  points(): Position[] {
     return this._barPoints.points();
   }
 

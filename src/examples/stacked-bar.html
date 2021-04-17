@@ -19,7 +19,7 @@
   <body>
     <h1>Stacked Bar Chart</h1>
     <div id="chart"></div>
-    <script src="./d3/d3.v6.js"></script>
+    <script src="./vendor/d3.v6.js"></script>
     <script src="../respvis.js"></script>
     <script type="module">
       import data from './data/desktop-mobile-tablet.js';
@@ -27,7 +27,7 @@
       // data
       const platforms = ['Desktop', 'Mobile', 'Tablet'],
         years = data.years,
-        yearScale = respVis.bandScale().padding(0.1),
+        yearScale = respVis.bandScale().domain(years).padding(0.1),
         shares = data.desktop.map((d, i) => [data.desktop[i], data.mobile[i], data.tablet[i]]),
         shareScale = respVis.linearScale().domain([0, 100]),
         shareFormatter = (value) => `${Math.round(parseFloat(value) * 10) / 10}%`,

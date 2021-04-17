@@ -1,6 +1,6 @@
 import { ScaleBand, ScaleContinuousNumeric } from 'd3-scale';
 import { bandScale, linearScale, Rect } from '../core';
-import { ISize } from '../core/utils';
+import { Size } from '../core/utils';
 import { BarData, BarOrientation } from './bars';
 
 export interface StackedBars {
@@ -100,7 +100,7 @@ export class StackedBarsCalculator implements StackedBars {
     return this._bars;
   }
 
-  fitInSize(size: ISize): this {
+  fitInSize(size: Size): this {
     if (this._orientation === BarOrientation.Vertical) {
       this._categoryScale.range([0, size.width]);
       this._valueScale.range([size.height, 0]);

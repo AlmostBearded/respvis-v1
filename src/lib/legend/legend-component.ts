@@ -1,15 +1,9 @@
-import { ChartComponent, LayoutTransformMixin } from '../core';
-import { ChildrenMixin } from '../core/mixins/children-mixin';
-import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
-import { GridMixin } from '../core/mixins/grid-mixin';
-import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
+import { GridComponent, LayoutTransformMixin } from '../core';
 import { SwatchComponent } from './swatch-component';
 
-export class LegendComponent extends MediaQueryConfiguratorsMixin(
-  ConfiguratorsMixin(GridMixin(ChildrenMixin(LayoutTransformMixin(ChartComponent))))
-) {
+export class LegendComponent extends GridComponent {
   constructor(swatchCount: number) {
-    super('g');
+    super();
     this.rowCount(swatchCount).columnCount(1).layout('place-content', 'center center');
     for (let i = 0; i < swatchCount; ++i) this.child(`swatch-${i}`, new SwatchComponent());
   }

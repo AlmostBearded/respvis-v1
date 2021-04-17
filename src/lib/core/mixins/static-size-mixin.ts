@@ -1,15 +1,13 @@
 import { create, select, selectAll, Selection } from 'd3-selection';
-import { ChartComponent } from '../chart-component';
-import { LaidOutElement } from '../layout/layout';
-import { ISize } from '../utils';
+import { BaseChartComponent } from '../chart-component';
 import { Constructor } from './types';
 
-export function StaticSizeMixin<TBaseComponent extends Constructor<ChartComponent>>(
+export function StaticSizeMixin<TBaseComponent extends Constructor<BaseChartComponent>>(
   BaseComponent: TBaseComponent
 ) {
   return class StaticSizeMixin extends BaseComponent {
-    private _staticCloneSelection: Selection<SVGElement & LaidOutElement, any, any, any>;
-    private _combinedSelection: Selection<SVGElement & LaidOutElement, any, any, any>;
+    private _staticCloneSelection: Selection<Element, any, any, any>;
+    private _combinedSelection: Selection<Element, any, any, any>;
 
     constructor(...args: any[]) {
       super(...args);
@@ -19,12 +17,14 @@ export function StaticSizeMixin<TBaseComponent extends Constructor<ChartComponen
         this._staticCloneSelection.node()!,
       ]);
 
-      // todo: i think the following code could be removed because it's already
-      // handled in the ChartComponent
-
       // can't access 'this' within the bounds calculator callback
-      // const that = this;
-      // this._combinedSelection.layoutBoundsCalculator(() => that.size());
+      const that = this;
+      this.selection().layoutBoundsCalculator(() => {
+        select(that.node().parentElement).append(() => that._staticCloneSelection.node());
+        const bounds = that._staticCloneSelection.node()!.getBoundingClientRect();
+        that._staticCloneSelection.remove();
+        return bounds;
+      });
     }
 
     protected _removeAttr(name: string): void {
@@ -102,14 +102,7 @@ export function StaticSizeMixin<TBaseComponent extends Constructor<ChartComponen
       return this;
     }
 
-    size(): ISize {
-      select(this.node().parentElement).append(() => this._staticCloneSelection.node());
-      const bounds = this._staticCloneSelection.node()!.getBoundingClientRect();
-      this._staticCloneSelection.remove();
-      return bounds;
-    }
-
-    staticCloneSelection(): Selection<SVGElement, any, any, any> {
+    staticCloneSelection(): Selection<Element, any, any, any> {
       return this._staticCloneSelection;
     }
   };

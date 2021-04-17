@@ -1,5 +1,5 @@
 import { Rect } from '../core';
-import { IPosition } from '../core/utils';
+import { Position } from '../core/utils';
 import { Bars } from './bars';
 
 export interface BarPoints {
@@ -9,7 +9,7 @@ export interface BarPoints {
   widthPercent(percent: number): this;
   heightPercent(): number;
   heightPercent(percent: number): this;
-  points(): IPosition[];
+  points(): Position[];
 }
 
 export type BarsAccessor = () => Rect<number>[];
@@ -18,7 +18,7 @@ export class BarPointsCalculator implements BarPoints {
   private _barsAccessor: BarsAccessor;
   private _heightPercent: number;
   private _widthPercent: number;
-  private _points: IPosition[];
+  private _points: Position[];
 
   constructor(barsAccessor: BarsAccessor) {
     this._barsAccessor = barsAccessor;
@@ -51,9 +51,9 @@ export class BarPointsCalculator implements BarPoints {
     return this;
   }
 
-  points(): IPosition[] {
+  points(): Position[] {
     const bars = this._barsAccessor();
-    const points: IPosition[] = [];
+    const points: Position[] = [];
     for (let i = 0; i < bars.length; ++i) {
       points.push({
         x: bars[i].x + bars[i].width * this._widthPercent,

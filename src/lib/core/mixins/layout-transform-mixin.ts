@@ -1,4 +1,4 @@
-import { ChartComponent } from '../chart-component';
+import { BaseChartComponent } from '../chart-component';
 import { rectFromString } from '../rect';
 import { Constructor, Mixin } from './types';
 
@@ -6,11 +6,16 @@ import { Constructor, Mixin } from './types';
 //
 // must be mixed-in on a higher level than e.g. the static clone mixin.
 
-export function LayoutTransformMixin<TBaseComponent extends Constructor<ChartComponent>>(
+export function LayoutTransformMixin<TBaseComponent extends Constructor<BaseChartComponent>>(
   BaseComponent: TBaseComponent
 ) {
   return class LayoutTransformMixin extends BaseComponent {
     private _transform: string = '';
+
+    constructor(...args: any[]) {
+      super(...args);
+      this.on('afterlayout.layouttransform', () => this._setAttr('transform', this._transform));
+    }
 
     protected _removeAttr(name: string): void {
       if (name === 'transform') {
@@ -46,12 +51,6 @@ export function LayoutTransformMixin<TBaseComponent extends Constructor<ChartCom
           transitionDelay
         );
       } else super._transitionAttr(name, value, transitionDuration, transitionDelay);
-    }
-
-    afterLayout(): this {
-      super.afterLayout();
-      this._setAttr('transform', this._transform);
-      return this;
     }
 
     protected _prependLayoutTransform(transform: string): string {

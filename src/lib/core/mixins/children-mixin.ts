@@ -1,18 +1,17 @@
-import { Chart } from '../chart';
-import { Component, ComponentEventData } from '../component';
+import { BaseComponent, ComponentEventData } from '../component';
 import { Constructor, Mixin } from './types';
 
-export interface ChildrenMixinEventData<TComponent extends Component>
+export interface ChildrenMixinEventData<TComponent extends BaseComponent>
   extends ComponentEventData<TComponent> {
   childIndex: number;
 }
 
-export function ChildrenMixin<
-  TChildBaseComponent extends Component,
-  TBaseComponentConstructor extends Constructor<Component>
+export function withChildren<
+  TChildrenBaseComponent extends BaseComponent,
+  TBaseComponentConstructor extends Constructor<BaseComponent>
 >(BaseComponent: TBaseComponentConstructor) {
-  return class ChildrenMixin extends BaseComponent {
-    private _children: Map<string, TChildBaseComponent>;
+  return class WithChildren extends BaseComponent {
+    private _children: Map<string, TChildrenBaseComponent>;
 
     constructor(...args: any[]) {
       super(...args);
@@ -22,12 +21,12 @@ export function ChildrenMixin<
     // todo: 'index' or 'order' instead of 'name'?
     // - would solve the issue of child order
     // - 'index' would have to be unique, 'order' not a good idea?
-    child<TChild extends TChildBaseComponent = TChildBaseComponent>(
+    child<TChild extends TChildrenBaseComponent = TChildrenBaseComponent>(
       name: string
     ): TChild | undefined;
     child(name: string, component: null): this;
-    child(name: string, component: Component): this;
-    child<TChild extends TChildBaseComponent = TChildBaseComponent>(
+    child(name: string, component: BaseComponent): this;
+    child<TChild extends TChildrenBaseComponent = TChildrenBaseComponent>(
       name: string,
       component?: TChild | null
     ): TChild | undefined | this {
@@ -41,7 +40,7 @@ export function ChildrenMixin<
     // - if the children would be accessed by index they could be
     //   stored as an array and this method wouldn't have to create
     //   artificial ones on every invokation.
-    children(): TChildBaseComponent[] {
+    children(): TChildrenBaseComponent[] {
       return Array.from(this._children.values());
     }
 
@@ -101,4 +100,4 @@ export function ChildrenMixin<
   };
 }
 
-export type ComponentWithChildren = Mixin<typeof ChildrenMixin>;
+export type ComponentWithChildren = Mixin<typeof withChildren>;

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta charset="UTF-8" />
     <style>
-      #chart {
+      .chart-container {
         width: 100%;
         height: 50vh;
         min-height: 25rem;
@@ -19,46 +19,119 @@
   <body>
     <h1>Bar Chart</h1>
 
-    <div id="chart"></div>
-    <script src="./d3/d3.v6.js"></script>
+    <div id="root" class="chart-container"></div>
+    <script src="./vendor/d3.v6.js"></script>
     <script src="../respvis.js"></script>
     <script type="module">
-      const wideMediaQuery = 'screen and (min-width: 40rem)';
+      import data from './data/austrian-cities.js';
 
-      const rect = respVis.rect().attr('fill', '#066600').attr('width', 150).attr('height', 75);
+      const cities = data.cities,
+        cityScale = d3.scaleBand().domain(cities).padding(0.1),
+        populations = data.populations.map((p) => Math.round(p / 1000)),
+        maxPopulation = Math.max(...populations),
+        populationScale = d3.scaleLinear().domain([0, maxPopulation]).nice(),
+        populationFormatter = (p) => `${p}k`;
 
-      const text = respVis
-        .text()
-        .attr('fill', 'green')
-        .attr('font-size', '1rem')
-        .text('Hello World');
+      // d3.select('#root')
+      //   .selectAll('p')
+      //   .data(cities)
+      //   .join('p')
+      //   .text((d) => d);
 
-      const chart = respVis.chart();
+      // const root = d3.select('#root');
+      // const pComponents = cities.map((c) => respVis.p().text(c));
+      // pComponents.forEach((p) => p(root));
 
-      chart
-        .root()
-        .layout('grid-template', '1fr / 1fr')
-        .children([
-          respVis
-            .grid()
-            .layout('grid-area', '1 / 1 / 2 / 2')
-            .layout('justify-content', 'space-between')
-            .rowCount(1)
-            .columnCount(3)
-            .children(
-              [0, 1, 2].map((i) =>
-                respVis
-                  .rect()
-                  .layout('place-self', 'center center')
-                  .layout('margin-left', 10)
-                  .attr('fill', `#${444 * i}`)
-                  .attr('width', 100)
-                  .attr('height', 100)
-              )
-            ),
-        ]);
+      // d3.select('#root')
+      //   .data([
+      //     {
+      //       mainValues: [asdf],
+      //       mainScale: cityScale,
+      //       mainTitle: "asdf",
+      //       crossValues: populations,
+      //       crossScale: populationScale,
+      //       crossTitle: "dkdk",
+      //       orientation: respVis.bars.Orientation.Vertical,
+      //     },
+      //   ])
+      //   .call(initBarChart);
 
-      chart.mount('#chart');
+      const root = d3.select('#root'),
+        chart = respVis.appendChart(root),
+        chartRoot = chart
+          .select('.root')
+          .layout('grid-template', '1fr 40 / 60 1fr')
+          .layout('margin', 0),
+        barSeriesData = {
+          mainValues: cities,
+          mainScale: cityScale,
+          crossValues: populations,
+          crossScale: populationScale,
+          orientation: respVis.bars.Orientation.Vertical,
+        },
+        barSeries = respVis.bars
+          .appendSeries(chartRoot)
+          .transformDatum((d) => Object.assign(d, barSeriesData))
+          .layout('grid-area', '1 / 2 / 2 / 3'),
+        leftAxis = respVis.axis
+          .appendLeft(chartRoot)
+          .transformDatum((d) =>
+            Object.assign(d, { axis: d3.axisLeft(populationScale).tickFormat((t) => `${t}k`) })
+          )
+          .layout('grid-area', '1 / 1 / 2 / 2')
+          .layout('grid-template', '1fr / 1fr')
+          .on('render.rotatelabels', () =>
+            leftAxis.selectAll('.tick text').transformAttr('transform', (v) => `${v}rotate(-30)`)
+          ),
+        leftAxisTitle = respVis
+          .appendText(leftAxis)
+          .layout('grid-area', '1 / 1 / 2 / 2')
+          .layout('place-self', 'start start')
+          .call(axisTitleAttrs)
+          .call(respVis.verticalTextAttrs)
+          .text('Population'),
+        bottomAxis = respVis.axis
+          .appendBottom(chartRoot)
+          .transformDatum((d) => Object.assign(d, { axis: d3.axisBottom(cityScale) }))
+          .layout('grid-area', '2 / 2 / 3 / 3')
+          .layout('grid-template', '1fr / 1fr')
+          .on('render.rotatelabels', () =>
+            bottomAxis
+              // .selectAll('.tick text')
+              // .transformAttr('transform', (v) => `${v}rotate(-30)`)
+              // .attr('text-anchor', 'end')
+          ),
+        bottomAxisTitle = respVis
+          .appendText(bottomAxis)
+          .layout('grid-area', '1 / 1 / 2 / 2')
+          .layout('place-self', 'end end')
+          .call(axisTitleAttrs)
+          .text('Population');
+
+      chart.call(respVis.renderChart);
+
+      function axisTitleAttrs(s) {
+        s.classed('title', true).attr('font-size', '1.5em').attr('letter-spacing', '0.15em');
+      }
+
+      // const root = d3.select('#root'),
+      //   chart = respVis.appendChart(root),
+      //   chartRoot = chart.select('.root').layout('grid-template', '1fr / 1fr 1fr'),
+      //   commonBarSeriesData = {
+      //     mainValues: cities,
+      //     mainScale: cityScale,
+      //     crossValues: populations,
+      //     crossScale: populationScale,
+      //   },
+      //   barSeries = chartRoot
+      //     .selectAll('.bar-series')
+      //     .data([
+      //       { ...commonBarSeriesData, orientation: respVis.bars.Orientation.Vertical },
+      //       { ...commonBarSeriesData, orientation: respVis.bars.Orientation.Horizontal },
+      //     ])
+      //     .join(respVis.bars.appendSeries)
+      //     .layout('grid-area', (d, i) => `1 / ${i + 1} / 2 / ${i + 2}`);
+      // chart.call(respVis.renderChart);
     </script>
   </body>
 </html>

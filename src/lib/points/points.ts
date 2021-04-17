@@ -1,5 +1,5 @@
 import { bandScale, linearScale, ScaleAny } from '../core';
-import { IPosition, ISize } from '../core/utils';
+import { Position, Size } from '../core/utils';
 
 export interface Points {
   mainValues(): any[];
@@ -23,7 +23,7 @@ export interface Points {
 export interface PointData {
   index: number;
   key: string;
-  center: IPosition;
+  center: Position;
   radius: number;
 }
 
@@ -109,7 +109,7 @@ export class PointsCalculator implements Points {
     return this._points;
   }
 
-  fitInSize(size: ISize): this {
+  fitInSize(size: Size): this {
     this._mainScale.range([0, size.width]);
     this._crossScale.range([size.height, 0]);
 

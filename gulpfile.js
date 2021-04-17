@@ -6,7 +6,7 @@ const gulp = require('gulp');
 
 const rollup = require('rollup');
 const rollupCommonJs = require('@rollup/plugin-commonjs');
-const rollupNodeResolve = require('@rollup/plugin-node-resolve');
+const rollupNodeResolve = require('@rollup/plugin-node-resolve').default;
 const rollupTypescript = require('@rollup/plugin-typescript');
 const rollupTerser = require('rollup-plugin-terser').terser;
 const rollupGzip = require('rollup-plugin-gzip').default;
