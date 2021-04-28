@@ -3,7 +3,7 @@ import { BaseType, EnterElement, select, Selection } from 'd3-selection';
 import { SelectionOrTransition } from 'd3-transition';
 import {
   Component,
-  categoricalColors,
+  COLORS_CATEGORICAL,
   ComponentEventData,
   LayoutTransformMixin,
   rectFromString,
@@ -45,7 +45,7 @@ export class StackedBarsComponent
   private _onCreateBarStacks: CreateBarStacksFunction;
   private _onUpdateBars: UpdateStackedBarsFunction;
 
-  static defaultColors = categoricalColors;
+  static defaultColors = COLORS_CATEGORICAL;
 
   constructor() {
     super('g');

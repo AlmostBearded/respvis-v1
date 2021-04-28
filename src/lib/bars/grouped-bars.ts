@@ -2,7 +2,7 @@ import { range } from 'd3-array';
 import { ScaleBand, ScaleContinuousNumeric } from 'd3-scale';
 import { linearScale, Rect, utils, bandScale } from '../core';
 import { Size } from '../core/utils';
-import { BarData, BarOrientation } from './bars';
+import { DataBar, BarOrientation } from './bars';
 import { bars } from './bars-component';
 
 export interface GroupedBars {
@@ -24,7 +24,7 @@ export interface GroupedBars {
   barData(): GroupedBarData[][];
 }
 
-export interface GroupedBarData extends BarData {
+export interface GroupedBarData extends DataBar {
   mainIndex: number;
   crossIndex: number;
   rect: Rect<number>;

@@ -1,6 +1,6 @@
 export * from './core';
-export * as axis from './axis';
-export * as bars from './bars';
+export * from './axis';
+export * from './bars';
 // export * from './legend';
 // export * from './filters';
 // export * from './points';

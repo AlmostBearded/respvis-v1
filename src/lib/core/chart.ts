@@ -5,9 +5,10 @@
 // import { BaseComponent, BaseCompositeComponent } from './component';
 // import { BaseChartCompositeComponent } from './chart-component';
 
-import { BaseType, select, selectAll, Selection } from 'd3-selection';
+import { BaseType, create, select, selectAll, Selection } from 'd3-selection';
 import { computeLayout } from './layout/layout';
-import { rectToString } from './rect';
+import { rectFromString, rectToString } from './rect';
+import { LAYOUT_ATTR_NAMES } from './selection';
 
 // export type ConfigureFunction = (chart: Chart) => void;
 
@@ -122,25 +123,46 @@ import { rectToString } from './rect';
 //   );
 // }
 
-// svg
+// chart
 
-export function appendSVG<GElement extends BaseType, Datum, PElement extends BaseType, PDatum>(
-  selection: Selection<GElement, Datum, PElement, PDatum>
+export function chart<Datum, PElement extends BaseType, PDatum>(
+  selection: Selection<SVGSVGElement, Datum, PElement, PDatum>
 ): Selection<SVGSVGElement, Datum, PElement, PDatum> {
-  return selection.append('svg').call(initSVG);
+  return selection
+    .classed('chart', true)
+    .style('width', '100%')
+    .style('height', '100%')
+    .attr('grid-template', '1fr / 1fr')
+    .call((s) => s.append('g').classed('root', true).attr('grid-area', '1 / 1 / 2 / 2'))
+    .call(renderOnAttributeChange);
 }
 
-export function initSVG(selection: Selection<SVGSVGElement, any, any, any>): void {
-  selection.on('afterlayout.svg', function () {
-    select(this).call(layoutAsSVGAttrs);
+export function renderChart(selection: Selection<SVGSVGElement, any, any, any>): void {
+  selection.call(broadcastEvent, 'beforelayout');
+  selection.each(function () {
+    select(this).call(computeLayout, this.getBoundingClientRect());
+  });
+  selection.call(broadcastEvent, 'afterlayout').call(broadcastEvent, 'render').call(applyLayout);
+}
+
+export function applyLayout(selection: Selection<Element, any, BaseType, any>): void {
+  selection.each(function () {
+    const s = select(this);
+    const hasLayout = s.attr('layout') !== null;
+    if (hasLayout) {
+      const isSVG = this.tagName === 'svg';
+      s.call(isSVG ? applyLayoutAsSVGAttrs : applyLayoutAsTransformAttr);
+      selectAll(this.children).call(applyLayout);
+    }
   });
 }
 
-export function layoutAsSVGAttrs(selection: Selection<SVGSVGElement, any, any, any>): void {
+export function applyLayoutAsSVGAttrs(selection: Selection<SVGSVGElement, any, any, any>): void {
   selection.each(function () {
     const s = select(this);
-    const layout = s.layout();
-    if (!layout) return;
+    const layoutAttr = s.attr('layout');
+    console.assert(layoutAttr);
+    const layout = rectFromString(layoutAttr);
     s.attr('viewBox', rectToString({ ...layout, x: 0, y: 0 }))
       .attr('x', layout.x)
       .attr('y', layout.y)
@@ -149,25 +171,12 @@ export function layoutAsSVGAttrs(selection: Selection<SVGSVGElement, any, any, a
   });
 }
 
-// g
-
-export function appendG<GElement extends BaseType, Datum, PElement extends BaseType, PDatum>(
-  selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<SVGGElement, Datum, PElement, PDatum> {
-  return selection.append('g').call(initG);
-}
-
-export function initG(selection: Selection<SVGGElement, any, any, any>): void {
-  selection.on('afterrender.g', function () {
-    select(this).call(layoutAsTransformAttr);
-  });
-}
-
-export function layoutAsTransformAttr(selection: Selection<SVGElement, any, any, any>): void {
+export function applyLayoutAsTransformAttr(selection: Selection<SVGElement, any, any, any>): void {
   selection.each(function () {
     const s = select(this);
-    const layout = s.layout();
-    if (!layout) return;
+    const layoutAttr = s.attr('layout');
+    console.assert(layoutAttr);
+    const layout = rectFromString(layoutAttr);
 
     // todo: comment this code
 
@@ -181,35 +190,54 @@ export function layoutAsTransformAttr(selection: Selection<SVGElement, any, any,
   });
 }
 
-// chart
-
-export function appendChart<GElement extends BaseType, Datum, PElement extends BaseType, PDatum>(
-  selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<SVGSVGElement, Datum, PElement, PDatum> {
-  return selection.append('svg').call(initChart);
-}
-
-export function initChart(selection: Selection<SVGSVGElement, any, any, any>): void {
-  selection
-    .call(initSVG)
-    .classed('chart', true)
-    .style('width', '100%')
-    .style('height', '100%')
-    .layout('grid-template', '1fr / 1fr')
-    .call((s) =>
-      s.append('g').call(initG).classed('root', true).layout('grid-area', '1 / 1 / 2 / 2')
-    );
-}
-
-export function renderChart(selection: Selection<SVGSVGElement, any, any, any>): void {
-  selection.call(broadcastEvent, 'beforelayout');
+export function renderOnAttributeChange(selection: Selection<SVGSVGElement, any, any, any>): void {
   selection.each(function () {
-    select(this).call(computeLayout, this.getBoundingClientRect());
+    const mutationObserver = new MutationObserver(
+      (mutations: MutationRecord[], observer: MutationObserver) => {
+        // console.log('SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS');
+        let changed = false;
+
+        const uniqueMutationsByTargetAttribute = mutations.filter(
+          (v, i, array) =>
+            // v.attributeName !== 'layout' &&
+            array.findIndex(
+              (v2) => v2.target === v.target && v2.attributeName === v.attributeName
+            ) === i
+        );
+        // console.log(mutations, uniqueMutationsByTargetAttribute);
+
+        for (let mutation of uniqueMutationsByTargetAttribute) {
+          const element = mutation.target as Element;
+          const value = element.getAttribute(mutation.attributeName!);
+          if (mutation.oldValue !== value) {
+            const s = select(mutation.target as Element);
+            // todo: comment these conditions
+            if (
+              s.attr('grid-width') === 'fit' ||
+              s.attr('grid-height') === 'fit' ||
+              LAYOUT_ATTR_NAMES.indexOf(mutation.attributeName!) >= 0 ||
+              !s.selectAll('[grid-width=fit],[grid-height=fit]').empty()
+            ) {
+              // console.log(mutation.target, mutation.attributeName, mutation.oldValue);
+              changed = true;
+              break;
+            }
+          }
+        }
+        // console.log('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE');
+        if (changed) {
+          selection.call(renderChart);
+        }
+      }
+    );
+    mutationObserver.observe(this, {
+      attributes: true,
+      // attributeFilter: ['font-size', 'transform'],
+      attributeOldValue: true,
+      subtree: true,
+    });
+    window['temp'] = mutationObserver;
   });
-  selection
-    .call(broadcastEvent, 'afterlayout')
-    .call(broadcastEvent, 'render')
-    .call(broadcastEvent, 'afterrender');
 }
 
 export function broadcastEvent(

@@ -2,7 +2,6 @@ import { Size } from '../utils';
 import { computeLayout as faberComputeLayout } from './faberjs';
 import { Rect, rectToString } from '../rect';
 import { select, Selection } from 'd3-selection';
-import { GridContentPlacement } from '../selection';
 
 type FaberNode = {
   style: FaberStyle;
@@ -128,7 +127,7 @@ function parseHierarchy(
 }
 
 function parseLayout(selection: Selection<Element, any, any, any>): FaberStyle | null {
-  const l = selection.layout.bind(selection);
+  const get = selection.attr.bind(selection);
 
   // todo: enable toggling of debug attributes
   // for (let key in element.__layout) {
@@ -137,32 +136,31 @@ function parseLayout(selection: Selection<Element, any, any, any>): FaberStyle |
   // }
 
   const trim = (s: string) => s.trim();
-  const parse = (s: string) => parseInt(s);
-  const template = l('grid-template')?.split('/').map(trim),
-    area = l('grid-area')?.split('/').map(trim).map(parse),
-    row = l('grid-row')?.split('/').map(trim).map(parse),
-    column = l('grid-column')?.split('/').map(trim).map(parse),
-    placeItems = l('place-items')?.split(' '),
-    placeSelf = l('place-self')?.split(' ');
+  const template = get('grid-template')?.split('/').map(trim),
+    area = get('grid-area')?.split('/').map(trim),
+    row = get('grid-row')?.split('/').map(trim),
+    column = get('grid-column')?.split('/').map(trim),
+    placeItems = get('place-items')?.split(' '),
+    placeSelf = get('place-self')?.split(' ');
 
   const bbox = selection.node()!.getBoundingClientRect();
 
   const style: FaberStyle = {
-    gridTemplateRows: l('grid-template-rows') || template?.[0],
-    gridTemplateColumns: l('grid-template-columns') || template?.[1],
+    gridTemplateRows: get('grid-template-rows') || template?.[0],
+    gridTemplateColumns: get('grid-template-columns') || template?.[1],
 
-    gridRowStart: l('grid-row-start') || row?.[0] || area?.[0],
-    gridRowEnd: l('grid-row-end') || row?.[1] || area?.[2],
-    gridColumnStart: l('grid-column-start') || column?.[0] || area?.[1],
-    gridColumnEnd: l('grid-column-end') || column?.[1] || area?.[3],
+    gridRowStart: parseInt(get('grid-row-start') || row?.[0] || area?.[0]) || undefined,
+    gridRowEnd: parseInt(get('grid-row-end') || row?.[1] || area?.[2]) || undefined,
+    gridColumnStart: parseInt(get('grid-column-start') || column?.[0] || area?.[1]) || undefined,
+    gridColumnEnd: parseInt(get('grid-column-end') || column?.[1] || area?.[3]) || undefined,
 
-    alignItems: l('align-items') || placeItems?.[0],
-    justifyItems: l('justify-items') || placeItems?.[1] || placeItems?.[0],
-    alignSelf: l('align-self') || placeSelf?.[0],
-    justifySelf: l('justify-self') || placeSelf?.[1] || placeSelf?.[0],
+    alignItems: get('align-items') || placeItems?.[0],
+    justifyItems: get('justify-items') || placeItems?.[1] || placeItems?.[0],
+    alignSelf: get('align-self') || placeSelf?.[0],
+    justifySelf: get('justify-self') || placeSelf?.[1] || placeSelf?.[0],
 
-    width: (l('width') === 'min-content' ? bbox!.width : l('width')) || undefined,
-    height: (l('height') === 'min-content' ? bbox!.height : l('height')) || undefined,
+    width: (get('grid-width') === 'fit' ? bbox!.width : get('grid-width')) || undefined,
+    height: (get('grid-height') === 'fit' ? bbox!.height : get('grid-height')) || undefined,
   };
 
   if (style.gridTemplateRows || style.gridTemplateColumns) style.display = 'grid';
@@ -177,32 +175,26 @@ function parseLayout(selection: Selection<Element, any, any, any>): FaberStyle |
 function parseMargin(
   selection: Selection<Element, any, any, any>
 ): { left: number; right: number; top: number; bottom: number } {
-  const l = selection.layout.bind(selection);
+  const get = selection.attr.bind(selection);
   return {
-    left: l('margin-left') || l('margin-horizontal') || l('margin') || 0,
-    right: l('margin-right') || l('margin-horizontal') || l('margin') || 0,
-    top: l('margin-top') || l('margin-vertical') || l('margin') || 0,
-    bottom: l('margin-bottom') || l('margin-vertical') || l('margin') || 0,
+    left: parseFloat(get('margin-left') || get('margin-horizontal') || get('margin') || '0'),
+    right: parseFloat(get('margin-right') || get('margin-horizontal') || get('margin') || '0'),
+    top: parseFloat(get('margin-top') || get('margin-vertical') || get('margin') || '0'),
+    bottom: parseFloat(get('margin-bottom') || get('margin-vertical') || get('margin') || '0'),
   };
 }
 
 function parseContentPlacement(
   selection: Selection<Element, any, any, any>
-): { justify: GridContentPlacement; align: GridContentPlacement } {
-  const l = selection.layout.bind(selection);
+): { justify: string; align: string } {
+  const get = selection.attr.bind(selection);
   return {
-    align:
-      l('align-content') ||
-      (l('place-content')?.split(' ')[0] as GridContentPlacement) ||
-      'stretch',
-    justify:
-      l('justify-content') ||
-      (l('place-content')?.split(' ')[1] as GridContentPlacement) ||
-      'stretch',
+    align: get('align-content') || get('place-content')?.split(' ')[0] || 'stretch',
+    justify: get('justify-content') || get('place-content')?.split(' ')[1] || 'stretch',
   };
 }
 
-function getPositionModifier(placement: GridContentPlacement): (position: number) => number {
+function getPositionModifier(placement: string): (position: number) => number {
   const p = placement;
   if (p === 'start' || p === 'stretch') return (position) => position;
   if (p === 'center' || p === 'end') return (position) => position + 1;
@@ -214,7 +206,7 @@ function getPositionModifier(placement: GridContentPlacement): (position: number
   return (position) => position;
 }
 
-function getSpanModifier(placement: GridContentPlacement): (span: number) => number {
+function getSpanModifier(placement: string): (span: number) => number {
   const p = placement;
   if (p === 'start' || p === 'center' || p === 'end' || p === 'stretch') return (span) => span;
   if (p === 'space-around') return (span) => span + (span - 1) * 2;
@@ -224,10 +216,7 @@ function getSpanModifier(placement: GridContentPlacement): (span: number) => num
   return (span) => span;
 }
 
-function applyContentPlacementToGridTemplate(
-  contentPlacement: GridContentPlacement,
-  template: string
-): string {
+function applyContentPlacementToGridTemplate(contentPlacement: string, template: string): string {
   const cells = template.split(' ');
   const result: string[] = [];
   if (contentPlacement === 'start') result.push(...cells, '1fr');
@@ -267,7 +256,9 @@ function setLayoutAttributes(
     layout.y += childRect.y;
   }
 
-  selection.layout('layout', layout);
+  Object.keys(layout).forEach((k) => (layout[k] = Math.round(layout[k] * 100) / 100));
+
+  selection.attr('layout', rectToString(layout));
 
   let notLaidOutChildCount = 0;
   for (let i = 0; i < selection.node()!.children.length; ++i) {

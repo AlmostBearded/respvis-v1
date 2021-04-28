@@ -2,7 +2,7 @@ import { BaseType, EnterElement, select, Selection } from 'd3-selection';
 import { SelectionOrTransition } from 'd3-transition';
 import {
   Component,
-  categoricalColors,
+  COLORS_CATEGORICAL,
   ComponentEventData,
   LayoutTransformMixin,
   rectFromString,
@@ -36,7 +36,7 @@ export class PointsComponent
   private _onRemovePoints: RemovePointsFunction;
   private _onUpdatePoints: UpdatePointsFunction;
 
-  static defaultColor = categoricalColors[0];
+  static defaultColor = COLORS_CATEGORICAL[0];
 
   constructor() {
     super('g');

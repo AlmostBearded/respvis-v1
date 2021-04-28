@@ -4,6 +4,7 @@
     "skipLibCheck": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
+    "strictBindCallApply": true,
     "downlevelIteration": true,
     "esModuleInterop": true,
     "experimentalDecorators": true

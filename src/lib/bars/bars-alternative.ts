@@ -1,7 +1,7 @@
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { BaseType, EnterElement, select, Selection } from 'd3-selection';
 import { SelectionOrTransition } from 'd3-transition';
-import { categoricalColors, initG } from '../core';
+import { COLORS_CATEGORICAL, initG } from '../core';
 import { Rect } from '../core/rect';
 import { Size } from '../core/utils';
 
@@ -234,7 +234,7 @@ export interface SeriesData {
   joinBars: (selection: Selection<SVGRectElement, Data, any, any>) => void;
 }
 
-export const DEFAULT_COLOR = categoricalColors[0];
+export const DEFAULT_COLOR = COLORS_CATEGORICAL[0];
 
 export function series() {
 

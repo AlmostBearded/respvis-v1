@@ -8,7 +8,7 @@ import {
   XAxisPosition,
   YAxisPosition,
 } from '../axis';
-import { Bars, BarsComponent, BarOrientation, BarData } from '../bars';
+import { Bars, BarsComponent, BarOrientation, DataBar } from '../bars';
 import { CartesianChartComponent } from '../cartesian-chart';
 
 export class BarChartComponent extends CartesianChartComponent implements Bars {
@@ -117,7 +117,7 @@ export class BarChartComponent extends CartesianChartComponent implements Bars {
     return this;
   }
 
-  barData(): BarData[] {
+  barData(): DataBar[] {
     return this._bars.barData();
   }
 }

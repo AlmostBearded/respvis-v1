@@ -1,7 +1,7 @@
 import { ScaleBand, ScaleContinuousNumeric } from 'd3-scale';
 import { bandScale, linearScale, Rect } from '../core';
 import { Size } from '../core/utils';
-import { BarData, BarOrientation } from './bars';
+import { DataBar, BarOrientation } from './bars';
 
 export interface StackedBars {
   mainValues(): any[];
@@ -20,7 +20,7 @@ export interface StackedBars {
   barData(): StackedBarData[][];
 }
 
-export interface StackedBarData extends BarData {
+export interface StackedBarData extends DataBar {
   mainIndex: number;
   crossIndex: number;
   rect: Rect<number>;

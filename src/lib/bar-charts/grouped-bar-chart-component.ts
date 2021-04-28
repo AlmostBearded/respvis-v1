@@ -12,7 +12,7 @@ import {
   GroupedBars,
   GroupedBarsComponent,
   BarOrientation,
-  BarData,
+  DataBar,
   GroupedBarData,
 } from '../bars';
 import { CartesianChartComponent } from '../cartesian-chart';

@@ -1,8 +1,8 @@
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
-import { BaseType, select, Selection } from 'd3-selection';
-import { SelectionOrTransition } from 'd3-transition';
-import { categoricalColors, initG, mergeDatumReverse } from '../core';
-import { Rect } from '../core/rect';
+import { BaseType, EnterElement, select, Selection, ValueFn } from 'd3-selection';
+import { Transition } from 'd3-transition';
+import { COLORS_CATEGORICAL, isTransition, SelectionOrTransition } from '../core';
+import { Rect, rectFromString } from '../core/rect';
 import { Size } from '../core/utils';
 
 // export enum BarOrientation {
@@ -217,87 +217,79 @@ export enum Orientation {
   Horizontal,
 }
 
-export interface Data {
+export interface DataBar extends Rect<number> {
   mainIndex: number;
   key: string;
-  rect: Rect<number>;
 }
 
-export interface SeriesData {
+export interface DataSeriesBar {
   mainValues: any[];
   mainScale: ScaleBand<any>;
   crossValues: any[];
   crossScale: ScaleContinuousNumeric<number, number>;
-  keys: string[] | undefined;
+  keys?: string[];
   orientation: Orientation;
-  bounds: Size;
-  joinBars: (selection: Selection<SVGRectElement, Data, any, any>) => void;
+  join?: DataBarsJoin;
+  // enterBars: (
+  //   selection: Selection<EnterElement, BarData, BaseType, any>
+  // ) => Selection<SVGElement, BarData, BaseType, any>;
+  // exitBars: (selection: Selection<SVGElement, BarData, BaseType, any>) => void;
+  // updateBars: (selection: Selection<SVGElement, BarData, BaseType, any>) => void;
+  // decorateBars: (selection: Selection<SVGRectElement, BarData, any, any>) => void;
 }
 
-export const DEFAULT_COLOR = categoricalColors[0];
+export const COLOR_BAR = COLORS_CATEGORICAL[0];
 
-export const DEFAULT_SERIES_DATA: SeriesData = {
+export const DATA_SERIES_BAR: DataSeriesBar = {
   mainValues: [],
   mainScale: scaleBand(),
   crossValues: [],
   crossScale: scaleLinear(),
-  keys: undefined,
   orientation: Orientation.Vertical,
-  bounds: { width: 600, height: 400 },
-  joinBars: joinBars,
 };
 
-export function createSeriesData(): SeriesData;
-export function createSeriesData(data: Partial<SeriesData>): SeriesData;
-export function createSeriesData(data?: Partial<SeriesData>): SeriesData {
-  return { ...DEFAULT_SERIES_DATA, ...data };
-}
-
-export function appendSeries<GElement extends BaseType, Datum, PElement extends BaseType, PDatum>(
+export function seriesBar<GElement extends BaseType, Datum, PElement extends BaseType, PDatum>(
   selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<SVGGElement, Datum & SeriesData, PElement, PDatum> {
-  return initSeries(selection.append('g').call(initG));
-}
-
-export function initSeries<GElement extends BaseType, Datum, PElement extends BaseType, PDatum>(
-  selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<GElement, Datum & SeriesData, PElement, PDatum> {
+): Selection<GElement, Datum & DataSeriesBar, PElement, PDatum> {
   return selection
-    .transformDatum((d) => Object.assign({}, DEFAULT_SERIES_DATA, d))
-    .classed('bar-series', true)
-    .attr('fill', DEFAULT_COLOR)
-    .on('afterlayout.barseries', function (e, d) {
-      d.bounds = select<GElement, SeriesData>(this).layout()!;
-    })
-    .on('render.barseries', function () {
-      select<GElement, SeriesData>(this).call(renderSeries);
+    .classed('series-bar', true)
+    .attr('fill', COLOR_BAR)
+    .transformData((d) => Object.assign(d || {}, DATA_SERIES_BAR, d))
+    .on('render.seriesbar', function (e, d) {
+      renderSeriesBar(select<GElement, Datum & DataSeriesBar>(this));
     });
 }
 
-export function renderSeries<GElement extends BaseType, PElement extends BaseType, PDatum>(
-  selection: Selection<GElement, SeriesData, PElement, PDatum>
-): void {
-  selection.each(function (d) {
-    select<GElement, SeriesData>(this)
-      .selectAll<SVGElement, Data>('.bar')
-      .data(
-        (d) => createData(d),
-        (d, i) => d.key
-      )
-      .call(d.joinBars);
-  });
+export function renderSeriesBar<
+  GElement extends BaseType,
+  Datum extends DataSeriesBar,
+  PElement extends BaseType,
+  PDatum
+>(
+  selection: Selection<GElement, Datum, PElement, PDatum>
+): Selection<GElement, Datum, PElement, PDatum> {
+  return selection.each((d, i, g) =>
+    select(g[i])
+      .selectAll<SVGRectElement, DataBar>('rect')
+      .data(dataBars(d, selection.layout()), (d) => d.key)
+      .call((s) => joinBars(s, d.join))
+  );
 }
 
-export function createData(seriesData: SeriesData): Data[] {
+export function dataSeriesBar(data?: Partial<DataSeriesBar>): DataSeriesBar {
+  return { ...DATA_SERIES_BAR, ...data };
+}
+
+export function dataBars(seriesData: DataSeriesBar, bounds: Size): DataBar[] {
   if (seriesData.orientation === Orientation.Vertical) {
-    seriesData.mainScale.range([0, seriesData.bounds.width]);
-    seriesData.crossScale.range([seriesData.bounds.height, 0]);
+    seriesData.mainScale.range([0, bounds.width]);
+    seriesData.crossScale.range([bounds.height, 0]);
   } else if (seriesData.orientation === Orientation.Horizontal) {
-    seriesData.mainScale.range([0, seriesData.bounds.height]);
-    seriesData.crossScale.range([0, seriesData.bounds.width]);
+    seriesData.mainScale.range([0, bounds.height]);
+    seriesData.crossScale.range([0, bounds.width]);
   }
 
-  const data: Data[] = [];
+  const data: DataBar[] = [];
 
   for (let i = 0; i < seriesData.crossValues.length; ++i) {
     const mv = seriesData.mainValues[i];
@@ -307,68 +299,92 @@ export function createData(seriesData: SeriesData): Data[] {
       data.push({
         mainIndex: i,
         key: seriesData.keys?.[i] || i.toString(),
-        rect: {
-          x: seriesData.mainScale(mv)!,
-          y: Math.min(seriesData.crossScale(0)!, seriesData.crossScale(cv)!),
-          width: seriesData.mainScale.bandwidth(),
-          height: Math.abs(seriesData.crossScale(0)! - seriesData.crossScale(cv)!),
-        },
+        x: seriesData.mainScale(mv)!,
+        y: Math.min(seriesData.crossScale(0)!, seriesData.crossScale(cv)!),
+        width: seriesData.mainScale.bandwidth(),
+        height: Math.abs(seriesData.crossScale(0)! - seriesData.crossScale(cv)!),
       });
     } else if (seriesData.orientation === Orientation.Horizontal) {
       data.push({
         mainIndex: i,
         key: seriesData.keys?.[i] || i.toString(),
-        rect: {
-          x: Math.min(seriesData.crossScale(0)!, seriesData.crossScale(cv)!),
-          y: seriesData.mainScale(mv)!,
-          width: Math.abs(seriesData.crossScale(0)! - seriesData.crossScale(cv)!),
-          height: seriesData.mainScale.bandwidth(),
-        },
+        x: Math.min(seriesData.crossScale(0)!, seriesData.crossScale(cv)!),
+        y: seriesData.mainScale(mv)!,
+        width: Math.abs(seriesData.crossScale(0)! - seriesData.crossScale(cv)!),
+        height: seriesData.mainScale.bandwidth(),
       });
     }
   }
   return data;
 }
 
-export function joinBars<PElement extends BaseType, PDatum>(
-  selection: Selection<SVGRectElement, Data, PElement, PDatum>
-) {
-  selection
+export type BarSelection = Selection<SVGRectElement, DataBar>;
+export type BarTransition = Transition<SVGRectElement, DataBar>;
+export interface DataBarsJoin {
+  enter?: (selection: BarSelection) => void;
+  update?: (selection: BarSelection) => void;
+  updateTransition?: (transition: BarTransition) => void;
+  exit?: (selection: BarSelection) => void;
+  exitTransition?: (transition: BarTransition) => void;
+}
+
+export function joinBars(selection: Selection<SVGRectElement, DataBar>, data?: DataBarsJoin) {
+  const enter = selection
     .enter()
     .append('rect')
     .classed('bar', true)
-    .call(minimizedRectAttrs)
-    .merge(selection)
-    .transition()
-    .duration(250)
-    .call(rectAttrs);
+    .call((s) => rectAttrs(s, (d) => minimizeRect(d)))
+    .call((s) => data?.enter?.(s));
 
   selection
-    .exit<Data>()
+    .merge(enter)
+    .call((s) => data?.update?.(s))
+    .transition()
+    .duration(250)
+    .call((s) => rectAttrs(s, (d) => d))
+    .call((t) => data?.updateTransition?.(t));
+
+  selection
+    .exit<DataBar>()
     // todo: class not removed if exit transition cancelled (can this happen?)
     .classed('exiting', true)
+    .call((s) => data?.exit?.(s))
     .transition()
     .duration(250)
-    .call(minimizedRectAttrs)
-    .remove();
+    .call((s) => rectAttrs(s, (d) => minimizeRect(d)))
+    .remove()
+    .call((t) => data?.exitTransition?.(t));
 }
 
-export function minimizedRectAttrs(
-  selection: SelectionOrTransition<SVGRectElement, Data, any, any>
-) {
-  selection
-    .attr('x', (d) => d.rect.x + d.rect.width / 2)
-    .attr('y', (d) => d.rect.y + d.rect.height / 2)
-    .attr('width', 0)
-    .attr('height', 0);
+// export function enterBars(
+//   selection: SelectionOrTransition<EnterElement, BarData>
+// ): Selection<SVGElement, BarData> {
+//   return selection
+//     .append('rect')
+//     .classed('bar', true)
+//     .call((s) => rectAttrs(s, (d) => minimizeRect(d)));
+// }
+
+// export function updateBars(selection: Selection<SVGElement, BarData>): void {}
+
+// export function exitBars(selection: Selection<SVGElement, BarData>): void {}
+
+export function minimizeRect(rect: Rect<number>): Rect<number> {
+  return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2, width: 0, height: 0 };
 }
 
-export function rectAttrs(
-  selection: SelectionOrTransition<SVGRectElement, Data, any, any>
-) {
-  selection
-    .attr('x', (d) => d.rect.x)
-    .attr('y', (d) => d.rect.y)
-    .attr('width', (d) => d.rect.width)
-    .attr('height', (d) => d.rect.height);
+export function rectAttrs<D>(
+  selection: SelectionOrTransition<SVGElement, D>,
+  rect: Rect<number> | ValueFn<SVGElement, D, Rect<number>>
+): void {
+  // todo: comment this function
+  const rects: Rect<number>[] = new Array(selection.size());
+  selection.each(function (d, i, groups) {
+    rects[i] = rect instanceof Function ? rect.call(this, d, i, groups) : rect;
+  });
+  // note: TS can't handle method chaining when working with SelectionOrTransition
+  selection.attr('x', (d, i) => rects[i].x);
+  selection.attr('y', (d, i) => rects[i].y);
+  selection.attr('width', (d, i) => rects[i].width);
+  selection.attr('height', (d, i) => rects[i].height);
 }

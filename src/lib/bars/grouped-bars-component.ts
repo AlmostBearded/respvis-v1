@@ -3,7 +3,7 @@ import { BaseType, EnterElement, select, selection, Selection } from 'd3-selecti
 import { SelectionOrTransition } from 'd3-transition';
 import {
   Component,
-  categoricalColors,
+  COLORS_CATEGORICAL,
   ComponentEventData,
   LayoutTransformMixin,
   rectFromString,
@@ -45,7 +45,7 @@ export class GroupedBarsComponent
   private _onCreateBarGroups: CreateBarGroupsFunction;
   private _onUpdateBars: UpdateGroupedBarsFunction;
 
-  static defaultColors = categoricalColors;
+  static defaultColors = COLORS_CATEGORICAL;
 
   constructor() {
     super('g');
