@@ -137,12 +137,12 @@ export function chart<Datum, PElement extends BaseType, PDatum>(
     .call(renderOnAttributeChange);
 }
 
-export function renderChart(selection: Selection<SVGSVGElement, any, any, any>): void {
-  selection.call(broadcastEvent, 'beforelayout');
+export function updateChart(selection: Selection<SVGSVGElement, any, any, any>): void {
+  selection.call(broadcastEvent, 'configure');
   selection.each(function () {
     select(this).call(computeLayout, this.getBoundingClientRect());
   });
-  selection.call(broadcastEvent, 'afterlayout').call(broadcastEvent, 'render').call(applyLayout);
+  selection.call(broadcastEvent, 'render').call(applyLayout);
 }
 
 export function applyLayout(selection: Selection<Element, any, BaseType, any>): void {
@@ -194,12 +194,10 @@ export function renderOnAttributeChange(selection: Selection<SVGSVGElement, any,
   selection.each(function () {
     const mutationObserver = new MutationObserver(
       (mutations: MutationRecord[], observer: MutationObserver) => {
-        // console.log('SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS');
         let changed = false;
 
         const uniqueMutationsByTargetAttribute = mutations.filter(
           (v, i, array) =>
-            // v.attributeName !== 'layout' &&
             array.findIndex(
               (v2) => v2.target === v.target && v2.attributeName === v.attributeName
             ) === i
@@ -224,9 +222,8 @@ export function renderOnAttributeChange(selection: Selection<SVGSVGElement, any,
             }
           }
         }
-        // console.log('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE');
         if (changed) {
-          selection.call(renderChart);
+          selection.call(updateChart);
         }
       }
     );
@@ -236,7 +233,6 @@ export function renderOnAttributeChange(selection: Selection<SVGSVGElement, any,
       attributeOldValue: true,
       subtree: true,
     });
-    window['temp'] = mutationObserver;
   });
 }
 
@@ -251,5 +247,5 @@ export function broadcastEvent(
 
 // todo: should the resize listener be subscribed automatically like this?
 select(window).on('resize.charts', function () {
-  selectAll('.chart').call(renderChart);
+  selectAll('.chart').call(updateChart);
 });

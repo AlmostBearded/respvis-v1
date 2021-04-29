@@ -240,23 +240,14 @@ export interface DataSeriesBar {
 
 export const COLOR_BAR = COLORS_CATEGORICAL[0];
 
-export const DATA_SERIES_BAR: DataSeriesBar = {
-  mainValues: [],
-  mainScale: scaleBand(),
-  crossValues: [],
-  crossScale: scaleLinear(),
-  orientation: Orientation.Vertical,
-};
-
 export function seriesBar<GElement extends BaseType, Datum, PElement extends BaseType, PDatum>(
   selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<GElement, Datum & DataSeriesBar, PElement, PDatum> {
+): Selection<GElement, Datum, PElement, PDatum> {
   return selection
     .classed('series-bar', true)
     .attr('fill', COLOR_BAR)
-    .transformData((d) => Object.assign(d || {}, DATA_SERIES_BAR, d))
     .on('render.seriesbar', function (e, d) {
-      renderSeriesBar(select<GElement, Datum & DataSeriesBar>(this));
+      renderSeriesBar(select<GElement, DataSeriesBar>(this));
     });
 }
 
@@ -277,7 +268,21 @@ export function renderSeriesBar<
 }
 
 export function dataSeriesBar(data?: Partial<DataSeriesBar>): DataSeriesBar {
-  return { ...DATA_SERIES_BAR, ...data };
+  return {
+    mainValues: data?.mainValues || [],
+    mainScale:
+      data?.mainScale ||
+      scaleBand()
+        .domain(data?.mainValues || [])
+        .padding(0.1),
+    crossValues: data?.crossValues || [],
+    crossScale:
+      data?.crossScale ||
+      scaleLinear()
+        .domain([0, Math.max(...(data?.crossValues || []))])
+        .nice(),
+    orientation: data?.orientation || Orientation.Vertical,
+  };
 }
 
 export function dataBars(seriesData: DataSeriesBar, bounds: Size): DataBar[] {

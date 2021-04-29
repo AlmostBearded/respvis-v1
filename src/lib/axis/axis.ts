@@ -20,11 +20,6 @@ export interface DataAxis {
   configureAxis: ConfigureAxisFn;
 }
 
-export const DATA_AXIS: DataAxis = {
-  scale: scaleLinear().domain([0, 1]).range([0, 600]),
-  configureAxis: () => {},
-};
-
 // export function makeLeftAxis<
 //   GElement extends SVGSVGElement | SVGGElement,
 //   Datum,
@@ -97,7 +92,10 @@ export const DATA_AXIS: DataAxis = {
 // }
 
 export function dataAxis(data?: Partial<DataAxis>): DataAxis {
-  return { ...DATA_AXIS, ...data };
+  return {
+    scale: data?.scale || scaleLinear().domain([0, 1]).range([0, 600]),
+    configureAxis: data?.configureAxis || (() => {}),
+  };
 }
 
 export function axisLeft<
@@ -107,9 +105,9 @@ export function axisLeft<
   PDatum
 >(
   selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<GElement, Datum & DataAxis, PElement, PDatum> {
+): Selection<GElement, Datum, PElement, PDatum> {
   return axis(selection).on('render.axisleft', function (e, d) {
-    renderAxisLeft(select<GElement, Datum & DataAxis>(this));
+    renderAxisLeft(select<GElement, DataAxis>(this));
   });
 }
 
@@ -137,9 +135,9 @@ export function axisBottom<
   PDatum
 >(
   selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<GElement, Datum & DataAxis, PElement, PDatum> {
+): Selection<GElement, Datum, PElement, PDatum> {
   return axis(selection).on('render.axisbottom', function (e, d) {
-    renderAxisBottom(select<GElement, Datum & DataAxis>(this));
+    renderAxisBottom(select<GElement, DataAxis>(this));
   });
 }
 
@@ -161,8 +159,8 @@ function axis<
   PDatum
 >(
   selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<GElement, Datum & DataAxis, PElement, PDatum> {
-  return selection.classed('axis', true).transformData((d) => Object.assign(d || {}, DATA_AXIS, d));
+): Selection<GElement, Datum, PElement, PDatum> {
+  return selection.classed('axis', true);
 }
 
 function renderAxis<

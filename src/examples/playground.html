@@ -27,34 +27,31 @@
 
       const cities = data.cities,
         cityScale = d3.scaleBand().domain(cities).padding(0.1),
-        configureCityAxis = () => {},
-        cityAxisData = { scale: cityScale, configureAxis: configureCityAxis },
         populations = data.populations.map((p) => Math.round(p / 1000)),
         maxPopulation = Math.max(...populations),
         populationScale = d3.scaleLinear().domain([0, maxPopulation]).nice(),
         formatPopulation = (p) => `${p}k`,
-        configurePopulationAxis = (a) => a.tickFormat(formatPopulation),
-        populationAxisData = { scale: populationScale, configureAxis: configurePopulationAxis };
+        configurePopulationAxis = (a) => a.tickFormat(formatPopulation);
 
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
       const root = d3.select('#root'),
         chartData = respVis.dataChartBar({
-          barSeries: {
-            mainValues: cities,
-            mainScale: cityScale,
-            crossValues: populations,
-            crossScale: populationScale,
-          },
-          mainAxis: cityAxisData,
+          mainValues: cities,
+          mainScale: cityScale,
           mainTitle: 'Cities',
-          crossAxis: populationAxisData,
+          crossValues: populations,
+          crossScale: populationScale,
           crossTitle: 'Population',
+          configureCrossAxis: configurePopulationAxis,
         }),
         chart = root.append('svg').datum(chartData).call(respVis.chartBar);
 
-      chart.on('render.configure', function (e, d) {
-        barSeriesData.orientation = respVis.Orientation.Horizontal;
+      chart.on('configure', function (e, d) {
+        chartData.orientation = respVis.Orientation.Horizontal;
+        if (window.matchMedia(wideMediaQuery).matches) {
+          chartData.orientation = respVis.Orientation.Vertical;
+        }
       });
 
       // const root = d3.select('#root'),

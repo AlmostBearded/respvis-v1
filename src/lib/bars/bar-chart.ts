@@ -26,22 +26,29 @@ export function chartBar<Datum extends DataChartBar, PElement extends BaseType, 
   selection: Selection<SVGSVGElement, Datum, PElement, PDatum>
 ): Selection<SVGSVGElement, Datum, PElement, PDatum> {
   const chrt = chart(selection).on('render.barchart', function (e, chartData) {
-      barSeries.transformData((d) => Object.assign(d, chartData.barSeries));
-      if (chartData.barSeries.orientation === Orientation.Horizontal) {
-        chartData.mainAxis.scale = chartData.barSeries.mainScale;
-        chartData.crossAxis.scale = chartData.barSeries.crossScale;
-        leftAxis.transformData((d) => Object.assign(d, chartData.mainAxis));
-        bottomAxis.transformData((d) => Object.assign(d, chartData.crossAxis));
+      barSeries.datum<DataSeriesBar>(chartData);
+      const mainAxisData: DataAxis = {
+        scale: chartData.mainScale,
+        configureAxis: chartData.configureMainAxis,
+      };
+      const crossAxisData: DataAxis = {
+        scale: chartData.crossScale,
+        configureAxis: chartData.configureCrossAxis,
+      };
+      // todo: is setting the datum correct?
+      if (chartData.orientation === Orientation.Horizontal) {
+        leftAxis.datum(mainAxisData);
+        bottomAxis.datum(crossAxisData);
         leftAxisTitle.text(chartData.mainTitle);
         bottomAxisTitle.text(chartData.crossTitle);
       } else {
-        leftAxis.transformData((d) => Object.assign(d, chartData.crossAxis));
-        bottomAxis.transformData((d) => Object.assign(d, chartData.mainAxis));
+        leftAxis.datum(crossAxisData);
+        bottomAxis.datum(mainAxisData);
         leftAxisTitle.text(chartData.crossTitle);
         bottomAxisTitle.text(chartData.mainTitle);
       }
     }),
-    root = chrt.select('.root').attr('grid-template', '1fr auto / auto 1fr').attr('margin', 10),
+    root = chrt.select('.root').attr('grid-template', '1fr auto / auto 1fr').attr('margin', 20),
     barSeries = seriesBar(root.append('g')).attr('grid-area', '1 / 2 / 2 / 3'),
     leftAxis = axisLeft(root.append('g'))
       .attr('grid-area', '1 / 1 / 2 / 2')
@@ -54,7 +61,7 @@ export function chartBar<Datum extends DataChartBar, PElement extends BaseType, 
     bottomAxis = axisBottom(root.append('g'))
       .attr('grid-area', '2 / 2 / 3 / 3')
       .attr('grid-template', '1fr / 1fr')
-      .attr('grid-height', 60),
+      .attr('grid-height', 50),
     bottomAxisTitle = makeHorizontalText(bottomAxis.append('text'))
       .attr('grid-area', '1 / 1 / 2 / 2')
       .attr('place-self', 'end end')
