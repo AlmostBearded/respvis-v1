@@ -27,7 +27,7 @@ export function dataAxis(data?: Partial<DataAxis>): DataAxis {
 
 export function axisLeft<
   GElement extends SVGSVGElement | SVGGElement,
-  Datum,
+  Datum extends DataAxis,
   PElement extends BaseType,
   PDatum
 >(
@@ -59,7 +59,7 @@ export function renderAxisLeft<
 
 export function axisBottom<
   GElement extends SVGSVGElement | SVGGElement,
-  Datum,
+  Datum extends DataAxis,
   PElement extends BaseType,
   PDatum
 >(

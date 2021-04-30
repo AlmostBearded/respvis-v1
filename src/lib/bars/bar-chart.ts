@@ -1,6 +1,6 @@
 import { BaseType, select, Selection } from 'd3-selection';
 import { axisBottom, axisLeft, ConfigureAxisFn, dataAxis, DataAxis } from '../axis';
-import { chart, makeHorizontalText, makeVerticalText } from '../core';
+import { chart, horizontalTextAttrs, titleAttrs, verticalTextAttrs } from '../core';
 import { dataSeriesBar, DataSeriesBar, Orientation, seriesBar } from './bars';
 
 export interface DataChartBar extends DataSeriesBar {
@@ -37,23 +37,21 @@ export function chartBar<Datum extends DataChartBar, PElement extends BaseType, 
     .attr('grid-area', '1 / 1 / 2 / 2')
     .attr('grid-template', '1fr / 1fr')
     .attr('grid-width', 60);
-  makeVerticalText(leftAxis.append('text'))
-    .attr('grid-area', '1 / 1 / 2 / 2')
-    .attr('place-self', 'start start')
-    .call(axisTitleAttrs);
+  titleAttrs(
+    verticalTextAttrs(leftAxis.append('text'))
+      .attr('grid-area', '1 / 1 / 2 / 2')
+      .attr('place-self', 'start start')
+  );
 
   const bottomAxis = axisBottom(root.append('g').datum((d) => dataAxis()))
     .attr('grid-area', '2 / 2 / 3 / 3')
     .attr('grid-template', '1fr / 1fr')
     .attr('grid-height', 50);
-  makeHorizontalText(bottomAxis.append('text'))
-    .attr('grid-area', '1 / 1 / 2 / 2')
-    .attr('place-self', 'end end')
-    .call(axisTitleAttrs);
-
-  function axisTitleAttrs(selection: Selection<SVGTextElement, unknown, BaseType, unknown>) {
-    selection.classed('title', true).attr('font-size', '1.5em').attr('letter-spacing', '0.15em');
-  }
+  titleAttrs(
+    horizontalTextAttrs(bottomAxis.append('text'))
+      .attr('grid-area', '1 / 1 / 2 / 2')
+      .attr('place-self', 'end end')
+  );
 
   return chrt;
 }
