@@ -26,10 +26,8 @@
       import data from './data/austrian-cities.js';
 
       const cities = data.cities,
-        cityScale = d3.scaleBand().domain(cities).padding(0.1),
         populations = data.populations.map((p) => Math.round(p / 1000)),
         maxPopulation = Math.max(...populations),
-        populationScale = d3.scaleLinear().domain([0, maxPopulation]).nice(),
         formatPopulation = (p) => `${p}k`,
         configurePopulationAxis = (a) => a.tickFormat(formatPopulation);
 
@@ -38,16 +36,14 @@
       const root = d3.select('#root'),
         chartData = respVis.dataChartBar({
           mainValues: cities,
-          mainScale: cityScale,
           mainTitle: 'Cities',
           crossValues: populations,
-          crossScale: populationScale,
           crossTitle: 'Population',
           configureCrossAxis: configurePopulationAxis,
         }),
         chart = root.append('svg').datum(chartData).call(respVis.chartBar);
 
-      chart.on('configure', function (e, d) {
+      chart.on('resize', function (e, d) {
         chartData.orientation = respVis.Orientation.Horizontal;
         if (window.matchMedia(wideMediaQuery).matches) {
           chartData.orientation = respVis.Orientation.Vertical;

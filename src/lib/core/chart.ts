@@ -138,11 +138,11 @@ export function chart<Datum, PElement extends BaseType, PDatum>(
 }
 
 export function updateChart(selection: Selection<SVGSVGElement, any, any, any>): void {
-  selection.call(broadcastEvent, 'configure');
   selection.each(function () {
     select(this).call(computeLayout, this.getBoundingClientRect());
   });
-  selection.call(broadcastEvent, 'render').call(applyLayout);
+  broadcastEvent(selection, 'render');
+  applyLayout(selection);
 }
 
 export function applyLayout(selection: Selection<Element, any, BaseType, any>): void {
@@ -236,16 +236,16 @@ export function renderOnAttributeChange(selection: Selection<SVGSVGElement, any,
   });
 }
 
-export function broadcastEvent(
-  selection: Selection<Element, any, any, any>,
+export function broadcastEvent<GElement extends Element, Datum, PElement extends BaseType, PDatum>(
+  selection: Selection<GElement, Datum, PElement, PDatum>,
   eventType: string
-): void {
-  selection.dispatch(eventType).each(function () {
-    selectAll(this.children).call(broadcastEvent, eventType);
+): Selection<GElement, Datum, PElement, PDatum> {
+  return selection.dispatch(eventType).each(function () {
+    broadcastEvent(selectAll(this.children), eventType);
   });
 }
 
 // todo: should the resize listener be subscribed automatically like this?
 select(window).on('resize.charts', function () {
-  selectAll('.chart').call(updateChart);
+  updateChart(broadcastEvent(selectAll('.chart'), 'resize'));
 });

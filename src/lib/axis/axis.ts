@@ -8,8 +8,6 @@ import {
 import { scaleLinear } from 'd3-scale';
 import { BaseType, select, Selection } from 'd3-selection';
 import { SelectionOrTransition } from 'd3-transition';
-import { rectFromString } from '../core';
-import { Position } from '../core/utils';
 
 export interface ConfigureAxisFn {
   (axis: Axis<AxisDomain>): void;
@@ -19,77 +17,6 @@ export interface DataAxis {
   scale: AxisScale<AxisDomain>;
   configureAxis: ConfigureAxisFn;
 }
-
-// export function makeLeftAxis<
-//   GElement extends SVGSVGElement | SVGGElement,
-//   Datum,
-//   PElement extends BaseType,
-//   PDatum
-// >(
-//   selection: Selection<GElement, Datum, PElement, PDatum>
-// ): Selection<GElement, Datum & AxisData, PElement, PDatum> {
-//   return makeAxis(selection);
-//   // .on('render.axisleft', function (e, d) {
-//   //   select<GElement, AxisData>(this).call(renderLeftAxis);
-//   // });
-// }
-
-// export function makeBottomAxis<
-//   GElement extends SVGSVGElement | SVGGElement,
-//   Datum,
-//   PElement extends BaseType,
-//   PDatum
-// >(
-//   selection: Selection<GElement, Datum, PElement, PDatum>
-// ): Selection<GElement, Datum & AxisData, PElement, PDatum> {
-//   return makeAxis(selection);
-// }
-
-// function makeAxis<
-//   GElement extends SVGSVGElement | SVGGElement,
-//   Datum,
-//   PElement extends BaseType,
-//   PDatum
-// >(
-//   selection: Selection<GElement, Datum, PElement, PDatum>
-// ): Selection<GElement, Datum & AxisData, PElement, PDatum> {
-//   return selection.transformData((d) => Object.assign({}, DEFAULT_DATA, d)).classed('axis', true);
-//   // .on('render.axis', function (e, d) {
-//   //   select<GElement, AxisData>(this).call(renderAxis);
-//   // });
-// }
-
-// export function renderLeftAxis(
-//   selection: Selection<BaseType, AxisData, BaseType, any>,
-//   axis: Axis<unknown>
-// ): void {
-//   renderAxis(selection, axis);
-//   const layoutAttr = selection.attr('layout');
-//   console.assert(layoutAttr);
-//   const layout = rectFromString(layoutAttr);
-//   const layoutTranslation = `translate(${layout.width}, 0)`;
-//   selection.selectAll('.tick').transformAttr('transform', (v) => `${v}${layoutTranslation}`);
-//   selection.select('.domain').attr('transform', layoutTranslation);
-// }
-
-// export function renderBottomAxis(
-//   selection: Selection<BaseType, AxisData, BaseType, any>,
-//   axis: Axis<unknown>
-// ): void {
-//   renderAxis(selection, axis);
-// }
-
-// function renderAxis(
-//   selection: Selection<BaseType, AxisData, BaseType, any>,
-//   axis: Axis<unknown>
-// ): void {
-//   selection.each((d, i, g) => select(g[i]).call(axis)).attr('fill', null);
-//   selection
-//     .selectAll<SVGTextElement, unknown>('.tick text')
-//     .attr('fill', null)
-//     .call(xyAttrsToTransformAttr);
-//   selection.select('.domain').attr('fill', 'none');
-// }
 
 export function dataAxis(data?: Partial<DataAxis>): DataAxis {
   return {
@@ -106,9 +33,11 @@ export function axisLeft<
 >(
   selection: Selection<GElement, Datum, PElement, PDatum>
 ): Selection<GElement, Datum, PElement, PDatum> {
-  return axis(selection).on('render.axisleft', function (e, d) {
-    renderAxisLeft(select<GElement, DataAxis>(this));
-  });
+  return axis(selection)
+    .classed('axis-left', true)
+    .on('render.axisleft', function (e, d) {
+      renderAxisLeft(select<GElement, DataAxis>(this));
+    });
 }
 
 export function renderAxisLeft<
@@ -136,9 +65,11 @@ export function axisBottom<
 >(
   selection: Selection<GElement, Datum, PElement, PDatum>
 ): Selection<GElement, Datum, PElement, PDatum> {
-  return axis(selection).on('render.axisbottom', function (e, d) {
-    renderAxisBottom(select<GElement, DataAxis>(this));
-  });
+  return axis(selection)
+    .classed('axis-bottom', true)
+    .on('render.axisbottom', function (e, d) {
+      renderAxisBottom(select<GElement, DataAxis>(this));
+    });
 }
 
 export function renderAxisBottom<

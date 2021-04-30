@@ -103,10 +103,6 @@ declare module 'd3-selection' {
       ) => string | number | boolean | null
     ): this;
 
-    transformDatum<TransformedDatum>(
-      transform: (this: GElement, currentData: Datum) => TransformedDatum
-    ): Selection<GElement, TransformedDatum, PElement, PDatum>;
-
     transformData<TransformedDatum>(
       transform: (
         this: GElement,
@@ -123,6 +119,7 @@ declare module 'd3-selection' {
     layout<Arg0 extends Rect<number> | undefined = undefined>(
       rect?: Arg0
     ): Arg0 extends undefined ? Rect<number> : this;
+
     // call<
     //   F extends (selection: Selection<GElement, Datum, PElement, PDatum>, ...rest: any[]) => void
     // >(
@@ -219,19 +216,6 @@ selection.prototype.transformAttr = function <
   return this.attr(name, function (d, i, g) {
     return transform.call(this, select(this).attr(name), i, g);
   });
-};
-
-selection.prototype.transformDatum = function <
-  GElement extends BaseType,
-  Datum,
-  PElement extends BaseType,
-  PDatum,
-  TransformedDatum
->(
-  this: Selection<GElement, Datum, PElement, PDatum>,
-  transform: (this: GElement, currentDatum: Datum) => TransformedDatum
-): Selection<GElement, TransformedDatum, PElement, PDatum> {
-  return this.datum<TransformedDatum>(transform.call(this.node(), this.datum()));
 };
 
 selection.prototype.transformData = function <
