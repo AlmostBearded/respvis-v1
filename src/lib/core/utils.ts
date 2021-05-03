@@ -67,11 +67,6 @@ export interface Size {
   height: number;
 }
 
-export interface Position {
-  x: number;
-  y: number;
-}
-
 export interface Stringable {
   toString(): string;
 }

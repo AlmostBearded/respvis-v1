@@ -5,6 +5,7 @@
 
 export * from './bars';
 export * from './bar-chart';
+export * from './labels';
 // export * from './grouped-bars';
 // export * from './stacked-bars';
 // export * from './bar-points';

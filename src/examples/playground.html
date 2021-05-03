@@ -40,6 +40,7 @@
           crossValues: populations,
           crossTitle: 'Population',
           configureCrossAxis: configurePopulationAxis,
+          labels: populations,
         }),
         chart = root.append('svg').datum(chartData).call(respVis.chartBar);
 
@@ -49,80 +50,6 @@
           chartData.orientation = respVis.Orientation.Vertical;
         }
       });
-
-      // const root = d3.select('#root'),
-      //   chart = root.append('svg').call(respVis.chart),
-      //   chartRoot = chart
-      //     .select('.root')
-      //     .attr('grid-template', '1fr 60 / 60 1fr')
-      //     .attr('margin', 10),
-      //   barSeries = chartRoot
-      //     .append('g')
-      //     .attr('grid-area', '1 / 2 / 2 / 3')
-      //     .call(respVis.seriesBar),
-      //   barSeriesData = Object.assign(barSeries.datum(), {
-      //     mainValues: cities,
-      //     mainScale: cityScale,
-      //     crossValues: populations,
-      //     crossScale: populationScale,
-      //   }),
-      //   leftAxis = chartRoot
-      //     .append('g')
-      //     .attr('grid-area', '1 / 1 / 2 / 2')
-      //     .attr('grid-template', '1fr / 1fr')
-      //     .on('render.rotatelabels', () =>
-      //       leftAxis.selectAll('.tick text').transformAttr('transform', (v) => `${v}rotate(-30)`)
-      //     )
-      //     .call(respVis.axisLeft),
-      //   leftAxisData = leftAxis.datum(),
-      //   leftAxisTitle = respVis
-      //     .makeVerticalText(leftAxis.append('text'))
-      //     .attr('grid-area', '1 / 1 / 2 / 2')
-      //     .attr('place-self', 'start start')
-      //     .call(axisTitleAttrs)
-      //     .text('Population'),
-      //   bottomAxis = chartRoot
-      //     .append('g')
-      //     .attr('grid-area', '2 / 2 / 3 / 3')
-      //     .attr('grid-template', '1fr / 1fr')
-      //     .on('render.rotatelabels', () =>
-      //       bottomAxis
-      //         .selectAll('.tick text')
-      //         .transformAttr('transform', (v) => `${v}rotate(-30)`)
-      //         .attr('text-anchor', 'end')
-      //     )
-      //     .call(respVis.axisBottom),
-      //   bottomAxisData = bottomAxis.datum(),
-      //   bottomAxisTitle = respVis
-      //     .makeHorizontalText(bottomAxis.append('text'))
-      //     .attr('grid-area', '1 / 1 / 2 / 2')
-      //     .attr('place-self', 'end end')
-      //     .call(axisTitleAttrs)
-      //     .text('Cities');
-
-      // chart.on('render.configure', function () {
-      //   barSeriesData.orientation = respVis.Orientation.Horizontal;
-
-      //   Object.assign(leftAxisData, cityAxisData);
-      //   leftAxisTitle.text('Cities');
-
-      //   Object.assign(bottomAxisData, populationAxisData);
-      //   bottomAxisTitle.text('Population');
-
-      //   if (window.matchMedia(wideMediaQuery).matches) {
-      //     barSeriesData.orientation = respVis.Orientation.Vertical;
-
-      //     Object.assign(leftAxisData, populationAxisData);
-      //     leftAxisTitle.text('Population');
-
-      //     Object.assign(bottomAxisData, cityAxisData);
-      //     bottomAxisTitle.text('Cities');
-      //   }
-      // });
-
-      // function axisTitleAttrs(s) {
-      //   s.classed('title', true).attr('font-size', '1.5em').attr('letter-spacing', '0.15em');
-      // }
     </script>
   </body>
 </html>

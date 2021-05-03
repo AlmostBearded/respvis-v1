@@ -1,5 +1,6 @@
 export * from './colors';
 export * as utils from './utils';
+export * from './utility/position';
 export * from './array';
 
 export { v4 as uuid } from 'uuid';

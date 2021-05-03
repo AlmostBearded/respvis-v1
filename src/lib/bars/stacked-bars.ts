@@ -21,7 +21,7 @@ export interface StackedBars {
 }
 
 export interface StackedBarData extends DataBar {
-  mainIndex: number;
+  index: number;
   crossIndex: number;
   rect: Rect<number>;
 }
@@ -122,7 +122,7 @@ export class StackedBarsCalculator implements StackedBars {
 
         if (this._orientation === BarOrientation.Vertical) {
           const bar: StackedBarData = {
-            mainIndex: i,
+            index: i,
             crossIndex: j,
             key: this._keys?.[i][j] || `${i}/${j}`,
             rect: {
@@ -136,7 +136,7 @@ export class StackedBarsCalculator implements StackedBars {
           sum += bar.rect.height;
         } else if (this._orientation === BarOrientation.Horizontal) {
           const bar: StackedBarData = {
-            mainIndex: i,
+            index: i,
             crossIndex: j,
             key: this._keys?.[i][j] || `${i}/${j}`,
             rect: {

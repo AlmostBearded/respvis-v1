@@ -25,7 +25,7 @@ export interface GroupedBars {
 }
 
 export interface GroupedBarData extends DataBar {
-  mainIndex: number;
+  index: number;
   crossIndex: number;
   rect: Rect<number>;
 }
@@ -138,7 +138,7 @@ export class GroupedBarsCalculator implements GroupedBars {
 
         if (this._orientation === BarOrientation.Vertical) {
           barGroup.push({
-            mainIndex: i,
+            index: i,
             crossIndex: j,
             key: this._keys?.[i][j] || `${i}/${j}`,
             rect: {
@@ -150,7 +150,7 @@ export class GroupedBarsCalculator implements GroupedBars {
           });
         } else if (this._orientation === BarOrientation.Horizontal) {
           barGroup.push({
-            mainIndex: i,
+            index: i,
             crossIndex: j,
             key: this._keys?.[i][j] || `${i}/${j}`,
             rect: {

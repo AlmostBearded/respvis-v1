@@ -120,6 +120,8 @@ declare module 'd3-selection' {
       rect?: Arg0
     ): Arg0 extends undefined ? Rect<number> : this;
 
+    dispatch(type: string, parameters?: Partial<CustomEventParameters>): this;
+
     // call<
     //   F extends (selection: Selection<GElement, Datum, PElement, PDatum>, ...rest: any[]) => void
     // >(
