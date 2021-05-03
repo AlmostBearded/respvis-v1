@@ -103,7 +103,7 @@ function renderAxis<
   selection: Selection<GElement, Datum, PElement, PDatum>,
   axis: Axis<AxisDomain>
 ): Selection<GElement, Datum, PElement, PDatum> {
-  selection.call(axis).attr('fill', null);
+  selection.call(axis).attr('fill', null).attr('font-size', '0.7em');
   selection
     .selectAll<SVGTextElement, unknown>('.tick text')
     .attr('fill', null)
