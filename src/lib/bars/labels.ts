@@ -28,6 +28,7 @@ export function seriesLabel<
     .classed('series-label', true)
     .attr('text-anchor', 'middle')
     .attr('dominant-baseline', 'middle')
+    .attr('font-size', '0.8em')
     .on('render.serieslabel', function (e, d) {
       renderSeriesLabel(select<GElement, Datum>(this));
     });
