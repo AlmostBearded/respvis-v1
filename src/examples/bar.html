@@ -25,91 +25,119 @@
       import data from './data/austrian-cities.js';
 
       const cities = data.cities,
-        cityScale = respVis.bandScale().domain(cities).padding(0.1),
         populations = data.populations.map((p) => Math.round(p / 1000)),
         maxPopulation = Math.max(...populations),
-        populationScale = respVis.linearScale().domain([0, maxPopulation]).nice(),
-        populationFormatter = (p) => `${p}k`,
-        wideMediaQuery = 'screen and (min-width: 40rem)',
-        barColor = respVis.BarsComponent.defaultColor;
+        formatPopulation = (p) => `${p}k`,
+        configurePopulationAxis = (a) => a.tickFormat(formatPopulation);
 
-      const barChart = respVis
-          .barChart()
-          .mainValues(cities)
-          .mainScale(cityScale)
-          .mainTitle('Cities')
-          .crossValues(populations)
-          .crossScale(populationScale)
-          .crossTitle('Population')
-          .configurator(0, (barChart) => {
-            barChart.orientation(respVis.BarOrientation.Horizontal).call(configureBarChartAxes);
-            barLabels.call(configureHorizontalBarLabels);
-          })
-          .mediaQueryConfigurator(1, wideMediaQuery, (barChart) => {
-            barChart.orientation(respVis.BarOrientation.Vertical).call(configureBarChartAxes);
-            barLabels.call(configureVerticalBarLabels);
-          }),
-        drawArea = barChart.drawArea(),
-        bars = barChart
-          .bars()
-          .on('mouseover', (e, d) => hoverBar(d.mainIndex, true))
-          .on('mouseout', (e, d) => hoverBar(d.mainIndex, false)),
-        barLabels = respVis
-          .barLabels(() => bars.barData().map((bD) => bD.rect))
-          .labels(populations.map(populationFormatter))
-          .attr('pointer-events', 'none')
-          .attr('font-size', 0);
+      const wideMediaQuery = 'screen and (min-width: 40rem)';
 
-      drawArea.child('bar-labels', barLabels);
+      const root = d3.select('#chart'),
+        chartData = respVis.dataChartBar({
+          mainValues: cities,
+          mainTitle: 'Cities',
+          crossValues: populations,
+          crossTitle: 'Population',
+          configureCrossAxis: configurePopulationAxis,
+          labels: populations,
+        }),
+        chart = root.append('svg').datum(chartData).call(respVis.chartBar);
 
-      const chart = respVis.chart();
-      chart.root().child('bar-chart', barChart);
-      chart.mount('#chart');
+      chart.on('resize', function (e, d) {
+        chartData.orientation = respVis.Orientation.Horizontal;
+        if (window.matchMedia(wideMediaQuery).matches) {
+          chartData.orientation = respVis.Orientation.Vertical;
+        }
+      });
 
-      function configureVerticalBarLabels(barLabels) {
-        barLabels
-          .widthPercent(0.5)
-          .heightPercent(1)
-          .attr('dominant-baseline', 'auto')
-          .attr('text-anchor', 'middle')
-          .attr('transform', 'translate(0, -4)');
-      }
+      // import data from './data/austrian-cities.js';
 
-      function configureHorizontalBarLabels(barLabels) {
-        barLabels
-          .widthPercent(0)
-          .heightPercent(0.5)
-          .attr('dominant-baseline', 'middle')
-          .attr('text-anchor', 'start')
-          .attr('transform', 'translate(4, 0)');
-      }
+      // const cities = data.cities,
+      //   cityScale = respVis.bandScale().domain(cities).padding(0.1),
+      //   populations = data.populations.map((p) => Math.round(p / 1000)),
+      //   maxPopulation = Math.max(...populations),
+      //   populationScale = respVis.linearScale().domain([0, maxPopulation]).nice(),
+      //   populationFormatter = (p) => `${p}k`,
+      //   wideMediaQuery = 'screen and (min-width: 40rem)',
+      //   barColor = respVis.BarsComponent.defaultColor;
 
-      function configureBarChartAxes(barChart) {
-        barChart
-          .mainAxis()
-          .ticks()
-          .onConfigureAxis((axis) => {});
-        barChart
-          .crossAxis()
-          .ticks()
-          .onConfigureAxis((axis) => axis.tickFormat(populationFormatter));
-      }
+      // const barChart = respVis
+      //     .barChart()
+      //     .mainValues(cities)
+      //     .mainScale(cityScale)
+      //     .mainTitle('Cities')
+      //     .crossValues(populations)
+      //     .crossScale(populationScale)
+      //     .crossTitle('Population')
+      //     .configurator(0, (barChart) => {
+      //       barChart.orientation(respVis.BarOrientation.Horizontal).call(configureBarChartAxes);
+      //       barLabels.call(configureHorizontalBarLabels);
+      //     })
+      //     .mediaQueryConfigurator(1, wideMediaQuery, (barChart) => {
+      //       barChart.orientation(respVis.BarOrientation.Vertical).call(configureBarChartAxes);
+      //       barLabels.call(configureVerticalBarLabels);
+      //     }),
+      //   drawArea = barChart.drawArea(),
+      //   bars = barChart
+      //     .bars()
+      //     .on('mouseover', (e, d) => hoverBar(d.mainIndex, true))
+      //     .on('mouseout', (e, d) => hoverBar(d.mainIndex, false)),
+      //   barLabels = respVis
+      //     .barLabels(() => bars.barData().map((bD) => bD.rect))
+      //     .labels(populations.map(populationFormatter))
+      //     .attr('pointer-events', 'none')
+      //     .attr('font-size', 0);
 
-      function hoverBar(barIndex, hover) {
-        barLabels
-          .select(`text:nth-of-type(${barIndex + 1}`)
-          .attr('font-size', hover ? '1rem' : null);
+      // drawArea.child('bar-labels', barLabels);
 
-        bars
-          .select(`rect:nth-of-type(${barIndex + 1})`)
-          .attr('fill', hover ? respVis.brighten(barColor, 0.5) : null);
+      // const chart = respVis.chart();
+      // chart.root().child('bar-chart', barChart);
+      // chart.mount('#chart');
 
-        barChart
-          .mainAxis()
-          .ticks()
-          .select(`.tick:nth-of-type(${barIndex + 1})`)
-          .attr('text-decoration', hover ? 'underline' : null);
-      }
+      // function configureVerticalBarLabels(barLabels) {
+      //   barLabels
+      //     .widthPercent(0.5)
+      //     .heightPercent(1)
+      //     .attr('dominant-baseline', 'auto')
+      //     .attr('text-anchor', 'middle')
+      //     .attr('transform', 'translate(0, -4)');
+      // }
+
+      // function configureHorizontalBarLabels(barLabels) {
+      //   barLabels
+      //     .widthPercent(0)
+      //     .heightPercent(0.5)
+      //     .attr('dominant-baseline', 'middle')
+      //     .attr('text-anchor', 'start')
+      //     .attr('transform', 'translate(4, 0)');
+      // }
+
+      // function configureBarChartAxes(barChart) {
+      //   barChart
+      //     .mainAxis()
+      //     .ticks()
+      //     .onConfigureAxis((axis) => {});
+      //   barChart
+      //     .crossAxis()
+      //     .ticks()
+      //     .onConfigureAxis((axis) => axis.tickFormat(populationFormatter));
+      // }
+
+      // function hoverBar(barIndex, hover) {
+      //   barLabels
+      //     .select(`text:nth-of-type(${barIndex + 1}`)
+      //     .attr('font-size', hover ? '1rem' : null);
+
+      //   bars
+      //     .select(`rect:nth-of-type(${barIndex + 1})`)
+      //     .attr('fill', hover ? respVis.brighten(barColor, 0.5) : null);
+
+      //   barChart
+      //     .mainAxis()
+      //     .ticks()
+      //     .select(`.tick:nth-of-type(${barIndex + 1})`)
+      //     .attr('text-decoration', hover ? 'underline' : null);
+      // }
     </script>
   </body>
 </html>
