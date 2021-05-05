@@ -1,6 +1,6 @@
 import { Size } from '../utils';
 import { computeLayout as faberComputeLayout } from './faberjs';
-import { Rect, rectToString } from '../rect';
+import { Rect, rectToString } from '../utility/rect';
 import { select, Selection } from 'd3-selection';
 
 type FaberNode = {
@@ -103,6 +103,17 @@ function parseHierarchy(
 
   const margin = parseMargin(selection);
   if (margin.left > 0 || margin.right > 0 || margin.top > 0 || margin.bottom > 0) {
+    // margin is implemented externally to the faberjs layout engine by wrapping the node
+    // that should have a margin into an artificial margin node that immitates margin
+    // using grid rows/columns with sizes that represent the desired margin.
+    //
+    // this abstraction is better than not having margins at all but they behaves slightly 
+    // different than in HTML/CSS. For example, in this implementation the bottom (e.g. 20) and top (e.g. 10) 
+    // margins of two vertical sibling elements will just accumulate (e.g. 30) whereas only the minimum
+    // margin to satisfy both elements margin requirements (e.g. 20) will be set in HTML/CSS. 
+    // 
+    // todo: this doesn't support negative margins. is it possible to support them?
+    // todo: is it possible to support paddings in a similar way?
     const marginLayoutNode: FaberNode = {
       style: {
         ...node.style,

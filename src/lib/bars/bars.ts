@@ -1,10 +1,9 @@
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
-import { BaseType, select, Selection, ValueFn } from 'd3-selection';
-import { Transition } from 'd3-transition';
-import { COLORS_CATEGORICAL, SelectionOrTransition } from '../core';
-import { Rect } from '../core/rect';
+import { BaseType, select, Selection } from 'd3-selection';
+import { COLORS_CATEGORICAL } from '../core';
+import { Rect, rectMinimized, rectToAttrs } from '../core/utility/rect';
+import { dataSeries, DataSeries } from '../core/series';
 import { Size } from '../core/utils';
-import { BarData } from './bars-component';
 
 export const COLOR_BAR = COLORS_CATEGORICAL[0];
 
@@ -18,7 +17,16 @@ export interface DataBar extends Rect<number> {
   key: string;
 }
 
-export interface DataBarCreation {
+export interface DataSeriesBarCustom extends DataSeries<DataBar> {}
+
+export function dataSeriesBarCustom(data?: Partial<DataSeriesBarCustom>): DataSeriesBarCustom {
+  return dataSeries({
+    data: data?.data,
+    key: data?.key || ((d, i) => d.key),
+  });
+}
+
+export interface DataBarsCreation {
   mainValues: any[];
   mainScale: ScaleBand<any>;
   crossValues: any[];
@@ -27,14 +35,11 @@ export interface DataBarCreation {
   orientation: Orientation;
 }
 
-export interface DataSeries<Datum> {
-  getData: (selection: Selection<Element>) => Datum[];
-  getKey: (datum: Datum, index: number) => string | number;
+export interface DataSeriesBar extends DataSeriesBarCustom {
+  creation: DataBarsCreation;
 }
 
-export interface DataSeriesBar extends DataSeries<DataBar> {}
-
-export function dataBarCreation(data?: Partial<DataBarCreation>): DataBarCreation {
+export function dataBarsCreation(data?: Partial<DataBarsCreation>): DataBarsCreation {
   return {
     mainValues: data?.mainValues || [],
     mainScale:
@@ -52,23 +57,15 @@ export function dataBarCreation(data?: Partial<DataBarCreation>): DataBarCreatio
   };
 }
 
-export function dataSeries<SeriesDatum>(
-  data?: Partial<DataSeries<SeriesDatum>>
-): DataSeries<SeriesDatum> {
-  return {
-    getData: data?.getData || ((s) => []),
-    getKey: data?.getKey || ((d, i) => i),
+export function dataSeriesBar(creationData: DataBarsCreation): DataSeriesBar {
+  const seriesData: DataSeriesBar = {
+    ...dataSeriesBarCustom({ data: (s) => dataBars(seriesData.creation, s.layout()) }),
+    creation: creationData,
   };
+  return seriesData;
 }
 
-export function dataSeriesBar(data?: Partial<DataSeriesBar>): DataSeriesBar {
-  return dataSeries({
-    getData: data?.getData,
-    getKey: data?.getKey || ((d, i) => d.key),
-  });
-}
-
-export function dataBars(creationData: DataBarCreation, bounds: Size): DataBar[] {
+export function dataBars(creationData: DataBarsCreation, bounds: Size): DataBar[] {
   if (creationData.orientation === Orientation.Vertical) {
     creationData.mainScale.range([0, bounds.width]);
     creationData.crossScale.range([bounds.height, 0]);
@@ -108,7 +105,7 @@ export function dataBars(creationData: DataBarCreation, bounds: Size): DataBar[]
 
 export function seriesBar<
   GElement extends Element,
-  Datum extends DataSeriesBar,
+  Datum extends DataSeriesBarCustom,
   PElement extends BaseType,
   PDatum
 >(
@@ -118,13 +115,13 @@ export function seriesBar<
     .classed('series-bar', true)
     .attr('fill', COLOR_BAR)
     .on('render.seriesbar', function (e, d) {
-      renderSeriesBar(select<GElement, DataSeriesBar>(this));
+      renderSeriesBar(select<GElement, DataSeriesBarCustom>(this));
     });
 }
 
 export function renderSeriesBar<
   GElement extends Element,
-  Datum extends DataSeriesBar,
+  Datum extends DataSeriesBarCustom,
   PElement extends BaseType,
   PDatum
 >(
@@ -134,13 +131,13 @@ export function renderSeriesBar<
     const series = select(g[i]);
     series
       .selectAll<SVGRectElement, DataBar>('rect')
-      .data(d.getData(series), d.getKey)
+      .data(d.data instanceof Function ? d.data(series) : d.data, d.key)
       .join(
         (enter) =>
           enter
             .append('rect')
             .classed('bar', true)
-            .call((s) => rectAttrs(s, (d) => minimizeRect(d)))
+            .call((s) => rectToAttrs(s, (d) => rectMinimized(d)))
             .call((s) => selection.dispatch('joinenter', { detail: { selection: s } })),
         undefined,
         (exit) =>
@@ -149,34 +146,15 @@ export function renderSeriesBar<
             .call((s) => selection.dispatch('joinexit', { detail: { selection: s } }))
             .transition()
             .duration(250)
-            .call((t) => rectAttrs(t, (d) => minimizeRect(d)))
+            .call((t) => rectToAttrs(t, (d) => rectMinimized(d)))
             .remove()
             .call((t) => selection.dispatch('joinexittransition', { detail: { transition: t } }))
       )
       .call((s) => selection.dispatch('joinupdate', { detail: { selection: s } }))
       .transition()
       .duration(250)
-      .call((t) => rectAttrs(t, (d) => d))
+      .call((t) => rectToAttrs(t, (d) => d))
       .call((t) => selection.dispatch('joinupdatetransition', { detail: { transition: t } }));
   });
 }
 
-export function minimizeRect(rect: Rect<number>): Rect<number> {
-  return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2, width: 0, height: 0 };
-}
-
-export function rectAttrs<D>(
-  selection: SelectionOrTransition<Element, D>,
-  rect: Rect<number> | ValueFn<Element, D, Rect<number>>
-): void {
-  // todo: comment this function
-  const rects: Rect<number>[] = new Array(selection.size());
-  selection.each(function (d, i, groups) {
-    rects[i] = rect instanceof Function ? rect.call(this, d, i, groups) : rect;
-  });
-  // note: TS can't handle method chaining when working with SelectionOrTransition
-  selection.attr('x', (d, i) => rects[i].x);
-  selection.attr('y', (d, i) => rects[i].y);
-  selection.attr('width', (d, i) => rects[i].width);
-  selection.attr('height', (d, i) => rects[i].height);
-}

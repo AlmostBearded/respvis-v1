@@ -7,7 +7,7 @@
 
 import { BaseType, create, select, selectAll, Selection } from 'd3-selection';
 import { computeLayout } from './layout/layout';
-import { rectFromString, rectToString } from './rect';
+import { rectFromString, rectToString } from './utility/rect';
 import { LAYOUT_ATTR_NAMES } from './selection';
 
 // export type ConfigureFunction = (chart: Chart) => void;

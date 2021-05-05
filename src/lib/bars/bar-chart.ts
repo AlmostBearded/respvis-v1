@@ -1,18 +1,18 @@
 import { BaseType, select, Selection } from 'd3-selection';
 import { axisBottom, axisLeft, ConfigureAxisFn, dataAxis, DataAxis } from '../axis';
-import { chart, horizontalTextAttrs, rectCenter, titleAttrs, verticalTextAttrs } from '../core';
+import { chart, horizontalTextAttrs, titleAttrs, verticalTextAttrs } from '../core';
 import {
-  DataBar,
-  DataBarCreation,
-  dataBarCreation,
+  DataBarsCreation,
+  dataBarsCreation,
   dataBars,
-  dataSeriesBar,
+  dataSeriesBarCustom,
   Orientation,
   seriesBar,
+  dataSeriesBar,
 } from './bars';
-import { dataSeriesLabel, seriesLabel } from './labels';
+import { seriesLabel, dataSeriesLabelBar, dataLabelsBarCreation } from './labels';
 
-export interface DataChartBar extends DataBarCreation {
+export interface DataChartBar extends DataBarsCreation {
   configureMainAxis: ConfigureAxisFn;
   mainTitle: string;
   configureCrossAxis: ConfigureAxisFn;
@@ -22,7 +22,7 @@ export interface DataChartBar extends DataBarCreation {
 
 export function dataChartBar(data?: Partial<DataChartBar>): DataChartBar {
   return {
-    ...dataBarCreation(data),
+    ...dataBarsCreation(data),
     configureMainAxis: data?.configureMainAxis || (() => {}),
     mainTitle: data?.mainTitle || '',
     configureCrossAxis: data?.configureCrossAxis || (() => {}),
@@ -49,23 +49,14 @@ export function chartBar<Datum extends DataChartBar, PElement extends BaseType, 
 
       const barSeries = root
         .append('g')
-        .datum((d) => dataSeriesBar({ getData: (s) => dataBars(d, s.layout()) }))
+        .datum((d) => dataSeriesBar(d))
         .call((s) => seriesBar(s))
         .attr('grid-area', '1 / 2 / 2 / 3');
 
       root
         .append('g')
         .datum((d) =>
-          dataSeriesLabel({
-            getData: () => {
-              const barData = barSeries.selectAll<SVGRectElement, DataBar>('.bar').data();
-              return d.labels.map((label, i) => ({
-                text: label,
-                key: barData[i].key,
-                ...rectCenter(barData[i]),
-              }));
-            },
-          })
+          dataSeriesLabelBar(dataLabelsBarCreation({ barContainer: barSeries, labels: d.labels }))
         )
         .call((s) => seriesLabel(s))
         .attr('grid-area', '1 / 2 / 2 / 3');

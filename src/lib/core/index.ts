@@ -6,6 +6,7 @@ export * from './array';
 export { v4 as uuid } from 'uuid';
 
 export * from './selection';
+export * from './series';
 
 // export * from './scales';
 
@@ -33,7 +34,7 @@ export * from './selection';
 export * from './chart';
 export * from './text';
 
-export * from './rect';
+export * from './utility/rect';
 
 // todo: is this still needed?
 import 'd3-transition';

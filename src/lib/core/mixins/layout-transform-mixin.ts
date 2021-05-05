@@ -1,5 +1,5 @@
 import { BaseChartComponent } from '../chart-component';
-import { rectFromString } from '../rect';
+import { rectFromString } from '../utility/rect';
 import { Constructor, Mixin } from './types';
 
 // prepends the translation that represents the layout to the transform attribute

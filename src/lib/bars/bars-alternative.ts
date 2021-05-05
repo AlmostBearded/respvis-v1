@@ -2,7 +2,7 @@ import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-sc
 import { BaseType, EnterElement, select, Selection } from 'd3-selection';
 import { SelectionOrTransition } from 'd3-transition';
 import { COLORS_CATEGORICAL, initG } from '../core';
-import { Rect } from '../core/rect';
+import { Rect } from '../core/utility/rect';
 import { Size } from '../core/utils';
 
 // export enum BarOrientation {

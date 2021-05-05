@@ -39,16 +39,40 @@
           crossValues: populations,
           crossTitle: 'Population',
           configureCrossAxis: configurePopulationAxis,
-          labels: populations,
+          labels: populations.map(formatPopulation),
         }),
         chart = root.append('svg').datum(chartData).call(respVis.chartBar);
 
-      chart.on('resize', function (e, d) {
+      chart.on('resize', configure);
+
+      configure();
+
+      function configure() {
         chartData.orientation = respVis.Orientation.Horizontal;
+        chart
+          .selectAll('.series-label')
+          .attr('text-anchor', 'start')
+          .attr('dominant-baseline', 'middle')
+          // note: would be better to use margin/padding
+          // not possible due to layouter limitations (no padding/negative margin).
+          .attr('transform', 'translate(5, 0)')
+          .datum((d) => {
+            d.creation.positionFromRect = respVis.rectLeft;
+            return d;
+          });
         if (window.matchMedia(wideMediaQuery).matches) {
           chartData.orientation = respVis.Orientation.Vertical;
+          chart
+            .selectAll('.series-label')
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'auto')
+            .attr('transform', 'translate(0, -5)')
+            .datum((d) => {
+              d.creation.positionFromRect = respVis.rectTop;
+              return d;
+            });
         }
-      });
+      }
 
       // import data from './data/austrian-cities.js';
 

@@ -1,9 +1,11 @@
-import { BaseType, select, selectAll, Selection } from 'd3-selection';
-import { Position, positionAttrs, Rect, rectsFromAttrs } from '../core';
-import { dataSeries, DataSeries } from './bars';
+import { BaseType, select, Selection } from 'd3-selection';
+import { Position, positionToTransformAttr, Rect, rectCenter } from '../core';
+import { dataSeries, DataSeries } from '../core/series';
+import { DataBar } from './bars';
 
 export interface DataLabel extends Position {
   text: string | number;
+  // todo: add index property?
   key?: string;
 }
 
@@ -11,8 +13,8 @@ export interface DataSeriesLabel extends DataSeries<DataLabel> {}
 
 export function dataSeriesLabel(data?: Partial<DataSeriesLabel>): DataSeriesLabel {
   return dataSeries({
-    getData: data?.getData,
-    getKey: data?.getKey || ((d, i) => d.key || i),
+    data: data?.data,
+    key: data?.key || ((d, i) => d.key || i),
   });
 }
 
@@ -46,13 +48,13 @@ export function renderSeriesLabel<
     const series = select(g[i]);
     series
       .selectAll<SVGTextElement, DataLabel>('text')
-      .data(d.getData(series), d.getKey)
+      .data(d.data instanceof Function ? d.data(series) : d.data, d.key)
       .join(
         (enter) =>
           enter
             .append('text')
             .classed('label', true)
-            .call((s) => positionAttrs(s, (d) => d))
+            .call((s) => positionToTransformAttr(s, (d) => d))
             .attr('font-size', '0em')
             .attr('opacity', 0)
             .call((s) => selection.dispatch('joinenter', { detail: { selection: s } })),
@@ -71,10 +73,51 @@ export function renderSeriesLabel<
       .call((s) => selection.dispatch('joinupdate', { detail: { selection: s } }))
       .transition()
       .duration(250)
-      .call((t) => positionAttrs(t, (d) => d))
+      .call((t) => positionToTransformAttr(t, (d) => d))
       .attr('font-size', '1em')
       .attr('opacity', 1)
       .text((d) => d.text)
       .call((t) => selection.dispatch('joinupdatetransition', { detail: { transition: t } }));
   });
+}
+
+// bar labels
+
+export interface DataLabelsBarCreation {
+  barContainer: Selection<Element>;
+  positionFromRect: (rect: Rect) => Position;
+  labels: (string | number)[];
+}
+
+export interface DataSeriesLabelBar extends DataSeriesLabel {
+  creation: DataLabelsBarCreation;
+}
+
+export function dataLabelsBarCreation(
+  data?: Partial<DataLabelsBarCreation>
+): DataLabelsBarCreation {
+  return {
+    barContainer: data?.barContainer || select('.chart'),
+    labels: data?.labels || [],
+    positionFromRect: rectCenter,
+  };
+}
+
+export function dataSeriesLabelBar(creationData: DataLabelsBarCreation): DataSeriesLabelBar {
+  const seriesData: DataSeriesLabelBar = {
+    ...dataSeriesLabel({ data: () => dataLabelsBar(seriesData.creation) }),
+    creation: creationData,
+  };
+  return seriesData;
+}
+
+export function dataLabelsBar(data: DataLabelsBarCreation): DataLabel[] {
+  return data.barContainer
+    .selectAll<SVGRectElement, DataBar>('.bar')
+    .data()
+    .map((barData, i) => ({
+      ...data.positionFromRect(barData),
+      text: data.labels[i],
+      key: barData.key,
+    }));
 }
