@@ -138,23 +138,22 @@ export function renderSeriesBar<
             .append('rect')
             .classed('bar', true)
             .call((s) => rectToAttrs(s, (d) => rectMinimized(d)))
-            .call((s) => selection.dispatch('joinenter', { detail: { selection: s } })),
+            .call((s) => selection.dispatch('barenter', { detail: { selection: s } })),
         undefined,
         (exit) =>
           exit
             .classed('exiting', true)
-            .call((s) => selection.dispatch('joinexit', { detail: { selection: s } }))
+            .call((s) => selection.dispatch('barexit', { detail: { selection: s } }))
             .transition()
             .duration(250)
             .call((t) => rectToAttrs(t, (d) => rectMinimized(d)))
             .remove()
-            .call((t) => selection.dispatch('joinexittransition', { detail: { transition: t } }))
+            .call((t) => selection.dispatch('barexittransition', { detail: { transition: t } }))
       )
-      .call((s) => selection.dispatch('joinupdate', { detail: { selection: s } }))
+      .call((s) => selection.dispatch('barupdate', { detail: { selection: s } }))
       .transition()
       .duration(250)
       .call((t) => rectToAttrs(t, (d) => d))
-      .call((t) => selection.dispatch('joinupdatetransition', { detail: { transition: t } }));
+      .call((t) => selection.dispatch('barupdatetransition', { detail: { transition: t } }));
   });
 }
-

@@ -56,26 +56,26 @@ export function renderSeriesLabel<
             .call((s) => positionToTransformAttr(s, (d) => d))
             .attr('font-size', '0em')
             .attr('opacity', 0)
-            .call((s) => selection.dispatch('joinenter', { detail: { selection: s } })),
+            .call((s) => selection.dispatch('labelenter', { detail: { selection: s } })),
         undefined,
         (exit) =>
           exit
             .classed('exiting', true)
-            .call((s) => selection.dispatch('joinexit', { detail: { selection: s } }))
+            .call((s) => selection.dispatch('labelexit', { detail: { selection: s } }))
             .transition()
             .duration(250)
             .attr('font-size', '0em')
             .attr('opacity', 0)
             .remove()
-            .call((t) => selection.dispatch('joinexittransition', { detail: { transition: t } }))
+            .call((t) => selection.dispatch('labelexittransition', { detail: { transition: t } }))
       )
-      .call((s) => selection.dispatch('joinupdate', { detail: { selection: s } }))
+      .call((s) => selection.dispatch('labelupdate', { detail: { selection: s } }))
       .transition()
       .duration(250)
       .call((t) => positionToTransformAttr(t, (d) => d))
       .attr('font-size', '1em')
       .attr('opacity', 1)
       .text((d) => d.text)
-      .call((t) => selection.dispatch('joinupdatetransition', { detail: { transition: t } }));
+      .call((t) => selection.dispatch('labelupdatetransition', { detail: { transition: t } }));
   });
 }
