@@ -2,7 +2,7 @@ import { range } from 'd3-array';
 import { ScaleBand, ScaleContinuousNumeric } from 'd3-scale';
 import { linearScale, Rect, utils, bandScale } from '../core';
 import { Size } from '../core/utils';
-import { DataBar, BarOrientation } from './bars';
+import { DataBar, BarOrientation } from './series-bar';
 import { bars } from './bars-component';
 
 export interface GroupedBars {

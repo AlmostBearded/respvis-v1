@@ -1,7 +1,7 @@
 import { BaseType, select, Selection } from 'd3-selection';
 import { Position, Rect, rectCenter, rectLeft, rectTop } from '../core';
-import { DataBar } from './bars';
-import { DataLabel, dataSeriesLabel, DataSeriesLabel } from './labels';
+import { DataBar } from './series-bar';
+import { DataLabel, dataSeriesLabel, DataSeriesLabel } from './series-label';
 
 export interface DataLabelsBarCreation {
   barContainer: Selection<Element>;

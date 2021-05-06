@@ -11,7 +11,7 @@ import {
 } from '../core';
 import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
 import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
-import { BarOrientation } from './bars';
+import { BarOrientation } from './series-bar';
 import { createBars, removeBars, updateBars } from './bars-component';
 import { StackedBarData, StackedBars, StackedBarsCalculator } from './stacked-bars';
 

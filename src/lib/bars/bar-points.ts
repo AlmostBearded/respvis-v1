@@ -1,6 +1,6 @@
 import { Rect } from '../core';
 import { Position } from '../core/utils';
-import { Bars } from './bars';
+import { Bars } from './series-bar';
 
 export interface BarPoints {
   barsAccessor(): BarsAccessor;

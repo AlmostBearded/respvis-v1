@@ -33,25 +33,27 @@
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
       const root = d3.select('#chart'),
-        chartData = respVis.dataChartBar({
+        chartDatum = respVis.dataChartBar({
           mainValues: cities,
           mainTitle: 'Cities',
           crossValues: populations,
           crossTitle: 'Population',
           configureCrossAxis: configurePopulationAxis,
-          labels: populations.map(formatPopulation),
         }),
-        chart = root.append('svg').datum(chartData).call(respVis.chartBar);
+        chart = root.append('svg').datum(chartDatum).call(respVis.chartBar),
+        labelDatum = chart.selectAll('.series-label').datum();
+
+      labelDatum.creation.labels = populations.map(formatPopulation);
 
       chart.on('resize', configure);
 
       configure();
 
       function configure() {
-        chartData.orientation = respVis.Orientation.Horizontal;
+        chartDatum.orientation = respVis.Orientation.Horizontal;
         chart.selectAll('.series-label').call(respVis.seriesLabelBarLeftConfig);
         if (window.matchMedia(wideMediaQuery).matches) {
-          chartData.orientation = respVis.Orientation.Vertical;
+          chartDatum.orientation = respVis.Orientation.Vertical;
           chart.selectAll('.series-label').call(respVis.seriesLabelBarTopConfig);
         }
       }

@@ -1,6 +1,6 @@
 import { BaseType, Selection } from 'd3-selection';
 
-export function horizontalTextAttrs<Datum, PElement extends BaseType, PDatum>(
+export function textHorizontalAttrs<Datum, PElement extends BaseType, PDatum>(
   selection: Selection<SVGTextElement, Datum, PElement, PDatum>
 ): Selection<SVGTextElement, Datum, PElement, PDatum> {
   return selection
@@ -10,7 +10,7 @@ export function horizontalTextAttrs<Datum, PElement extends BaseType, PDatum>(
     .attr('text-anchor', 'start');
 }
 
-export function verticalTextAttrs<Datum, PElement extends BaseType, PDatum>(
+export function textVerticalAttrs<Datum, PElement extends BaseType, PDatum>(
   selection: Selection<SVGTextElement, Datum, PElement, PDatum>
 ): Selection<SVGTextElement, Datum, PElement, PDatum> {
   return selection
@@ -21,7 +21,7 @@ export function verticalTextAttrs<Datum, PElement extends BaseType, PDatum>(
     .attr('transform', 'rotate(-90)');
 }
 
-export function titleAttrs<GElement extends BaseType, Datum, PElement extends BaseType, PDatum>(
+export function textTitleAttrs<GElement extends BaseType, Datum, PElement extends BaseType, PDatum>(
   selection: Selection<GElement, Datum, PElement, PDatum>
 ): Selection<GElement, Datum, PElement, PDatum> {
   return selection

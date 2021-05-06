@@ -1,16 +1,21 @@
 import { BaseType, select, Selection } from 'd3-selection';
 import { axisBottom, axisLeft, ConfigureAxisFn, dataAxis, DataAxis } from '../axis';
-import { chart, horizontalTextAttrs, titleAttrs, verticalTextAttrs } from '../core';
-import { DataBarsCreation, dataBarsCreation, Orientation, seriesBar, dataSeriesBar } from './bars';
-import { seriesLabel } from './labels';
-import { dataLabelsBarCreation, dataSeriesLabelBar } from './labels-bar';
+import { chart, textHorizontalAttrs, textTitleAttrs, textVerticalAttrs } from '../core';
+import {
+  DataBarsCreation,
+  dataBarsCreation,
+  Orientation,
+  seriesBar,
+  dataSeriesBar,
+} from './series-bar';
+import { seriesLabel } from './series-label';
+import { dataLabelsBarCreation, dataSeriesLabelBar } from './series-label-bar';
 
 export interface DataChartBar extends DataBarsCreation {
   configureMainAxis: ConfigureAxisFn;
   mainTitle: string;
   configureCrossAxis: ConfigureAxisFn;
   crossTitle: string;
-  labels: (string | number)[];
 }
 
 export function dataChartBar(data?: Partial<DataChartBar>): DataChartBar {
@@ -20,7 +25,6 @@ export function dataChartBar(data?: Partial<DataChartBar>): DataChartBar {
     mainTitle: data?.mainTitle || '',
     configureCrossAxis: data?.configureCrossAxis || (() => {}),
     crossTitle: data?.crossTitle || '',
-    labels: data?.labels || [],
   };
 }
 
@@ -48,9 +52,7 @@ export function chartBar<Datum extends DataChartBar, PElement extends BaseType, 
 
       root
         .append('g')
-        .datum((d) =>
-          dataSeriesLabelBar(dataLabelsBarCreation({ barContainer: barSeries, labels: d.labels }))
-        )
+        .datum((d) => dataSeriesLabelBar(dataLabelsBarCreation({ barContainer: barSeries })))
         .call((s) => seriesLabel(s))
         .attr('grid-area', '1 / 2 / 2 / 3');
 
@@ -64,8 +66,8 @@ export function chartBar<Datum extends DataChartBar, PElement extends BaseType, 
 
       leftAxis
         .append('text')
-        .call((s) => verticalTextAttrs(s))
-        .call((s) => titleAttrs(s))
+        .call((s) => textVerticalAttrs(s))
+        .call((s) => textTitleAttrs(s))
         .attr('grid-area', '1 / 1 / 2 / 2')
         .attr('place-self', 'start start');
 
@@ -79,8 +81,8 @@ export function chartBar<Datum extends DataChartBar, PElement extends BaseType, 
 
       bottomAxis
         .append('text')
-        .call((s) => horizontalTextAttrs(s))
-        .call((s) => titleAttrs(s))
+        .call((s) => textHorizontalAttrs(s))
+        .call((s) => textTitleAttrs(s))
         .attr('grid-area', '1 / 1 / 2 / 2')
         .attr('place-self', 'end end');
     });
