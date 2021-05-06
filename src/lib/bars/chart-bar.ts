@@ -62,7 +62,7 @@ export function chartBar<Datum extends DataChartBar, PElement extends BaseType, 
         .call((s) => axisLeft(s))
         .attr('grid-area', '1 / 1 / 2 / 2')
         .attr('grid-template', '1fr / 1fr')
-        .attr('grid-width', 60);
+        .attr('grid-width', 70);
 
       leftAxis
         .append('text')
@@ -93,32 +93,25 @@ export function renderChartBar<Datum extends DataChartBar, PElement extends Base
 ): Selection<SVGSVGElement, Datum, PElement, PDatum> {
   return selection.each(function (chartData, i, g) {
     const s = select<SVGSVGElement, Datum>(g[i]);
-    const mainAxisData: DataAxis = {
-      scale: chartData.mainScale,
-      configureAxis: chartData.configureMainAxis,
-    };
-    const crossAxisData: DataAxis = {
-      scale: chartData.crossScale,
-      configureAxis: chartData.configureCrossAxis,
-    };
+    const axisConfig = (selection: Selection<Element, DataAxis>, main: boolean) =>
+      selection
+        .datum((d) =>
+          Object.assign(d, {
+            scale: main ? chartData.mainScale : chartData.crossScale,
+            configureAxis: main ? chartData.configureMainAxis : chartData.configureCrossAxis,
+          })
+        )
+        .classed('axis-main', main)
+        .classed('axis-cross', !main)
+        .selectAll('.title')
+        .text(main ? chartData.mainTitle : chartData.crossTitle);
+
     if (chartData.orientation === Orientation.Horizontal) {
-      s.selectAll<SVGGElement, DataAxis>('.axis-left')
-        .datum((d) => Object.assign(d, mainAxisData))
-        .selectAll('.title')
-        .text(chartData.mainTitle);
-      s.selectAll<SVGGElement, DataAxis>('.axis-bottom')
-        .datum((d) => Object.assign(d, crossAxisData))
-        .selectAll('.title')
-        .text(chartData.crossTitle);
+      s.selectAll<SVGGElement, DataAxis>('.axis-left').call((s) => axisConfig(s, true));
+      s.selectAll<SVGGElement, DataAxis>('.axis-bottom').call((s) => axisConfig(s, false));
     } else {
-      s.selectAll<SVGGElement, DataAxis>('.axis-left')
-        .datum((d) => Object.assign(d, crossAxisData))
-        .selectAll('.title')
-        .text(chartData.crossTitle);
-      s.selectAll<SVGGElement, DataAxis>('.axis-bottom')
-        .datum((d) => Object.assign(d, mainAxisData))
-        .selectAll('.title')
-        .text(chartData.mainTitle);
+      s.selectAll<SVGGElement, DataAxis>('.axis-left').call((s) => axisConfig(s, false));
+      s.selectAll<SVGGElement, DataAxis>('.axis-bottom').call((s) => axisConfig(s, true));
     }
   });
 }
