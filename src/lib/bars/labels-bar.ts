@@ -1,0 +1,83 @@
+import { BaseType, select, Selection } from 'd3-selection';
+import { Position, Rect, rectCenter, rectLeft, rectTop } from '../core';
+import { DataBar } from './bars';
+import { DataLabel, dataSeriesLabel, DataSeriesLabel } from './labels';
+
+export interface DataLabelsBarCreation {
+  barContainer: Selection<Element>;
+  positionFromRect: (rect: Rect) => Position;
+  labels: (string | number)[];
+}
+
+export interface DataSeriesLabelBar extends DataSeriesLabel {
+  creation: DataLabelsBarCreation;
+}
+
+export function dataLabelsBarCreation(
+  data?: Partial<DataLabelsBarCreation>
+): DataLabelsBarCreation {
+  return {
+    barContainer: data?.barContainer || select('.chart'),
+    labels: data?.labels || [],
+    positionFromRect: rectCenter,
+  };
+}
+
+export function dataSeriesLabelBar(creationData: DataLabelsBarCreation): DataSeriesLabelBar {
+  const seriesData: DataSeriesLabelBar = {
+    ...dataSeriesLabel({ data: () => dataLabelsBar(seriesData.creation) }),
+    creation: creationData,
+  };
+  return seriesData;
+}
+
+export function dataLabelsBar(data: DataLabelsBarCreation): DataLabel[] {
+  return data.barContainer
+    .selectAll<SVGRectElement, DataBar>('.bar')
+    .data()
+    .map((barData, i) => ({
+      ...data.positionFromRect(barData),
+      text: data.labels[i],
+      key: barData.key,
+    }));
+}
+
+export function seriesLabelBarLeftConfig<
+  GElement extends Element,
+  Datum extends DataSeriesLabelBar,
+  PElement extends BaseType,
+  PDatum
+>(
+  selection: Selection<GElement, Datum, PElement, PDatum>
+): Selection<GElement, Datum, PElement, PDatum> {
+  return (
+    selection
+      .attr('text-anchor', 'start')
+      .attr('dominant-baseline', 'middle')
+      // note: would be better to use margin/padding
+      // → not possible due to layouter limitations (no padding/negative margin).
+      .attr('transform', 'translate(5, 0)')
+      .datum((d) => {
+        d.creation.positionFromRect = rectLeft;
+        return d;
+      })
+  );
+}
+
+export function seriesLabelBarTopConfig<
+  GElement extends Element,
+  Datum extends DataSeriesLabelBar,
+  PElement extends BaseType,
+  PDatum
+>(
+  selection: Selection<GElement, Datum, PElement, PDatum>
+): Selection<GElement, Datum, PElement, PDatum> {
+  return selection
+    .attr('text-anchor', 'middle')
+    .attr('dominant-baseline', 'auto')
+    .attr('transform', 'translate(0, -5)')
+    .datum((d) => {
+      d.creation.positionFromRect = rectTop;
+      return d;
+    });
+}

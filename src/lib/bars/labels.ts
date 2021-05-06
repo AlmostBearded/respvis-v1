@@ -1,7 +1,6 @@
 import { BaseType, select, Selection } from 'd3-selection';
-import { Position, positionToTransformAttr, Rect, rectCenter } from '../core';
+import { Position, positionToTransformAttr } from '../core';
 import { dataSeries, DataSeries } from '../core/series';
-import { DataBar } from './bars';
 
 export interface DataLabel extends Position {
   text: string | number;
@@ -79,45 +78,4 @@ export function renderSeriesLabel<
       .text((d) => d.text)
       .call((t) => selection.dispatch('joinupdatetransition', { detail: { transition: t } }));
   });
-}
-
-// bar labels
-
-export interface DataLabelsBarCreation {
-  barContainer: Selection<Element>;
-  positionFromRect: (rect: Rect) => Position;
-  labels: (string | number)[];
-}
-
-export interface DataSeriesLabelBar extends DataSeriesLabel {
-  creation: DataLabelsBarCreation;
-}
-
-export function dataLabelsBarCreation(
-  data?: Partial<DataLabelsBarCreation>
-): DataLabelsBarCreation {
-  return {
-    barContainer: data?.barContainer || select('.chart'),
-    labels: data?.labels || [],
-    positionFromRect: rectCenter,
-  };
-}
-
-export function dataSeriesLabelBar(creationData: DataLabelsBarCreation): DataSeriesLabelBar {
-  const seriesData: DataSeriesLabelBar = {
-    ...dataSeriesLabel({ data: () => dataLabelsBar(seriesData.creation) }),
-    creation: creationData,
-  };
-  return seriesData;
-}
-
-export function dataLabelsBar(data: DataLabelsBarCreation): DataLabel[] {
-  return data.barContainer
-    .selectAll<SVGRectElement, DataBar>('.bar')
-    .data()
-    .map((barData, i) => ({
-      ...data.positionFromRect(barData),
-      text: data.labels[i],
-      key: barData.key,
-    }));
 }

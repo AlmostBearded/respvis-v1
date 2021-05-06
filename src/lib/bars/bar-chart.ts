@@ -1,16 +1,9 @@
 import { BaseType, select, Selection } from 'd3-selection';
 import { axisBottom, axisLeft, ConfigureAxisFn, dataAxis, DataAxis } from '../axis';
 import { chart, horizontalTextAttrs, titleAttrs, verticalTextAttrs } from '../core';
-import {
-  DataBarsCreation,
-  dataBarsCreation,
-  dataBars,
-  dataSeriesBarCustom,
-  Orientation,
-  seriesBar,
-  dataSeriesBar,
-} from './bars';
-import { seriesLabel, dataSeriesLabelBar, dataLabelsBarCreation } from './labels';
+import { DataBarsCreation, dataBarsCreation, Orientation, seriesBar, dataSeriesBar } from './bars';
+import { seriesLabel } from './labels';
+import { dataLabelsBarCreation, dataSeriesLabelBar } from './labels-bar';
 
 export interface DataChartBar extends DataBarsCreation {
   configureMainAxis: ConfigureAxisFn;

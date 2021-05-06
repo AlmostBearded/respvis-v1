@@ -49,28 +49,10 @@
 
       function configure() {
         chartData.orientation = respVis.Orientation.Horizontal;
-        chart
-          .selectAll('.series-label')
-          .attr('text-anchor', 'start')
-          .attr('dominant-baseline', 'middle')
-          // note: would be better to use margin/padding
-          // not possible due to layouter limitations (no padding/negative margin).
-          .attr('transform', 'translate(5, 0)')
-          .datum((d) => {
-            d.creation.positionFromRect = respVis.rectLeft;
-            return d;
-          });
+        chart.selectAll('.series-label').call(respVis.seriesLabelBarLeftConfig);
         if (window.matchMedia(wideMediaQuery).matches) {
           chartData.orientation = respVis.Orientation.Vertical;
-          chart
-            .selectAll('.series-label')
-            .attr('text-anchor', 'middle')
-            .attr('dominant-baseline', 'auto')
-            .attr('transform', 'translate(0, -5)')
-            .datum((d) => {
-              d.creation.positionFromRect = respVis.rectTop;
-              return d;
-            });
+          chart.selectAll('.series-label').call(respVis.seriesLabelBarTopConfig);
         }
       }
 
