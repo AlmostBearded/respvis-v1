@@ -1,1 +1,1 @@
-export * from './brush-component';
+export * from './DEPRECATED_brush-component';

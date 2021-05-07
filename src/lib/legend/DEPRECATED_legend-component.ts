@@ -1,5 +1,5 @@
 import { GridComponent, LayoutTransformMixin } from '../core';
-import { SwatchComponent } from './swatch-component';
+import { SwatchComponent } from './DEPRECATED_swatch-component';
 
 export class LegendComponent extends GridComponent {
   constructor(swatchCount: number) {

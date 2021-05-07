@@ -11,7 +11,7 @@ import {
 } from '../core';
 import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
 import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
-import { PointData, Points, PointsCalculator } from './points';
+import { PointData, Points, PointsCalculator } from './DEPRECATED_points';
 
 export type PointsEventData<TComponent extends Component> = ComponentEventData<TComponent> &
   PointData;

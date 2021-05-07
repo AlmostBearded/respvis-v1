@@ -5,7 +5,7 @@ import {
   brushSelection as d3BrushSelection,
 } from 'd3-brush';
 import { ChartComponent, Component, ComponentEventData, LayoutTransformMixin, Rect, rectFromString } from '../core';
-import { arraysEqual } from '../core/array';
+import { arraysEqual } from '../core/utility/array';
 import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
 import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
 

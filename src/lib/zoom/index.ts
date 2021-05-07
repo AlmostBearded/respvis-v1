@@ -1,1 +1,1 @@
-export * from './zoom-component';
+export * from './DEPRECATED_zoom-component';

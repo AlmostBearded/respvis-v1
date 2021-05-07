@@ -13,7 +13,7 @@ import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
 import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
 import { BarOrientation, barsCalculator } from './series-bar';
 import { createBars, removeBars, updateBars } from './bars-component';
-import { GroupedBarData, GroupedBars, GroupedBarsCalculator } from './grouped-bars';
+import { GroupedBarData, GroupedBars, GroupedBarsCalculator } from './DEPRECATED_grouped-bars';
 
 export type CreateGroupedBarsFunction = (
   enterSelection: Selection<EnterElement, GroupedBarData, any, any>

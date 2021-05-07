@@ -13,7 +13,7 @@ import { ConfiguratorsMixin } from '../core/mixins/configurators-mixin';
 import { MediaQueryConfiguratorsMixin } from '../core/mixins/media-query-configurators-mixin';
 import { BarOrientation } from './series-bar';
 import { createBars, removeBars, updateBars } from './bars-component';
-import { StackedBarData, StackedBars, StackedBarsCalculator } from './stacked-bars';
+import { StackedBarData, StackedBars, StackedBarsCalculator } from './DEPRECATED_stacked-bars';
 
 export type CreateStackedBarsFunction = (
   enterSelection: Selection<EnterElement, StackedBarData, any, any>

@@ -1,2 +1,2 @@
-export * from './swatch-component';
-export * from './legend-component';
+export * from './DEPRECATED_swatch-component';
+export * from './DEPRECATED_legend-component';
