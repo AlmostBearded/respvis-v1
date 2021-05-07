@@ -1,6 +1,6 @@
 import { BaseType, select, Selection, selection } from 'd3-selection';
 import 'd3-transition';
-import { SelectionOrTransition, Transition } from 'd3-transition';
+import { Transition } from 'd3-transition';
 import { Rect, rectFromString, rectToString } from './utility/rect';
 
 export const LAYOUT_ATTR_NAMES = [

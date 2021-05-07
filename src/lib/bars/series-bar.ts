@@ -29,7 +29,7 @@ export function dataSeriesBarCustom(data?: Partial<DataSeriesBarCustom>): DataSe
 export interface DataBarsCreation {
   mainValues: any[];
   mainScale: ScaleBand<any>;
-  crossValues: any[];
+  crossValues: number[];
   crossScale: ScaleContinuousNumeric<number, number>;
   keys?: string[];
   orientation: Orientation;

@@ -26,7 +26,6 @@
 
       const cities = data.cities,
         populations = data.populations.map((p) => Math.round(p / 1000)),
-        maxPopulation = Math.max(...populations),
         formatPopulation = (p) => `${p}k`,
         configurePopulationAxis = (a) => a.tickFormat(formatPopulation);
 
@@ -35,7 +34,7 @@
       const root = d3.select('#chart'),
         chartDatum = respVis.dataChartBar({
           mainValues: cities,
-          mainTitle: 'Cities',
+          mainTitle: 'City',
           crossValues: populations,
           crossTitle: 'Population',
           configureCrossAxis: configurePopulationAxis,
