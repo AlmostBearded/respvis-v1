@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <title>RespVis - Stacked Bar Chart</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8" />
+    <style>
+      #chart {
+        width: 100%;
+        height: 50vh;
+        min-height: 25rem;
+      }
+
+      body {
+        background-color: floralwhite;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Stacked Bar Chart</h1>
+
+    <div id="chart"></div>
+    <script src="./vendor/d3.v6.js"></script>
+    <script src="../respvis.js"></script>
+    <script type="module">
+      import data from './data/desktop-mobile-tablet.js';
+
+      // data
+      const platforms = ['Desktop', 'Mobile', 'Tablet'],
+        years = data.years,
+        shares = data.desktop.map((d, i) => [data.desktop[i], data.mobile[i], data.tablet[i]]),
+        shareScale = d3.scaleLinear().domain([0, 100]),
+        formatShare = (value) => {
+          const rounded = Math.round(parseFloat(value) * 10) / 10;
+          return rounded === 0 ? '' : `${rounded}%`;
+        },
+        keys = shares.map((pS, i) => pS.map((_, j) => `${platforms[i]}${years[j]}`)),
+        labels = shares.flat().map(formatShare);
+
+      const wideMediaQuery = 'screen and (min-width: 40rem)';
+
+      const root = d3.select('#chart'),
+        chartDatum = respVis.dataChartBarStacked({
+          mainValues: years,
+          mainTitle: 'Year',
+          crossValues: shares,
+          crossTitle: 'Market Share',
+          crossScale: shareScale,
+          configureCrossAxis: (a) => a.tickFormat(formatShare),
+          keys: keys,
+        }),
+        chart = root.append('svg').datum(chartDatum).call(respVis.chartBarStacked),
+        barSeries = chart.selectAll('.series-bar'),
+        // .on('mouseover', (e) => hoverBar(e.target, true))
+        // .on('mouseout', (e) => hoverBar(e.target, false)),
+        // barColor = barSeries.attr('fill'),
+        // barHighlightColor = respVis.brighten(barColor, 0.5),
+        labelSeries = chart.selectAll('.series-label'),
+        labelDatum = labelSeries.datum();
+
+      labelDatum.creation.labels = labels;
+
+      chart.on('resize', configure);
+      configure();
+
+      function configure() {
+        chartDatum.orientation = respVis.Orientation.Horizontal;
+        if (window.matchMedia(wideMediaQuery).matches) {
+          chartDatum.orientation = respVis.Orientation.Vertical;
+        }
+      }
+    </script>
+  </body>
+</html>

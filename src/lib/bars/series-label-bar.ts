@@ -42,6 +42,27 @@ export function dataLabelsBar(data: DataLabelsBarCreation): DataLabel[] {
     }));
 }
 
+export function seriesLabelBarCenterConfig<
+  GElement extends Element,
+  Datum extends DataSeriesLabelBar,
+  PElement extends BaseType,
+  PDatum
+>(
+  selection: Selection<GElement, Datum, PElement, PDatum>
+): Selection<GElement, Datum, PElement, PDatum> {
+  return (
+    selection
+      .attr('text-anchor', 'center')
+      .attr('dominant-baseline', 'middle')
+      // note: would be better to use margin/padding
+      // → not possible due to layouter limitations (no padding/negative margin).
+      .datum((d) => {
+        d.creation.positionFromRect = rectCenter;
+        return d;
+      })
+  );
+}
+
 export function seriesLabelBarLeftConfig<
   GElement extends Element,
   Datum extends DataSeriesLabelBar,
