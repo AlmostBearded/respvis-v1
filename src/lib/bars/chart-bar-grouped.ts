@@ -6,6 +6,7 @@ import {
   dataBarsGroupedCreation,
   DataBarsGroupedCreation,
   dataSeriesBarGrouped,
+  seriesBarGrouped,
 } from './series-bar-grouped';
 import { seriesLabel } from './series-label';
 import { dataLabelsBarCreation, dataSeriesLabelBar } from './series-label-bar';
@@ -50,7 +51,7 @@ export function chartBarGrouped<
       const barSeries = root
         .append('g')
         .datum((d) => dataSeriesBarGrouped(d))
-        .call((s) => seriesBar(s))
+        .call((s) => seriesBarGrouped(s))
         .attr('grid-area', '1 / 2 / 2 / 3');
 
       root

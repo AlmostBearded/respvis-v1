@@ -4,6 +4,7 @@ import { COLORS_CATEGORICAL } from '../core';
 import { Rect, rectMinimized, rectToAttrs } from '../core/utility/rect';
 import { dataSeries, DataSeries } from '../core/series';
 import { Size } from '../core/utils';
+import { Transition } from 'd3-transition';
 
 export const COLOR_BAR = COLORS_CATEGORICAL[0];
 
@@ -118,6 +119,12 @@ export function seriesBar<
       renderSeriesBar(select<GElement, DataSeriesBarCustom>(this));
     });
 }
+
+export interface JoinEvent<GElement extends Element, Datum>
+  extends CustomEvent<{ selection: Selection<GElement, Datum> }> {}
+
+export interface JoinTransitionEvent<GElement extends Element, Datum>
+  extends CustomEvent<{ transition: Transition<GElement, Datum> }> {}
 
 export function renderSeriesBar<
   GElement extends Element,

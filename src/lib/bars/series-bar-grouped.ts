@@ -1,7 +1,16 @@
 import { range } from 'd3-array';
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
+import { BaseType, Selection } from 'd3-selection';
+import { COLORS_CATEGORICAL } from '../core';
 import { Size } from '../core/utils';
-import { DataBar, dataSeriesBarCustom, DataSeriesBarCustom, Orientation } from './series-bar';
+import {
+  DataBar,
+  dataSeriesBarCustom,
+  DataSeriesBarCustom,
+  JoinEvent,
+  Orientation,
+  seriesBar,
+} from './series-bar';
 
 export interface DataBarGrouped extends DataBar {
   groupIndex: number;
@@ -38,7 +47,7 @@ export function dataBarsGroupedCreation(
         .domain([0, Math.max(...(data?.crossValues?.map((values) => Math.max(...values)) || []))])
         .nice(),
     orientation: data?.orientation || Orientation.Vertical,
-    innerPadding: 0.1,
+    innerPadding: data?.innerPadding || 0.1,
   };
 }
 
@@ -99,4 +108,20 @@ export function dataBarsGrouped(
   }
 
   return data;
+}
+
+export function seriesBarGrouped<
+  GElement extends Element,
+  Datum extends DataSeriesBarGrouped,
+  PElement extends BaseType,
+  PDatum
+>(
+  selection: Selection<GElement, Datum, PElement, PDatum>
+): Selection<GElement, Datum, PElement, PDatum> {
+  return seriesBar(selection)
+    .classed('series-bar-grouped', true)
+    .attr('fill', null)
+    .on('barenter', (e: JoinEvent<SVGRectElement, DataBarGrouped>) =>
+      e.detail.selection.attr('fill', (d) => COLORS_CATEGORICAL[d.index])
+    );
 }
