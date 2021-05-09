@@ -13,7 +13,7 @@ export enum Orientation {
   Horizontal,
 }
 
-export interface DataBar extends Rect<number> {
+export interface DataBar extends Rect {
   index: number;
   key: string;
 }
