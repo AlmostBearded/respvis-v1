@@ -44,6 +44,11 @@
 
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
+      // todo: add zooming & panning
+      // todo: show density plot when too many points 
+      //   (see http://nrabinowitz.github.io/rdv/?scatterplot)
+      // todo: only render points visible in current zoom frame
+
       const root = d3.select('#chart'),
         chartDatum = respVis.dataChartPoint({
           mainValues: areas,
