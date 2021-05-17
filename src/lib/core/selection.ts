@@ -1,4 +1,4 @@
-import { BaseType, select, Selection, selection } from 'd3-selection';
+import { BaseType, select, Selection, selection, ValueFn, ValueFn } from 'd3-selection';
 import 'd3-transition';
 import { Transition } from 'd3-transition';
 import { Rect, rectFromString, rectToString } from './utility/rect';
@@ -116,87 +116,18 @@ declare module 'd3-selection' {
       transform: (selection: Selection<GElement, Datum, PElement, PDatum>) => Result
     ): Result;
 
-    layout<Arg0 extends Rect<number> | undefined = undefined>(
-      rect?: Arg0
-    ): Arg0 extends undefined ? Rect<number> : this;
+    layout(name: string): string | null;
+    layout(
+      name: string,
+      value:
+        | string
+        | number
+        | boolean
+        | ValueFn<GElement, Datum, string | number | boolean | null>
+        | null
+    ): this;
 
     dispatch(type: string, parameters?: Partial<CustomEventParameters>): this;
-
-    // call<
-    //   F extends (selection: Selection<GElement, Datum, PElement, PDatum>, ...rest: any[]) => void
-    // >(
-    //   func: F,
-    //   ...args: Parameters<F>
-    // ): this;
-    // call<P extends any[]>(
-    //   func: (selection: Selection<GElement, Datum, PElement, PDatum>, ...args: P) => void,
-    //   ...args: P
-    // ): this;
-    // call<P1>(
-    //   func: (selection: Selection<GElement, Datum, PElement, PDatum>, p1: P1) => void,
-    //   p1: P1
-    // ): this;
-    // call<P1, P2>(
-    //   func: (selection: Selection<GElement, Datum, PElement, PDatum>, p1: P1, p2: P2) => void,
-    //   p1: P1,
-    //   p2: P2
-    // ): this;
-    // call<P1, P2, P3>(
-    //   func: (
-    //     selection: Selection<GElement, Datum, PElement, PDatum>,
-    //     p1: P1,
-    //     p2: P2,
-    //     p3: P3
-    //   ) => void,
-    //   p1: P1,
-    //   p2: P2,
-    //   p3: P3
-    // ): this;
-    // call<P1, P2, P3, P4>(
-    //   func: (
-    //     selection: Selection<GElement, Datum, PElement, PDatum>,
-    //     p1: P1,
-    //     p2: P2,
-    //     p3: P3,
-    //     p4: P4
-    //   ) => void,
-    //   p1: P1,
-    //   p2: P2,
-    //   p3: P3,
-    //   p4: P4
-    // ): this;
-    // call<P1, P2, P3, P4, P5>(
-    //   func: (
-    //     selection: Selection<GElement, Datum, PElement, PDatum>,
-    //     p1: P1,
-    //     p2: P2,
-    //     p3: P3,
-    //     p4: P4,
-    //     p5: P5
-    //   ) => void,
-    //   p1: P1,
-    //   p2: P2,
-    //   p3: P3,
-    //   p4: P4,
-    //   p5: P5
-    // ): this;
-    // call<P1, P2, P3, P4, P5, P6>(
-    //   func: (
-    //     selection: Selection<GElement, Datum, PElement, PDatum>,
-    //     p1: P1,
-    //     p2: P2,
-    //     p3: P3,
-    //     p4: P4,
-    //     p5: P5,
-    //     p6: P6
-    //   ) => void,
-    //   p1: P1,
-    //   p2: P2,
-    //   p3: P3,
-    //   p4: P4,
-    //   p5: P5,
-    //   p6: P6
-    // ): this;
   }
 }
 
@@ -257,15 +188,28 @@ selection.prototype.layout = function <
   GElement extends BaseType,
   Datum,
   PElement extends BaseType,
-  PDatum,
-  Arg0 extends Rect<number> | undefined
+  PDatum
 >(
   this: Selection<GElement, Datum, PElement, PDatum>,
-  rect: Arg0
-): Arg0 extends undefined ? Rect<number> : Selection<GElement, Datum, PElement, PDatum> {
-  if (rect === undefined) return rectFromString(this.attr('layout') || '0, 0, 0, 0') as any;
-  this.attr('layout', rectToString(rect));
-  return this as any;
+  name: string,
+  value?:
+    | string
+    | number
+    | boolean
+    | ValueFn<GElement, Datum, string | number | boolean | null>
+    | null
+): string | null | Selection<GElement, Datum, PElement, PDatum> {
+  const regex = ` *${name}: (.+);`;
+  if (value === undefined) return this.attr('layout')?.match(regex)?.[1] || null;
+  this.each((d, i, g) => {
+    const v = value instanceof Function ? value.call(g[i], d, i, g) : value;
+    const s = select(g[i]);
+    const layout = s.attr('layout') || '';
+    let newLayout = layout.replace(new RegExp(regex), '');
+    if (v !== null) newLayout = newLayout.concat(` ${name}: ${v};`).trim();
+    s.attr('layout', newLayout);
+  });
+  return this;
 };
 
 // export interface SelectionWithMetaTypes<

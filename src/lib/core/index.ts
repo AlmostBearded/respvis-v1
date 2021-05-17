@@ -2,10 +2,12 @@ export * from './colors';
 export * as utils from './utils';
 export * from './utility/position';
 export * from './utility/array';
+export * from './utility/bounds';
 
 export { v4 as uuid } from 'uuid';
 
 export * from './selection';
+export * from './layouter';
 export * from './series';
 
 export * from './scale';
