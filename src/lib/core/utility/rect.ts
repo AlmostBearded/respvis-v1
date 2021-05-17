@@ -78,3 +78,12 @@ export function rectRight(rect: Rect): Position {
 export function rectMinimized(rect: Rect): Rect {
   return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2, width: 0, height: 0 };
 }
+
+export function rectEquals(rectA: Rect, rectB: Rect, epsilon: number = 0.001): boolean {
+  return (
+    Math.abs(rectA.x - rectB.x) < epsilon &&
+    Math.abs(rectA.y - rectB.y) < epsilon &&
+    Math.abs(rectA.width - rectB.width) < epsilon &&
+    Math.abs(rectA.height - rectB.height) < epsilon
+  );
+}
