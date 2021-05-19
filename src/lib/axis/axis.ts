@@ -51,7 +51,7 @@ export function renderAxisLeft<
   return selection.each((d, i, g) => {
     const s = select(g[i]);
     renderAxis(s, d3Axis(d3AxisLeft, d));
-    const layoutTranslation = `translate(${s.layout().width}, 0)`;
+    const layoutTranslation = `translate(${s.bounds()!.width}, 0)`;
     s.selectAll('.tick').transformAttr('transform', (v) => `${v}${layoutTranslation}`);
     s.select('.domain').attr('transform', layoutTranslation);
   });

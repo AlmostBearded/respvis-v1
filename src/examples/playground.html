@@ -12,8 +12,6 @@
       }
 
       .layout {
-        /* border: 1px dashed #000; */
-
         box-shadow: inset 0px 0px 0px 1px #000;
       }
 
@@ -33,19 +31,14 @@
         layouter = root.append('div').call(respVis.layouter),
         chart = layouter
           .append('svg')
-          .layout('position', 'absolute')
-          .layout('top', 0)
-          .layout('bottom', 0)
-          .layout('left', 0)
-          .layout('right', 0)
           .layout('display', 'grid')
           .layout('grid-template', '1fr 10rem / 0.25fr 1fr')
-          .layout('padding', '1rem'),
+          .layout('padding', '1rem')
+          .call(respVis.chart),
         leftAxis = chart
           .append('svg')
           .layout('grid-area', '1 / 1 / 2 / 2')
           .layout('display', 'flex')
-          .layout('position', 'relative')
           .layout('justify-content', 'center')
           .layout('align-items', 'center'),
         leftAxisTitle = leftAxis

@@ -60,7 +60,7 @@ export function dataBarsCreation(data?: Partial<DataBarsCreation>): DataBarsCrea
 
 export function dataSeriesBar(creationData: DataBarsCreation): DataSeriesBar {
   const seriesData: DataSeriesBar = {
-    ...dataSeriesBarCustom({ data: (s) => dataBars(seriesData.creation, s.layout()) }),
+    ...dataSeriesBarCustom({ data: (s) => dataBars(seriesData.creation, s.bounds()!) }),
     creation: creationData,
   };
   return seriesData;

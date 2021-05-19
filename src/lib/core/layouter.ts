@@ -1,4 +1,5 @@
 import { BaseType, select, selectAll, Selection } from 'd3-selection';
+import { eventBroadcast } from './event';
 import { relativeBounds } from './utility/bounds';
 import { rectEquals, rectFromString, rectToAttrs, rectToString } from './utility/rect';
 
@@ -10,7 +11,8 @@ export interface DataLayouter {
 
 export function dataLayouter(layouter: HTMLDivElement): DataLayouter {
   const layoutNodeResizeObserver = new ResizeObserver((entries) => {
-    let layoutNodes = layoutNodeRoot(layouter);
+    const roots = layoutNodeRoot(layouter);
+    let layoutNodes = roots;
     let boundsChanged = false;
     while (!layoutNodes.empty()) {
       layoutNodes = layoutNodeChildren(
@@ -23,6 +25,10 @@ export function dataLayouter(layouter: HTMLDivElement): DataLayouter {
 
     if (boundsChanged) {
       console.log('BOUNDS');
+      // todo: not a big fan of double event broadcast.
+      selectAll(roots.data())
+        .call((s) => eventBroadcast(s, 'resize'))
+        .call((s) => eventBroadcast(s, 'render'));
     }
   });
 
@@ -150,7 +156,7 @@ export function layouter<Datum, PElement extends BaseType, PDatum>(
       d.layoutNodeResizeObserver.observe(g[i]);
       d.layoutAttrMutationObserver.observe(g[i], {
         attributes: true,
-        attributeFilter: ['layout'],
+        attributeFilter: ['layout', 'class'],
         attributeOldValue: true,
         subtree: true,
       });

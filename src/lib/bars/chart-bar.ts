@@ -37,54 +37,51 @@ export function chartBar<Datum extends DataChartBar, PElement extends BaseType, 
       renderChartBar(select<SVGSVGElement, Datum>(this));
     })
     .each((d, i, g) => {
-      const s = select<SVGSVGElement, Datum>(g[i]);
+      const s = select<SVGSVGElement, Datum>(g[i])
+        .layout('display', 'grid')
+        .layout('grid-template', '1fr auto / auto 1fr')
+        .layout('padding', '20px');
 
-      const root = s
-        .select('.root')
-        .attr('grid-template', '1fr auto / auto 1fr')
-        .attr('margin', 20);
-
-      const barSeries = root
+      const barSeries = s
         .append('g')
         .datum((d) => dataSeriesBar(d))
         .call((s) => seriesBar(s))
-        .attr('grid-area', '1 / 2 / 2 / 3');
+        .layout('grid-area', '1 / 2 / 2 / 3');
 
-      root
-        .append('g')
+      s.append('g')
         .datum((d) => dataSeriesLabelBar(dataLabelsBarCreation({ barContainer: barSeries })))
         .call((s) => seriesLabel(s))
-        .attr('grid-area', '1 / 2 / 2 / 3');
+        .layout('grid-area', '1 / 2 / 2 / 3');
 
-      const leftAxis = root
+      const leftAxis = s
         .append('g')
         .datum((d) => dataAxis())
         .call((s) => axisLeft(s))
-        .attr('grid-area', '1 / 1 / 2 / 2')
-        .attr('grid-template', '1fr / 1fr')
-        .attr('grid-width', 70);
+        .layout('grid-area', '1 / 1 / 2 / 2')
+        .layout('display', 'flex')
+        .layout('justify-content', 'flex-start')
+        .layout('align-items', 'flex-start')
+        .layout('width', '70px');
 
       leftAxis
         .append('text')
         .call((s) => textVerticalAttrs(s))
-        .call((s) => textTitleAttrs(s))
-        .attr('grid-area', '1 / 1 / 2 / 2')
-        .attr('place-self', 'start start');
+        .call((s) => textTitleAttrs(s));
 
-      const bottomAxis = root
+      const bottomAxis = s
         .append('g')
         .datum((d) => dataAxis())
         .call((s) => axisBottom(s))
-        .attr('grid-area', '2 / 2 / 3 / 3')
-        .attr('grid-template', '1fr / 1fr')
-        .attr('grid-height', 50);
+        .layout('grid-area', '2 / 2 / 3 / 3')
+        .layout('display', 'flex')
+        .layout('justify-content', 'flex-end')
+        .layout('align-items', 'flex-end')
+        .layout('height', '50px');
 
       bottomAxis
         .append('text')
         .call((s) => textHorizontalAttrs(s))
-        .call((s) => textTitleAttrs(s))
-        .attr('grid-area', '1 / 1 / 2 / 2')
-        .attr('place-self', 'end end');
+        .call((s) => textTitleAttrs(s));
     });
 }
 

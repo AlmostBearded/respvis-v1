@@ -4,21 +4,22 @@ export function textHorizontalAttrs<Datum, PElement extends BaseType, PDatum>(
   selection: Selection<SVGTextElement, Datum, PElement, PDatum>
 ): Selection<SVGTextElement, Datum, PElement, PDatum> {
   return selection
-    .attr('grid-height', 'fit')
-    .attr('grid-width', 'fit')
-    .attr('dy', '0.71em')
-    .attr('text-anchor', 'start');
+    .layout('height', 'fit')
+    .layout('width', 'fit')
+    .attr('dominant-baseline', 'hanging')
+    .attr('text-anchor', 'start')
+    .attr('writing-mode', 'horizontal-tb');
 }
 
 export function textVerticalAttrs<Datum, PElement extends BaseType, PDatum>(
   selection: Selection<SVGTextElement, Datum, PElement, PDatum>
 ): Selection<SVGTextElement, Datum, PElement, PDatum> {
   return selection
-    .attr('grid-height', 'fit')
-    .attr('grid-width', 'fit')
-    .attr('dy', '0.71em')
-    .attr('text-anchor', 'end')
-    .attr('transform', 'rotate(-90)');
+    .layout('height', 'fit')
+    .layout('width', 'fit')
+    .attr('text-anchor', 'start')
+    .attr('dominant-baseline', 'ideographic')
+    .attr('writing-mode', 'vertical-lr');
 }
 
 export function textTitleAttrs<GElement extends BaseType, Datum, PElement extends BaseType, PDatum>(

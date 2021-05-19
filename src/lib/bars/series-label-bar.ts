@@ -71,18 +71,14 @@ export function seriesLabelBarLeftConfig<
 >(
   selection: Selection<GElement, Datum, PElement, PDatum>
 ): Selection<GElement, Datum, PElement, PDatum> {
-  return (
-    selection
-      .attr('text-anchor', 'start')
-      .attr('dominant-baseline', 'middle')
-      // note: would be better to use margin/padding
-      // → not possible due to layouter limitations (no padding/negative margin).
-      .attr('transform', 'translate(5, 0)')
-      .datum((d) => {
-        d.creation.positionFromRect = rectLeft;
-        return d;
-      })
-  );
+  return selection
+    .attr('text-anchor', 'start')
+    .attr('dominant-baseline', 'middle')
+    .layout('margin-left', '5px')
+    .datum((d) => {
+      d.creation.positionFromRect = rectLeft;
+      return d;
+    });
 }
 
 export function seriesLabelBarTopConfig<
@@ -96,7 +92,7 @@ export function seriesLabelBarTopConfig<
   return selection
     .attr('text-anchor', 'middle')
     .attr('dominant-baseline', 'auto')
-    .attr('transform', 'translate(0, -5)')
+    .layout('margin-top', '-5px')
     .datum((d) => {
       d.creation.positionFromRect = rectTop;
       return d;

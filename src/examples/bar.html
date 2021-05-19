@@ -14,6 +14,10 @@
       body {
         background-color: floralwhite;
       }
+
+      .layout {
+        box-shadow: inset 0px 0px 0px 1px #000;
+      }
     </style>
   </head>
   <body>
@@ -32,6 +36,7 @@
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
       const root = d3.select('#chart'),
+        layouter = root.append('div').call(respVis.layouter),
         chartDatum = respVis.dataChartBar({
           mainValues: cities,
           mainTitle: 'City',
@@ -39,7 +44,7 @@
           crossTitle: 'Population',
           configureCrossAxis: configurePopulationAxis,
         }),
-        chart = root.append('svg').datum(chartDatum).call(respVis.chartBar),
+        chart = layouter.append('svg').datum(chartDatum).call(respVis.chartBar),
         barSeries = chart
           .selectAll('.series-bar')
           .on('mouseover', (e) => hoverBar(e.target, true))
