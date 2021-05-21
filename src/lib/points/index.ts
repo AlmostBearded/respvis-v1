@@ -1,2 +1,2 @@
-export * from './DEPRECATED_points-component';
-export * from './DEPRECATED_points';
+export * from './series-point';
+export * from './chart-point';

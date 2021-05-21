@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <title>RespVis - Scatterplot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8" />
+    <style>
+      #chart {
+        width: 100%;
+        height: 50vh;
+        min-height: 25rem;
+      }
+
+      body {
+        background-color: floralwhite;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Scatterplot</h1>
+    <div id="chart"></div>
+    <script src="./vendor/d3.v6.js"></script>
+    <script src="../respvis.js"></script>
+    <script type="module">
+      import data from './data/houses.js';
+
+      const areas = data.area,
+        minArea = Math.min(...areas),
+        maxArea = Math.max(...areas),
+        areaSpan = maxArea - minArea,
+        areaDomain = [0, maxArea + areaSpan * 0.2],
+        areaFormatter = (area) => `${area}ft²`,
+        areaScale = d3.scaleLinear().domain(areaDomain),
+        areaAxisTitle = 'Area';
+
+      const prices = data.price.map((price) => price / 1000),
+        minPrice = Math.min(...prices),
+        maxPrice = Math.max(...prices),
+        priceSpan = maxPrice - minPrice,
+        priceDomain = [0, maxPrice + priceSpan * 0.2],
+        priceFormatter = (price) => `$${price}k`,
+        priceScale = d3.scaleLinear().domain(priceDomain),
+        priceAxisTitle = 'Price';
+
+      const wideMediaQuery = 'screen and (min-width: 40rem)';
+
+      const root = d3.select('#chart'),
+        chartDatum = respVis.dataChartPoint({
+          mainValues: areas,
+          mainTitle: 'Area in ft²',
+          mainScale: areaScale,
+          crossValues: prices,
+          crossTitle: 'Price in $1000',
+          crossScale: priceScale,
+          radiuses: 5,
+        }),
+        chart = root.append('svg').datum(chartDatum).call(respVis.chartPoint),
+        pointSeries = chart
+          .selectAll('.series-point')
+          .on('mouseover', (e) => hoverPoint(e.target, true))
+          .on('mouseout', (e) => hoverPoint(e.target, false)),
+        pointColor = pointSeries.attr('fill'),
+        pointHighlightColor = respVis.brighten(pointColor, 0.5);
+
+      chart.on('resize', configure);
+      configure();
+
+      function configure() {
+        chartDatum.configureMainAxis = (a) => a.ticks(5);
+        if (window.matchMedia(wideMediaQuery).matches) {
+          chartDatum.configureMainAxis = (a) => a.ticks(10);
+        }
+      }
+
+      function hoverPoint(element, hover) {
+        const selection = d3.select(element);
+        const datum = selection.datum();
+        selection.attr('fill', hover ? pointHighlightColor : null).raise();
+        chart
+          .selectAll('.axis-main .tick')
+          .filter((d, i) => i === datum.index)
+          .attr('text-decoration', hover ? 'underline' : null);
+      }
+    </script>
+  </body>
+</html>
