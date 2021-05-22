@@ -41,11 +41,25 @@ export function chartPoint<Datum extends DataChartPoint, PElement extends BaseTy
         .attr('grid-template', '1fr auto / auto 1fr')
         .attr('margin', 20);
 
-      const pointSeries = root
+      const drawArea = root
+        .append('svg')
+        .classed('draw-area', true)
+        .attr('grid-area', '1 / 2 / 2 / 3')
+        .attr('grid-template', '1fr / 1fr');
+
+      drawArea
+        .append('rect')
+        .classed('background', true)
+        .attr('grid-area', '1 / 1 / 2 / 2')
+        .attr('width', '100%')
+        .attr('height', '100%')
+        .attr('opacity', 0);
+
+      const pointSeries = drawArea
         .append('g')
         .datum((d) => dataSeriesPoint(d))
         .call((s) => seriesPoint(s))
-        .attr('grid-area', '1 / 2 / 2 / 3');
+        .attr('grid-area', '1 / 1 / 2 / 2');
 
       const leftAxis = root
         .append('g')
