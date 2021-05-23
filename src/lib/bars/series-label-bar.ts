@@ -50,17 +50,13 @@ export function seriesLabelBarCenterConfig<
 >(
   selection: Selection<GElement, Datum, PElement, PDatum>
 ): Selection<GElement, Datum, PElement, PDatum> {
-  return (
-    selection
-      .attr('text-anchor', 'center')
-      .attr('dominant-baseline', 'middle')
-      // note: would be better to use margin/padding
-      // → not possible due to layouter limitations (no padding/negative margin).
-      .datum((d) => {
-        d.creation.positionFromRect = rectCenter;
-        return d;
-      })
-  );
+  return selection
+    .attr('text-anchor', 'center')
+    .attr('dominant-baseline', 'middle')
+    .datum((d) => {
+      d.creation.positionFromRect = rectCenter;
+      return d;
+    });
 }
 
 export function seriesLabelBarLeftConfig<
