@@ -5,6 +5,7 @@ import { Rect, rectMinimized, rectToAttrs } from '../core/utility/rect';
 import { dataSeries, DataSeries } from '../core/series';
 import { Size } from '../core/utils';
 import { Transition } from 'd3-transition';
+import { easeCubicOut } from 'd3-ease';
 
 export enum Orientation {
   Vertical,
@@ -161,6 +162,7 @@ export function renderSeriesBar<
         s
           .transition('position')
           .duration(250)
+          .ease(easeCubicOut)
           .call((t) => rectToAttrs(t, (d) => d))
       )
       .call((s) => selection.dispatch('barupdate', { detail: { selection: s } }));

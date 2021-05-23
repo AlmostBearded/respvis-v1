@@ -1,3 +1,4 @@
+import { easeCubicOut } from 'd3-ease';
 import { BaseType, select, Selection } from 'd3-selection';
 import { Position, positionToTransformAttr } from '../core';
 import { dataSeries, DataSeries } from '../core/series';
@@ -78,6 +79,7 @@ export function renderSeriesLabel<
         s
           .transition('position')
           .duration(250)
+          .ease(easeCubicOut)
           .call((t) => positionToTransformAttr(t, (d) => d))
       )
       .text((d) => d.text)
