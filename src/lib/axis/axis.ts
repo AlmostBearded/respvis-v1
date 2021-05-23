@@ -52,7 +52,12 @@ export function renderAxisLeft<
     const s = select(g[i]);
     renderAxis(s, d3Axis(d3AxisLeft, d));
     const layoutTranslation = `translate(${s.bounds()!.width}, 0)`;
-    s.selectAll('.tick').transformAttr('transform', (v) => `${v}${layoutTranslation}`);
+    s.selectAll('.tick')
+      .transformAttr('transform', (v) => `${v}${layoutTranslation}`)
+      .selectAll('text')
+      .attr('dy', null)
+      .attr('dominant-baseline', 'middle');
+
     s.select('.domain').attr('transform', layoutTranslation);
   });
 }
@@ -80,7 +85,9 @@ export function renderAxisBottom<
 >(
   selection: Selection<GElement, Datum, PElement, PDatum>
 ): Selection<GElement, Datum, PElement, PDatum> {
-  return selection.each((d, i, g) => renderAxis(select(g[i]), d3Axis(d3AxisBottom, d)));
+  return selection
+    .each((d, i, g) => renderAxis(select(g[i]), d3Axis(d3AxisBottom, d)))
+    .call((s) => s.selectAll('.tick text').attr('dy', null).attr('dominant-baseline', 'hanging'));
 }
 
 function axis<
@@ -108,7 +115,7 @@ function renderAxis<
     .selectAll<SVGTextElement, unknown>('.tick text')
     .attr('fill', null)
     .call(xyAttrsToTransformAttr);
-  selection.select('.domain').attr('fill', 'none');
+  selection.selectAll('.domain').attr('fill', 'none');
   return selection;
 }
 
