@@ -6,8 +6,6 @@ import { dataSeries, DataSeries } from '../core/series';
 import { Size } from '../core/utils';
 import { Transition } from 'd3-transition';
 
-export const COLOR_BAR = COLORS_CATEGORICAL[0];
-
 export enum Orientation {
   Vertical,
   Horizontal,
@@ -114,7 +112,7 @@ export function seriesBar<
 ): Selection<GElement, Datum, PElement, PDatum> {
   return selection
     .classed('series-bar', true)
-    .attr('fill', COLOR_BAR)
+    .attr('fill', COLORS_CATEGORICAL[0])
     .on('render.seriesbar', function (e, d) {
       renderSeriesBar(select<GElement, DataSeriesBarCustom>(this));
     });
@@ -151,16 +149,14 @@ export function renderSeriesBar<
           exit
             .classed('exiting', true)
             .call((s) => selection.dispatch('barexit', { detail: { selection: s } }))
-            .transition()
+            .transition('minimize')
             .duration(250)
             .call((t) => rectToAttrs(t, (d) => rectMinimized(d)))
             .remove()
-            .call((t) => selection.dispatch('barexittransition', { detail: { transition: t } }))
       )
       .call((s) => selection.dispatch('barupdate', { detail: { selection: s } }))
-      .transition()
+      .transition('position')
       .duration(250)
-      .call((t) => rectToAttrs(t, (d) => d))
-      .call((t) => selection.dispatch('barupdatetransition', { detail: { transition: t } }));
+      .call((t) => rectToAttrs(t, (d) => d));
   });
 }
