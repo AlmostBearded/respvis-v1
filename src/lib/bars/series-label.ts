@@ -56,26 +56,31 @@ export function renderSeriesLabel<
             .call((s) => positionToTransformAttr(s, (d) => d))
             .attr('font-size', '0em')
             .attr('opacity', 0)
+            .call((s) =>
+              s.transition('enter').duration(250).attr('font-size', '1em').attr('opacity', 1)
+            )
             .call((s) => selection.dispatch('labelenter', { detail: { selection: s } })),
         undefined,
         (exit) =>
           exit
             .classed('exiting', true)
+            .call((s) =>
+              s
+                .transition('exit')
+                .duration(250)
+                .attr('font-size', '0em')
+                .attr('opacity', 0)
+                .remove()
+            )
             .call((s) => selection.dispatch('labelexit', { detail: { selection: s } }))
-            .transition()
-            .duration(250)
-            .attr('font-size', '0em')
-            .attr('opacity', 0)
-            .remove()
-            .call((t) => selection.dispatch('labelexittransition', { detail: { transition: t } }))
       )
-      .call((s) => selection.dispatch('labelupdate', { detail: { selection: s } }))
-      .transition()
-      .duration(250)
-      .call((t) => positionToTransformAttr(t, (d) => d))
-      .attr('font-size', '1em')
-      .attr('opacity', 1)
+      .call((s) =>
+        s
+          .transition('position')
+          .duration(250)
+          .call((t) => positionToTransformAttr(t, (d) => d))
+      )
       .text((d) => d.text)
-      .call((t) => selection.dispatch('labelupdatetransition', { detail: { transition: t } }));
+      .call((s) => selection.dispatch('labelupdate', { detail: { selection: s } }));
   });
 }
