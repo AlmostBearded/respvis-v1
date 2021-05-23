@@ -148,15 +148,21 @@ export function renderSeriesBar<
         (exit) =>
           exit
             .classed('exiting', true)
+            .call((s) =>
+              s
+                .transition('minimize')
+                .duration(250)
+                .call((t) => rectToAttrs(t, (d) => rectMinimized(d)))
+                .remove()
+            )
             .call((s) => selection.dispatch('barexit', { detail: { selection: s } }))
-            .transition('minimize')
-            .duration(250)
-            .call((t) => rectToAttrs(t, (d) => rectMinimized(d)))
-            .remove()
       )
-      .call((s) => selection.dispatch('barupdate', { detail: { selection: s } }))
-      .transition('position')
-      .duration(250)
-      .call((t) => rectToAttrs(t, (d) => d));
+      .call((s) =>
+        s
+          .transition('position')
+          .duration(250)
+          .call((t) => rectToAttrs(t, (d) => d))
+      )
+      .call((s) => selection.dispatch('barupdate', { detail: { selection: s } }));
   });
 }
