@@ -1,6 +1,7 @@
 import { BaseType, select, selectAll, Selection } from 'd3-selection';
 import { eventBroadcast } from './event';
 import { relativeBounds } from './utility/bounds';
+import { positionToTransformAttr } from './utility/position';
 import { rectEquals, rectFromString, rectToAttrs, rectToString } from './utility/rect';
 
 export interface DataLayouter {
@@ -116,7 +117,7 @@ function layoutNodeBounds(selection: Selection<HTMLDivElement, SVGElement>): boo
           svg.call((s) => rectToAttrs(s, bounds));
           break;
         default:
-          svg.attr('transform', `translate(${bounds.x}, ${bounds.y})`);
+          svg.call((s) => positionToTransformAttr(s, bounds));
       }
     }
   });
