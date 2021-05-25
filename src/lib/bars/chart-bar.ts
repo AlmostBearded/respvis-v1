@@ -53,35 +53,15 @@ export function chartBar<Datum extends DataChartBar, PElement extends BaseType, 
         .call((s) => seriesLabel(s))
         .layout('grid-area', '1 / 2 / 2 / 3');
 
-      const leftAxis = s
-        .append('g')
+      s.append('g')
         .datum((d) => dataAxis())
         .call((s) => axisLeft(s))
-        .layout('grid-area', '1 / 1 / 2 / 2')
-        .layout('display', 'flex')
-        .layout('justify-content', 'flex-start')
-        .layout('align-items', 'flex-start')
-        .layout('width', '70px');
+        .layout('grid-area', '1 / 1 / 2 / 2');
 
-      leftAxis
-        .append('text')
-        .call((s) => textVerticalAttrs(s))
-        .call((s) => textTitleAttrs(s));
-
-      const bottomAxis = s
-        .append('g')
+      s.append('g')
         .datum((d) => dataAxis())
         .call((s) => axisBottom(s))
-        .layout('grid-area', '2 / 2 / 3 / 3')
-        .layout('display', 'flex')
-        .layout('justify-content', 'flex-end')
-        .layout('align-items', 'flex-end')
-        .layout('height', '50px');
-
-      bottomAxis
-        .append('text')
-        .call((s) => textHorizontalAttrs(s))
-        .call((s) => textTitleAttrs(s));
+        .layout('grid-area', '2 / 2 / 3 / 3');
     });
 }
 
@@ -95,13 +75,12 @@ export function renderChartBar<Datum extends DataChartBar, PElement extends Base
         .datum((d) =>
           Object.assign(d, {
             scale: main ? chartData.mainScale : chartData.crossScale,
+            title: main ? chartData.mainTitle : chartData.crossTitle,
             configureAxis: main ? chartData.configureMainAxis : chartData.configureCrossAxis,
           })
         )
         .classed('axis-main', main)
-        .classed('axis-cross', !main)
-        .selectAll('.title')
-        .text(main ? chartData.mainTitle : chartData.crossTitle);
+        .classed('axis-cross', !main);
 
     if (chartData.orientation === Orientation.Horizontal) {
       s.selectAll<SVGGElement, DataAxis>('.axis-left').call((s) => axisConfig(s, true));
