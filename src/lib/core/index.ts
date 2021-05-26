@@ -17,5 +17,7 @@ export * from './text';
 
 export * from './utility/rect';
 
+export * from './log';
+
 // todo: is this still needed?
 import 'd3-transition';
