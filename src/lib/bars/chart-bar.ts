@@ -42,13 +42,22 @@ export function chartBar<Datum extends DataChartBar, PElement extends BaseType, 
         .layout('grid-template', '1fr auto / auto 1fr')
         .layout('padding', '20px');
 
-      const barSeries = s
-        .append('g')
-        .datum((d) => dataSeriesBar(d))
-        .call((s) => seriesBar(s))
+      const drawArea = s
+        .append('svg')
+        .classed('draw-area', true)
         .layout('grid-area', '1 / 2 / 2 / 3');
 
-      s.append('g')
+      const barSeries = drawArea
+        .append('g')
+        .layout('width', '100%')
+        .layout('height', '100%')
+        .datum((d) => dataSeriesBar(d))
+        .call((s) => seriesBar(s));
+
+      drawArea
+        .append('g')
+        .layout('width', '100%')
+        .layout('height', '100%')
         .datum((d) => dataSeriesLabelBar(dataLabelsBarCreation({ barContainer: barSeries })))
         .call((s) => seriesLabel(s))
         .layout('grid-area', '1 / 2 / 2 / 3');
