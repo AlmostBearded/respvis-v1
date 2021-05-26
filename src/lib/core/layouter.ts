@@ -1,5 +1,7 @@
+import { easeCubicOut } from 'd3-ease';
 import { BaseType, select, selectAll, Selection } from 'd3-selection';
 import { eventBroadcast } from './event';
+import { log, nodeToString } from './log';
 import { relativeBounds } from './utility/bounds';
 import { positionToTransformAttr } from './utility/position';
 import { rectEquals, rectFromString, rectToAttrs, rectToString } from './utility/rect';
@@ -25,7 +27,7 @@ export function dataLayouter(layouter: HTMLDivElement): DataLayouter {
     }
 
     if (boundsChanged) {
-      console.log('BOUNDS');
+      log('bounds changed → rerender');
       // todo: not a big fan of double event broadcast.
       selectAll(roots.data())
         .call((s) => eventBroadcast(s, 'resize'))
@@ -106,18 +108,27 @@ function layoutNodeBounds(selection: Selection<HTMLDivElement, SVGElement>): boo
   let anyChanged = false;
   selection.each((d, i, g) => {
     const svg = select(d);
+    const prevBounds = rectFromString(svg.attr('bounds') || '0, 0, 0, 0');
     const bounds = relativeBounds(g[i]);
-    const changed = !rectEquals(rectFromString(svg.attr('bounds') || '0, 0, 0, 0'), bounds);
+    const changed = !rectEquals(prevBounds, bounds);
     anyChanged = anyChanged || changed;
     if (changed) {
+      log(
+        `bounds changed: ${nodeToString(svg.node()!)} (${rectToString(
+          prevBounds
+        )}) → (${rectToString(bounds)})`
+      );
       svg.attr('bounds', rectToString(bounds));
+      const svgTransition = svg.transition('layout').duration(250).ease(easeCubicOut);
       switch (d.tagName) {
         case 'svg':
         case 'rect':
-          svg.call((s) => rectToAttrs(s, bounds));
+          if (!svg.attr('x')) svg.call((s) => rectToAttrs(s, bounds));
+          else svgTransition.call((t) => rectToAttrs(t, bounds));
           break;
         default:
-          svg.call((s) => positionToTransformAttr(s, bounds));
+          if (!svg.attr('transform')) svg.call((s) => positionToTransformAttr(s, bounds));
+          else svgTransition.call((t) => positionToTransformAttr(t, bounds));
       }
     }
   });
