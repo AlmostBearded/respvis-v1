@@ -45,22 +45,20 @@ export function chartBar<Datum extends DataChartBar, PElement extends BaseType, 
       const drawArea = s
         .append('svg')
         .classed('draw-area', true)
-        .layout('grid-area', '1 / 2 / 2 / 3');
+        .layout('grid-area', '1 / 2 / 2 / 3')
+        .layout('display', 'grid');
 
       const barSeries = drawArea
         .append('g')
-        .layout('width', '100%')
-        .layout('height', '100%')
+        .layout('grid-area', '1 / 1')
         .datum((d) => dataSeriesBar(d))
         .call((s) => seriesBar(s));
 
       drawArea
         .append('g')
-        .layout('width', '100%')
-        .layout('height', '100%')
+        .layout('grid-area', '1 / 1')
         .datum((d) => dataSeriesLabelBar(dataLabelsBarCreation({ barContainer: barSeries })))
-        .call((s) => seriesLabel(s))
-        .layout('grid-area', '1 / 2 / 2 / 3');
+        .call((s) => seriesLabel(s));
 
       s.append('g')
         .datum((d) => dataAxis())
