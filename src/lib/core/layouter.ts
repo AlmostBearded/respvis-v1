@@ -89,15 +89,17 @@ function layoutNodeRoot(layouter: HTMLDivElement): Selection<HTMLDivElement, SVG
 }
 
 function layoutNodeStyleAttr(selection: Selection<HTMLDivElement, SVGElement>): void {
-  selection.attr('style', (d) =>
-    d
-      .getAttribute('layout')!
-      // replace width/height: 'fit' with bbox width/height
-      .replace(
-        /(width|height): fit;/g,
-        (_, captureGroup) => `${captureGroup}: ${d.getBoundingClientRect()[captureGroup]}px;`
-      )
-  );
+  selection
+    .attr('style', (d) =>
+      d
+        .getAttribute('layout')!
+        // replace width/height: 'fit' with bbox width/height
+        .replace(
+          /(width|height): fit;/g,
+          (_, captureGroup) => `${captureGroup}: ${d.getBoundingClientRect()[captureGroup]}px;`
+        )
+    )
+    .style('pointer-events', 'none');
 }
 
 function layoutNodeClassAttr(selection: Selection<HTMLDivElement, SVGElement>): void {
