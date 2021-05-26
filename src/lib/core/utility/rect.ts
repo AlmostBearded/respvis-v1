@@ -37,10 +37,10 @@ export function rectsFromAttrs(selection: Selection<Element>): Rect[] {
 
 export function rectToAttrs<D>(
   selection: SelectionOrTransition<Element, D>,
-  rect: Rect<number> | ValueFn<Element, D, Rect<number>>
+  rect: Rect<string | number> | ValueFn<Element, D, Rect<string | number>>
 ): void {
   // todo: comment this function
-  const rects: Rect<number>[] = new Array(selection.size());
+  const rects: Rect<string | number>[] = new Array(selection.size());
   selection.each(function (d, i, groups) {
     rects[i] = rect instanceof Function ? rect.call(this, d, i, groups) : rect;
   });
@@ -86,4 +86,13 @@ export function rectEquals(rectA: Rect, rectB: Rect, epsilon: number = 0.001): b
     Math.abs(rectA.width - rectB.width) < epsilon &&
     Math.abs(rectA.height - rectB.height) < epsilon
   );
+}
+
+export function rectWithUnits(rect: Rect<number | string>, units: string): Rect<string> {
+  return {
+    x: `${rect.x}${units}`,
+    y: `${rect.y}${units}`,
+    width: `${rect.width}${units}`,
+    height: `${rect.height}${units}`,
+  };
 }
