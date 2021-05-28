@@ -1,4 +1,4 @@
-import { BaseType, select, Selection, selection, ValueFn, ValueFn, ValueFn } from 'd3-selection';
+import { BaseType, select, Selection, selection, ValueFn } from 'd3-selection';
 import 'd3-transition';
 import { Transition } from 'd3-transition';
 import { Rect, rectFromString, rectToString } from './utility/rect';
@@ -59,40 +59,6 @@ declare module 'd3-selection' {
     PElement extends BaseType = BaseType,
     PDatum = unknown
   > {
-    // mapData(mapFunction: (data: Datum, index: number) => Datum): this;
-    // mergeData(data: [Partial<Datum>]): this;
-    // mergeData(data: (data: Datum, index: number) => Partial<Datum>): this;
-    // dataProperty<Name extends keyof Datum, Value extends Datum[Name]>(
-    //   name: Name,
-    //   value: Value
-    // ): this;
-    // dataProperty<Name extends keyof Datum, Value extends Datum[Name]>(
-    //   name: Name,
-    //   value: (currentValue: Value, index: number) => Value
-    // ): this;
-    // todo: add mapDatum function
-    // meta(name: string): any;
-    // meta(name: string, value: null): this;
-    // meta(name: string, value: any): this;
-    // withMetaTypes<
-    //   MetaProperties extends Record<string, any> | undefined = undefined
-    // >(): SelectionWithMetaTypes<GElement, Datum, PElement, PDatum, MetaProperties>;
-    // layout<Value extends LayoutProperties['layout']>(): Value | null;
-    // layout<Key extends keyof LayoutProperties, Value extends LayoutProperties[Key]>(
-    //   name: Key
-    // ): Value | null;
-    // layout<Key extends keyof LayoutProperties, Value extends LayoutProperties[Key]>(
-    //   name: Key,
-    //   value: Value
-    // ): this;
-    // layout<Key extends keyof LayoutProperties>(name: Key, value: null): this;
-    // layout<Key extends keyof LayoutProperties, Value extends LayoutProperties[Key]>(
-    //   name: Key,
-    //   value: (data: Datum, index: number) => Value | null
-    // ): this;
-    // layoutBoundsCalculator(): ((element: Element) => ISize) | undefined;
-    // layoutBoundsCalculator(callback: null): this;
-    // layoutBoundsCalculator(callback: (element: Element) => ISize): this;
     transformAttr(
       name: string,
       transform: (
@@ -233,6 +199,29 @@ selection.prototype.bounds = function <
     else s.attr('bounds', rectToString(v));
   });
   return this;
+};
+
+const originalDatum = selection.prototype.datum;
+selection.prototype.datum = function <
+  GElement extends BaseType,
+  Datum,
+  PElement extends BaseType,
+  PDatum
+>(this: Selection<GElement, Datum, PElement, PDatum>, datum?: any): any {
+  if (datum === undefined) return originalDatum.call(this);
+  return originalDatum.call(this, datum).dispatch('datachange');
+};
+
+// todo: this should be tested. particularly regarding data joins.
+const originalData = selection.prototype.data;
+selection.prototype.data = function <
+  GElement extends BaseType,
+  Datum,
+  PElement extends BaseType,
+  PDatum
+>(this: Selection<GElement, Datum, PElement, PDatum>, data?: any, key?: any): any {
+  if (data === undefined) return originalData.call(this);
+  return originalData.call(this, data).dispatch('datachange');
 };
 
 // export interface SelectionWithMetaTypes<

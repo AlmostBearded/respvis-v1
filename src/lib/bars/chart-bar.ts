@@ -7,6 +7,7 @@ import {
   Orientation,
   seriesBar,
   dataSeriesBar,
+  DataSeriesBar,
 } from './series-bar';
 import { seriesLabel } from './series-label';
 import { dataLabelsBarCreation, dataSeriesLabelBar } from './series-label-bar';
@@ -33,8 +34,8 @@ export function chartBar<Datum extends DataChartBar, PElement extends BaseType, 
 ): Selection<SVGSVGElement, Datum, PElement, PDatum> {
   return chart(selection)
     .classed('chart-bar', true)
-    .on('render.chartbar', function (e, chartData) {
-      renderChartBar(select<SVGSVGElement, Datum>(this));
+    .on('datachange.chartbar', function (e, chartData) {
+      chartBarDataChange(select<SVGSVGElement, Datum>(this));
     })
     .each((d, i, g) => {
       const s = select<SVGSVGElement, Datum>(g[i])
@@ -72,11 +73,16 @@ export function chartBar<Datum extends DataChartBar, PElement extends BaseType, 
     });
 }
 
-export function renderChartBar<Datum extends DataChartBar, PElement extends BaseType, PDatum>(
+export function chartBarDataChange<Datum extends DataChartBar, PElement extends BaseType, PDatum>(
   selection: Selection<SVGSVGElement, Datum, PElement, PDatum>
 ): Selection<SVGSVGElement, Datum, PElement, PDatum> {
   return selection.each(function (chartData, i, g) {
     const s = select<SVGSVGElement, Datum>(g[i]);
+
+    s.selectAll<SVGElement, DataSeriesBar>('.series-bar').datum((d) =>
+      Object.assign(d, { creation: chartData })
+    );
+
     const axisConfig = (selection: Selection<Element, DataAxis>, main: boolean) =>
       selection
         .datum((d) =>
