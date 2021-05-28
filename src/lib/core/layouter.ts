@@ -16,22 +16,13 @@ export function dataLayouter(layouter: HTMLDivElement): DataLayouter {
   const layoutNodeResizeObserver = new ResizeObserver((entries) => {
     const roots = layoutNodeRoot(layouter);
     let layoutNodes = roots;
-    let boundsChanged = false;
     while (!layoutNodes.empty()) {
       layoutNodes = layoutNodeChildren(
         layoutNodes
           .call((s) => layoutNodeObserveResize(s, layoutNodeResizeObserver))
           .call((s) => layoutNodeStyleAttr(s))
-          .call((s) => (boundsChanged = layoutNodeBounds(s) || boundsChanged))
+          .call((s) => layoutNodeBounds(s))
       );
-    }
-
-    if (boundsChanged) {
-      log('bounds changed → rerender');
-      // todo: not a big fan of double event broadcast.
-      selectAll(roots.data())
-        .call((s) => eventBroadcast(s, 'resize'))
-        .call((s) => eventBroadcast(s, 'render'));
     }
   });
 
@@ -132,6 +123,7 @@ function layoutNodeBounds(selection: Selection<HTMLDivElement, SVGElement>): boo
           if (!svg.attr('transform')) svg.call((s) => positionToTransformAttr(s, bounds));
           else svgTransition.call((t) => positionToTransformAttr(t, bounds));
       }
+      svg.dispatch('render');
     }
   });
   return anyChanged;

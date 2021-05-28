@@ -56,7 +56,7 @@
 
       labelDatum.creation.labels = populations.map(formatPopulation);
 
-      chart.on('resize', configure);
+      window.addEventListener('resize', configure);
       configure();
 
       function configure() {
