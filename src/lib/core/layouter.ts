@@ -1,7 +1,7 @@
 import { easeCubicOut } from 'd3-ease';
 import { BaseType, select, selectAll, Selection } from 'd3-selection';
 import { eventBroadcast } from './event';
-import { log, nodeToString } from './log';
+import { debug, log, nodeToString } from './log';
 import { relativeBounds } from './utility/bounds';
 import { positionToTransformAttr } from './utility/position';
 import { rectEquals, rectFromString, rectToAttrs, rectToString } from './utility/rect';
@@ -14,6 +14,9 @@ export interface DataLayouter {
 
 export function dataLayouter(layouter: HTMLDivElement): DataLayouter {
   const layoutNodeResizeObserver = new ResizeObserver((entries) => {
+    console.log('YEP');
+    const changedNodePaths: number[][] = [];
+
     const roots = layoutNodeRoot(layouter);
     let layoutNodes = roots;
     while (!layoutNodes.empty()) {
@@ -21,9 +24,26 @@ export function dataLayouter(layouter: HTMLDivElement): DataLayouter {
         layoutNodes
           .call((s) => layoutNodeObserveResize(s, layoutNodeResizeObserver))
           .call((s) => layoutNodeStyleAttr(s))
-          .call((s) => layoutNodeBounds(s))
+          .each(
+            (d, i, g) =>
+              layoutNodeBounds(select(g[i])) && changedNodePaths.push(layoutNodePath(layouter, d))
+          )
       );
     }
+
+    // sort node paths depth-first
+    const maxPathLenght = Math.max(...changedNodePaths.map((path) => path.length));
+    const pathReducer = (accumulator: number, value: number, index: number) =>
+      accumulator + value * Math.pow(10, maxPathLenght - 1 - index);
+    changedNodePaths.sort((a, b) => a.reduce(pathReducer, 0) - b.reduce(pathReducer, 0));
+
+    // map paths to nodes
+    const changedNodes = changedNodePaths.map((path) =>
+      path.reduce((accumulator, value) => accumulator.children[value], layouter)
+    );
+
+    selectAll(changedNodes).dispatch('render');
+    console.log('YEPPP');
   });
 
   const svgNodeResizeObserver = new ResizeObserver((entries) => {
@@ -106,7 +126,7 @@ function layoutNodeBounds(selection: Selection<HTMLDivElement, SVGElement>): boo
     const changed = !rectEquals(prevBounds, bounds);
     anyChanged = anyChanged || changed;
     if (changed) {
-      log(
+      debug(
         `bounds changed: ${nodeToString(svg.node()!)} (${rectToString(
           prevBounds
         )}) → (${rectToString(bounds)})`
@@ -123,7 +143,6 @@ function layoutNodeBounds(selection: Selection<HTMLDivElement, SVGElement>): boo
           if (!svg.attr('transform')) svg.call((s) => positionToTransformAttr(s, bounds));
           else svgTransition.call((t) => positionToTransformAttr(t, bounds));
       }
-      svg.dispatch('render');
     }
   });
   return anyChanged;
@@ -147,6 +166,15 @@ function layoutNodeObserveResize(
 
 function layedOutChildren(parent: Element): SVGElement[] {
   return select(parent).selectChildren<SVGElement, unknown>('[layout]').nodes();
+}
+
+function layoutNodePath(layouter: HTMLElement, node: Element): number[] {
+  const path: number[] = [];
+  while (node !== layouter) {
+    path.push(Array.prototype.indexOf.call(node.parentElement!.children, node));
+    node = node.parentElement!;
+  }
+  return path.reverse();
 }
 
 export function layouter<Datum, PElement extends BaseType, PDatum>(
