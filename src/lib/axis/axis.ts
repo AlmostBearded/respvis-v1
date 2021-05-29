@@ -9,7 +9,7 @@ import { easeCubicOut } from 'd3-ease';
 import { scaleLinear } from 'd3-scale';
 import { BaseType, select, Selection } from 'd3-selection';
 import { SelectionOrTransition, Transition } from 'd3-transition';
-import { textHorizontalAttrs, textTitleAttrs, textVerticalAttrs } from '../core';
+import { debug, textHorizontalAttrs, textTitleAttrs, textVerticalAttrs } from '../core';
 
 export interface ConfigureAxisFn {
   (axis: Axis<AxisDomain>): void;
@@ -75,6 +75,7 @@ export function axisLeftTransition<
 >(
   transition: Transition<GElement, Datum, PElement, PDatum>
 ): Transition<GElement, Datum, PElement, PDatum> {
+  debug('axis left transition');
   return transition.each((d, i, g) => {
     const s = select(g[i]);
     const t = s.transition(transition);
@@ -121,6 +122,7 @@ export function axisBottomTransition<
 >(
   transition: Transition<GElement, Datum, PElement, PDatum>
 ): Transition<GElement, Datum, PElement, PDatum> {
+  debug('axis bottom transition');
   return transition.each((d, i, g) =>
     axisTransition(select(g[i]).transition(transition), d3Axis(d3AxisBottom, d), d.title)
       .selectAll('.tick text')

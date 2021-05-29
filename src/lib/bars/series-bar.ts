@@ -1,6 +1,6 @@
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { BaseType, select, Selection } from 'd3-selection';
-import { COLORS_CATEGORICAL } from '../core';
+import { COLORS_CATEGORICAL, debug } from '../core';
 import { Rect, rectMinimized, rectToAttrs } from '../core/utility/rect';
 import { dataSeries, DataSeries } from '../core/series';
 import { Size } from '../core/utils';
@@ -115,7 +115,7 @@ export function seriesBar<
     .classed('series-bar', true)
     .attr('fill', COLORS_CATEGORICAL[0])
     .on('render.seriesbar', function (e, d) {
-      renderSeriesBar(select<GElement, DataSeriesBarCustom>(this));
+      seriesBarRender(select<GElement, DataSeriesBarCustom>(this));
     });
 }
 
@@ -125,7 +125,7 @@ export interface JoinEvent<GElement extends Element, Datum>
 export interface JoinTransitionEvent<GElement extends Element, Datum>
   extends CustomEvent<{ transition: Transition<GElement, Datum> }> {}
 
-export function renderSeriesBar<
+export function seriesBarRender<
   GElement extends Element,
   Datum extends DataSeriesBarCustom,
   PElement extends BaseType,
@@ -133,6 +133,7 @@ export function renderSeriesBar<
 >(
   selection: Selection<GElement, Datum, PElement, PDatum>
 ): Selection<GElement, Datum, PElement, PDatum> {
+  debug('series bar render');
   return selection.each((d, i, g) => {
     const series = select(g[i]);
     series

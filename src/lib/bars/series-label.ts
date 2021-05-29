@@ -1,6 +1,6 @@
 import { easeCubicOut } from 'd3-ease';
 import { BaseType, select, Selection } from 'd3-selection';
-import { Position, positionToTransformAttr } from '../core';
+import { debug, Position, positionToTransformAttr } from '../core';
 import { dataSeries, DataSeries } from '../core/series';
 
 export interface DataLabel extends Position {
@@ -32,11 +32,11 @@ export function seriesLabel<
     .attr('dominant-baseline', 'middle')
     .attr('font-size', '0.8em')
     .on('render.serieslabel', function (e, d) {
-      renderSeriesLabel(select<GElement, Datum>(this));
+      seriesLabelRender(select<GElement, Datum>(this));
     });
 }
 
-export function renderSeriesLabel<
+export function seriesLabelRender<
   GElement extends Element,
   Datum extends DataSeriesLabel,
   PElement extends BaseType,
@@ -44,6 +44,7 @@ export function renderSeriesLabel<
 >(
   selection: Selection<GElement, Datum, PElement, PDatum>
 ): Selection<GElement, Datum, PElement, PDatum> {
+  debug('series label render');
   return selection.each((d, i, g) => {
     const series = select(g[i]);
     series

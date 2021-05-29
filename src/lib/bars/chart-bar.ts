@@ -1,6 +1,6 @@
 import { BaseType, select, Selection } from 'd3-selection';
 import { axisBottom, axisLeft, ConfigureAxisFn, dataAxis, DataAxis } from '../axis';
-import { chart, textHorizontalAttrs, textTitleAttrs, textVerticalAttrs } from '../core';
+import { chart, debug, textHorizontalAttrs, textTitleAttrs, textVerticalAttrs } from '../core';
 import {
   DataBarsCreation,
   dataBarsCreation,
@@ -76,6 +76,7 @@ export function chartBar<Datum extends DataChartBar, PElement extends BaseType, 
 export function chartBarDataChange<Datum extends DataChartBar, PElement extends BaseType, PDatum>(
   selection: Selection<SVGSVGElement, Datum, PElement, PDatum>
 ): Selection<SVGSVGElement, Datum, PElement, PDatum> {
+  debug('chart bar data change');
   return selection.each(function (chartData, i, g) {
     const s = select<SVGSVGElement, Datum>(g[i]);
 
