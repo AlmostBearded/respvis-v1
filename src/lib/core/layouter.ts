@@ -14,21 +14,19 @@ export interface DataLayouter {
 
 export function dataLayouter(layouter: HTMLDivElement): DataLayouter {
   const layoutNodeResizeObserver = new ResizeObserver((entries) => {
-    console.log('YEP');
     const changedNodePaths: number[][] = [];
 
-    const roots = layoutNodeRoot(layouter);
-    let layoutNodes = roots;
+    let layoutNodes = select(layouter).selectChildren<HTMLDivElement, SVGElement>('.layout');
+
     while (!layoutNodes.empty()) {
-      layoutNodes = layoutNodeChildren(
-        layoutNodes
-          .call((s) => layoutNodeObserveResize(s, layoutNodeResizeObserver))
-          .call((s) => layoutNodeStyleAttr(s))
-          .each(
-            (d, i, g) =>
-              layoutNodeBounds(select(g[i])) && changedNodePaths.push(layoutNodePath(layouter, d))
-          )
-      );
+      layoutNodes = layoutNodes
+        .call((s) => layoutNodeObserveResize(s, layoutNodeResizeObserver))
+        .call((s) => layoutNodeStyleAttr(s))
+        .each(
+          (d, i, g) =>
+            layoutNodeBounds(select(g[i])) && changedNodePaths.push(layoutNodePath(layouter, d))
+        )
+        .selectChildren<HTMLDivElement, SVGElement>('.layout');
     }
 
     // sort node paths depth-first
@@ -43,13 +41,15 @@ export function dataLayouter(layouter: HTMLDivElement): DataLayouter {
     );
 
     selectAll(changedNodes).dispatch('render');
-    console.log('YEPPP');
   });
 
   const svgNodeResizeObserver = new ResizeObserver((entries) => {
-    let layoutNodes = layoutNodeRoot(layouter);
+    let layoutNodes = select(layouter).selectChildren<HTMLDivElement, SVGElement>('.layout');
+
     while (!layoutNodes.empty()) {
-      layoutNodes = layoutNodeChildren(layoutNodes.call((s) => layoutNodeStyleAttr(s)));
+      layoutNodes = layoutNodes
+        .call((s) => layoutNodeStyleAttr(s))
+        .selectChildren<HTMLDivElement, SVGElement>('.layout');
     }
   });
 
