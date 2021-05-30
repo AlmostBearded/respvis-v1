@@ -60,9 +60,9 @@ export function axisLeft<
         .layout('height', '100%')
         .layout('margin-left', '100%')
     )
-    .on('render.axisleft', function (e, d) {
+    .on('render.axisleft datachange.axisbottom', function (e, d) {
       axisLeftTransition(
-        select<GElement, DataAxis>(this).transition('axis').duration(250).ease(easeCubicOut)
+        select<GElement, DataAxis>(this).transition('axis').duration(0).ease(easeCubicOut)
       );
     });
 }
@@ -107,9 +107,9 @@ export function axisBottom<
         .call((title) => textHorizontalAttrs(title))
         .call((title) => textTitleAttrs(title))
     )
-    .on('render.axisbottom', function (e, d) {
+    .on('render.axisbottom datachange.axisbottom', function (e, d) {
       axisBottomTransition(
-        select<GElement, DataAxis>(this).transition('axis').duration(250).ease(easeCubicOut)
+        select<GElement, DataAxis>(this).transition('axis').duration(0).ease(easeCubicOut)
       );
     });
 }
