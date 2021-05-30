@@ -59,6 +59,8 @@
       window.addEventListener('resize', configure);
       configure();
 
+      // respVis.enableDebugLog(true);
+
       function configure() {
         chartDatum.orientation = respVis.Orientation.Horizontal;
         labelSeries.call(respVis.seriesLabelBarLeftConfig);

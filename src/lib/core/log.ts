@@ -1,9 +1,15 @@
+let debugLogEnabled = false;
+
 export function log(...rest: any): void {
   console.log(...rest);
 }
 
 export function debug(...rest: any): void {
-  console.debug(...rest);
+  if (debugLogEnabled) console.debug(...rest);
+}
+
+export function enableDebugLog(enabled: boolean): void {
+  debugLogEnabled = enabled;
 }
 
 export function nodeToString(node: Element): string {
