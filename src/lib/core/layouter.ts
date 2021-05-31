@@ -132,16 +132,18 @@ function layoutNodeBounds(selection: Selection<HTMLDivElement, SVGElement>): boo
         )}) → (${rectToString(bounds)})`
       );
       svg.attr('bounds', rectToString(bounds));
-      const svgTransition = svg.transition('layout').duration(250).ease(easeCubicOut);
+      // const svgTransition = svg.transition('layout').duration(250).ease(easeCubicOut);
       switch (d.tagName) {
         case 'svg':
         case 'rect':
-          if (!svg.attr('x')) svg.call((s) => rectToAttrs(s, bounds));
-          else svgTransition.call((t) => rectToAttrs(t, bounds));
+          svg.call((s) => rectToAttrs(s, bounds));
+          // if (!svg.attr('x')) svg.call((s) => rectToAttrs(s, bounds));
+          // else svgTransition.call((t) => rectToAttrs(t, bounds));
           break;
         default:
-          if (!svg.attr('transform')) svg.call((s) => positionToTransformAttr(s, bounds));
-          else svgTransition.call((t) => positionToTransformAttr(t, bounds));
+          svg.call((s) => positionToTransformAttr(s, bounds));
+        // if (!svg.attr('transform')) svg.call((s) => positionToTransformAttr(s, bounds));
+        // else svgTransition.call((t) => positionToTransformAttr(t, bounds));
       }
     }
   });
