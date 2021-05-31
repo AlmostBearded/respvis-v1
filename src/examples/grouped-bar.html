@@ -34,6 +34,7 @@
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
       const root = d3.select('#chart'),
+        layouter = root.append('div').call(respVis.layouter),
         chartDatum = respVis.dataChartBarGrouped({
           mainValues: sites,
           mainTitle: 'Site',
@@ -41,7 +42,7 @@
           crossTitle: 'Revenue',
           configureCrossAxis: (a) => a.tickFormat(formatRevenue),
         }),
-        chart = root.append('svg').datum(chartDatum).call(respVis.chartBarGrouped),
+        chart = layouter.append('svg').datum(chartDatum).call(respVis.chartBarGrouped),
         barSeries = chart.selectAll('.series-bar'),
         // .on('mouseover', (e) => hoverBar(e.target, true))
         // .on('mouseout', (e) => hoverBar(e.target, false)),
@@ -52,8 +53,10 @@
 
       labelDatum.creation.labels = revenues.flat().map(formatRevenue);
 
-      chart.on('resize', configure);
+      window.addEventListener('resize', configure);
       configure();
+
+      // respVis.enableDebugLog(true);
 
       function configure() {
         chartDatum.orientation = respVis.Orientation.Horizontal;
@@ -62,6 +65,7 @@
           chartDatum.orientation = respVis.Orientation.Vertical;
           labelSeries.call(respVis.seriesLabelBarTopConfig);
         }
+        chart.datum(chartDatum);
       }
 
       // // needed to toggle years
