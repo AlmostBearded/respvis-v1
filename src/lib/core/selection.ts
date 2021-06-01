@@ -224,7 +224,7 @@ selection.prototype.data = function <
 >(this: Selection<GElement, Datum, PElement, PDatum>, data?: any, key?: any): any {
   if (data === undefined) return originalData.call(this);
   this.each((d, i, g) => debug(`data change on ${nodeToString(g[i] as Element)}`));
-  return originalData.call(this, data).dispatch('datachange');
+  return originalData.call(this, data, key).dispatch('datachange');
 };
 
 // export interface SelectionWithMetaTypes<
