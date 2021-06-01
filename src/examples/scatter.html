@@ -44,12 +44,12 @@
 
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
-      // todo: add zooming & panning
-      // todo: show density plot when too many points 
+      // todo: show density plot when too many points
       //   (see http://nrabinowitz.github.io/rdv/?scatterplot)
       // todo: only render points visible in current zoom frame
 
       const root = d3.select('#chart'),
+        layouter = root.append('div').call(respVis.layouter),
         chartDatum = respVis.dataChartPoint({
           mainValues: areas,
           mainTitle: 'Area in ft²',
@@ -59,21 +59,22 @@
           crossTitle: 'Price in $1000',
           crossScale: priceScale,
           radiuses: 5,
+          keys: areas.map((a, i) => i),
         }),
-        chart = root.append('svg').datum(chartDatum).call(respVis.chartPoint),
+        chart = layouter.append('svg').datum(chartDatum).call(respVis.chartPoint),
         zoom = d3
           .zoom()
           .scaleExtent([1, 20])
           .on('zoom', function (e, d) {
             areaScale.domain(e.transform.rescaleX(areaScale.domain(areaDomain)).domain());
             priceScale.domain(e.transform.rescaleY(priceScale.domain(priceDomain)).domain());
-            chart.call(respVis.updateChart);
+            chart.dispatch('datachange');
           }),
         drawArea = chart
           .selectAll('.draw-area')
           .call(zoom)
           .on('render.zoom', (e) => {
-            const { width, height } = d3.select(e.target).layout(),
+            const { width, height } = d3.select(e.target).bounds(),
               extent = [
                 [0, 0],
                 [width, height],
@@ -87,8 +88,10 @@
         pointColor = pointSeries.attr('fill'),
         pointHighlightColor = respVis.brighten(pointColor, 0.5);
 
-      chart.on('resize', configure);
+      window.addEventListener('resize', configure);
       configure();
+
+      // respVis.enableDebugLog(true);
 
       function configure() {
         if (window.matchMedia(wideMediaQuery).matches) {
