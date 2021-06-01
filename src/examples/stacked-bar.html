@@ -30,9 +30,10 @@
         years = data.years,
         shares = data.desktop.map((d, i) => [data.desktop[i], data.mobile[i], data.tablet[i]]),
         shareScale = d3.scaleLinear().domain([0, 100]),
+        roundShare = (value) => Math.round(parseFloat(value) * 10) / 10,
         formatShare = (value) => {
-          const rounded = Math.round(parseFloat(value) * 10) / 10;
-          return rounded === 0 ? '' : `${rounded}%`;
+          const rounded = roundShare(value);
+          return rounded === 0 ? '' : `${rounded}`;
         },
         keys = shares.map((pS, i) => pS.map((_, j) => `${platforms[i]}${years[j]}`)),
         labels = shares.flat().map(formatShare);
@@ -40,6 +41,7 @@
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
       const root = d3.select('#chart'),
+        layouter = root.append('div').call(respVis.layouter),
         chartDatum = respVis.dataChartBarStacked({
           mainValues: years,
           mainTitle: 'Year',
@@ -49,25 +51,28 @@
           configureCrossAxis: (a) => a.tickFormat(formatShare),
           keys: keys,
         }),
-        chart = root.append('svg').datum(chartDatum).call(respVis.chartBarStacked),
+        chart = layouter.append('svg').datum(chartDatum).call(respVis.chartBarStacked),
         barSeries = chart.selectAll('.series-bar'),
         // .on('mouseover', (e) => hoverBar(e.target, true))
         // .on('mouseout', (e) => hoverBar(e.target, false)),
         // barColor = barSeries.attr('fill'),
         // barHighlightColor = respVis.brighten(barColor, 0.5),
-        labelSeries = chart.selectAll('.series-label'),
+        labelSeries = chart.selectAll('.series-label'), // todo: labels don't fit. find a better solution. tooltip?
         labelDatum = labelSeries.datum();
 
       labelDatum.creation.labels = labels;
 
-      chart.on('resize', configure);
+      window.addEventListener('resize', configure);
       configure();
+
+      // respVis.enableDebugLog(true);
 
       function configure() {
         chartDatum.orientation = respVis.Orientation.Horizontal;
         if (window.matchMedia(wideMediaQuery).matches) {
           chartDatum.orientation = respVis.Orientation.Vertical;
         }
+        chart.datum(chartDatum);
       }
     </script>
   </body>

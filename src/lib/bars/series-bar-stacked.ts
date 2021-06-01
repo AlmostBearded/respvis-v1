@@ -55,7 +55,7 @@ export function dataBarsStackedCreation(
 
 export function dataSeriesBarStacked(creationData: DataBarsStackedCreation): DataSeriesBarStacked {
   const seriesData: DataSeriesBarStacked = {
-    ...dataSeriesBarCustom({ data: (s) => dataBarsStacked(seriesData.creation, s.layout()) }),
+    ...dataSeriesBarCustom({ data: (s) => dataBarsStacked(seriesData.creation, s.bounds()!) }),
     creation: creationData,
   };
   return seriesData;

@@ -5,6 +5,7 @@ import { Orientation } from './series-bar';
 import {
   dataBarsStackedCreation,
   DataBarsStackedCreation,
+  DataSeriesBarStacked,
   dataSeriesBarStacked,
   seriesBarStacked,
 } from './series-bar-stacked';
@@ -39,62 +40,46 @@ export function chartBarStacked<
 ): Selection<SVGSVGElement, Datum, PElement, PDatum> {
   return chart(selection)
     .classed('chart-bar-stacked', true)
-    .on('render.chartbarstacked', function (e, chartData) {
-      renderChartBarStacked(select<SVGSVGElement, Datum>(this));
-    })
     .each((d, i, g) => {
-      const s = select<SVGSVGElement, Datum>(g[i]);
+      const s = select<SVGSVGElement, Datum>(g[i])
+        .layout('display', 'grid')
+        .layout('grid-template', '1fr auto / auto 1fr')
+        .layout('padding', '20px');
 
-      const root = s
-        .select('.root')
-        .attr('grid-template', '1fr auto / auto 1fr')
-        .attr('margin', 20);
+      const drawArea = s
+        .append('svg')
+        .classed('draw-area', true)
+        .layout('grid-area', '1 / 2 / 2 / 3')
+        .layout('display', 'grid');
 
-      const barSeries = root
+      const barSeries = drawArea
         .append('g')
+        .layout('grid-area', '1 / 1')
         .datum((d) => dataSeriesBarStacked(d))
-        .call((s) => seriesBarStacked(s))
-        .attr('grid-area', '1 / 2 / 2 / 3');
+        .call((s) => seriesBarStacked(s));
 
-      root
+      drawArea
         .append('g')
+        .layout('grid-area', '1 / 1')
         .datum((d) => dataSeriesLabelBar(dataLabelsBarCreation({ barContainer: barSeries })))
-        .call((s) => seriesLabel(s))
-        .attr('grid-area', '1 / 2 / 2 / 3');
+        .call((s) => seriesLabel(s));
 
-      const leftAxis = root
-        .append('g')
+      s.append('g')
+        .layout('grid-area', '1 / 1 / 2 / 2')
         .datum((d) => dataAxis())
-        .call((s) => axisLeft(s))
-        .attr('grid-area', '1 / 1 / 2 / 2')
-        .attr('grid-template', '1fr / 1fr')
-        .attr('grid-width', 70);
+        .call((s) => axisLeft(s));
 
-      leftAxis
-        .append('text')
-        .call((s) => textVerticalAttrs(s))
-        .call((s) => textTitleAttrs(s))
-        .attr('grid-area', '1 / 1 / 2 / 2')
-        .attr('place-self', 'start start');
-
-      const bottomAxis = root
-        .append('g')
+      s.append('g')
+        .layout('grid-area', '2 / 2 / 3 / 3')
         .datum((d) => dataAxis())
-        .call((s) => axisBottom(s))
-        .attr('grid-area', '2 / 2 / 3 / 3')
-        .attr('grid-template', '1fr / 1fr')
-        .attr('grid-height', 50);
-
-      bottomAxis
-        .append('text')
-        .call((s) => textHorizontalAttrs(s))
-        .call((s) => textTitleAttrs(s))
-        .attr('grid-area', '1 / 1 / 2 / 2')
-        .attr('place-self', 'end end');
+        .call((s) => axisBottom(s));
+    })
+    .on('datachange.chartbarstacked', function (e, chartData) {
+      chartBarStackedDataChange(select<SVGSVGElement, Datum>(this));
     });
 }
 
-export function renderChartBarStacked<
+export function chartBarStackedDataChange<
   Datum extends DataChartBarStacked,
   PElement extends BaseType,
   PDatum
@@ -103,18 +88,22 @@ export function renderChartBarStacked<
 ): Selection<SVGSVGElement, Datum, PElement, PDatum> {
   return selection.each(function (chartData, i, g) {
     const s = select<SVGSVGElement, Datum>(g[i]);
+
+    s.selectAll<SVGElement, DataSeriesBarStacked>('.series-bar-stacked').datum((d) =>
+      Object.assign(d, { creation: chartData })
+    );
+
     const axisConfig = (selection: Selection<Element, DataAxis>, main: boolean) =>
       selection
         .datum((d) =>
           Object.assign(d, {
             scale: main ? chartData.mainScale : chartData.crossScale,
+            title: main ? chartData.mainTitle : chartData.crossTitle,
             configureAxis: main ? chartData.configureMainAxis : chartData.configureCrossAxis,
           })
         )
         .classed('axis-main', main)
-        .classed('axis-cross', !main)
-        .selectAll('.title')
-        .text(main ? chartData.mainTitle : chartData.crossTitle);
+        .classed('axis-cross', !main);
 
     if (chartData.orientation === Orientation.Horizontal) {
       s.selectAll<SVGGElement, DataAxis>('.axis-left').call((s) => axisConfig(s, true));
