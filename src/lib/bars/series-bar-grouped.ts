@@ -53,7 +53,7 @@ export function dataBarsGroupedCreation(
 
 export function dataSeriesBarGrouped(creationData: DataBarsGroupedCreation): DataSeriesBarGrouped {
   const seriesData: DataSeriesBarGrouped = {
-    ...dataSeriesBarCustom({ data: (s) => dataBarsGrouped(seriesData.creation, s.layout()) }),
+    ...dataSeriesBarCustom({ data: (s) => dataBarsGrouped(seriesData.creation, s.bounds()!) }),
     creation: creationData,
   };
   return seriesData;
