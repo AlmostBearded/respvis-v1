@@ -210,7 +210,7 @@ selection.prototype.datum = function <
   PDatum
 >(this: Selection<GElement, Datum, PElement, PDatum>, datum?: any): any {
   if (datum === undefined) return originalDatum.call(this);
-  this.each((d, i, g) => debug(`data change on ${nodeToString(g[i] as Element)}`));
+  // this.each((d, i, g) => debug(`data change on ${nodeToString(g[i] as Element)}`));
   return originalDatum.call(this, datum).dispatch('datachange');
 };
 
@@ -223,7 +223,7 @@ selection.prototype.data = function <
   PDatum
 >(this: Selection<GElement, Datum, PElement, PDatum>, data?: any, key?: any): any {
   if (data === undefined) return originalData.call(this);
-  this.each((d, i, g) => debug(`data change on ${nodeToString(g[i] as Element)}`));
+  // this.each((d, i, g) => debug(`data change on ${nodeToString(g[i] as Element)}`));
   return originalData.call(this, data, key).dispatch('datachange');
 };
 

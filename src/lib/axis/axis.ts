@@ -9,7 +9,13 @@ import { easeCubicOut } from 'd3-ease';
 import { scaleLinear } from 'd3-scale';
 import { BaseType, select, Selection } from 'd3-selection';
 import { SelectionOrTransition, Transition } from 'd3-transition';
-import { debug, textHorizontalAttrs, textTitleAttrs, textVerticalAttrs } from '../core';
+import {
+  debug,
+  nodeToString,
+  textHorizontalAttrs,
+  textTitleAttrs,
+  textVerticalAttrs,
+} from '../core';
 
 export interface ConfigureAxisFn {
   (axis: Axis<AxisDomain>): void;
@@ -60,7 +66,7 @@ export function axisLeft<
         .layout('height', '100%')
         .layout('margin-left', '100%')
     )
-    .on('render.axisleft datachange.axisbottom', function (e, d) {
+    .on('render.axisleft', function (e, d) {
       axisLeftTransition(
         select<GElement, DataAxis>(this).transition('axis').duration(0).ease(easeCubicOut)
       );
@@ -75,8 +81,8 @@ export function axisLeftTransition<
 >(
   transition: Transition<GElement, Datum, PElement, PDatum>
 ): Transition<GElement, Datum, PElement, PDatum> {
-  debug('axis left transition');
   return transition.each((d, i, g) => {
+    debug(`transition left axis on ${nodeToString(g[i])}`);
     const s = select(g[i]);
     const t = s.transition(transition);
     axisTransition(t, d3Axis(d3AxisLeft, d), d.title)
@@ -107,7 +113,7 @@ export function axisBottom<
         .call((title) => textHorizontalAttrs(title))
         .call((title) => textTitleAttrs(title))
     )
-    .on('render.axisbottom datachange.axisbottom', function (e, d) {
+    .on('render.axisbottom', function (e, d) {
       axisBottomTransition(
         select<GElement, DataAxis>(this).transition('axis').duration(0).ease(easeCubicOut)
       );
@@ -122,13 +128,13 @@ export function axisBottomTransition<
 >(
   transition: Transition<GElement, Datum, PElement, PDatum>
 ): Transition<GElement, Datum, PElement, PDatum> {
-  debug('axis bottom transition');
-  return transition.each((d, i, g) =>
+  return transition.each((d, i, g) => {
+    debug(`transition bottom axis on ${nodeToString(g[i])}`);
     axisTransition(select(g[i]).transition(transition), d3Axis(d3AxisBottom, d), d.title)
       .selectAll('.tick text')
       .attr('dy', null)
-      .attr('dominant-baseline', 'hanging')
-  );
+      .attr('dominant-baseline', 'hanging');
+  });
 }
 
 function axis<
@@ -142,7 +148,18 @@ function axis<
   return selection
     .classed('axis', true)
     .call((s) => s.append('g').classed('ticks-transform', true).append('g').classed('ticks', true))
-    .call((s) => s.append('text').classed('title', true));
+    .call((s) => s.append('text').classed('title', true))
+    .on(
+      'render.axis-initial',
+      function () {
+        debug(`render on data change on ${nodeToString(this)}`);
+        select(this).on('datachange.axis', function () {
+          debug(`data change on ${nodeToString(this)}`);
+          select(this).dispatch('render');
+        });
+      },
+      { once: true }
+    );
 }
 
 function axisTransition<

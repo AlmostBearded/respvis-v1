@@ -1,7 +1,15 @@
 import { easeCubicOut } from 'd3-ease';
 import { scaleLinear } from 'd3-scale';
 import { BaseType, select, Selection } from 'd3-selection';
-import { COLORS_CATEGORICAL, dataSeries, DataSeries, Position, ScaleAny } from '../core';
+import {
+  COLORS_CATEGORICAL,
+  dataSeries,
+  DataSeries,
+  debug,
+  nodeToString,
+  Position,
+  ScaleAny,
+} from '../core';
 import { Size } from '../core/utils';
 
 export interface DataPoint extends Position {
@@ -89,7 +97,9 @@ export function seriesPoint<
     .on(
       'render.seriespoint-initial',
       function () {
+        debug(`render on data change on ${nodeToString(this)}`);
         select(this).on('datachange.seriespoint', function () {
+          debug(`data change on ${nodeToString(this)}`);
           select(this).dispatch('render');
         });
       },
@@ -109,6 +119,7 @@ export function seriesPointRender<
   selection: Selection<GElement, Datum, PElement, PDatum>
 ): Selection<GElement, Datum, PElement, PDatum> {
   return selection.each((d, i, g) => {
+    debug(`render point series on ${nodeToString(g[i])}`);
     const series = select(g[i]);
     series
       .selectAll<SVGCircleElement, DataPoint>('circle')

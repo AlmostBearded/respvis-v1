@@ -1,6 +1,13 @@
 import { BaseType, select, Selection } from 'd3-selection';
 import { axisBottom, axisLeft, ConfigureAxisFn, dataAxis, DataAxis } from '../axis';
-import { chart, debug, textHorizontalAttrs, textTitleAttrs, textVerticalAttrs } from '../core';
+import {
+  chart,
+  debug,
+  nodeToString,
+  textHorizontalAttrs,
+  textTitleAttrs,
+  textVerticalAttrs,
+} from '../core';
 import {
   DataBarsCreation,
   dataBarsCreation,
@@ -34,9 +41,6 @@ export function chartBar<Datum extends DataChartBar, PElement extends BaseType, 
 ): Selection<SVGSVGElement, Datum, PElement, PDatum> {
   return chart(selection)
     .classed('chart-bar', true)
-    .on('datachange.chartbar', function (e, chartData) {
-      chartBarDataChange(select<SVGSVGElement, Datum>(this));
-    })
     .each((d, i, g) => {
       const s = select<SVGSVGElement, Datum>(g[i])
         .layout('display', 'grid')
@@ -70,13 +74,17 @@ export function chartBar<Datum extends DataChartBar, PElement extends BaseType, 
         .datum((d) => dataAxis())
         .call((s) => axisBottom(s))
         .layout('grid-area', '2 / 2 / 3 / 3');
-    });
+    })
+    .on('datachange.chartbar', function (e, chartData) {
+      debug(`data change on ${nodeToString(this)}`);
+      chartBarDataChange(select<SVGSVGElement, Datum>(this));
+    })
+    .call((s) => chartBarDataChange(s));
 }
 
 export function chartBarDataChange<Datum extends DataChartBar, PElement extends BaseType, PDatum>(
   selection: Selection<SVGSVGElement, Datum, PElement, PDatum>
 ): Selection<SVGSVGElement, Datum, PElement, PDatum> {
-  debug('chart bar data change');
   return selection.each(function (chartData, i, g) {
     const s = select<SVGSVGElement, Datum>(g[i]);
 

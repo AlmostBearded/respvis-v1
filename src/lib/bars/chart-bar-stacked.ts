@@ -1,6 +1,13 @@
 import { BaseType, select, Selection } from 'd3-selection';
 import { axisBottom, axisLeft, ConfigureAxisFn, DataAxis, dataAxis } from '../axis';
-import { chart, textHorizontalAttrs, textTitleAttrs, textVerticalAttrs } from '../core';
+import {
+  chart,
+  debug,
+  nodeToString,
+  textHorizontalAttrs,
+  textTitleAttrs,
+  textVerticalAttrs,
+} from '../core';
 import { Orientation } from './series-bar';
 import {
   dataBarsStackedCreation,
@@ -75,8 +82,10 @@ export function chartBarStacked<
         .call((s) => axisBottom(s));
     })
     .on('datachange.chartbarstacked', function (e, chartData) {
+      debug(`data change on ${nodeToString(this)}`);
       chartBarStackedDataChange(select<SVGSVGElement, Datum>(this));
-    });
+    })
+    .call((s) => chartBarStackedDataChange(s));
 }
 
 export function chartBarStackedDataChange<

@@ -1,6 +1,6 @@
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { BaseType, select, Selection } from 'd3-selection';
-import { COLORS_CATEGORICAL, debug } from '../core';
+import { COLORS_CATEGORICAL, debug, nodeToString } from '../core';
 import { Rect, rectMinimized, rectToAttrs } from '../core/utility/rect';
 import { dataSeries, DataSeries } from '../core/series';
 import { Size } from '../core/utils';
@@ -114,6 +114,17 @@ export function seriesBar<
   return selection
     .classed('series-bar', true)
     .attr('fill', COLORS_CATEGORICAL[0])
+    .on(
+      'render.seriesbar-initial',
+      function () {
+        debug(`render on data change on ${nodeToString(this)}`);
+        select(this).on('datachange.seriesbar', function () {
+          debug(`data change on ${nodeToString(this)}`);
+          select(this).dispatch('render');
+        });
+      },
+      { once: true }
+    )
     .on('render.seriesbar', function (e, d) {
       seriesBarRender(select<GElement, DataSeriesBarCustom>(this));
     });
@@ -133,8 +144,8 @@ export function seriesBarRender<
 >(
   selection: Selection<GElement, Datum, PElement, PDatum>
 ): Selection<GElement, Datum, PElement, PDatum> {
-  debug('series bar render');
   return selection.each((d, i, g) => {
+    debug(`render bar series on ${nodeToString(g[i])}`);
     const series = select(g[i]);
     series
       .selectAll<SVGRectElement, DataBar>('rect')

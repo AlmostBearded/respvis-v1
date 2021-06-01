@@ -1,6 +1,13 @@
 import { BaseType, select, Selection } from 'd3-selection';
 import { axisBottom, axisLeft, ConfigureAxisFn, DataAxis, dataAxis } from '../axis';
-import { chart, textHorizontalAttrs, textTitleAttrs, textVerticalAttrs } from '../core';
+import {
+  chart,
+  debug,
+  nodeToString,
+  textHorizontalAttrs,
+  textTitleAttrs,
+  textVerticalAttrs,
+} from '../core';
 import {
   dataPointsCreation,
   DataPointsCreation,
@@ -66,6 +73,7 @@ export function chartPoint<Datum extends DataChartPoint, PElement extends BaseTy
         .call((s) => axisBottom(s));
     })
     .on('datachange.chartpoint', function (e, chartData) {
+      debug(`data change on ${nodeToString(this)}`);
       chartPointDataChange(select<SVGSVGElement, Datum>(this));
     })
     .call((s) => chartPointDataChange(s));

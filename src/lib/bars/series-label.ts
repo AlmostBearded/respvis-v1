@@ -1,6 +1,6 @@
 import { easeCubicOut } from 'd3-ease';
 import { BaseType, select, Selection } from 'd3-selection';
-import { debug, Position, positionToTransformAttr } from '../core';
+import { debug, nodeToString, Position, positionToTransformAttr } from '../core';
 import { dataSeries, DataSeries } from '../core/series';
 
 export interface DataLabel extends Position {
@@ -31,6 +31,17 @@ export function seriesLabel<
     .attr('text-anchor', 'middle')
     .attr('dominant-baseline', 'middle')
     .attr('font-size', '0.8em')
+    .on(
+      'render.serieslabel-initial',
+      function () {
+        debug(`render on data change on ${nodeToString(this)}`);
+        select(this).on('datachange.serieslabel', function () {
+          debug(`data change on ${nodeToString(this)}`);
+          select(this).dispatch('render');
+        });
+      },
+      { once: true }
+    )
     .on('render.serieslabel', function (e, d) {
       seriesLabelRender(select<GElement, Datum>(this));
     });
@@ -44,8 +55,8 @@ export function seriesLabelRender<
 >(
   selection: Selection<GElement, Datum, PElement, PDatum>
 ): Selection<GElement, Datum, PElement, PDatum> {
-  debug('series label render');
   return selection.each((d, i, g) => {
+    debug(`render label series on ${nodeToString(g[i])}`);
     const series = select(g[i]);
     series
       .selectAll<SVGTextElement, DataLabel>('text')

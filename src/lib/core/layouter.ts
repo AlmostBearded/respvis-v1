@@ -127,9 +127,9 @@ function layoutNodeBounds(selection: Selection<HTMLDivElement, SVGElement>): boo
     anyChanged = anyChanged || changed;
     if (changed) {
       debug(
-        `bounds changed: ${nodeToString(svg.node()!)} (${rectToString(
+        `bounds change on ${nodeToString(svg.node()!)} from (${rectToString(
           prevBounds
-        )}) → (${rectToString(bounds)})`
+        )}) to (${rectToString(bounds)})`
       );
       svg.attr('bounds', rectToString(bounds));
       // const svgTransition = svg.transition('layout').duration(250).ease(easeCubicOut);
