@@ -56,6 +56,7 @@ export function chartBarStacked<
       const drawArea = s
         .append('svg')
         .classed('draw-area', true)
+        .attr('overflow', 'visible')
         .layout('grid-area', '1 / 2 / 2 / 3')
         .layout('display', 'grid');
 
