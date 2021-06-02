@@ -70,7 +70,7 @@ export function seriesLabelBarLeftConfig<
   return selection
     .attr('text-anchor', 'start')
     .attr('dominant-baseline', 'middle')
-    .layout('margin-left', '5px')
+    .layout('margin', '0 0 0 5px')
     .datum((d) => {
       d.creation.positionFromRect = rectLeft;
       return d;
@@ -88,7 +88,7 @@ export function seriesLabelBarTopConfig<
   return selection
     .attr('text-anchor', 'middle')
     .attr('dominant-baseline', 'auto')
-    .layout('margin-top', '-5px')
+    .layout('margin', '-5px 0 0 0')
     .datum((d) => {
       d.creation.positionFromRect = rectTop;
       return d;
