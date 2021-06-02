@@ -70,7 +70,8 @@ export function axisLeft<
       axisLeftTransition(
         select<GElement, DataAxis>(this).transition('axis').duration(0).ease(easeCubicOut)
       );
-    });
+    })
+    .dispatch('render');
 }
 
 export function axisLeftTransition<
@@ -117,7 +118,8 @@ export function axisBottom<
       axisBottomTransition(
         select<GElement, DataAxis>(this).transition('axis').duration(0).ease(easeCubicOut)
       );
-    });
+    })
+    .dispatch('render');
 }
 
 export function axisBottomTransition<
