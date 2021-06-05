@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add [d3 legend](https://d3-legend.susielu.com/) library to be used in examples.
+- Add [d3 legend](https://d3-legend.susielu.com/) library for usage in examples.
+- Add [chroma.js](https://gka.github.io/chroma.js/) library for usage in examples.
 
 ## [0.1.0] - 2021-06-02
 
