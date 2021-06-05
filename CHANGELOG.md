@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add [d3 legend](https://d3-legend.susielu.com/) library to be used in examples.
+
 ## [0.1.0] - 2021-06-02
 
 ### Added
