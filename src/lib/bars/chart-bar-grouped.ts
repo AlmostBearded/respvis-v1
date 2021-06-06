@@ -22,8 +22,10 @@ import { dataLabelsBarCreation, dataSeriesLabelBar } from './series-label-bar';
 export interface DataChartBarGrouped extends DataBarsGroupedCreation {
   configureMainAxis: ConfigureAxisFn;
   mainTitle: string;
+  mainSubtitle: string;
   configureCrossAxis: ConfigureAxisFn;
   crossTitle: string;
+  crossSubtitle: string;
 }
 
 export function dataChartBarGrouped(data?: Partial<DataChartBarGrouped>): DataChartBarGrouped {
@@ -31,8 +33,10 @@ export function dataChartBarGrouped(data?: Partial<DataChartBarGrouped>): DataCh
     ...dataBarsGroupedCreation(data),
     configureMainAxis: data?.configureMainAxis || (() => {}),
     mainTitle: data?.mainTitle || '',
+    mainSubtitle: data?.mainSubtitle || '',
     configureCrossAxis: data?.configureCrossAxis || (() => {}),
     crossTitle: data?.crossTitle || '',
+    crossSubtitle: data?.crossSubtitle || '',
   };
 }
 
@@ -107,6 +111,7 @@ export function chartBarGroupedDataChange<
           Object.assign(d, {
             scale: main ? chartData.mainScale : chartData.crossScale,
             title: main ? chartData.mainTitle : chartData.crossTitle,
+            subtitle: main ? chartData.mainSubtitle : chartData.crossSubtitle,
             configureAxis: main ? chartData.configureMainAxis : chartData.configureCrossAxis,
           })
         )

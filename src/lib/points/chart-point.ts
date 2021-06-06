@@ -19,8 +19,10 @@ import {
 export interface DataChartPoint extends DataPointsCreation {
   configureMainAxis: ConfigureAxisFn;
   mainTitle: string;
+  mainSubtitle: string;
   configureCrossAxis: ConfigureAxisFn;
   crossTitle: string;
+  crossSubtitle: string;
 }
 
 export function dataChartPoint(data?: Partial<DataChartPoint>): DataChartPoint {
@@ -28,8 +30,10 @@ export function dataChartPoint(data?: Partial<DataChartPoint>): DataChartPoint {
     ...dataPointsCreation(data),
     configureMainAxis: data?.configureMainAxis || (() => {}),
     mainTitle: data?.mainTitle || '',
+    mainSubtitle: data?.mainSubtitle || '',
     configureCrossAxis: data?.configureCrossAxis || (() => {}),
     crossTitle: data?.crossTitle || '',
+    crossSubtitle: data?.crossSubtitle || '',
   };
 }
 
@@ -99,6 +103,7 @@ export function chartPointDataChange<
           Object.assign(d, {
             scale: main ? chartData.mainScale : chartData.crossScale,
             title: main ? chartData.mainTitle : chartData.crossTitle,
+            subtitle: main ? chartData.mainSubtitle : chartData.crossSubtitle,
             configureAxis: main ? chartData.configureMainAxis : chartData.configureCrossAxis,
           })
         )

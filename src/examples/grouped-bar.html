@@ -27,8 +27,7 @@
 
       const sites = data.sites,
         revenues = data.revenues,
-        colors = ["#399283", "#8be8ad", "#214d4e"],
-        formatRevenue = (value) => `${value}k`,
+        colors = ['#399283', '#8be8ad', '#214d4e'],
         years = data.years,
         keys = revenues.map((yearlyRevs, i) => yearlyRevs.map((_, j) => sites[i] + years[j]));
 
@@ -41,7 +40,7 @@
           mainTitle: 'Site',
           crossValues: revenues,
           crossTitle: 'Revenue',
-          configureCrossAxis: (a) => a.tickFormat(formatRevenue),
+          crossSubtitle: '[Million USD]',
         }),
         chart = layouter.append('svg').datum(chartDatum).call(respVis.chartBarGrouped),
         barSeries = chart
@@ -54,7 +53,7 @@
         labelSeries = chart.selectAll('.series-label'),
         labelDatum = labelSeries.datum();
 
-      labelDatum.creation.labels = revenues.flat().map(formatRevenue);
+      labelDatum.creation.labels = revenues.flat();
 
       window.addEventListener('resize', configure);
       configure();

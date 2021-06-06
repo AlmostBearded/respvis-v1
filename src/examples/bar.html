@@ -29,9 +29,7 @@
       import data from './data/austrian-cities.js';
 
       const cities = data.cities,
-        populations = data.populations.map((p) => Math.round(p / 1000)),
-        formatPopulation = (p) => `${p}k`,
-        configurePopulationAxis = (a) => a.tickFormat(formatPopulation);
+        populations = data.populations.map((p) => Math.round(p / 1000));
 
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
@@ -42,7 +40,7 @@
           mainTitle: 'City',
           crossValues: populations,
           crossTitle: 'Population',
-          configureCrossAxis: configurePopulationAxis,
+          crossSubtitle: '[1000 People]',
         }),
         chart = layouter.append('svg').datum(chartDatum).call(respVis.chartBar),
         barSeries = chart
@@ -54,7 +52,7 @@
         labelSeries = chart.selectAll('.series-label'),
         labelDatum = labelSeries.datum();
 
-      labelDatum.creation.labels = populations.map(formatPopulation);
+      labelDatum.creation.labels = populations;
 
       window.addEventListener('resize', configure);
       configure();

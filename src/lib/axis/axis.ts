@@ -24,6 +24,7 @@ export interface ConfigureAxisFn {
 export interface DataAxis {
   scale: AxisScale<AxisDomain>;
   title: string;
+  subtitle: string;
   configureAxis: ConfigureAxisFn;
 }
 
@@ -31,6 +32,7 @@ export function dataAxis(data?: Partial<DataAxis>): DataAxis {
   return {
     scale: data?.scale || scaleLinear().domain([0, 1]).range([0, 600]),
     title: '',
+    subtitle: '',
     configureAxis: data?.configureAxis || (() => {}),
   };
 }
@@ -49,11 +51,15 @@ export function axisLeft<
     .layout('flex-direction', 'row')
     .layout('justify-content', 'flex-start')
     .call((s) =>
+      s.selectAll<SVGTextElement, unknown>('.subtitle').call((title) => textVerticalAttrs(title))
+    )
+    .call((s) =>
       s
         .selectAll<SVGTextElement, unknown>('.title')
         .layout('margin-right', '0.5em')
         .call((title) => textVerticalAttrs(title))
         .call((title) => textTitleAttrs(title))
+        .raise()
     )
     .call((s) =>
       s
@@ -86,7 +92,7 @@ export function axisLeftTransition<
     debug(`transition left axis on ${nodeToString(g[i])}`);
     const s = select(g[i]);
     const t = s.transition(transition);
-    axisTransition(t, d3Axis(d3AxisLeft, d), d.title)
+    axisTransition(t, d3Axis(d3AxisLeft, d), d.title, d.subtitle)
       .selectAll('.ticks text')
       .attr('dy', null)
       .attr('dominant-baseline', 'middle');
@@ -114,6 +120,9 @@ export function axisBottom<
         .call((title) => textHorizontalAttrs(title))
         .call((title) => textTitleAttrs(title))
     )
+    .call((s) =>
+      s.selectAll<SVGTextElement, unknown>('.subtitle').call((title) => textHorizontalAttrs(title))
+    )
     .on('render.axisbottom', function (e, d) {
       axisBottomTransition(
         select<GElement, DataAxis>(this).transition('axis').duration(0).ease(easeCubicOut)
@@ -132,7 +141,7 @@ export function axisBottomTransition<
 ): Transition<GElement, Datum, PElement, PDatum> {
   return transition.each((d, i, g) => {
     debug(`transition bottom axis on ${nodeToString(g[i])}`);
-    axisTransition(select(g[i]).transition(transition), d3Axis(d3AxisBottom, d), d.title)
+    axisTransition(select(g[i]).transition(transition), d3Axis(d3AxisBottom, d), d.title, d.subtitle)
       .selectAll('.tick text')
       .attr('dy', null)
       .attr('dominant-baseline', 'hanging');
@@ -152,6 +161,7 @@ function axis<
     .attr('font-size', '0.7em')
     .call((s) => s.append('g').classed('ticks-transform', true).append('g').classed('ticks', true))
     .call((s) => s.append('text').classed('title', true))
+    .call((s) => s.append('text').classed('subtitle', true))
     .on(
       'render.axis-initial',
       function () {
@@ -173,7 +183,8 @@ function axisTransition<
 >(
   transition: Transition<GElement, Datum, PElement, PDatum>,
   axis: Axis<AxisDomain>,
-  title: string
+  title: string,
+  subtitle: string
 ): Transition<GElement, Datum, PElement, PDatum> {
   return transition
     .call((t) =>
@@ -189,7 +200,8 @@ function axisTransition<
             .call((t) => t.selectAll('.domain').attr('fill', 'none'))
         )
     )
-    .call((t) => t.selectAll<SVGGElement, unknown>('.title').text(title));
+    .call((t) => t.selectAll<SVGGElement, unknown>('.title').text(title))
+    .call((t) => t.selectAll<SVGGElement, unknown>('.subtitle').text(subtitle));
 }
 
 function d3Axis(

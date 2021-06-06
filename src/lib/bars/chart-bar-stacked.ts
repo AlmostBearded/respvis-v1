@@ -22,8 +22,10 @@ import { dataLabelsBarCreation, dataSeriesLabelBar } from './series-label-bar';
 export interface DataChartBarStacked extends DataBarsStackedCreation {
   configureMainAxis: ConfigureAxisFn;
   mainTitle: string;
+  mainSubtitle: string;
   configureCrossAxis: ConfigureAxisFn;
   crossTitle: string;
+  crossSubtitle: string;
 }
 
 export function dataChartBarStacked(data?: Partial<DataChartBarStacked>): DataChartBarStacked {
@@ -31,8 +33,10 @@ export function dataChartBarStacked(data?: Partial<DataChartBarStacked>): DataCh
     ...dataBarsStackedCreation(data),
     configureMainAxis: data?.configureMainAxis || (() => {}),
     mainTitle: data?.mainTitle || '',
+    mainSubtitle: data?.mainSubtitle || '',
     configureCrossAxis: data?.configureCrossAxis || (() => {}),
     crossTitle: data?.crossTitle || '',
+    crossSubtitle: data?.crossSubtitle || '',
   };
 }
 
@@ -109,6 +113,7 @@ export function chartBarStackedDataChange<
           Object.assign(d, {
             scale: main ? chartData.mainScale : chartData.crossScale,
             title: main ? chartData.mainTitle : chartData.crossTitle,
+            subtitle: main ? chartData.mainSubtitle : chartData.crossSubtitle,
             configureAxis: main ? chartData.configureMainAxis : chartData.configureCrossAxis,
           })
         )

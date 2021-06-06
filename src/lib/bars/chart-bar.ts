@@ -22,8 +22,10 @@ import { dataLabelsBarCreation, dataSeriesLabelBar } from './series-label-bar';
 export interface DataChartBar extends DataBarsCreation {
   configureMainAxis: ConfigureAxisFn;
   mainTitle: string;
+  mainSubtitle: string;
   configureCrossAxis: ConfigureAxisFn;
   crossTitle: string;
+  crossSubtitle: string;
 }
 
 export function dataChartBar(data?: Partial<DataChartBar>): DataChartBar {
@@ -31,8 +33,10 @@ export function dataChartBar(data?: Partial<DataChartBar>): DataChartBar {
     ...dataBarsCreation(data),
     configureMainAxis: data?.configureMainAxis || (() => {}),
     mainTitle: data?.mainTitle || '',
+    mainSubtitle: data?.mainSubtitle || '',
     configureCrossAxis: data?.configureCrossAxis || (() => {}),
     crossTitle: data?.crossTitle || '',
+    crossSubtitle: data?.crossSubtitle || '',
   };
 }
 
@@ -99,6 +103,7 @@ export function chartBarDataChange<Datum extends DataChartBar, PElement extends 
           Object.assign(d, {
             scale: main ? chartData.mainScale : chartData.crossScale,
             title: main ? chartData.mainTitle : chartData.crossTitle,
+            subtitle: main ? chartData.mainSubtitle : chartData.crossSubtitle,
             configureAxis: main ? chartData.configureMainAxis : chartData.configureCrossAxis,
           })
         )
