@@ -5,6 +5,7 @@ export function chart<Datum, PElement extends BaseType, PDatum>(
 ): Selection<SVGSVGElement, Datum, PElement, PDatum> {
   return selection
     .classed('chart', true)
+    .attr('font-family', 'sans-serif')
     .layout('position', 'absolute')
     .layout('top', 0)
     .layout('bottom', 0)

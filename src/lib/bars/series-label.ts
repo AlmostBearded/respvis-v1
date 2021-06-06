@@ -30,7 +30,7 @@ export function seriesLabel<
     .classed('series-label', true)
     .attr('text-anchor', 'middle')
     .attr('dominant-baseline', 'middle')
-    .attr('font-size', '0.8em')
+    .attr('font-size', '0.7em')
     .on(
       'render.serieslabel-initial',
       function () {

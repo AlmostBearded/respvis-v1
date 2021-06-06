@@ -149,6 +149,7 @@ function axis<
 ): Selection<GElement, Datum, PElement, PDatum> {
   return selection
     .classed('axis', true)
+    .attr('font-size', '0.7em')
     .call((s) => s.append('g').classed('ticks-transform', true).append('g').classed('ticks', true))
     .call((s) => s.append('text').classed('title', true))
     .on(
@@ -182,7 +183,8 @@ function axisTransition<
         .call((ticks) =>
           ticks
             .attr('fill', null)
-            .attr('font-size', '0.7em')
+            .attr('font-family', null)
+            .attr('font-size', null)
             .call((t) => t.selectAll<SVGTextElement, unknown>('.tick text').attr('fill', null))
             .call((t) => t.selectAll('.domain').attr('fill', 'none'))
         )
