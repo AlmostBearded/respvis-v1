@@ -27,8 +27,9 @@
 
       const sites = data.sites,
         revenues = data.revenues,
-        colors = ['#399283', '#8be8ad', '#214d4e'],
         years = data.years,
+        colors = ['#399283', '#8be8ad', '#214d4e'],
+        colorScale = d3.scaleOrdinal().domain(years).range(colors),
         keys = revenues.map((yearlyRevs, i) => yearlyRevs.map((_, j) => sites[i] + years[j]));
 
       const wideMediaQuery = 'screen and (min-width: 40rem)';
@@ -45,7 +46,9 @@
         chart = layouter.append('svg').datum(chartDatum).call(respVis.chartBarGrouped),
         barSeries = chart
           .selectAll('.series-bar')
-          .on('barenter', (e) => e.detail.selection.attr('fill', (d) => colors[d.index])),
+          .on('barenter', (e) =>
+            e.detail.selection.attr('fill', (d) => colorScale(years[d.index]))
+          ),
         // .on('mouseover', (e) => hoverBar(e.target, true))
         // .on('mouseout', (e) => hoverBar(e.target, false)),
         // barColor = barSeries.attr('fill'),
