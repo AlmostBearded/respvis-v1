@@ -121,7 +121,7 @@ export function seriesBarGrouped<
   return seriesBar(selection)
     .classed('series-bar-grouped', true)
     .attr('fill', null)
-    .on('barenter', (e: JoinEvent<SVGRectElement, DataBarGrouped>) =>
+    .on('barenter.seriesbargrouped', (e: JoinEvent<SVGRectElement, DataBarGrouped>) =>
       e.detail.selection.attr('fill', (d) => COLORS_CATEGORICAL[d.index])
     );
 }

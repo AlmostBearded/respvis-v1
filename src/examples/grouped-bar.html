@@ -27,6 +27,7 @@
 
       const sites = data.sites,
         revenues = data.revenues,
+        colors = ["#399283", "#8be8ad", "#214d4e"],
         formatRevenue = (value) => `${value}k`,
         years = data.years,
         keys = revenues.map((yearlyRevs, i) => yearlyRevs.map((_, j) => sites[i] + years[j]));
@@ -43,7 +44,9 @@
           configureCrossAxis: (a) => a.tickFormat(formatRevenue),
         }),
         chart = layouter.append('svg').datum(chartDatum).call(respVis.chartBarGrouped),
-        barSeries = chart.selectAll('.series-bar'),
+        barSeries = chart
+          .selectAll('.series-bar')
+          .on('barenter', (e) => e.detail.selection.attr('fill', (d) => colors[d.index])),
         // .on('mouseover', (e) => hoverBar(e.target, true))
         // .on('mouseout', (e) => hoverBar(e.target, false)),
         // barColor = barSeries.attr('fill'),
