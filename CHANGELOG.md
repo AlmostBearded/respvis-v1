@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add [d3 legend](https://d3-legend.susielu.com/) library for usage in examples.
+- Add subtitles to axes.
+
+### Changed
+
+- Set custom colors in grouped bar example.
+- Set sans-serif font family on whole chart.
+- Decrease font-size of axis titles.
 
 ## [0.1.0] - 2021-06-02
 
