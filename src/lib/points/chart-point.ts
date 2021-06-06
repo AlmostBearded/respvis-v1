@@ -37,13 +37,18 @@ export function dataChartPoint(data?: Partial<DataChartPoint>): DataChartPoint {
   };
 }
 
-export function chartPoint<Datum extends DataChartPoint, PElement extends BaseType, PDatum>(
-  selection: Selection<SVGSVGElement, Datum, PElement, PDatum>
-): Selection<SVGSVGElement, Datum, PElement, PDatum> {
+export function chartPoint<
+  GElement extends SVGSVGElement | SVGGElement,
+  Datum extends DataChartPoint,
+  PElement extends BaseType,
+  PDatum
+>(
+  selection: Selection<GElement, Datum, PElement, PDatum>
+): Selection<GElement, Datum, PElement, PDatum> {
   return chart(selection)
     .classed('chart-point', true)
     .each((d, i, g) => {
-      const s = select<SVGSVGElement, Datum>(g[i])
+      const s = select<GElement, Datum>(g[i])
         .layout('display', 'grid')
         .layout('grid-template', '1fr auto / auto 1fr')
         .layout('padding', '20px');
@@ -78,20 +83,21 @@ export function chartPoint<Datum extends DataChartPoint, PElement extends BaseTy
     })
     .on('datachange.chartpoint', function (e, chartData) {
       debug(`data change on ${nodeToString(this)}`);
-      chartPointDataChange(select<SVGSVGElement, Datum>(this));
+      chartPointDataChange(select<GElement, Datum>(this));
     })
     .call((s) => chartPointDataChange(s));
 }
 
 export function chartPointDataChange<
+  GElement extends SVGSVGElement | SVGGElement,
   Datum extends DataChartPoint,
   PElement extends BaseType,
   PDatum
 >(
-  selection: Selection<SVGSVGElement, Datum, PElement, PDatum>
-): Selection<SVGSVGElement, Datum, PElement, PDatum> {
+  selection: Selection<GElement, Datum, PElement, PDatum>
+): Selection<GElement, Datum, PElement, PDatum> {
   return selection.each(function (chartData, i, g) {
-    const s = select<SVGSVGElement, Datum>(g[i]);
+    const s = select<GElement, Datum>(g[i]);
 
     s.selectAll<SVGElement, DataSeriesPoint>('.series-point').datum((d) =>
       Object.assign(d, { creation: chartData })

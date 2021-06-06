@@ -96,7 +96,15 @@ function layoutNodeRoot(layouter: HTMLDivElement): Selection<HTMLDivElement, SVG
   return select(layouter)
     .selectChildren<HTMLDivElement, SVGElement>('.layout')
     .data(layedOutChildren(layouter))
-    .join('div');
+    .join('div')
+    .each((d) =>
+      select(d)
+        .layout('position', 'absolute')
+        .layout('top', 0)
+        .layout('bottom', 0)
+        .layout('left', 0)
+        .layout('right', 0)
+    );
 }
 
 function layoutNodeStyleAttr(selection: Selection<HTMLDivElement, SVGElement>): void {

@@ -43,16 +43,17 @@ export function dataChartBarStacked(data?: Partial<DataChartBarStacked>): DataCh
 // todo: unify the code for normal, grouped and stacked bar charts?
 
 export function chartBarStacked<
+  GElement extends SVGSVGElement | SVGGElement,
   Datum extends DataChartBarStacked,
   PElement extends BaseType,
   PDatum
 >(
-  selection: Selection<SVGSVGElement, Datum, PElement, PDatum>
-): Selection<SVGSVGElement, Datum, PElement, PDatum> {
+  selection: Selection<GElement, Datum, PElement, PDatum>
+): Selection<GElement, Datum, PElement, PDatum> {
   return chart(selection)
     .classed('chart-bar-stacked', true)
     .each((d, i, g) => {
-      const s = select<SVGSVGElement, Datum>(g[i])
+      const s = select<GElement, Datum>(g[i])
         .layout('display', 'grid')
         .layout('grid-template', '1fr auto / auto 1fr')
         .layout('padding', '20px');
@@ -88,20 +89,21 @@ export function chartBarStacked<
     })
     .on('datachange.chartbarstacked', function (e, chartData) {
       debug(`data change on ${nodeToString(this)}`);
-      chartBarStackedDataChange(select<SVGSVGElement, Datum>(this));
+      chartBarStackedDataChange(select<GElement, Datum>(this));
     })
     .call((s) => chartBarStackedDataChange(s));
 }
 
 export function chartBarStackedDataChange<
+  GElement extends SVGSVGElement | SVGGElement,
   Datum extends DataChartBarStacked,
   PElement extends BaseType,
   PDatum
 >(
-  selection: Selection<SVGSVGElement, Datum, PElement, PDatum>
-): Selection<SVGSVGElement, Datum, PElement, PDatum> {
+  selection: Selection<GElement, Datum, PElement, PDatum>
+): Selection<GElement, Datum, PElement, PDatum> {
   return selection.each(function (chartData, i, g) {
-    const s = select<SVGSVGElement, Datum>(g[i]);
+    const s = select<GElement, Datum>(g[i]);
 
     s.selectAll<SVGElement, DataSeriesBarStacked>('.series-bar-stacked').datum((d) =>
       Object.assign(d, { creation: chartData })

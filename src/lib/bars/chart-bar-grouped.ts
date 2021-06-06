@@ -41,16 +41,17 @@ export function dataChartBarGrouped(data?: Partial<DataChartBarGrouped>): DataCh
 }
 
 export function chartBarGrouped<
+  GElement extends SVGSVGElement | SVGGElement,
   Datum extends DataChartBarGrouped,
   PElement extends BaseType,
   PDatum
 >(
-  selection: Selection<SVGSVGElement, Datum, PElement, PDatum>
-): Selection<SVGSVGElement, Datum, PElement, PDatum> {
+  selection: Selection<GElement, Datum, PElement, PDatum>
+): Selection<GElement, Datum, PElement, PDatum> {
   return chart(selection)
     .classed('chart-bar-grouped', true)
     .each((d, i, g) => {
-      const s = select<SVGSVGElement, Datum>(g[i])
+      const s = select<GElement, Datum>(g[i])
         .layout('display', 'grid')
         .layout('grid-template', '1fr auto / auto 1fr')
         .layout('padding', '20px');
@@ -86,20 +87,21 @@ export function chartBarGrouped<
     })
     .on('datachange.chartbargrouped', function (e, chartData) {
       debug(`data change on ${nodeToString(this)}`);
-      chartBarGroupedDataChange(select<SVGSVGElement, Datum>(this));
+      chartBarGroupedDataChange(select<GElement, Datum>(this));
     })
     .call((s) => chartBarGroupedDataChange(s));
 }
 
 export function chartBarGroupedDataChange<
+  GElement extends SVGSVGElement | SVGGElement,
   Datum extends DataChartBarGrouped,
   PElement extends BaseType,
   PDatum
 >(
-  selection: Selection<SVGSVGElement, Datum, PElement, PDatum>
-): Selection<SVGSVGElement, Datum, PElement, PDatum> {
+  selection: Selection<GElement, Datum, PElement, PDatum>
+): Selection<GElement, Datum, PElement, PDatum> {
   return selection.each(function (chartData, i, g) {
-    const s = select<SVGSVGElement, Datum>(g[i]);
+    const s = select<GElement, Datum>(g[i]);
 
     s.selectAll<SVGElement, DataSeriesBarGrouped>('.series-bar-grouped').datum((d) =>
       Object.assign(d, { creation: chartData })

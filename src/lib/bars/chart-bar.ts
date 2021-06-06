@@ -1,13 +1,6 @@
 import { BaseType, select, Selection } from 'd3-selection';
 import { axisBottom, axisLeft, ConfigureAxisFn, dataAxis, DataAxis } from '../axis';
-import {
-  chart,
-  debug,
-  nodeToString,
-  textHorizontalAttrs,
-  textTitleAttrs,
-  textVerticalAttrs,
-} from '../core';
+import { chart, debug, nodeToString } from '../core';
 import {
   DataBarsCreation,
   dataBarsCreation,
@@ -40,13 +33,18 @@ export function dataChartBar(data?: Partial<DataChartBar>): DataChartBar {
   };
 }
 
-export function chartBar<Datum extends DataChartBar, PElement extends BaseType, PDatum>(
-  selection: Selection<SVGSVGElement, Datum, PElement, PDatum>
-): Selection<SVGSVGElement, Datum, PElement, PDatum> {
+export function chartBar<
+  GElement extends SVGSVGElement | SVGGElement,
+  Datum extends DataChartBar,
+  PElement extends BaseType,
+  PDatum
+>(
+  selection: Selection<GElement, Datum, PElement, PDatum>
+): Selection<GElement, Datum, PElement, PDatum> {
   return chart(selection)
     .classed('chart-bar', true)
     .each((d, i, g) => {
-      const s = select<SVGSVGElement, Datum>(g[i])
+      const s = select<GElement, Datum>(g[i])
         .layout('display', 'grid')
         .layout('grid-template', '1fr auto / auto 1fr')
         .layout('padding', '20px');
@@ -82,16 +80,21 @@ export function chartBar<Datum extends DataChartBar, PElement extends BaseType, 
     })
     .on('datachange.chartbar', function (e, chartData) {
       debug(`data change on ${nodeToString(this)}`);
-      chartBarDataChange(select<SVGSVGElement, Datum>(this));
+      chartBarDataChange(select<GElement, Datum>(this));
     })
     .call((s) => chartBarDataChange(s));
 }
 
-export function chartBarDataChange<Datum extends DataChartBar, PElement extends BaseType, PDatum>(
-  selection: Selection<SVGSVGElement, Datum, PElement, PDatum>
-): Selection<SVGSVGElement, Datum, PElement, PDatum> {
+export function chartBarDataChange<
+  GElement extends SVGSVGElement | SVGGElement,
+  Datum extends DataChartBar,
+  PElement extends BaseType,
+  PDatum
+>(
+  selection: Selection<GElement, Datum, PElement, PDatum>
+): Selection<GElement, Datum, PElement, PDatum> {
   return selection.each(function (chartData, i, g) {
-    const s = select<SVGSVGElement, Datum>(g[i]);
+    const s = select<GElement, Datum>(g[i]);
 
     s.selectAll<SVGElement, DataSeriesBar>('.series-bar').datum((d) =>
       Object.assign(d, { creation: chartData })
