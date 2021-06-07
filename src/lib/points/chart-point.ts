@@ -1,13 +1,11 @@
 import { BaseType, select, Selection } from 'd3-selection';
-import { axisBottom, axisLeft, ConfigureAxisFn, DataAxis, dataAxis } from '../axis';
+import { debug, nodeToString } from '../core';
 import {
-  chart,
-  debug,
-  nodeToString,
-  textHorizontalAttrs,
-  textTitleAttrs,
-  textVerticalAttrs,
-} from '../core';
+  chartCartesian,
+  chartCartesianUpdateAxes,
+  dataChartCartesian,
+  DataChartCartesian,
+} from '../core/cartesian-chart';
 import {
   dataPointsCreation,
   DataPointsCreation,
@@ -16,24 +14,12 @@ import {
   seriesPoint,
 } from './series-point';
 
-export interface DataChartPoint extends DataPointsCreation {
-  configureMainAxis: ConfigureAxisFn;
-  mainTitle: string;
-  mainSubtitle: string;
-  configureCrossAxis: ConfigureAxisFn;
-  crossTitle: string;
-  crossSubtitle: string;
-}
+export interface DataChartPoint extends DataPointsCreation, DataChartCartesian {}
 
 export function dataChartPoint(data?: Partial<DataChartPoint>): DataChartPoint {
   return {
     ...dataPointsCreation(data),
-    configureMainAxis: data?.configureMainAxis || (() => {}),
-    mainTitle: data?.mainTitle || '',
-    mainSubtitle: data?.mainSubtitle || '',
-    configureCrossAxis: data?.configureCrossAxis || (() => {}),
-    crossTitle: data?.crossTitle || '',
-    crossSubtitle: data?.crossSubtitle || '',
+    ...dataChartCartesian(data),
   };
 }
 
@@ -45,19 +31,13 @@ export function chartPoint<
 >(
   selection: Selection<GElement, Datum, PElement, PDatum>
 ): Selection<GElement, Datum, PElement, PDatum> {
-  return chart(selection)
+  return selection
+    .call((s) => chartCartesian(s, false))
     .classed('chart-point', true)
     .each((d, i, g) => {
-      const s = select<GElement, Datum>(g[i])
-        .layout('display', 'grid')
-        .layout('grid-template', '1fr auto / auto 1fr')
-        .layout('padding', '20px');
-
-      const drawArea = s
-        .append('svg')
-        .classed('draw-area', true)
-        .layout('grid-area', '1 / 2')
-        .layout('display', 'grid');
+      const drawArea = select<GElement, Datum>(g[i])
+        .selectAll('.draw-area')
+        .attr('overflow', 'hidden');
 
       drawArea
         .append('rect')
@@ -68,21 +48,13 @@ export function chartPoint<
       drawArea
         .append('g')
         .layout('grid-area', '1 / 1')
-        .datum((d) => dataSeriesPoint(d))
+        .datum(dataSeriesPoint(d))
         .call((s) => seriesPoint(s));
-
-      s.append('g')
-        .layout('grid-area', '1 / 1')
-        .datum((d) => dataAxis())
-        .call((s) => axisLeft(s));
-
-      s.append('g')
-        .layout('grid-area', '2 / 2')
-        .datum((d) => dataAxis())
-        .call((s) => axisBottom(s));
+    })
+    .on('datachange.debuglog', function () {
+      debug(`data change on ${nodeToString(this)}`);
     })
     .on('datachange.chartpoint', function (e, chartData) {
-      debug(`data change on ${nodeToString(this)}`);
       chartPointDataChange(select<GElement, Datum>(this));
     })
     .call((s) => chartPointDataChange(s));
@@ -103,20 +75,10 @@ export function chartPointDataChange<
       Object.assign(d, { creation: chartData })
     );
 
-    const axisConfig = (selection: Selection<Element, DataAxis>, main: boolean) =>
-      selection
-        .datum((d) =>
-          Object.assign(d, {
-            scale: main ? chartData.mainScale : chartData.crossScale,
-            title: main ? chartData.mainTitle : chartData.crossTitle,
-            subtitle: main ? chartData.mainSubtitle : chartData.crossSubtitle,
-            configureAxis: main ? chartData.configureMainAxis : chartData.configureCrossAxis,
-          })
-        )
-        .classed('axis-main', main)
-        .classed('axis-cross', !main);
+    chartData.flipped = true;
+    chartData.mainAxis.scale = chartData.mainScale;
+    chartData.crossAxis.scale = chartData.crossScale;
 
-    s.selectAll<SVGGElement, DataAxis>('.axis-left').call((s) => axisConfig(s, false));
-    s.selectAll<SVGGElement, DataAxis>('.axis-bottom').call((s) => axisConfig(s, true));
+    chartCartesianUpdateAxes(s);
   });
 }
