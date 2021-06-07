@@ -38,10 +38,14 @@
         layouter = root.append('div').call(respVis.layouter),
         chartDatum = respVis.dataChartBarGrouped({
           mainValues: sites,
-          mainTitle: 'Site',
           crossValues: revenues,
-          crossTitle: 'Revenue',
-          crossSubtitle: '[Million USD]',
+          mainAxis: {
+            title: 'Site',
+          },
+          crossAxis: {
+            title: 'Revenue',
+            subtitle: '[Million USD]',
+          },
         }),
         chart = layouter.append('svg').datum(chartDatum).call(respVis.chartBarGrouped),
         barSeries = chart

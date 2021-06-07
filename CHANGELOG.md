@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Set sans-serif font family on whole chart.
 - Decrease font-size of axis titles.
 - Make bar chart a subcomponent of cartesian chart.
+- Make grouped bar chart a subcomponent of cartesian chart.
 - Make stacked bar chart a subcomponent of cartesian chart.
 
 ### Fixed
