@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add [d3 legend](https://d3-legend.susielu.com/) library for usage in examples.
 - Add subtitles to axes.
+- Add cartesian chart component to handle flipping of axes.
 
 ### Changed
 
