@@ -37,10 +37,14 @@
         layouter = root.append('div').call(respVis.layouter),
         chartDatum = respVis.dataChartBar({
           mainValues: cities,
-          mainTitle: 'City',
           crossValues: populations,
-          crossTitle: 'Population',
-          crossSubtitle: '[1000 People]',
+          mainAxis: {
+            title: 'City',
+          },
+          crossAxis: {
+            title: 'Population',
+            subtitle: '[1000 People]',
+          },
         }),
         chart = layouter.append('svg').datum(chartDatum).call(respVis.chartBar),
         barSeries = chart
@@ -57,7 +61,7 @@
       window.addEventListener('resize', configure);
       configure();
 
-      // respVis.enableDebugLog(true);
+      respVis.enableDebugLog(true);
 
       function configure() {
         chartDatum.orientation = respVis.Orientation.Horizontal;
