@@ -44,13 +44,17 @@
         layouter = root.append('div').call(respVis.layouter),
         chartDatum = respVis.dataChartBarStacked({
           mainValues: years,
-          mainTitle: 'Year',
           crossValues: shares,
-          crossTitle: 'Market Share',
-          crossSubtitle: '[%]',
           crossScale: shareScale,
-          configureCrossAxis: (a) => a.tickFormat(formatShare),
           keys: keys,
+          mainAxis: {
+            title: 'Year',
+          },
+          crossAxis: {
+            title: 'Market Share',
+            subtitle: '[%]',
+            configureAxis: (a) => a.tickFormat(formatShare),
+          },
         }),
         chart = layouter.append('svg').datum(chartDatum).call(respVis.chartBarStacked),
         barSeries = chart.selectAll('.series-bar'),
