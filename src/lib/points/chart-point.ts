@@ -75,7 +75,7 @@ export function chartPointDataChange<
       Object.assign(d, { creation: chartData })
     );
 
-    chartData.flipped = true;
+    chartData.flipped = false;
     chartData.mainAxis.scale = chartData.mainScale;
     chartData.crossAxis.scale = chartData.crossScale;
 

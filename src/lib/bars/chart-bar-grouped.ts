@@ -77,7 +77,7 @@ export function chartBarGroupedDataChange<
       Object.assign(d, { creation: chartData })
     );
 
-    chartData.flipped = chartData.orientation === Orientation.Vertical;
+    chartData.flipped = chartData.orientation === Orientation.Horizontal;
     chartData.mainAxis.scale = chartData.mainScale;
     chartData.crossAxis.scale = chartData.crossScale;
 

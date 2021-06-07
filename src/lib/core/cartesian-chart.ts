@@ -84,7 +84,7 @@ export function chartCartesianUpdateAxes<
         .classed('axis-main', main)
         .classed('axis-cross', !main);
 
-    if (!chartData.flipped) {
+    if (chartData.flipped) {
       s.selectAll<SVGGElement, DataAxis>('.axis-left').call((s) => axisConfig(s, true));
       s.selectAll<SVGGElement, DataAxis>('.axis-bottom').call((s) => axisConfig(s, false));
     } else {
