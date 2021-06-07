@@ -2,6 +2,7 @@ import { easeCubicOut } from 'd3-ease';
 import { BaseType, select, selectAll, Selection } from 'd3-selection';
 import { eventBroadcast } from './event';
 import { debug, log, nodeToString } from './log';
+import { renderQueueEnqueue, renderQueueRender } from './render-queue';
 import { relativeBounds } from './utility/bounds';
 import { positionToTransformAttr } from './utility/position';
 import { rectEquals, rectFromString, rectToAttrs, rectToString } from './utility/rect';
@@ -22,25 +23,11 @@ export function dataLayouter(layouter: HTMLDivElement): DataLayouter {
       layoutNodes = layoutNodes
         .call((s) => layoutNodeObserveResize(s, layoutNodeResizeObserver))
         .call((s) => layoutNodeStyleAttr(s))
-        .each(
-          (d, i, g) =>
-            layoutNodeBounds(select(g[i])) && changedNodePaths.push(layoutNodePath(layouter, d))
-        )
+        .each((d, i, g) => layoutNodeBounds(select(g[i])) && renderQueueEnqueue(d))
         .selectChildren<HTMLDivElement, SVGElement>('.layout');
     }
 
-    // sort node paths depth-first
-    const maxPathLenght = Math.max(...changedNodePaths.map((path) => path.length));
-    const pathReducer = (accumulator: number, value: number, index: number) =>
-      accumulator + value * Math.pow(10, maxPathLenght - 1 - index);
-    changedNodePaths.sort((a, b) => a.reduce(pathReducer, 0) - b.reduce(pathReducer, 0));
-
-    // map paths to nodes
-    const changedNodes = changedNodePaths.map((path) =>
-      path.reduce((accumulator, value) => accumulator.children[value], layouter)
-    );
-
-    selectAll(changedNodes).dispatch('render');
+    renderQueueRender();
   });
 
   const svgNodeResizeObserver = new ResizeObserver((entries) => {
@@ -176,15 +163,6 @@ function layoutNodeObserveResize(
 
 function layedOutChildren(parent: Element): SVGElement[] {
   return select(parent).selectChildren<SVGElement, unknown>('[layout]').nodes();
-}
-
-function layoutNodePath(layouter: HTMLElement, node: Element): number[] {
-  const path: number[] = [];
-  while (node !== layouter) {
-    path.push(Array.prototype.indexOf.call(node.parentElement!.children, node));
-    node = node.parentElement!;
-  }
-  return path.reverse();
 }
 
 export function layouter<Datum, PElement extends BaseType, PDatum>(
