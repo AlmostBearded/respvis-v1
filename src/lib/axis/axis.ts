@@ -31,8 +31,8 @@ export interface DataAxis {
 export function dataAxis(data?: Partial<DataAxis>): DataAxis {
   return {
     scale: data?.scale || scaleLinear().domain([0, 1]).range([0, 600]),
-    title: '',
-    subtitle: '',
+    title: data?.title || '',
+    subtitle: data?.subtitle || '',
     configureAxis: data?.configureAxis || (() => {}),
   };
 }
@@ -141,7 +141,12 @@ export function axisBottomTransition<
 ): Transition<GElement, Datum, PElement, PDatum> {
   return transition.each((d, i, g) => {
     debug(`transition bottom axis on ${nodeToString(g[i])}`);
-    axisTransition(select(g[i]).transition(transition), d3Axis(d3AxisBottom, d), d.title, d.subtitle)
+    axisTransition(
+      select(g[i]).transition(transition),
+      d3Axis(d3AxisBottom, d),
+      d.title,
+      d.subtitle
+    )
       .selectAll('.tick text')
       .attr('dy', null)
       .attr('dominant-baseline', 'hanging');

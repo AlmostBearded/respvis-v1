@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Set sans-serif font family on whole chart.
 - Decrease font-size of axis titles.
 
+### Fixed
+
+- Fix dataAxis function ignoring passed in title and subtitle properties.
+
 ## [0.1.0] - 2021-06-02
 
 ### Added
