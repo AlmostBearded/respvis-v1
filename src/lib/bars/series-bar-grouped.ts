@@ -8,7 +8,6 @@ import {
   dataSeriesBarCustom,
   DataSeriesBarCustom,
   JoinEvent,
-  Orientation,
   seriesBar,
 } from './series-bar';
 
@@ -23,7 +22,7 @@ export interface DataBarsGroupedCreation {
   crossValues: number[][];
   crossScale: ScaleContinuousNumeric<number, number>;
   keys?: string[];
-  orientation: Orientation;
+  flipped: boolean;
 }
 
 export interface DataSeriesBarGrouped extends DataSeriesBarCustom {
@@ -46,7 +45,7 @@ export function dataBarsGroupedCreation(
       scaleLinear()
         .domain([0, Math.max(...(data?.crossValues?.map((values) => Math.max(...values)) || []))])
         .nice(),
-    orientation: data?.orientation || Orientation.Vertical,
+    flipped: data?.flipped || false,
     innerPadding: data?.innerPadding || 0.1,
   };
 }
@@ -63,10 +62,10 @@ export function dataBarsGrouped(
   creationData: DataBarsGroupedCreation,
   bounds: Size
 ): DataBarGrouped[] {
-  if (creationData.orientation === Orientation.Vertical) {
+  if (!creationData.flipped) {
     creationData.mainScale.range([0, bounds.width]);
     creationData.crossScale.range([bounds.height, 0]);
-  } else if (creationData.orientation === Orientation.Horizontal) {
+  } else {
     creationData.mainScale.range([0, bounds.height]);
     creationData.crossScale.range([0, bounds.width]);
   }
@@ -83,7 +82,7 @@ export function dataBarsGrouped(
       const c = creationData.mainValues[i];
       const v = subcategoryValues[j];
 
-      if (creationData.orientation === Orientation.Vertical) {
+      if (!creationData.flipped) {
         data.push({
           groupIndex: i,
           index: j,
@@ -93,7 +92,7 @@ export function dataBarsGrouped(
           width: innerScale.bandwidth(),
           height: Math.abs(creationData.crossScale(0)! - creationData.crossScale(v)!),
         });
-      } else if (creationData.orientation === Orientation.Horizontal) {
+      } else {
         data.push({
           groupIndex: i,
           index: j,

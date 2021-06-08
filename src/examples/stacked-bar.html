@@ -73,9 +73,9 @@
       // respVis.enableDebugLog(true);
 
       function configure() {
-        chartDatum.orientation = respVis.Orientation.Horizontal;
+        chartDatum.flipped = true;
         if (window.matchMedia(wideMediaQuery).matches) {
-          chartDatum.orientation = respVis.Orientation.Vertical;
+          chartDatum.flipped = false;
         }
         chart.datum(chartDatum);
       }

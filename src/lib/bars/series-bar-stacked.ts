@@ -7,7 +7,6 @@ import {
   dataSeriesBarCustom,
   DataSeriesBarCustom,
   JoinEvent,
-  Orientation,
   seriesBar,
 } from './series-bar';
 
@@ -22,7 +21,7 @@ export interface DataBarsStackedCreation {
   crossValues: number[][];
   crossScale: ScaleContinuousNumeric<number, number>;
   keys?: string[];
-  orientation: Orientation;
+  flipped: boolean;
 }
 
 export interface DataSeriesBarStacked extends DataSeriesBarCustom {
@@ -48,7 +47,7 @@ export function dataBarsStackedCreation(
           Math.max(...(data?.crossValues?.map((values) => values.reduce((a, b) => a + b)) || [])),
         ])
         .nice(),
-    orientation: data?.orientation || Orientation.Vertical,
+    flipped: data?.flipped || false,
     innerPadding: data?.innerPadding || 0.1,
   };
 }
@@ -65,10 +64,10 @@ export function dataBarsStacked(
   creationData: DataBarsStackedCreation,
   bounds: Size
 ): DataBarStacked[] {
-  if (creationData.orientation === Orientation.Vertical) {
+  if (!creationData.flipped) {
     creationData.mainScale.range([0, bounds.width]);
     creationData.crossScale.range([bounds.height, 0]);
-  } else if (creationData.orientation === Orientation.Horizontal) {
+  } else {
     creationData.mainScale.range([0, bounds.height]);
     creationData.crossScale.range([0, bounds.width]);
   }
@@ -81,7 +80,7 @@ export function dataBarsStacked(
       const c = creationData.mainValues[i];
       const v = subcategoryValues[j];
 
-      if (creationData.orientation === Orientation.Vertical) {
+      if (!creationData.flipped) {
         data.push({
           stackIndex: i,
           index: j,
@@ -92,7 +91,7 @@ export function dataBarsStacked(
           height: Math.abs(creationData.crossScale(0)! - creationData.crossScale(v)!),
         });
         sum += data[data.length - 1].height;
-      } else if (creationData.orientation === Orientation.Horizontal) {
+      } else {
         data.push({
           stackIndex: i,
           index: j,

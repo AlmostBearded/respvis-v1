@@ -10,7 +10,6 @@ import {
 import {
   DataBarsCreation,
   dataBarsCreation,
-  Orientation,
   seriesBar,
   dataSeriesBar,
   DataSeriesBar,
@@ -77,7 +76,6 @@ export function chartBarDataChange<
       Object.assign(d, { creation: chartData })
     );
 
-    chartData.flipped = chartData.orientation === Orientation.Horizontal;
     chartData.mainAxis.scale = chartData.mainScale;
     chartData.crossAxis.scale = chartData.crossScale;
 

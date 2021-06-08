@@ -6,7 +6,6 @@ import {
   dataChartCartesian,
   DataChartCartesian,
 } from '../core/cartesian-chart';
-import { Orientation } from './series-bar';
 import {
   dataBarsStackedCreation,
   DataBarsStackedCreation,
@@ -78,7 +77,6 @@ export function chartBarStackedDataChange<
       Object.assign(d, { creation: chartData })
     );
 
-    chartData.flipped = chartData.orientation === Orientation.Horizontal;
     chartData.mainAxis.scale = chartData.mainScale;
     chartData.crossAxis.scale = chartData.crossScale;
 

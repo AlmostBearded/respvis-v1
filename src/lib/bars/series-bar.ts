@@ -7,11 +7,6 @@ import { Size } from '../core/utils';
 import { Transition } from 'd3-transition';
 import { easeCubicOut } from 'd3-ease';
 
-export enum Orientation {
-  Vertical,
-  Horizontal,
-}
-
 export interface DataBar extends Rect {
   index: number;
   key: string;
@@ -32,7 +27,7 @@ export interface DataBarsCreation {
   crossValues: number[];
   crossScale: ScaleContinuousNumeric<number, number>;
   keys?: string[];
-  orientation: Orientation;
+  flipped: boolean;
 }
 
 export interface DataSeriesBar extends DataSeriesBarCustom {
@@ -53,7 +48,7 @@ export function dataBarsCreation(data?: Partial<DataBarsCreation>): DataBarsCrea
       scaleLinear()
         .domain([0, Math.max(...(data?.crossValues || []))])
         .nice(),
-    orientation: data?.orientation || Orientation.Vertical,
+    flipped: data?.flipped || false,
   };
 }
 
@@ -66,10 +61,10 @@ export function dataSeriesBar(creationData: DataBarsCreation): DataSeriesBar {
 }
 
 export function dataBars(creationData: DataBarsCreation, bounds: Size): DataBar[] {
-  if (creationData.orientation === Orientation.Vertical) {
+  if (!creationData.flipped) {
     creationData.mainScale.range([0, bounds.width]);
     creationData.crossScale.range([bounds.height, 0]);
-  } else if (creationData.orientation === Orientation.Horizontal) {
+  } else {
     creationData.mainScale.range([0, bounds.height]);
     creationData.crossScale.range([0, bounds.width]);
   }
@@ -80,7 +75,7 @@ export function dataBars(creationData: DataBarsCreation, bounds: Size): DataBar[
     const mv = creationData.mainValues[i];
     const cv = creationData.crossValues[i];
 
-    if (creationData.orientation === Orientation.Vertical) {
+    if (!creationData.flipped) {
       data.push({
         index: i,
         key: creationData.keys?.[i] || i.toString(),
@@ -89,7 +84,7 @@ export function dataBars(creationData: DataBarsCreation, bounds: Size): DataBar[
         width: creationData.mainScale.bandwidth(),
         height: Math.abs(creationData.crossScale(0)! - creationData.crossScale(cv)!),
       });
-    } else if (creationData.orientation === Orientation.Horizontal) {
+    } else {
       data.push({
         index: i,
         key: creationData.keys?.[i] || i.toString(),

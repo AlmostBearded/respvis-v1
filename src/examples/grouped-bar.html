@@ -68,10 +68,10 @@
       // respVis.enableDebugLog(true);
 
       function configure() {
-        chartDatum.orientation = respVis.Orientation.Horizontal;
+        chartDatum.flipped = true;
         labelSeries.call(respVis.seriesLabelBarLeftConfig);
         if (window.matchMedia(wideMediaQuery).matches) {
-          chartDatum.orientation = respVis.Orientation.Vertical;
+          chartDatum.flipped = false;
           labelSeries.call(respVis.seriesLabelBarTopConfig);
         }
         chart.datum(chartDatum);

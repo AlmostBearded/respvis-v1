@@ -22,6 +22,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Make grouped bar chart a subcomponent of cartesian chart.
 - Make stacked bar chart a subcomponent of cartesian chart.
 - Make point chart a subcomponent of cartesian chart.
+- Use flipped property of cartesian charts to flip bar charts.
+
+### Removed
+
+- Remove bar orientation enum.
+- Remove orientation property from bar series and bar charts data. 
 
 ### Fixed
 
