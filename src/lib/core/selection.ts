@@ -169,7 +169,7 @@ selection.prototype.layout = function <
     | ValueFn<GElement, Datum, string | number | boolean | null>
     | null
 ): string | null | Selection<GElement, Datum, PElement, PDatum> {
-  const regex = ` *${name}: (.+);`;
+  const regex = ` *${name}: (.+?);`;
   if (value === undefined) return this.attr('layout')?.match(regex)?.[1] || null;
   this.each((d, i, g) => {
     const v = value instanceof Function ? value.call(g[i], d, i, g) : value;
