@@ -6,7 +6,7 @@ import {
   chartCartesianUpdateAxes,
   dataChartCartesian,
   DataChartCartesian,
-} from '../core/cartesian-chart';
+} from '../core/chart-cartesian';
 import { seriesBar } from './series-bar';
 import {
   dataBarsGroupedCreation,
