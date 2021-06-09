@@ -7,8 +7,8 @@ import {
   DataChartCartesian,
 } from '../core/chart-cartesian';
 import {
-  dataBarsStackedCreation,
-  DataBarsStackedCreation,
+  dataSeriesBarStackedCreation,
+  DataSeriesBarStackedCreation,
   DataSeriesBarStacked,
   dataSeriesBarStacked,
   seriesBarStacked,
@@ -16,11 +16,11 @@ import {
 import { seriesLabel } from './series-label';
 import { dataLabelsBarCreation, dataSeriesLabelBar } from './series-label-bar';
 
-export interface DataChartBarStacked extends DataBarsStackedCreation, DataChartCartesian {}
+export interface DataChartBarStacked extends DataSeriesBarStackedCreation, DataChartCartesian {}
 
 export function dataChartBarStacked(data?: Partial<DataChartBarStacked>): DataChartBarStacked {
   return {
-    ...dataBarsStackedCreation(data),
+    ...dataSeriesBarStackedCreation(data),
     ...dataChartCartesian(data),
   };
 }
@@ -73,9 +73,7 @@ export function chartBarStackedDataChange<
   return selection.each(function (chartData, i, g) {
     const s = select<GElement, Datum>(g[i]);
 
-    s.selectAll<SVGElement, DataSeriesBarStacked>('.series-bar-stacked').datum((d) =>
-      Object.assign(d, { creation: chartData })
-    );
+    s.selectAll('.series-bar-stacked').dispatch('datachange');
 
     chartData.mainAxis.scale = chartData.mainScale;
     chartData.crossAxis.scale = chartData.crossScale;

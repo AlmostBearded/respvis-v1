@@ -7,18 +7,18 @@ import {
   DataChartCartesian,
 } from '../core/chart-cartesian';
 import {
-  dataPointsCreation,
-  DataPointsCreation,
+  dataSeriesPointCreation,
+  DataSeriesPointCreation,
   DataSeriesPoint,
   dataSeriesPoint,
   seriesPoint,
 } from './series-point';
 
-export interface DataChartPoint extends DataPointsCreation, DataChartCartesian {}
+export interface DataChartPoint extends DataSeriesPointCreation, DataChartCartesian {}
 
 export function dataChartPoint(data?: Partial<DataChartPoint>): DataChartPoint {
   return {
-    ...dataPointsCreation(data),
+    ...dataSeriesPointCreation(data),
     ...dataChartCartesian(data),
   };
 }
@@ -71,9 +71,7 @@ export function chartPointDataChange<
   return selection.each(function (chartData, i, g) {
     const s = select<GElement, Datum>(g[i]);
 
-    s.selectAll<SVGElement, DataSeriesPoint>('.series-point').datum((d) =>
-      Object.assign(d, { creation: chartData })
-    );
+    s.selectAll('.series-point').dispatch('datachange');
 
     chartData.flipped = false;
     chartData.mainAxis.scale = chartData.mainScale;

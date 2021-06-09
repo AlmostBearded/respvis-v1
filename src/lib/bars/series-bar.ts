@@ -1,5 +1,5 @@
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
-import { BaseType, select, Selection } from 'd3-selection';
+import { BaseType, select, selection, Selection } from 'd3-selection';
 import { COLORS_CATEGORICAL, debug, nodeToString } from '../core';
 import { Rect, rectMinimized, rectToAttrs } from '../core/utility/rect';
 import { dataSeries, DataSeries } from '../core/series';
@@ -7,21 +7,7 @@ import { Size } from '../core/utils';
 import { Transition } from 'd3-transition';
 import { easeCubicOut } from 'd3-ease';
 
-export interface DataBar extends Rect {
-  index: number;
-  key: string;
-}
-
-export interface DataSeriesBarCustom extends DataSeries<DataBar> {}
-
-export function dataSeriesBarCustom(data?: Partial<DataSeriesBarCustom>): DataSeriesBarCustom {
-  return dataSeries({
-    data: data?.data,
-    key: data?.key || ((d, i) => d.key),
-  });
-}
-
-export interface DataBarsCreation {
+export interface DataSeriesBarCreation {
   mainValues: any[];
   mainScale: ScaleBand<any>;
   crossValues: number[];
@@ -30,11 +16,9 @@ export interface DataBarsCreation {
   flipped: boolean;
 }
 
-export interface DataSeriesBar extends DataSeriesBarCustom {
-  creation: DataBarsCreation;
-}
-
-export function dataBarsCreation(data?: Partial<DataBarsCreation>): DataBarsCreation {
+export function dataSeriesBarCreation(
+  data?: Partial<DataSeriesBarCreation>
+): DataSeriesBarCreation {
   return {
     mainValues: data?.mainValues || [],
     mainScale:
@@ -52,15 +36,12 @@ export function dataBarsCreation(data?: Partial<DataBarsCreation>): DataBarsCrea
   };
 }
 
-export function dataSeriesBar(creationData: DataBarsCreation): DataSeriesBar {
-  const seriesData: DataSeriesBar = {
-    ...dataSeriesBarCustom({ data: (s) => dataBars(seriesData.creation, s.bounds()!) }),
-    creation: creationData,
-  };
-  return seriesData;
+export interface DataBar extends Rect {
+  index: number;
+  key: string;
 }
 
-export function dataBars(creationData: DataBarsCreation, bounds: Size): DataBar[] {
+export function dataBars(creationData: DataSeriesBarCreation, bounds: Size): DataBar[] {
   if (!creationData.flipped) {
     creationData.mainScale.range([0, bounds.width]);
     creationData.crossScale.range([bounds.height, 0]);
@@ -98,9 +79,18 @@ export function dataBars(creationData: DataBarsCreation, bounds: Size): DataBar[
   return data;
 }
 
+export interface DataSeriesBar extends DataSeries<DataBar> {}
+
+export function dataSeriesBar(creationData: DataSeriesBarCreation): DataSeriesBar {
+  return dataSeries<DataBar>({
+    data: (s) => dataBars(creationData, s.bounds()!),
+    key: (d) => d.key,
+  });
+}
+
 export function seriesBar<
   GElement extends Element,
-  Datum extends DataSeriesBarCustom,
+  Datum extends DataSeries<DataBar>,
   PElement extends BaseType,
   PDatum
 >(
@@ -121,7 +111,7 @@ export function seriesBar<
       { once: true }
     )
     .on('render.seriesbar', function (e, d) {
-      seriesBarRender(select<GElement, DataSeriesBarCustom>(this));
+      seriesBarRender(select<GElement, Datum>(this));
     });
 }
 
@@ -133,7 +123,7 @@ export interface JoinTransitionEvent<GElement extends Element, Datum>
 
 export function seriesBarRender<
   GElement extends Element,
-  Datum extends DataSeriesBarCustom,
+  Datum extends DataSeries<DataBar>,
   PElement extends BaseType,
   PDatum
 >(

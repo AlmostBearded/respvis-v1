@@ -1,21 +1,11 @@
 import { range } from 'd3-array';
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { BaseType, Selection } from 'd3-selection';
-import { COLORS_CATEGORICAL } from '../core';
+import { COLORS_CATEGORICAL, dataSeries, DataSeries } from '../core';
 import { Size } from '../core/utils';
-import {
-  DataBar,
-  dataSeriesBarCustom,
-  DataSeriesBarCustom,
-  JoinEvent,
-  seriesBar,
-} from './series-bar';
+import { DataBar, JoinEvent, seriesBar } from './series-bar';
 
-export interface DataBarGrouped extends DataBar {
-  groupIndex: number;
-}
-
-export interface DataBarsGroupedCreation {
+export interface DataSeriesBarGroupedCreation {
   mainValues: any[];
   mainScale: ScaleBand<any>;
   innerPadding: number;
@@ -25,13 +15,9 @@ export interface DataBarsGroupedCreation {
   flipped: boolean;
 }
 
-export interface DataSeriesBarGrouped extends DataSeriesBarCustom {
-  creation: DataBarsGroupedCreation;
-}
-
-export function dataBarsGroupedCreation(
-  data?: Partial<DataBarsGroupedCreation>
-): DataBarsGroupedCreation {
+export function dataSeriesBarGroupedCreation(
+  data?: Partial<DataSeriesBarGroupedCreation>
+): DataSeriesBarGroupedCreation {
   return {
     mainValues: data?.mainValues || [],
     mainScale:
@@ -50,16 +36,12 @@ export function dataBarsGroupedCreation(
   };
 }
 
-export function dataSeriesBarGrouped(creationData: DataBarsGroupedCreation): DataSeriesBarGrouped {
-  const seriesData: DataSeriesBarGrouped = {
-    ...dataSeriesBarCustom({ data: (s) => dataBarsGrouped(seriesData.creation, s.bounds()!) }),
-    creation: creationData,
-  };
-  return seriesData;
+export interface DataBarGrouped extends DataBar {
+  groupIndex: number;
 }
 
 export function dataBarsGrouped(
-  creationData: DataBarsGroupedCreation,
+  creationData: DataSeriesBarGroupedCreation,
   bounds: Size
 ): DataBarGrouped[] {
   if (!creationData.flipped) {
@@ -107,6 +89,17 @@ export function dataBarsGrouped(
   }
 
   return data;
+}
+
+export interface DataSeriesBarGrouped extends DataSeries<DataBarGrouped> {}
+
+export function dataSeriesBarGrouped(
+  creationData: DataSeriesBarGroupedCreation
+): DataSeriesBarGrouped {
+  return dataSeries({
+    data: (s) => dataBarsGrouped(creationData, s.bounds()!),
+    key: (d) => d.key,
+  });
 }
 
 export function seriesBarGrouped<

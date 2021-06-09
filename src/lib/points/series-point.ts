@@ -12,24 +12,7 @@ import {
 } from '../core';
 import { Size } from '../core/utils';
 
-export interface DataPoint extends Position {
-  radius: number;
-  index: number;
-  key: string;
-}
-
-export interface DataSeriesPointCustom extends DataSeries<DataPoint> {}
-
-export function dataSeriesPointCustom(
-  data?: Partial<DataSeriesPointCustom>
-): DataSeriesPointCustom {
-  return dataSeries({
-    data: data?.data,
-    key: data?.key || ((d) => d.key),
-  });
-}
-
-export interface DataPointsCreation {
+export interface DataSeriesPointCreation {
   mainValues: any[];
   mainScale: ScaleAny<any, number, number>;
   crossValues: any[];
@@ -38,7 +21,9 @@ export interface DataPointsCreation {
   keys?: string[];
 }
 
-export function dataPointsCreation(data?: Partial<DataPointsCreation>): DataPointsCreation {
+export function dataSeriesPointCreation(
+  data?: Partial<DataSeriesPointCreation>
+): DataSeriesPointCreation {
   return {
     mainValues: data?.mainValues || [],
     mainScale: data?.mainScale || scaleLinear().domain([0, 1]),
@@ -49,19 +34,13 @@ export function dataPointsCreation(data?: Partial<DataPointsCreation>): DataPoin
   };
 }
 
-export interface DataSeriesPoint extends DataSeriesPointCustom {
-  creation: DataPointsCreation;
+export interface DataPoint extends Position {
+  radius: number;
+  index: number;
+  key: string;
 }
 
-export function dataSeriesPoint(creationData: DataPointsCreation): DataSeriesPoint {
-  const seriesData: DataSeriesPoint = {
-    ...dataSeriesPointCustom({ data: (s) => dataPoints(seriesData.creation, s.bounds()!) }),
-    creation: creationData,
-  };
-  return seriesData;
-}
-
-export function dataPoints(creationData: DataPointsCreation, bounds: Size): DataPoint[] {
+export function dataPoints(creationData: DataSeriesPointCreation, bounds: Size): DataPoint[] {
   creationData.mainScale.range([0, bounds.width]);
   creationData.crossScale.range([bounds.height, 0]);
 
@@ -83,9 +62,18 @@ export function dataPoints(creationData: DataPointsCreation, bounds: Size): Data
   return data;
 }
 
+export interface DataSeriesPoint extends DataSeries<DataPoint> {}
+
+export function dataSeriesPoint(creationData: DataSeriesPointCreation): DataSeriesPoint {
+  return dataSeries<DataPoint>({
+    data: (s) => dataPoints(creationData, s.bounds()!),
+    key: (d) => d.key,
+  });
+}
+
 export function seriesPoint<
   GElement extends Element,
-  Datum extends DataSeriesPointCustom,
+  Datum extends DataSeries<DataPoint>,
   PElement extends BaseType,
   PDatum
 >(
@@ -106,13 +94,13 @@ export function seriesPoint<
       { once: true }
     )
     .on('render.seriespoint', function (e, d) {
-      seriesPointRender(select<GElement, DataSeriesPointCustom>(this));
+      seriesPointRender(select<GElement, Datum>(this));
     });
 }
 
 export function seriesPointRender<
   GElement extends Element,
-  Datum extends DataSeriesPointCustom,
+  Datum extends DataSeries<DataPoint>,
   PElement extends BaseType,
   PDatum
 >(

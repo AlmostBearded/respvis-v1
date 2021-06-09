@@ -9,8 +9,8 @@ import {
 } from '../core/chart-cartesian';
 import { seriesBar } from './series-bar';
 import {
-  dataBarsGroupedCreation,
-  DataBarsGroupedCreation,
+  dataSeriesBarGroupedCreation,
+  DataSeriesBarGroupedCreation,
   DataSeriesBarGrouped,
   dataSeriesBarGrouped,
   seriesBarGrouped,
@@ -18,11 +18,11 @@ import {
 import { seriesLabel } from './series-label';
 import { dataLabelsBarCreation, dataSeriesLabelBar } from './series-label-bar';
 
-export interface DataChartBarGrouped extends DataBarsGroupedCreation, DataChartCartesian {}
+export interface DataChartBarGrouped extends DataSeriesBarGroupedCreation, DataChartCartesian {}
 
 export function dataChartBarGrouped(data?: Partial<DataChartBarGrouped>): DataChartBarGrouped {
   return {
-    ...dataBarsGroupedCreation(data),
+    ...dataSeriesBarGroupedCreation(data),
     ...dataChartCartesian(data),
   };
 }
@@ -38,13 +38,13 @@ export function chartBarGrouped<
   return selection
     .call((s) => chartCartesian(s, false))
     .classed('chart-bar-grouped', true)
-    .each((d, i, g) => {
+    .each((chartData, i, g) => {
       const drawArea = select<GElement, Datum>(g[i]).selectAll('.draw-area');
 
       const barSeries = drawArea
         .append('g')
         .layout('grid-area', '1 / 1')
-        .datum(dataSeriesBarGrouped(d))
+        .datum(dataSeriesBarGrouped(chartData))
         .call((s) => seriesBarGrouped(s));
 
       drawArea
@@ -73,9 +73,7 @@ export function chartBarGroupedDataChange<
   return selection.each(function (chartData, i, g) {
     const s = select<GElement, Datum>(g[i]);
 
-    s.selectAll<SVGElement, DataSeriesBarGrouped>('.series-bar-grouped').datum((d) =>
-      Object.assign(d, { creation: chartData })
-    );
+    s.selectAll('.series-bar-grouped').dispatch('datachange');
 
     chartData.mainAxis.scale = chartData.mainScale;
     chartData.crossAxis.scale = chartData.crossScale;

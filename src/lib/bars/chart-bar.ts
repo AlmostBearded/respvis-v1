@@ -8,8 +8,8 @@ import {
   DataChartCartesian,
 } from '../core/chart-cartesian';
 import {
-  DataBarsCreation,
-  dataBarsCreation,
+  DataSeriesBarCreation,
+  dataSeriesBarCreation,
   seriesBar,
   dataSeriesBar,
   DataSeriesBar,
@@ -17,11 +17,11 @@ import {
 import { seriesLabel } from './series-label';
 import { dataLabelsBarCreation, dataSeriesLabelBar } from './series-label-bar';
 
-export interface DataChartBar extends DataBarsCreation, DataChartCartesian {}
+export interface DataChartBar extends DataSeriesBarCreation, DataChartCartesian {}
 
 export function dataChartBar(data?: Partial<DataChartBar>): DataChartBar {
   return {
-    ...dataBarsCreation(data),
+    ...dataSeriesBarCreation(data),
     ...dataChartCartesian(data),
   };
 }
@@ -37,13 +37,13 @@ export function chartBar<
   return selection
     .call((s) => chartCartesian(s, false))
     .classed('chart-bar', true)
-    .each((d, i, g) => {
+    .each((chartData, i, g) => {
       const drawArea = select<GElement, Datum>(g[i]).selectAll('.draw-area');
 
       const barSeries = drawArea
         .append('g')
         .layout('grid-area', '1 / 1')
-        .datum(dataSeriesBar(d))
+        .datum(dataSeriesBar(chartData))
         .call((s) => seriesBar(s));
 
       drawArea
@@ -72,9 +72,7 @@ export function chartBarDataChange<
   return selection.each(function (chartData, i, g) {
     const s = select<GElement, Datum>(g[i]);
 
-    s.selectAll<SVGElement, DataSeriesBar>('.series-bar').datum((d) =>
-      Object.assign(d, { creation: chartData })
-    );
+    s.selectAll('.series-bar').dispatch('datachange');
 
     chartData.mainAxis.scale = chartData.mainScale;
     chartData.crossAxis.scale = chartData.crossScale;

@@ -1,20 +1,10 @@
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { BaseType, Selection } from 'd3-selection';
-import { COLORS_CATEGORICAL } from '../core';
+import { COLORS_CATEGORICAL, dataSeries, DataSeries } from '../core';
 import { Size } from '../core/utils';
-import {
-  DataBar,
-  dataSeriesBarCustom,
-  DataSeriesBarCustom,
-  JoinEvent,
-  seriesBar,
-} from './series-bar';
+import { DataBar, JoinEvent, seriesBar } from './series-bar';
 
-export interface DataBarStacked extends DataBar {
-  stackIndex: number;
-}
-
-export interface DataBarsStackedCreation {
+export interface DataSeriesBarStackedCreation {
   mainValues: any[];
   mainScale: ScaleBand<any>;
   innerPadding: number;
@@ -24,13 +14,9 @@ export interface DataBarsStackedCreation {
   flipped: boolean;
 }
 
-export interface DataSeriesBarStacked extends DataSeriesBarCustom {
-  creation: DataBarsStackedCreation;
-}
-
-export function dataBarsStackedCreation(
-  data?: Partial<DataBarsStackedCreation>
-): DataBarsStackedCreation {
+export function dataSeriesBarStackedCreation(
+  data?: Partial<DataSeriesBarStackedCreation>
+): DataSeriesBarStackedCreation {
   return {
     mainValues: data?.mainValues || [],
     mainScale:
@@ -52,16 +38,12 @@ export function dataBarsStackedCreation(
   };
 }
 
-export function dataSeriesBarStacked(creationData: DataBarsStackedCreation): DataSeriesBarStacked {
-  const seriesData: DataSeriesBarStacked = {
-    ...dataSeriesBarCustom({ data: (s) => dataBarsStacked(seriesData.creation, s.bounds()!) }),
-    creation: creationData,
-  };
-  return seriesData;
+export interface DataBarStacked extends DataBar {
+  stackIndex: number;
 }
 
 export function dataBarsStacked(
-  creationData: DataBarsStackedCreation,
+  creationData: DataSeriesBarStackedCreation,
   bounds: Size
 ): DataBarStacked[] {
   if (!creationData.flipped) {
@@ -106,6 +88,17 @@ export function dataBarsStacked(
     }
   }
   return data;
+}
+
+export interface DataSeriesBarStacked extends DataSeries<DataBarStacked> {}
+
+export function dataSeriesBarStacked(
+  creationData: DataSeriesBarStackedCreation
+): DataSeriesBarStacked {
+  return dataSeries({
+    data: (s) => dataBarsStacked(creationData, s.bounds()!),
+    key: (d) => d.key,
+  });
 }
 
 export function seriesBarStacked<
