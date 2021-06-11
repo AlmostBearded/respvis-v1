@@ -63,7 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Only dispatch 'render' event on nodes whose bounds have changed
 - Dispatch 'render' event when 'datachange' event occurs on specific nodes.
   - No need to manually rerender charts anymore.
-- Set cubic out easing on all render transitions.
+- Set cubic out (instead of cubic in out) easing on all render transitions.
 - Name all transitions so multiple transitions can be started concurrently.
 
 ### Removed
