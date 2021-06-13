@@ -1,11 +1,12 @@
 import { BaseType, select, Selection } from 'd3-selection';
-import { debug, nodeToString } from '../core';
+import { COLORS_CATEGORICAL, debug, nodeToString } from '../core';
 import {
   chartCartesian,
   chartCartesianUpdateAxes,
   dataChartCartesian,
   DataChartCartesian,
 } from '../core/chart-cartesian';
+import { dataLegendSquares, legend } from '../legend';
 import {
   dataSeriesBarStackedCreation,
   DataSeriesBarStackedCreation,
@@ -16,12 +17,17 @@ import {
 import { seriesLabel } from './series-label';
 import { dataLabelsBarCreation, dataSeriesLabelBar } from './series-label-bar';
 
-export interface DataChartBarStacked extends DataSeriesBarStackedCreation, DataChartCartesian {}
+export interface DataChartBarStacked extends DataSeriesBarStackedCreation, DataChartCartesian {
+  innerValues: string[];
+  colors: string[];
+}
 
 export function dataChartBarStacked(data?: Partial<DataChartBarStacked>): DataChartBarStacked {
   return {
     ...dataSeriesBarStackedCreation(data),
     ...dataChartCartesian(data),
+    innerValues: data?.innerValues || [],
+    colors: data?.colors || COLORS_CATEGORICAL,
   };
 }
 
@@ -38,13 +44,15 @@ export function chartBarStacked<
   return selection
     .call((s) => chartCartesian(s, false))
     .classed('chart-bar-stacked', true)
-    .each((d, i, g) => {
-      const drawArea = select<GElement, Datum>(g[i]).selectAll('.draw-area');
+    .layout('flex-direction', 'column-reverse')
+    .each((chartData, i, g) => {
+      const chart = select<GElement, Datum>(g[i]);
+      const drawArea = chart.selectAll('.draw-area');
 
       const barSeries = drawArea
         .append('g')
         .layout('grid-area', '1 / 1')
-        .datum(dataSeriesBarStacked(d))
+        .datum(dataSeriesBarStacked(chartData))
         .call((s) => seriesBarStacked(s));
 
       drawArea
@@ -52,6 +60,19 @@ export function chartBarStacked<
         .layout('grid-area', '1 / 1')
         .datum(dataSeriesLabelBar(dataLabelsBarCreation({ barContainer: barSeries })))
         .call((s) => seriesLabel(s));
+
+      chart
+        .append('g')
+        .classed('legend', true)
+        .datum(
+          dataLegendSquares({
+            labels: chartData.innerValues,
+            colors: chartData.colors,
+          })
+        )
+        .call((s) => legend(s))
+        .layout('margin', '0.5rem')
+        .layout('justify-content', 'flex-end');
     })
     .on('datachange.debuglog', function () {
       debug(`data change on ${nodeToString(this)}`);
@@ -74,6 +95,7 @@ export function chartBarStackedDataChange<
     const s = select<GElement, Datum>(g[i]);
 
     s.selectAll('.series-bar-stacked').dispatch('datachange');
+    s.selectAll('.legend').dispatch('datachange');
 
     chartData.mainAxis.scale = chartData.mainScale;
     chartData.crossAxis.scale = chartData.crossScale;

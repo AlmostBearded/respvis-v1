@@ -47,6 +47,7 @@
           crossValues: shares,
           crossScale: shareScale,
           keys: keys,
+          innerValues: platforms,
           mainAxis: {
             title: 'Year',
           },
@@ -58,6 +59,7 @@
         }),
         chart = layouter.append('svg').datum(chartDatum).call(respVis.chartBarStacked),
         barSeries = chart.selectAll('.series-bar'),
+        legend = chart.selectAll('.legend'),
         // .on('mouseover', (e) => hoverBar(e.target, true))
         // .on('mouseout', (e) => hoverBar(e.target, false)),
         // barColor = barSeries.attr('fill'),
@@ -74,8 +76,12 @@
 
       function configure() {
         chartDatum.flipped = true;
+        chart.layout('flex-direction', 'column-reverse');
+        legend.layout('flex-direction', 'row').layout('justify-content', 'flex-end');
         if (window.matchMedia(wideMediaQuery).matches) {
           chartDatum.flipped = false;
+          chart.layout('flex-direction', 'row');
+          legend.layout('flex-direction', 'column').layout('justify-content', 'flex-start');
         }
         chart.datum(chartDatum);
       }

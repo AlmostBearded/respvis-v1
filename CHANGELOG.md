@@ -14,7 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add cartesian chart component to handle flipping of axes.
 - Add legend component.
 - Add square symbol legend data function.
-- Add legend to grouped bar charts.
+- Add square legend to grouped bar charts.
+- Add square legend to stacked bar charts.
 
 ### Changed
 
