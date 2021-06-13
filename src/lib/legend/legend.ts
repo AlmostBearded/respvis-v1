@@ -20,6 +20,7 @@ export function legend<
     .layout('display', 'flex')
     .layout('flex-direction', 'row')
     .layout('justify-content', 'center')
+    .layout('align-items', 'flex-start')
     .on('datachange.legend', function () {
       debug(`data change on ${nodeToString(this)}`);
       select(this).dispatch('render');
