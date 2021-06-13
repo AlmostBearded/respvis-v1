@@ -1,13 +1,15 @@
 import { BaseType, select, Selection } from 'd3-selection';
 import { axisBottom, axisLeft, DataAxis, dataAxis } from '../axis';
-import { chart, debug, nodeToString } from '../core';
+import { chart, COLORS_CATEGORICAL, debug, nodeToString } from '../core';
 import {
   chartCartesian,
   chartCartesianUpdateAxes,
   dataChartCartesian,
   DataChartCartesian,
 } from '../core/chart-cartesian';
-import { seriesBar } from './series-bar';
+import { Stringable } from '../core/utils';
+import { dataLegendSquares, legend } from '../legend';
+import { DataBar, JoinEvent, seriesBar } from './series-bar';
 import {
   dataSeriesBarGroupedCreation,
   DataSeriesBarGroupedCreation,
@@ -18,12 +20,17 @@ import {
 import { seriesLabel } from './series-label';
 import { dataLabelsBarCreation, dataSeriesLabelBar } from './series-label-bar';
 
-export interface DataChartBarGrouped extends DataSeriesBarGroupedCreation, DataChartCartesian {}
+export interface DataChartBarGrouped extends DataSeriesBarGroupedCreation, DataChartCartesian {
+  innerValues: string[];
+  colors: string[];
+}
 
 export function dataChartBarGrouped(data?: Partial<DataChartBarGrouped>): DataChartBarGrouped {
   return {
     ...dataSeriesBarGroupedCreation(data),
     ...dataChartCartesian(data),
+    innerValues: data?.innerValues || [],
+    colors: data?.colors || COLORS_CATEGORICAL,
   };
 }
 
@@ -38,20 +45,38 @@ export function chartBarGrouped<
   return selection
     .call((s) => chartCartesian(s, false))
     .classed('chart-bar-grouped', true)
+    .layout('flex-direction', 'column-reverse')
     .each((chartData, i, g) => {
-      const drawArea = select<GElement, Datum>(g[i]).selectAll('.draw-area');
+      const chart = select<GElement, Datum>(g[i]);
+      const drawArea = chart.selectAll('.draw-area');
 
       const barSeries = drawArea
         .append('g')
         .layout('grid-area', '1 / 1')
         .datum(dataSeriesBarGrouped(chartData))
-        .call((s) => seriesBarGrouped(s));
+        .call((s) => seriesBarGrouped(s))
+        .on('barupdate', (e: JoinEvent<SVGRectElement, DataBar>) =>
+          e.detail.selection.attr('fill', (d) => chartData.colors[d.index])
+        );
 
       drawArea
         .append('g')
         .layout('grid-area', '1 / 1')
         .datum(dataSeriesLabelBar(dataLabelsBarCreation({ barContainer: barSeries })))
         .call((s) => seriesLabel(s));
+
+      chart
+        .append('g')
+        .classed('legend', true)
+        .datum(
+          dataLegendSquares({
+            labels: chartData.innerValues,
+            colors: chartData.colors,
+          })
+        )
+        .call((s) => legend(s))
+        .layout('margin', '0.5rem')
+        .layout('justify-content', 'flex-end');
     })
     .on('datachange.debuglog', function () {
       debug(`data change on ${nodeToString(this)}`);

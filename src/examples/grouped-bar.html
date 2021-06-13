@@ -39,6 +39,8 @@
         chartDatum = respVis.dataChartBarGrouped({
           mainValues: sites,
           crossValues: revenues,
+          innerValues: years,
+          colors: colors,
           mainAxis: {
             title: 'Site',
           },
@@ -48,11 +50,8 @@
           },
         }),
         chart = layouter.append('svg').datum(chartDatum).call(respVis.chartBarGrouped),
-        barSeries = chart
-          .selectAll('.series-bar')
-          .on('barenter', (e) =>
-            e.detail.selection.attr('fill', (d) => colorScale(years[d.index]))
-          ),
+        barSeries = chart.selectAll('.series-bar'),
+        legend = chart.selectAll('.legend'),
         // .on('mouseover', (e) => hoverBar(e.target, true))
         // .on('mouseout', (e) => hoverBar(e.target, false)),
         // barColor = barSeries.attr('fill'),
@@ -70,9 +69,13 @@
       function configure() {
         chartDatum.flipped = true;
         labelSeries.call(respVis.seriesLabelBarLeftConfig);
+        chart.layout('flex-direction', 'column-reverse');
+        legend.layout('flex-direction', 'row').layout('justify-content', 'flex-end');
         if (window.matchMedia(wideMediaQuery).matches) {
           chartDatum.flipped = false;
           labelSeries.call(respVis.seriesLabelBarTopConfig);
+          chart.layout('flex-direction', 'row');
+          legend.layout('flex-direction', 'column').layout('justify-content', 'flex-start');
         }
         chart.datum(chartDatum);
       }
