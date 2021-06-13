@@ -99,6 +99,7 @@ export function chartBarGroupedDataChange<
     const s = select<GElement, Datum>(g[i]);
 
     s.selectAll('.series-bar-grouped').dispatch('datachange');
+    s.selectAll('.legend').dispatch('datachange');
 
     chartData.mainAxis.scale = chartData.mainScale;
     chartData.crossAxis.scale = chartData.crossScale;
