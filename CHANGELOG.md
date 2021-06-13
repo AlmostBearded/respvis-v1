@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rename DataPointsCreation interface to DataSeriesPointCreation.
 - Wrap contents of cartesian charts into a chart container wrapper.
 - Show horizontal bar labels on the right in bar chart example.
+- Show horizontal bar labels on the right in grouped bar chart example.
 
 ### Removed
 

@@ -39,6 +39,10 @@
         chartDatum = respVis.dataChartBarGrouped({
           mainValues: sites,
           crossValues: revenues,
+          crossScale: d3
+            .scaleLinear()
+            .domain([0, Math.max(...revenues.flat()) * 1.05])
+            .nice(),
           innerValues: years,
           colors: colors,
           mainAxis: {
@@ -68,7 +72,7 @@
 
       function configure() {
         chartDatum.flipped = true;
-        labelSeries.call(respVis.seriesLabelBarLeftConfig);
+        labelSeries.call(respVis.seriesLabelBarRightConfig);
         chart.layout('flex-direction', 'column-reverse');
         legend.layout('flex-direction', 'row').layout('justify-content', 'flex-end');
         if (window.matchMedia(wideMediaQuery).matches) {
