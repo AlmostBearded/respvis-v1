@@ -32,23 +32,30 @@ export function chartCartesian<
     .call((s) => chart(s))
     .classed('chart-cartesian', true)
     .each((d, i, g) => {
-      const s = select<GElement, Datum>(g[i])
-        .layout('display', 'grid')
-        .layout('grid-template', '1fr auto / auto 1fr')
-        .layout('padding', '20px');
+      const s = select<GElement, Datum>(g[i]).layout('display', 'flex').layout('padding', '20px');
 
-      s.append('svg')
+      const container = s
+        .append('g')
+        .classed('chart-container', true)
+        .layout('flex', 1)
+        .layout('display', 'grid')
+        .layout('grid-template', '1fr auto / auto 1fr');
+
+      container
+        .append('svg')
         .classed('draw-area', true)
         .attr('overflow', 'visible')
         .layout('grid-area', '1 / 2')
         .layout('display', 'grid');
 
-      s.append('g')
+      container
+        .append('g')
         .datum((d) => dataAxis())
         .call((s) => axisLeft(s))
         .layout('grid-area', '1 / 1');
 
-      s.append('g')
+      container
+        .append('g')
         .datum((d) => dataAxis())
         .call((s) => axisBottom(s))
         .layout('grid-area', '2 / 2');

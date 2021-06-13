@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rename DataBarsGroupedCreation interface to DataSeriesBarGroupedCreation.
 - Rename DataBarsStackedCreation interface to DataSeriesBarStackedCreation.
 - Rename DataPointsCreation interface to DataSeriesPointCreation.
+- Wrap contents of cartesian charts into a chart container wrapper.
 
 ### Removed
 
