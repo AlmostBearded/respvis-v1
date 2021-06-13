@@ -1,5 +1,5 @@
 import { BaseType, create, select, Selection } from 'd3-selection';
-import { DataSeries, textHorizontalAttrs } from '../core';
+import { DataSeries, debug, nodeToString, textHorizontalAttrs } from '../core';
 
 export interface DataLegendItem {
   symbolTag: string;
@@ -20,7 +20,12 @@ export function legend<
     .layout('display', 'flex')
     .layout('flex-direction', 'row')
     .layout('justify-content', 'center')
-    .on('render.legend datachange.legend', function (e, d) {
+    .on('datachange.legend', function () {
+      debug(`data change on ${nodeToString(this)}`);
+      select(this).dispatch('render');
+    })
+    .on('render.legend', function (e, d) {
+      debug(`render legend on ${nodeToString(this)}`);
       const s = select<GElement, Datum>(this);
 
       s.selectAll<SVGGElement, DataLegendItem>('.item')
