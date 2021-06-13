@@ -1,38 +1,23 @@
 import { range } from 'd3-array';
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { BaseType, Selection } from 'd3-selection';
-import { COLORS_CATEGORICAL } from '../core';
+import { COLORS_CATEGORICAL, dataSeries, DataSeries } from '../core';
 import { Size } from '../core/utils';
-import {
-  DataBar,
-  dataSeriesBarCustom,
-  DataSeriesBarCustom,
-  JoinEvent,
-  Orientation,
-  seriesBar,
-} from './series-bar';
+import { DataBar, JoinEvent, seriesBar } from './series-bar';
 
-export interface DataBarGrouped extends DataBar {
-  groupIndex: number;
-}
-
-export interface DataBarsGroupedCreation {
+export interface DataSeriesBarGroupedCreation {
   mainValues: any[];
   mainScale: ScaleBand<any>;
   innerPadding: number;
   crossValues: number[][];
   crossScale: ScaleContinuousNumeric<number, number>;
   keys?: string[];
-  orientation: Orientation;
+  flipped: boolean;
 }
 
-export interface DataSeriesBarGrouped extends DataSeriesBarCustom {
-  creation: DataBarsGroupedCreation;
-}
-
-export function dataBarsGroupedCreation(
-  data?: Partial<DataBarsGroupedCreation>
-): DataBarsGroupedCreation {
+export function dataSeriesBarGroupedCreation(
+  data?: Partial<DataSeriesBarGroupedCreation>
+): DataSeriesBarGroupedCreation {
   return {
     mainValues: data?.mainValues || [],
     mainScale:
@@ -46,27 +31,23 @@ export function dataBarsGroupedCreation(
       scaleLinear()
         .domain([0, Math.max(...(data?.crossValues?.map((values) => Math.max(...values)) || []))])
         .nice(),
-    orientation: data?.orientation || Orientation.Vertical,
+    flipped: data?.flipped || false,
     innerPadding: data?.innerPadding || 0.1,
   };
 }
 
-export function dataSeriesBarGrouped(creationData: DataBarsGroupedCreation): DataSeriesBarGrouped {
-  const seriesData: DataSeriesBarGrouped = {
-    ...dataSeriesBarCustom({ data: (s) => dataBarsGrouped(seriesData.creation, s.bounds()!) }),
-    creation: creationData,
-  };
-  return seriesData;
+export interface DataBarGrouped extends DataBar {
+  groupIndex: number;
 }
 
 export function dataBarsGrouped(
-  creationData: DataBarsGroupedCreation,
+  creationData: DataSeriesBarGroupedCreation,
   bounds: Size
 ): DataBarGrouped[] {
-  if (creationData.orientation === Orientation.Vertical) {
+  if (!creationData.flipped) {
     creationData.mainScale.range([0, bounds.width]);
     creationData.crossScale.range([bounds.height, 0]);
-  } else if (creationData.orientation === Orientation.Horizontal) {
+  } else {
     creationData.mainScale.range([0, bounds.height]);
     creationData.crossScale.range([0, bounds.width]);
   }
@@ -83,7 +64,7 @@ export function dataBarsGrouped(
       const c = creationData.mainValues[i];
       const v = subcategoryValues[j];
 
-      if (creationData.orientation === Orientation.Vertical) {
+      if (!creationData.flipped) {
         data.push({
           groupIndex: i,
           index: j,
@@ -93,7 +74,7 @@ export function dataBarsGrouped(
           width: innerScale.bandwidth(),
           height: Math.abs(creationData.crossScale(0)! - creationData.crossScale(v)!),
         });
-      } else if (creationData.orientation === Orientation.Horizontal) {
+      } else {
         data.push({
           groupIndex: i,
           index: j,
@@ -110,6 +91,17 @@ export function dataBarsGrouped(
   return data;
 }
 
+export interface DataSeriesBarGrouped extends DataSeries<DataBarGrouped> {}
+
+export function dataSeriesBarGrouped(
+  creationData: DataSeriesBarGroupedCreation
+): DataSeriesBarGrouped {
+  return dataSeries({
+    data: (s) => dataBarsGrouped(creationData, s.bounds()!),
+    key: (d) => d.key,
+  });
+}
+
 export function seriesBarGrouped<
   GElement extends Element,
   Datum extends DataSeriesBarGrouped,
@@ -121,7 +113,7 @@ export function seriesBarGrouped<
   return seriesBar(selection)
     .classed('series-bar-grouped', true)
     .attr('fill', null)
-    .on('barenter', (e: JoinEvent<SVGRectElement, DataBarGrouped>) =>
+    .on('barenter.seriesbargrouped', (e: JoinEvent<SVGRectElement, DataBarGrouped>) =>
       e.detail.selection.attr('fill', (d) => COLORS_CATEGORICAL[d.index])
     );
 }

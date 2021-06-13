@@ -52,14 +52,20 @@
         layouter = root.append('div').call(respVis.layouter),
         chartDatum = respVis.dataChartPoint({
           mainValues: areas,
-          mainTitle: 'Area in ft²',
           mainScale: areaScale,
-          configureMainAxis: (a) => a.ticks(window.matchMedia(wideMediaQuery).matches ? 10 : 5),
           crossValues: prices,
-          crossTitle: 'Price in $1000',
           crossScale: priceScale,
           radiuses: 5,
           keys: areas.map((a, i) => i),
+          mainAxis: {
+            title: 'Area',
+            subtitle: '[ft²]',
+            configureAxis: (a) => a.ticks(window.matchMedia(wideMediaQuery).matches ? 10 : 5),
+          },
+          crossAxis: {
+            title: 'Price',
+            subtitle: '[1000 USD]',
+          },
         }),
         chart = layouter.append('svg').datum(chartDatum).call(respVis.chartPoint),
         zoom = d3

@@ -28,5 +28,5 @@ export function textTitleAttrs<GElement extends BaseType, Datum, PElement extend
   return selection
     .classed('title', true)
     .attr('font-size', '1.5em')
-    .attr('letter-spacing', '0.15em');
+    .attr('letter-spacing', '0.1em');
 }

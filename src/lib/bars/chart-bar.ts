@@ -1,17 +1,15 @@
 import { BaseType, select, Selection } from 'd3-selection';
 import { axisBottom, axisLeft, ConfigureAxisFn, dataAxis, DataAxis } from '../axis';
+import { chart, debug, nodeToString } from '../core';
 import {
-  chart,
-  debug,
-  nodeToString,
-  textHorizontalAttrs,
-  textTitleAttrs,
-  textVerticalAttrs,
-} from '../core';
+  chartCartesian,
+  chartCartesianUpdateAxes,
+  dataChartCartesian,
+  DataChartCartesian,
+} from '../core/chart-cartesian';
 import {
-  DataBarsCreation,
-  dataBarsCreation,
-  Orientation,
+  DataSeriesBarCreation,
+  dataSeriesBarCreation,
   seriesBar,
   dataSeriesBar,
   DataSeriesBar,
@@ -19,98 +17,66 @@ import {
 import { seriesLabel } from './series-label';
 import { dataLabelsBarCreation, dataSeriesLabelBar } from './series-label-bar';
 
-export interface DataChartBar extends DataBarsCreation {
-  configureMainAxis: ConfigureAxisFn;
-  mainTitle: string;
-  configureCrossAxis: ConfigureAxisFn;
-  crossTitle: string;
-}
+export interface DataChartBar extends DataSeriesBarCreation, DataChartCartesian {}
 
 export function dataChartBar(data?: Partial<DataChartBar>): DataChartBar {
   return {
-    ...dataBarsCreation(data),
-    configureMainAxis: data?.configureMainAxis || (() => {}),
-    mainTitle: data?.mainTitle || '',
-    configureCrossAxis: data?.configureCrossAxis || (() => {}),
-    crossTitle: data?.crossTitle || '',
+    ...dataSeriesBarCreation(data),
+    ...dataChartCartesian(data),
   };
 }
 
-export function chartBar<Datum extends DataChartBar, PElement extends BaseType, PDatum>(
-  selection: Selection<SVGSVGElement, Datum, PElement, PDatum>
-): Selection<SVGSVGElement, Datum, PElement, PDatum> {
-  return chart(selection)
+export function chartBar<
+  GElement extends SVGSVGElement | SVGGElement,
+  Datum extends DataChartBar,
+  PElement extends BaseType,
+  PDatum
+>(
+  selection: Selection<GElement, Datum, PElement, PDatum>
+): Selection<GElement, Datum, PElement, PDatum> {
+  return selection
+    .call((s) => chartCartesian(s, false))
     .classed('chart-bar', true)
-    .each((d, i, g) => {
-      const s = select<SVGSVGElement, Datum>(g[i])
-        .layout('display', 'grid')
-        .layout('grid-template', '1fr auto / auto 1fr')
-        .layout('padding', '20px');
-
-      const drawArea = s
-        .append('svg')
-        .classed('draw-area', true)
-        .attr('overflow', 'visible')
-        .layout('grid-area', '1 / 2 / 2 / 3')
-        .layout('display', 'grid');
+    .each((chartData, i, g) => {
+      const drawArea = select<GElement, Datum>(g[i]).selectAll('.draw-area');
 
       const barSeries = drawArea
         .append('g')
         .layout('grid-area', '1 / 1')
-        .datum((d) => dataSeriesBar(d))
+        .datum(dataSeriesBar(chartData))
         .call((s) => seriesBar(s));
 
       drawArea
         .append('g')
         .layout('grid-area', '1 / 1')
-        .datum((d) => dataSeriesLabelBar(dataLabelsBarCreation({ barContainer: barSeries })))
+        .datum(dataSeriesLabelBar(dataLabelsBarCreation({ barContainer: barSeries })))
         .call((s) => seriesLabel(s));
-
-      s.append('g')
-        .datum((d) => dataAxis())
-        .call((s) => axisLeft(s))
-        .layout('grid-area', '1 / 1 / 2 / 2');
-
-      s.append('g')
-        .datum((d) => dataAxis())
-        .call((s) => axisBottom(s))
-        .layout('grid-area', '2 / 2 / 3 / 3');
+    })
+    .on('datachange.debuglog', function () {
+      debug(`data change on ${nodeToString(this)}`);
     })
     .on('datachange.chartbar', function (e, chartData) {
-      debug(`data change on ${nodeToString(this)}`);
-      chartBarDataChange(select<SVGSVGElement, Datum>(this));
+      chartBarDataChange(select<GElement, Datum>(this));
     })
     .call((s) => chartBarDataChange(s));
 }
 
-export function chartBarDataChange<Datum extends DataChartBar, PElement extends BaseType, PDatum>(
-  selection: Selection<SVGSVGElement, Datum, PElement, PDatum>
-): Selection<SVGSVGElement, Datum, PElement, PDatum> {
+export function chartBarDataChange<
+  GElement extends SVGSVGElement | SVGGElement,
+  Datum extends DataChartBar,
+  PElement extends BaseType,
+  PDatum
+>(
+  selection: Selection<GElement, Datum, PElement, PDatum>
+): Selection<GElement, Datum, PElement, PDatum> {
   return selection.each(function (chartData, i, g) {
-    const s = select<SVGSVGElement, Datum>(g[i]);
+    const s = select<GElement, Datum>(g[i]);
 
-    s.selectAll<SVGElement, DataSeriesBar>('.series-bar').datum((d) =>
-      Object.assign(d, { creation: chartData })
-    );
+    s.selectAll('.series-bar').dispatch('datachange');
 
-    const axisConfig = (selection: Selection<Element, DataAxis>, main: boolean) =>
-      selection
-        .datum((d) =>
-          Object.assign(d, {
-            scale: main ? chartData.mainScale : chartData.crossScale,
-            title: main ? chartData.mainTitle : chartData.crossTitle,
-            configureAxis: main ? chartData.configureMainAxis : chartData.configureCrossAxis,
-          })
-        )
-        .classed('axis-main', main)
-        .classed('axis-cross', !main);
+    chartData.mainAxis.scale = chartData.mainScale;
+    chartData.crossAxis.scale = chartData.crossScale;
 
-    if (chartData.orientation === Orientation.Horizontal) {
-      s.selectAll<SVGGElement, DataAxis>('.axis-left').call((s) => axisConfig(s, true));
-      s.selectAll<SVGGElement, DataAxis>('.axis-bottom').call((s) => axisConfig(s, false));
-    } else {
-      s.selectAll<SVGGElement, DataAxis>('.axis-left').call((s) => axisConfig(s, false));
-      s.selectAll<SVGGElement, DataAxis>('.axis-bottom').call((s) => axisConfig(s, true));
-    }
+    chartCartesianUpdateAxes(s);
   });
 }

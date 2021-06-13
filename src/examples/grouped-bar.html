@@ -27,8 +27,9 @@
 
       const sites = data.sites,
         revenues = data.revenues,
-        formatRevenue = (value) => `${value}k`,
         years = data.years,
+        colors = ['#399283', '#8be8ad', '#214d4e'],
+        colorScale = d3.scaleOrdinal().domain(years).range(colors),
         keys = revenues.map((yearlyRevs, i) => yearlyRevs.map((_, j) => sites[i] + years[j]));
 
       const wideMediaQuery = 'screen and (min-width: 40rem)';
@@ -37,13 +38,20 @@
         layouter = root.append('div').call(respVis.layouter),
         chartDatum = respVis.dataChartBarGrouped({
           mainValues: sites,
-          mainTitle: 'Site',
           crossValues: revenues,
-          crossTitle: 'Revenue',
-          configureCrossAxis: (a) => a.tickFormat(formatRevenue),
+          innerValues: years,
+          colors: colors,
+          mainAxis: {
+            title: 'Site',
+          },
+          crossAxis: {
+            title: 'Revenue',
+            subtitle: '[Million USD]',
+          },
         }),
         chart = layouter.append('svg').datum(chartDatum).call(respVis.chartBarGrouped),
         barSeries = chart.selectAll('.series-bar'),
+        legend = chart.selectAll('.legend'),
         // .on('mouseover', (e) => hoverBar(e.target, true))
         // .on('mouseout', (e) => hoverBar(e.target, false)),
         // barColor = barSeries.attr('fill'),
@@ -51,7 +59,7 @@
         labelSeries = chart.selectAll('.series-label'),
         labelDatum = labelSeries.datum();
 
-      labelDatum.creation.labels = revenues.flat().map(formatRevenue);
+      labelDatum.creation.labels = revenues.flat();
 
       window.addEventListener('resize', configure);
       configure();
@@ -59,11 +67,15 @@
       // respVis.enableDebugLog(true);
 
       function configure() {
-        chartDatum.orientation = respVis.Orientation.Horizontal;
+        chartDatum.flipped = true;
         labelSeries.call(respVis.seriesLabelBarLeftConfig);
+        chart.layout('flex-direction', 'column-reverse');
+        legend.layout('flex-direction', 'row').layout('justify-content', 'flex-end');
         if (window.matchMedia(wideMediaQuery).matches) {
-          chartDatum.orientation = respVis.Orientation.Vertical;
+          chartDatum.flipped = false;
           labelSeries.call(respVis.seriesLabelBarTopConfig);
+          chart.layout('flex-direction', 'row');
+          legend.layout('flex-direction', 'column').layout('justify-content', 'flex-start');
         }
         chart.datum(chartDatum);
       }

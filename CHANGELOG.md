@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add [d3 legend](https://d3-legend.susielu.com/) library for usage in examples.
+- Add subtitles to axes.
+- Add cartesian chart component to handle flipping of axes.
+- Add legend component.
+- Add square symbol legend data function.
+- Add square legend to grouped bar charts.
+- Add square legend to stacked bar charts.
+
+### Changed
+
+- Set custom colors in grouped bar example.
+- Set sans-serif font family on whole chart.
+- Decrease font-size of axis titles.
+- Make bar chart a subcomponent of cartesian chart.
+- Make grouped bar chart a subcomponent of cartesian chart.
+- Make stacked bar chart a subcomponent of cartesian chart.
+- Make point chart a subcomponent of cartesian chart.
+- Use flipped property of cartesian charts to flip bar charts.
+- Rename DataBarsCreation interface to DataSeriesBarCreation.
+- Rename DataBarsGroupedCreation interface to DataSeriesBarGroupedCreation.
+- Rename DataBarsStackedCreation interface to DataSeriesBarStackedCreation.
+- Rename DataPointsCreation interface to DataSeriesPointCreation.
+- Wrap contents of cartesian charts into a chart container wrapper.
+
+### Removed
+
+- Remove bar orientation enum.
+- Remove orientation property from bar series and bar charts data.
+- Remove DataSeriesBarCustom interface & dataSeriesBarCustom function.
+- Remove DataSeriesPointCustom interface & dataSeriesPointCustom function.
+- Remove creation property from bar series data.
+- Remove creation property from grouped bar series data.
+- Remove creation property from stacked bar series data.
+- Remove creation property from point series data.
+
+### Fixed
+
+- Fix dataAxis function ignoring passed in title and subtitle properties.
+
 ## [0.1.0] - 2021-06-02
 
 ### Added
@@ -27,7 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Only dispatch 'render' event on nodes whose bounds have changed
 - Dispatch 'render' event when 'datachange' event occurs on specific nodes.
   - No need to manually rerender charts anymore.
-- Set cubic out easing on all render transitions.
+- Set cubic out (instead of cubic in out) easing on all render transitions.
 - Name all transitions so multiple transitions can be started concurrently.
 
 ### Removed

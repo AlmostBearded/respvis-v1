@@ -44,15 +44,22 @@
         layouter = root.append('div').call(respVis.layouter),
         chartDatum = respVis.dataChartBarStacked({
           mainValues: years,
-          mainTitle: 'Year',
           crossValues: shares,
-          crossTitle: 'Market Share',
           crossScale: shareScale,
-          configureCrossAxis: (a) => a.tickFormat(formatShare),
           keys: keys,
+          innerValues: platforms,
+          mainAxis: {
+            title: 'Year',
+          },
+          crossAxis: {
+            title: 'Market Share',
+            subtitle: '[%]',
+            configureAxis: (a) => a.tickFormat(formatShare),
+          },
         }),
         chart = layouter.append('svg').datum(chartDatum).call(respVis.chartBarStacked),
         barSeries = chart.selectAll('.series-bar'),
+        legend = chart.selectAll('.legend'),
         // .on('mouseover', (e) => hoverBar(e.target, true))
         // .on('mouseout', (e) => hoverBar(e.target, false)),
         // barColor = barSeries.attr('fill'),
@@ -68,9 +75,13 @@
       // respVis.enableDebugLog(true);
 
       function configure() {
-        chartDatum.orientation = respVis.Orientation.Horizontal;
+        chartDatum.flipped = true;
+        chart.layout('flex-direction', 'column-reverse');
+        legend.layout('flex-direction', 'row').layout('justify-content', 'flex-end');
         if (window.matchMedia(wideMediaQuery).matches) {
-          chartDatum.orientation = respVis.Orientation.Vertical;
+          chartDatum.flipped = false;
+          chart.layout('flex-direction', 'row');
+          legend.layout('flex-direction', 'column').layout('justify-content', 'flex-start');
         }
         chart.datum(chartDatum);
       }

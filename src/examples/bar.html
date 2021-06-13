@@ -29,9 +29,7 @@
       import data from './data/austrian-cities.js';
 
       const cities = data.cities,
-        populations = data.populations.map((p) => Math.round(p / 1000)),
-        formatPopulation = (p) => `${p}k`,
-        configurePopulationAxis = (a) => a.tickFormat(formatPopulation);
+        populations = data.populations.map((p) => Math.round(p / 1000));
 
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
@@ -39,10 +37,14 @@
         layouter = root.append('div').call(respVis.layouter),
         chartDatum = respVis.dataChartBar({
           mainValues: cities,
-          mainTitle: 'City',
           crossValues: populations,
-          crossTitle: 'Population',
-          configureCrossAxis: configurePopulationAxis,
+          mainAxis: {
+            title: 'City',
+          },
+          crossAxis: {
+            title: 'Population',
+            subtitle: '[1000 People]',
+          },
         }),
         chart = layouter.append('svg').datum(chartDatum).call(respVis.chartBar),
         barSeries = chart
@@ -54,18 +56,18 @@
         labelSeries = chart.selectAll('.series-label'),
         labelDatum = labelSeries.datum();
 
-      labelDatum.creation.labels = populations.map(formatPopulation);
+      labelDatum.creation.labels = populations;
 
       window.addEventListener('resize', configure);
       configure();
 
-      // respVis.enableDebugLog(true);
+      respVis.enableDebugLog(true);
 
       function configure() {
-        chartDatum.orientation = respVis.Orientation.Horizontal;
+        chartDatum.flipped = true;
         labelSeries.call(respVis.seriesLabelBarLeftConfig);
         if (window.matchMedia(wideMediaQuery).matches) {
-          chartDatum.orientation = respVis.Orientation.Vertical;
+          chartDatum.flipped = false;
           labelSeries.call(respVis.seriesLabelBarTopConfig);
         }
         chart.datum(chartDatum);

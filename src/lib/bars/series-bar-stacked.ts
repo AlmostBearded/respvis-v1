@@ -1,37 +1,22 @@
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { BaseType, Selection } from 'd3-selection';
-import { COLORS_CATEGORICAL } from '../core';
+import { COLORS_CATEGORICAL, dataSeries, DataSeries } from '../core';
 import { Size } from '../core/utils';
-import {
-  DataBar,
-  dataSeriesBarCustom,
-  DataSeriesBarCustom,
-  JoinEvent,
-  Orientation,
-  seriesBar,
-} from './series-bar';
+import { DataBar, JoinEvent, seriesBar } from './series-bar';
 
-export interface DataBarStacked extends DataBar {
-  stackIndex: number;
-}
-
-export interface DataBarsStackedCreation {
+export interface DataSeriesBarStackedCreation {
   mainValues: any[];
   mainScale: ScaleBand<any>;
   innerPadding: number;
   crossValues: number[][];
   crossScale: ScaleContinuousNumeric<number, number>;
   keys?: string[];
-  orientation: Orientation;
+  flipped: boolean;
 }
 
-export interface DataSeriesBarStacked extends DataSeriesBarCustom {
-  creation: DataBarsStackedCreation;
-}
-
-export function dataBarsStackedCreation(
-  data?: Partial<DataBarsStackedCreation>
-): DataBarsStackedCreation {
+export function dataSeriesBarStackedCreation(
+  data?: Partial<DataSeriesBarStackedCreation>
+): DataSeriesBarStackedCreation {
   return {
     mainValues: data?.mainValues || [],
     mainScale:
@@ -48,27 +33,23 @@ export function dataBarsStackedCreation(
           Math.max(...(data?.crossValues?.map((values) => values.reduce((a, b) => a + b)) || [])),
         ])
         .nice(),
-    orientation: data?.orientation || Orientation.Vertical,
+    flipped: data?.flipped || false,
     innerPadding: data?.innerPadding || 0.1,
   };
 }
 
-export function dataSeriesBarStacked(creationData: DataBarsStackedCreation): DataSeriesBarStacked {
-  const seriesData: DataSeriesBarStacked = {
-    ...dataSeriesBarCustom({ data: (s) => dataBarsStacked(seriesData.creation, s.bounds()!) }),
-    creation: creationData,
-  };
-  return seriesData;
+export interface DataBarStacked extends DataBar {
+  stackIndex: number;
 }
 
 export function dataBarsStacked(
-  creationData: DataBarsStackedCreation,
+  creationData: DataSeriesBarStackedCreation,
   bounds: Size
 ): DataBarStacked[] {
-  if (creationData.orientation === Orientation.Vertical) {
+  if (!creationData.flipped) {
     creationData.mainScale.range([0, bounds.width]);
     creationData.crossScale.range([bounds.height, 0]);
-  } else if (creationData.orientation === Orientation.Horizontal) {
+  } else {
     creationData.mainScale.range([0, bounds.height]);
     creationData.crossScale.range([0, bounds.width]);
   }
@@ -81,7 +62,7 @@ export function dataBarsStacked(
       const c = creationData.mainValues[i];
       const v = subcategoryValues[j];
 
-      if (creationData.orientation === Orientation.Vertical) {
+      if (!creationData.flipped) {
         data.push({
           stackIndex: i,
           index: j,
@@ -92,7 +73,7 @@ export function dataBarsStacked(
           height: Math.abs(creationData.crossScale(0)! - creationData.crossScale(v)!),
         });
         sum += data[data.length - 1].height;
-      } else if (creationData.orientation === Orientation.Horizontal) {
+      } else {
         data.push({
           stackIndex: i,
           index: j,
@@ -107,6 +88,17 @@ export function dataBarsStacked(
     }
   }
   return data;
+}
+
+export interface DataSeriesBarStacked extends DataSeries<DataBarStacked> {}
+
+export function dataSeriesBarStacked(
+  creationData: DataSeriesBarStackedCreation
+): DataSeriesBarStacked {
+  return dataSeries({
+    data: (s) => dataBarsStacked(creationData, s.bounds()!),
+    key: (d) => d.key,
+  });
 }
 
 export function seriesBarStacked<
