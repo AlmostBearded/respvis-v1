@@ -65,7 +65,7 @@
 
       function configure() {
         chartDatum.flipped = true;
-        labelSeries.call(respVis.seriesLabelBarLeftConfig);
+        labelSeries.call(respVis.seriesLabelBarRightConfig);
         if (window.matchMedia(wideMediaQuery).matches) {
           chartDatum.flipped = false;
           labelSeries.call(respVis.seriesLabelBarTopConfig);
