@@ -64,12 +64,14 @@
       respVis.enableDebugLog(true);
 
       function configure() {
-        chartDatum.flipped = true;
-        labelSeries.call(respVis.seriesLabelBarRightConfig);
-        if (window.matchMedia(wideMediaQuery).matches) {
-          chartDatum.flipped = false;
-          labelSeries.call(respVis.seriesLabelBarTopConfig);
-        }
+        const narrow = !window.matchMedia(wideMediaQuery).matches;
+        const flippedBars = narrow;
+        const labelConfig = narrow
+          ? respVis.seriesLabelBarRightConfig
+          : respVis.seriesLabelBarTopConfig;
+
+        chartDatum.flipped = flippedBars;
+        labelSeries.call(labelConfig);
         chart.datum(chartDatum);
       }
 

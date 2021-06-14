@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Wrap contents of cartesian charts into a chart container wrapper.
 - Show horizontal bar labels on the right in bar chart example.
 - Show horizontal bar labels on the right in grouped bar chart example.
+- Configure components only once in the configure function.
 
 ### Removed
 
@@ -50,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix dataAxis function ignoring passed in title and subtitle properties.
+- Fix bar label jittering in Firefox
 
 ## [0.1.0] - 2021-06-02
 
