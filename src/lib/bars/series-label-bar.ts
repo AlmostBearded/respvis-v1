@@ -1,5 +1,5 @@
 import { BaseType, select, Selection } from 'd3-selection';
-import { Position, Rect, rectCenter, rectLeft, rectTop } from '../core';
+import { Position, Rect, rectCenter, rectLeft, rectRight, rectTop } from '../core';
 import { DataBar } from './series-bar';
 import { DataLabel, dataSeriesLabel, DataSeriesLabel } from './series-label';
 
@@ -70,9 +70,27 @@ export function seriesLabelBarLeftConfig<
   return selection
     .attr('text-anchor', 'start')
     .attr('dominant-baseline', 'middle')
-    .layout('margin', '0 0 0 5px')
+    .layout('margin', '0 0 0 0.25em')
     .datum((d) => {
       d.creation.positionFromRect = rectLeft;
+      return d;
+    });
+}
+
+export function seriesLabelBarRightConfig<
+  GElement extends Element,
+  Datum extends DataSeriesLabelBar,
+  PElement extends BaseType,
+  PDatum
+>(
+  selection: Selection<GElement, Datum, PElement, PDatum>
+): Selection<GElement, Datum, PElement, PDatum> {
+  return selection
+    .attr('text-anchor', 'start')
+    .attr('dominant-baseline', 'middle')
+    .layout('margin', '0 0 0 0.25em')
+    .datum((d) => {
+      d.creation.positionFromRect = rectRight;
       return d;
     });
 }
@@ -88,7 +106,7 @@ export function seriesLabelBarTopConfig<
   return selection
     .attr('text-anchor', 'middle')
     .attr('dominant-baseline', 'auto')
-    .layout('margin', '-5px 0 0 0')
+    .layout('margin', '-0.25em 0 0 0')
     .datum((d) => {
       d.creation.positionFromRect = rectTop;
       return d;

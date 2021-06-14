@@ -45,39 +45,48 @@ export function axisLeft<
 >(
   selection: Selection<GElement, Datum, PElement, PDatum>
 ): Selection<GElement, Datum, PElement, PDatum> {
-  return axis(selection)
-    .classed('axis-left', true)
-    .layout('display', 'flex')
-    .layout('flex-direction', 'row')
-    .layout('justify-content', 'flex-start')
-    .call((s) =>
-      s.selectAll<SVGTextElement, unknown>('.subtitle').call((title) => textVerticalAttrs(title))
-    )
-    .call((s) =>
-      s
-        .selectAll<SVGTextElement, unknown>('.title')
-        .layout('margin-right', '0.5em')
-        .call((title) => textVerticalAttrs(title))
-        .call((title) => textTitleAttrs(title))
-        .raise()
-    )
-    .call((s) =>
-      s
-        .selectAll('.ticks-transform')
-        .layout('width', 'fit')
-        .layout('height', '100%')
-        .raise()
-        .selectAll('.ticks')
-        .layout('width', '100%')
-        .layout('height', '100%')
-        .layout('margin-left', '100%')
-    )
-    .on('render.axisleft', function (e, d) {
-      axisLeftTransition(
-        select<GElement, DataAxis>(this).transition('axis').duration(0).ease(easeCubicOut)
-      );
-    })
-    .dispatch('render');
+  return (
+    axis(selection)
+      .classed('axis-left', true)
+      // .layout('display', 'grid')
+      // .layout('grid-template', 'auto auto 1fr / auto auto')
+      .layout('display', 'flex')
+      .layout('flex-direction', 'row')
+      .layout('justify-content', 'flex-start')
+      .call(
+        (s) =>
+          s
+            .selectAll<SVGTextElement, unknown>('.subtitle')
+            .call((title) => textVerticalAttrs(title)) //.layout('grid-area', '2 / 1'))
+      )
+      .call((s) =>
+        s
+          .selectAll<SVGTextElement, unknown>('.title')
+          .layout('margin-right', '0.5em')
+          // .layout('grid-area', '1 / 1')
+          .call((title) => textVerticalAttrs(title))
+          .call((title) => textTitleAttrs(title))
+          .raise()
+      )
+      .call((s) =>
+        s
+          .selectAll('.ticks-transform')
+          // .layout('grid-area', '1 / 2 / 3')
+          .layout('width', 'fit')
+          .layout('height', '100%')
+          .raise()
+          .selectAll('.ticks')
+          .layout('width', '100%')
+          .layout('height', '100%')
+          .layout('margin-left', '100%')
+      )
+      .on('render.axisleft', function (e, d) {
+        axisLeftTransition(
+          select<GElement, DataAxis>(this).transition('axis').duration(0).ease(easeCubicOut)
+        );
+      })
+      .dispatch('render')
+  );
 }
 
 export function axisLeftTransition<
