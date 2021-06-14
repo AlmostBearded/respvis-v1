@@ -75,14 +75,19 @@
       // respVis.enableDebugLog(true);
 
       function configure() {
-        chartDatum.flipped = true;
-        chart.layout('flex-direction', 'column-reverse');
-        legend.layout('flex-direction', 'row').layout('justify-content', 'flex-end');
-        if (window.matchMedia(wideMediaQuery).matches) {
-          chartDatum.flipped = false;
-          chart.layout('flex-direction', 'row');
-          legend.layout('flex-direction', 'column').layout('justify-content', 'flex-start');
-        }
+        const narrow = !window.matchMedia(wideMediaQuery).matches;
+        const flippedBars = narrow;
+        const chartFlexDirection = narrow ? 'column-reverse' : 'row';
+        const legendFlexDirection = narrow ? 'row' : 'column';
+        const legendJustifyContent = narrow ? 'flex-end' : 'flex-start';
+
+        chartDatum.flipped = flippedBars;
+
+        chart.layout('flex-direction', chartFlexDirection);
+        legend
+          .layout('flex-direction', legendFlexDirection)
+          .layout('justify-content', legendJustifyContent);
+
         chart.datum(chartDatum);
       }
     </script>
