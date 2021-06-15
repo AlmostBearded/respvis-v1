@@ -15,15 +15,3 @@ export const COLORS_CATEGORICAL = [
   '#e49c4f',
   '#a665e4',
 ];
-
-export function brighten(hexColor: string, factor: number): string {
-  return chroma.hex(hexColor).brighten(factor).hex();
-}
-
-export function darken(hexColor: string, factor: number): string {
-  return chroma.hex(hexColor).darken(factor).hex();
-}
-
-export function desaturate(hexColor: string, factor: number): string {
-  return chroma.hex(hexColor).desaturate(factor).hex();
-}

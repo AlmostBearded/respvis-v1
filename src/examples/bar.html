@@ -24,6 +24,7 @@
     <h1>Bar Chart</h1>
     <div id="chart"></div>
     <script src="./vendor/d3.v6.js"></script>
+    <script src="./vendor/chroma.min.js"></script>
     <script src="../respvis.js"></script>
     <script type="module">
       import data from './data/austrian-cities.js';
@@ -52,7 +53,7 @@
           .on('mouseover', (e) => hoverBar(e.target, true))
           .on('mouseout', (e) => hoverBar(e.target, false)),
         barColor = barSeries.attr('fill'),
-        barHighlightColor = respVis.brighten(barColor, 0.5),
+        barHighlightColor = chroma.hex(barColor).brighten(0.5).hex(),
         labelSeries = chart.selectAll('.series-label'),
         labelDatum = labelSeries.datum();
 
