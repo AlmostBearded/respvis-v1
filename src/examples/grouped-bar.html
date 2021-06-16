@@ -62,8 +62,7 @@
         highlightFilterUrl = `url(#${highlightFilter.attr('id')})`,
         barSeries = chart
           .selectAll('.series-bar')
-          .on('mouseover', (e) => hoverBar(e.target, true))
-          .on('mouseout', (e) => hoverBar(e.target, false)),
+          .on('mouseover mouseout', (e) => hoverBar(e.target, e.type.endsWith('over'))),
         legend = chart.selectAll('.legend'),
         labelSeries = chart.selectAll('.series-label'),
         labelDatum = labelSeries.datum();
@@ -94,6 +93,11 @@
           .layout('justify-content', legendJustifyContent);
 
         chart.datum(chartDatum);
+
+        // main axis switches, so register listeners after chart reconfiguration
+        chart
+          .selectAll('.axis-main .tick')
+          .on('mouseover mouseout', (e) => hoverAxisTick(e.currentTarget, e.type.endsWith('over')));
       }
 
       function highlightBar(groupIndex, barIndex, highlight) {
@@ -142,16 +146,24 @@
         highlightAxisTick(datum.groupIndex, hover);
 
         highlightLegendItem(datum.index, hover);
+      }
 
-        // selection.attr('fill', hover ? chroma.brighten(colorScale(years[datum.index])) : null);
-        // labelSeries
-        //   .selectAll('.label')
-        //   .filter((d) => d.key === datum.key)
-        //   .attr('font-size', hover ? '1.1em' : null);
-        // chart
-        //   .selectAll('.axis-main .tick')
-        //   .filter((d, i) => i === datum.index)
-        //   .attr('text-decoration', hover ? 'underline' : null);
+      function axisTickIndex(element) {
+        let tickIndex = 0;
+        let sibling = element;
+        while ((sibling = sibling.previousElementSibling))
+          if (sibling.classList.contains('tick')) tickIndex++;
+        return tickIndex;
+      }
+
+      function hoverAxisTick(element, hover) {
+        const tickIndex = axisTickIndex(element);
+
+        years.forEach((y, i) => {
+          highlightBar(tickIndex, i, hover);
+          highlightLabel(tickIndex * years.length + i, hover);
+        });
+        highlightAxisTick(tickIndex, hover);
       }
 
       // // needed to toggle years
