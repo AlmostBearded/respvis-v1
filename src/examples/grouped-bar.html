@@ -61,7 +61,6 @@
           .datum(chartDatum)
           .call(respVis.chartBarGrouped)
           .on('datachange', () => {
-            chart.selectAll('.axis .tick').on('mouseover mouseout', null);
             chart
               .selectAll('.axis-main .tick')
               .on('mouseover mouseout', (e) =>
