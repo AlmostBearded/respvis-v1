@@ -135,17 +135,11 @@
       }
 
       function hoverBar(element, hover) {
-        const selection = d3.select(element);
-        const datum = selection.datum();
-
-        highlightBar(datum.groupIndex, datum.index, hover);
-
-        const labelIndex = datum.groupIndex * years.length + datum.index;
-        highlightLabel(labelIndex, hover);
-
-        highlightAxisTick(datum.groupIndex, hover);
-
-        highlightLegendItem(datum.index, hover);
+        const barDatum = d3.select(element).datum();
+        highlightBar(barDatum.groupIndex, barDatum.index, hover);
+        highlightLabel(barDatum.groupIndex * years.length + barDatum.index, hover);
+        highlightAxisTick(barDatum.groupIndex, hover);
+        highlightLegendItem(barDatum.index, hover);
       }
 
       function axisTickIndex(element) {
@@ -158,7 +152,6 @@
 
       function hoverAxisTick(element, hover) {
         const tickIndex = axisTickIndex(element);
-
         years.forEach((y, i) => {
           highlightBar(tickIndex, i, hover);
           highlightLabel(tickIndex * years.length + i, hover);
