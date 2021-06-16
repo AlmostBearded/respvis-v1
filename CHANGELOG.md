@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add square legend to stacked bar charts.
 - Add seriesLabelBarRightConfig function to configure right bar labels.
 - Add chroma.js library as external library for examples.
+- Add brightness filter.
 
 ### Changed
 
@@ -37,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Show horizontal bar labels on the right in bar chart example.
 - Show horizontal bar labels on the right in grouped bar chart example.
 - Configure components only once in the configure function.
+- Highlight bars using a brightness filter.
 
 ### Removed
 
