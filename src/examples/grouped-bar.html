@@ -78,7 +78,7 @@
         barSeries = chart
           .selectAll('.series-bar')
           .on('mouseover mouseout', (e) => hoverBar(e.target, e.type.endsWith('over'))),
-        legend = chart.selectAll('.legend'),
+        legend = chart.selectAll('.legend').attr('cursor', 'default'),
         labelSeries = chart.selectAll('.series-label'),
         labelDatum = labelSeries.datum();
 
