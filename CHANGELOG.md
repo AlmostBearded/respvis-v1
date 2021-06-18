@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add square legend to grouped bar charts.
 - Add square legend to stacked bar charts.
 - Add seriesLabelBarRightConfig function to configure right bar labels.
+- Add chroma.js library as external library for examples.
+- Add brightness filter.
+- Grouped bar chart example:
+  - Highlight grouped bars on hover.
+  - Highlight all grouped bars in category on hover over main axis tick.
+  - Highlight all grouped bars with subcategory on hover over legend item.
 
 ### Changed
 
@@ -36,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Show horizontal bar labels on the right in bar chart example.
 - Show horizontal bar labels on the right in grouped bar chart example.
 - Configure components only once in the configure function.
+- Highlight bars using a brightness filter.
 
 ### Removed
 
@@ -47,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove creation property from grouped bar series data.
 - Remove creation property from stacked bar series data.
 - Remove creation property from point series data.
+- Remove chroma.js dependency and the corresponding color functions.
 
 ### Fixed
 
@@ -75,6 +83,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - No need to manually rerender charts anymore.
 - Set cubic out (instead of cubic in out) easing on all render transitions.
 - Name all transitions so multiple transitions can be started concurrently.
+- Use chroma.js in bar chart example to brighten bar colors on hover.
 
 ### Removed
 

@@ -21,6 +21,7 @@
 
     <div id="chart"></div>
     <script src="./vendor/d3.v6.js"></script>
+    <script src="./vendor/chroma.min.js"></script>
     <script src="../respvis.js"></script>
     <script type="module">
       import data from './data/company.js';
@@ -28,7 +29,9 @@
       const sites = data.sites,
         revenues = data.revenues,
         years = data.years,
-        colors = ['#399283', '#8be8ad', '#214d4e'],
+        colors = ['#4f8c9d', '#e23209', '#539322'],
+        highlightedColors = colors.map((c) => chroma.hex(c).brighten(0.25).hex()),
+        activeColors = [...colors],
         colorScale = d3.scaleOrdinal().domain(years).range(colors),
         keys = revenues.map((yearlyRevs, i) => yearlyRevs.map((_, j) => sites[i] + years[j]));
 
@@ -43,8 +46,9 @@
             .scaleLinear()
             .domain([0, Math.max(...revenues.flat()) * 1.05])
             .nice(),
+          legendTitle: 'Years',
           innerValues: years,
-          colors: colors,
+          colors: activeColors,
           mainAxis: {
             title: 'Site',
           },
@@ -53,13 +57,29 @@
             subtitle: '[Million USD]',
           },
         }),
-        chart = layouter.append('svg').datum(chartDatum).call(respVis.chartBarGrouped),
-        barSeries = chart.selectAll('.series-bar'),
-        legend = chart.selectAll('.legend'),
-        // .on('mouseover', (e) => hoverBar(e.target, true))
-        // .on('mouseout', (e) => hoverBar(e.target, false)),
-        // barColor = barSeries.attr('fill'),
-        // barHighlightColor = respVis.brighten(barColor, 0.5),
+        chart = layouter
+          .append('svg')
+          .datum(chartDatum)
+          .call(respVis.chartBarGrouped)
+          .on('datachange', () => {
+            chart
+              .selectAll('.axis-main .tick')
+              .on('mouseover mouseout', (e) =>
+                hoverAxisTick(e.currentTarget, e.type.endsWith('over'))
+              );
+            chart
+              .selectAll('.legend .item')
+              .on('mouseover mouseout', (e) =>
+                hoverLegendItem(e.currentTarget, e.type.endsWith('over'))
+              );
+          }),
+        defs = chart.append('defs'),
+        highlightFilter = defs.append('filter').call(respVis.filterBrightness, 1.3),
+        highlightFilterUrl = `url(#${highlightFilter.attr('id')})`,
+        barSeries = chart
+          .selectAll('.series-bar')
+          .on('mouseover mouseout', (e) => hoverBar(e.target, e.type.endsWith('over'))),
+        legend = chart.selectAll('.legend').attr('cursor', 'default'),
         labelSeries = chart.selectAll('.series-label'),
         labelDatum = labelSeries.datum();
 
@@ -77,18 +97,87 @@
           ? respVis.seriesLabelBarRightConfig
           : respVis.seriesLabelBarTopConfig;
         const chartFlexDirection = narrow ? 'column-reverse' : 'row';
-        const legendFlexDirection = narrow ? 'row' : 'column';
-        const legendJustifyContent = narrow ? 'flex-end' : 'flex-start';
+        const legendAlignSelf = narrow ? 'flex-end' : 'flex-start';
+        const legendItemsFlexDirection = narrow ? 'row' : 'column';
 
         chartDatum.flipped = flippedBars;
         labelSeries.call(labelConfig);
 
         chart.layout('flex-direction', chartFlexDirection);
+
         legend
-          .layout('flex-direction', legendFlexDirection)
-          .layout('justify-content', legendJustifyContent);
+          .layout('align-self', legendAlignSelf)
+          .selectAll('.items')
+          .layout('flex-direction', legendItemsFlexDirection);
 
         chart.datum(chartDatum);
+      }
+
+      function highlightBar(groupIndex, barIndex, highlight) {
+        barSeries
+          .selectAll('.bar')
+          .filter((d) => d.groupIndex === groupIndex && d.index === barIndex)
+          .attr('filter', highlight ? highlightFilterUrl : null);
+      }
+
+      function highlightLabel(index, highlight) {
+        labelSeries
+          .selectAll('.label')
+          .filter((d, i) => i === index)
+          .attr('font-size', highlight ? '1.2em' : null)
+          .attr('text-decoration', highlight ? 'underline' : null);
+      }
+
+      function highlightAxisTick(index, highlight) {
+        chart
+          .selectAll('.axis-main .tick')
+          .filter((d, i) => i === index)
+          .attr('text-decoration', highlight ? 'underline' : null);
+      }
+
+      function highlightLegendItem(index, highlight) {
+        legend
+          .selectAll('.item')
+          .filter((d, i) => i === index)
+          .call((item) =>
+            item.selectAll('.symbol').attr('filter', highlight ? highlightFilterUrl : null)
+          )
+          .call((item) =>
+            item.selectAll('.label').attr('text-decoration', highlight ? 'underline' : null)
+          );
+      }
+
+      function hoverBar(element, hover) {
+        const barDatum = d3.select(element).datum();
+        highlightBar(barDatum.groupIndex, barDatum.index, hover);
+        highlightLabel(barDatum.groupIndex * years.length + barDatum.index, hover);
+        highlightAxisTick(barDatum.groupIndex, hover);
+        highlightLegendItem(barDatum.index, hover);
+      }
+
+      function siblingIndex(element) {
+        let tickIndex = 0;
+        let sibling = element;
+        while ((sibling = sibling.previousElementSibling)) tickIndex++;
+        return tickIndex;
+      }
+
+      function hoverAxisTick(element, hover) {
+        const tickIndex = siblingIndex(element) - 1; // -1 because domain is 1st sibling
+        years.forEach((_, i) => {
+          highlightBar(tickIndex, i, hover);
+          highlightLabel(tickIndex * years.length + i, hover);
+        });
+        highlightAxisTick(tickIndex, hover);
+      }
+
+      function hoverLegendItem(element, hover) {
+        const itemIndex = siblingIndex(element);
+        sites.forEach((_, siteIndex) => {
+          highlightBar(siteIndex, itemIndex, hover);
+          highlightLabel(siteIndex * years.length + itemIndex, hover);
+        });
+        highlightLegendItem(itemIndex, hover);
       }
 
       // // needed to toggle years

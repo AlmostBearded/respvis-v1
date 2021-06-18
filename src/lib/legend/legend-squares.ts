@@ -1,14 +1,15 @@
-import { DataSeries } from '../core';
-import { DataLegendItem } from './legend';
+import { DataLegend, DataLegendItem } from './legend';
 
 export interface DataLegendSquares {
+  title: string;
   labels: string[];
   colors: string | string[] | ((label: string) => string);
   sizes: string | string[] | ((label: string) => string);
 }
 
-export function dataLegendSquares(data: Partial<DataLegendSquares>): DataSeries<DataLegendItem> {
+export function dataLegendSquares(data: Partial<DataLegendSquares>): DataLegend {
   return {
+    title: data.title || '',
     data: (s) => {
       const labels = data?.labels || [];
 

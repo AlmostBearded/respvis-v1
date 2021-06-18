@@ -101,10 +101,8 @@ export function axisLeftTransition<
     debug(`transition left axis on ${nodeToString(g[i])}`);
     const s = select(g[i]);
     const t = s.transition(transition);
-    axisTransition(t, d3Axis(d3AxisLeft, d), d.title, d.subtitle)
-      .selectAll('.ticks text')
-      .attr('dy', null)
-      .attr('dominant-baseline', 'middle');
+    axisTransition(t, d3Axis(d3AxisLeft, d), d.title, d.subtitle);
+    s.selectAll('.tick text').attr('dy', null).attr('dominant-baseline', 'middle');
   });
 }
 
@@ -150,15 +148,9 @@ export function axisBottomTransition<
 ): Transition<GElement, Datum, PElement, PDatum> {
   return transition.each((d, i, g) => {
     debug(`transition bottom axis on ${nodeToString(g[i])}`);
-    axisTransition(
-      select(g[i]).transition(transition),
-      d3Axis(d3AxisBottom, d),
-      d.title,
-      d.subtitle
-    )
-      .selectAll('.tick text')
-      .attr('dy', null)
-      .attr('dominant-baseline', 'hanging');
+    const s = select(g[i]);
+    axisTransition(s.transition(transition), d3Axis(d3AxisBottom, d), d.title, d.subtitle);
+    s.selectAll('.tick text').attr('dy', null).attr('dominant-baseline', 'hanging');
   });
 }
 
