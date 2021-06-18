@@ -1,5 +1,9 @@
 import { BaseType, create, select, Selection } from 'd3-selection';
-import { DataSeries, debug, nodeToString, textHorizontalAttrs } from '../core';
+import { DataSeries, debug, nodeToString, textHorizontalAttrs, textTitleAttrs } from '../core';
+
+export interface DataLegend extends DataSeries<DataLegendItem> {
+  title: string;
+}
 
 export interface DataLegendItem {
   symbolTag: string;
@@ -9,7 +13,7 @@ export interface DataLegendItem {
 
 export function legend<
   GElement extends SVGSVGElement | SVGGElement,
-  Datum extends DataSeries<DataLegendItem>,
+  Datum extends DataLegend,
   PElement extends BaseType,
   PDatum
 >(
@@ -18,9 +22,26 @@ export function legend<
   return selection
     .classed('legend', true)
     .layout('display', 'flex')
-    .layout('flex-direction', 'row')
-    .layout('justify-content', 'center')
-    .layout('align-items', 'flex-start')
+    .layout('flex-direction', 'column')
+    .layout('align-items', 'center')
+    .attr('font-size', '0.8em') // todo: font size incosistent with 0.7em used mostly everywhere else
+    .call((legend) =>
+      legend
+        .append('text')
+        .classed('title', true)
+        .layout('margin', '0 0.5em')
+        .call((s) => textHorizontalAttrs(s))
+        .call((s) => textTitleAttrs(s))
+    )
+    .call((legend) =>
+      legend
+        .append('g')
+        .classed('items', true)
+        .layout('display', 'flex')
+        .layout('flex-direction', 'row')
+        .layout('justify-content', 'center')
+        .layout('align-items', 'flex-start')
+    )
     .on('datachange.legend', function () {
       debug(`data change on ${nodeToString(this)}`);
       select(this).dispatch('render');
@@ -29,7 +50,10 @@ export function legend<
       debug(`render legend on ${nodeToString(this)}`);
       const s = select<GElement, Datum>(this);
 
-      s.selectAll<SVGGElement, DataLegendItem>('.item')
+      s.selectAll('.title').text(d.title);
+
+      s.selectAll('.items')
+        .selectAll<SVGGElement, DataLegendItem>('.item')
         .data(d.data instanceof Function ? d.data(s) : d.data, d.key)
         .join((enter) =>
           enter

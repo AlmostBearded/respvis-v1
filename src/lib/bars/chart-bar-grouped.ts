@@ -21,6 +21,7 @@ import { seriesLabel } from './series-label';
 import { dataLabelsBarCreation, dataSeriesLabelBar } from './series-label-bar';
 
 export interface DataChartBarGrouped extends DataSeriesBarGroupedCreation, DataChartCartesian {
+  legendTitle: string;
   innerValues: string[];
   colors: string[];
 }
@@ -29,6 +30,7 @@ export function dataChartBarGrouped(data?: Partial<DataChartBarGrouped>): DataCh
   return {
     ...dataSeriesBarGroupedCreation(data),
     ...dataChartCartesian(data),
+    legendTitle: data?.legendTitle || '',
     innerValues: data?.innerValues || [],
     colors: data?.colors || COLORS_CATEGORICAL,
   };
@@ -70,6 +72,7 @@ export function chartBarGrouped<
         .classed('legend', true)
         .datum(
           dataLegendSquares({
+            title: chartData.legendTitle,
             labels: chartData.innerValues,
             colors: chartData.colors,
           })

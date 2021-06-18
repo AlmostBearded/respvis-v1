@@ -46,6 +46,7 @@
             .scaleLinear()
             .domain([0, Math.max(...revenues.flat()) * 1.05])
             .nice(),
+          legendTitle: 'Years',
           innerValues: years,
           colors: activeColors,
           mainAxis: {
@@ -96,16 +97,18 @@
           ? respVis.seriesLabelBarRightConfig
           : respVis.seriesLabelBarTopConfig;
         const chartFlexDirection = narrow ? 'column-reverse' : 'row';
-        const legendFlexDirection = narrow ? 'row' : 'column';
-        const legendJustifyContent = narrow ? 'flex-end' : 'flex-start';
+        const legendAlignSelf = narrow ? 'flex-end' : 'flex-start';
+        const legendItemsFlexDirection = narrow ? 'row' : 'column';
 
         chartDatum.flipped = flippedBars;
         labelSeries.call(labelConfig);
 
         chart.layout('flex-direction', chartFlexDirection);
+
         legend
-          .layout('flex-direction', legendFlexDirection)
-          .layout('justify-content', legendJustifyContent);
+          .layout('align-self', legendAlignSelf)
+          .selectAll('.items')
+          .layout('flex-direction', legendItemsFlexDirection);
 
         chart.datum(chartDatum);
       }
