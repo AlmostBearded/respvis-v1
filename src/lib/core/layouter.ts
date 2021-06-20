@@ -23,6 +23,13 @@ export function dataLayouter(layouter: HTMLDivElement): DataLayouter {
       .call((s) => layoutNodeStyleAttr(s))
       .each((d, i, g) => layoutNodeBounds(select(g[i])) && renderQueueEnqueue(d));
 
+    select(layouter)
+      .selectChildren('[layout]')
+      .call((s) => {
+        const bounds = s.bounds()!;
+        s.style('left', bounds.x).style('top', bounds.y).attr('x', null).attr('y', null);
+      });
+
     renderQueueRender();
   });
 
