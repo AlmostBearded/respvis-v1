@@ -28,12 +28,12 @@ export interface DataAxis {
   configureAxis: ConfigureAxisFn;
 }
 
-export function dataAxis(data?: Partial<DataAxis>): DataAxis {
+export function dataAxis(data: Partial<DataAxis>): DataAxis {
   return {
-    scale: data?.scale || scaleLinear().domain([0, 1]).range([0, 600]),
-    title: data?.title || '',
-    subtitle: data?.subtitle || '',
-    configureAxis: data?.configureAxis || (() => {}),
+    scale: data.scale || scaleLinear().domain([0, 1]).range([0, 600]),
+    title: data.title || '',
+    subtitle: data.subtitle || '',
+    configureAxis: data.configureAxis || (() => {}),
   };
 }
 

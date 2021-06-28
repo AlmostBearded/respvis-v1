@@ -1,38 +1,32 @@
 import { BaseType, select, Selection } from 'd3-selection';
-import { axisBottom, axisLeft, DataAxis, dataAxis } from '../axis';
-import { chart, COLORS_CATEGORICAL, debug, nodeToString } from '../core';
+import { COLORS_CATEGORICAL, debug, nodeToString } from '../core';
 import {
   chartCartesian,
   chartCartesianUpdateAxes,
   dataChartCartesian,
   DataChartCartesian,
 } from '../core/chart-cartesian';
-import { Stringable } from '../core/utils';
-import { dataLegendSquares, legend } from '../legend';
+import { DataLegendSquares, dataLegendSquares, legend } from '../legend';
 import { DataBar, JoinEvent, seriesBar } from './series-bar';
-import {
-  dataSeriesBarGroupedCreation,
-  DataSeriesBarGroupedCreation,
-  DataSeriesBarGrouped,
-  dataSeriesBarGrouped,
-  seriesBarGrouped,
-} from './series-bar-grouped';
+import { DataSeriesBarGrouped, dataSeriesBarGrouped, seriesBarGrouped } from './series-bar-grouped';
 import { seriesLabel } from './series-label';
-import { dataLabelsBarCreation, dataSeriesLabelBar } from './series-label-bar';
+import { dataSeriesLabelBar } from './series-label-bar';
 
-export interface DataChartBarGrouped extends DataSeriesBarGroupedCreation, DataChartCartesian {
-  legendTitle: string;
-  innerValues: string[];
+export interface DataChartBarGrouped extends DataSeriesBarGrouped, DataChartCartesian {
+  legend: DataLegendSquares;
   colors: string[];
 }
 
-export function dataChartBarGrouped(data?: Partial<DataChartBarGrouped>): DataChartBarGrouped {
+export type DataChartBarGroupedInput = Omit<Partial<DataChartBarGrouped>, 'legend'> & {
+  legend?: Partial<DataLegendSquares>;
+};
+
+export function dataChartBarGrouped(data: DataChartBarGroupedInput): DataChartBarGrouped {
   return {
-    ...dataSeriesBarGroupedCreation(data),
+    ...dataSeriesBarGrouped(data),
     ...dataChartCartesian(data),
-    legendTitle: data?.legendTitle || '',
-    innerValues: data?.innerValues || [],
-    colors: data?.colors || COLORS_CATEGORICAL,
+    legend: dataLegendSquares(data.legend || {}),
+    colors: data.colors || COLORS_CATEGORICAL,
   };
 }
 
@@ -55,7 +49,7 @@ export function chartBarGrouped<
       const barSeries = drawArea
         .append('g')
         .layout('grid-area', '1 / 1')
-        .datum(dataSeriesBarGrouped(chartData))
+        .datum(chartData)
         .call((s) => seriesBarGrouped(s))
         .on('barupdate', (e: JoinEvent<SVGRectElement, DataBar>) =>
           e.detail.selection.attr('fill', (d) => chartData.colors[d.index])
@@ -64,19 +58,13 @@ export function chartBarGrouped<
       drawArea
         .append('g')
         .layout('grid-area', '1 / 1')
-        .datum(dataSeriesLabelBar(dataLabelsBarCreation({ barContainer: barSeries })))
+        .datum(dataSeriesLabelBar({ barContainer: barSeries }))
         .call((s) => seriesLabel(s));
 
       chart
         .append('g')
         .classed('legend', true)
-        .datum(
-          dataLegendSquares({
-            title: chartData.legendTitle,
-            labels: chartData.innerValues,
-            colors: chartData.colors,
-          })
-        )
+        .datum(chartData.legend)
         .call((s) => legend(s))
         .layout('margin', '0.5rem')
         .layout('justify-content', 'flex-end');
@@ -102,11 +90,12 @@ export function chartBarGroupedDataChange<
     const s = select<GElement, Datum>(g[i]);
 
     s.selectAll('.series-bar-grouped').dispatch('datachange');
+
+    chartData.legend.colors = chartData.colors;
     s.selectAll('.legend').dispatch('datachange');
 
     chartData.mainAxis.scale = chartData.mainScale;
     chartData.crossAxis.scale = chartData.crossScale;
-
     chartCartesianUpdateAxes(s);
   });
 }

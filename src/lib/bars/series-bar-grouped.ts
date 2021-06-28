@@ -1,11 +1,15 @@
 import { range } from 'd3-array';
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { BaseType, Selection } from 'd3-selection';
-import { COLORS_CATEGORICAL, dataSeries, DataSeries } from '../core';
+import { COLORS_CATEGORICAL, DataSeriesGenerator } from '../core';
 import { Size } from '../core/utils';
 import { DataBar, JoinEvent, seriesBar } from './series-bar';
 
-export interface DataSeriesBarGroupedCreation {
+export interface DataBarGrouped extends DataBar {
+  groupIndex: number;
+}
+
+export interface DataSeriesBarGrouped extends DataSeriesGenerator<DataBarGrouped> {
   mainValues: any[];
   mainScale: ScaleBand<any>;
   innerPadding: number;
@@ -15,73 +19,69 @@ export interface DataSeriesBarGroupedCreation {
   flipped: boolean;
 }
 
-export function dataSeriesBarGroupedCreation(
-  data?: Partial<DataSeriesBarGroupedCreation>
-): DataSeriesBarGroupedCreation {
+export function dataSeriesBarGrouped(data: Partial<DataSeriesBarGrouped>): DataSeriesBarGrouped {
   return {
-    mainValues: data?.mainValues || [],
+    mainValues: data.mainValues || [],
     mainScale:
-      data?.mainScale ||
+      data.mainScale ||
       scaleBand()
-        .domain(data?.mainValues || [])
+        .domain(data.mainValues || [])
         .padding(0.1),
-    crossValues: data?.crossValues || [],
+    crossValues: data.crossValues || [],
     crossScale:
-      data?.crossScale ||
+      data.crossScale ||
       scaleLinear()
-        .domain([0, Math.max(...(data?.crossValues?.map((values) => Math.max(...values)) || []))])
+        .domain([0, Math.max(...(data.crossValues?.map((values) => Math.max(...values)) || []))])
         .nice(),
-    flipped: data?.flipped || false,
-    innerPadding: data?.innerPadding || 0.1,
+    flipped: data.flipped || false,
+    innerPadding: data.innerPadding || 0.1,
+    dataGenerator: data.dataGenerator || dataBarGroupedGenerator,
   };
 }
 
-export interface DataBarGrouped extends DataBar {
-  groupIndex: number;
-}
-
-export function dataBarsGrouped(
-  creationData: DataSeriesBarGroupedCreation,
-  bounds: Size
+export function dataBarGroupedGenerator(
+  selection: Selection<Element, DataSeriesBarGrouped>
 ): DataBarGrouped[] {
-  if (!creationData.flipped) {
-    creationData.mainScale.range([0, bounds.width]);
-    creationData.crossScale.range([bounds.height, 0]);
+  const seriesDatum = selection.datum(),
+    bounds = selection.bounds()!;
+  if (!seriesDatum.flipped) {
+    seriesDatum.mainScale.range([0, bounds.width]);
+    seriesDatum.crossScale.range([bounds.height, 0]);
   } else {
-    creationData.mainScale.range([0, bounds.height]);
-    creationData.crossScale.range([0, bounds.width]);
+    seriesDatum.mainScale.range([0, bounds.height]);
+    seriesDatum.crossScale.range([0, bounds.width]);
   }
 
   const innerScale = scaleBand<number>()
-    .domain(range(creationData.crossValues[0]?.length || 0))
-    .range([0, creationData.mainScale.bandwidth()])
-    .padding(creationData.innerPadding);
+    .domain(range(seriesDatum.crossValues[0]?.length || 0))
+    .range([0, seriesDatum.mainScale.bandwidth()])
+    .padding(seriesDatum.innerPadding);
 
   const data: DataBarGrouped[] = [];
-  for (let i = 0; i < creationData.crossValues.length; ++i) {
-    const subcategoryValues = creationData.crossValues[i];
+  for (let i = 0; i < seriesDatum.crossValues.length; ++i) {
+    const subcategoryValues = seriesDatum.crossValues[i];
     for (let j = 0; j < subcategoryValues.length; ++j) {
-      const c = creationData.mainValues[i];
+      const c = seriesDatum.mainValues[i];
       const v = subcategoryValues[j];
 
-      if (!creationData.flipped) {
+      if (!seriesDatum.flipped) {
         data.push({
           groupIndex: i,
           index: j,
-          key: creationData.keys?.[i][j] || `${i}/${j}`,
-          x: creationData.mainScale(c)! + innerScale(j)!,
-          y: Math.min(creationData.crossScale(0)!, creationData.crossScale(v)!),
+          key: seriesDatum.keys?.[i][j] || `${i}/${j}`,
+          x: seriesDatum.mainScale(c)! + innerScale(j)!,
+          y: Math.min(seriesDatum.crossScale(0)!, seriesDatum.crossScale(v)!),
           width: innerScale.bandwidth(),
-          height: Math.abs(creationData.crossScale(0)! - creationData.crossScale(v)!),
+          height: Math.abs(seriesDatum.crossScale(0)! - seriesDatum.crossScale(v)!),
         });
       } else {
         data.push({
           groupIndex: i,
           index: j,
-          key: creationData.keys?.[i][j] || `${i}/${j}`,
-          x: Math.min(creationData.crossScale(0)!, creationData.crossScale(v)!),
-          y: creationData.mainScale(c)! + innerScale(j)!,
-          width: Math.abs(creationData.crossScale(0)! - creationData.crossScale(v)!),
+          key: seriesDatum.keys?.[i][j] || `${i}/${j}`,
+          x: Math.min(seriesDatum.crossScale(0)!, seriesDatum.crossScale(v)!),
+          y: seriesDatum.mainScale(c)! + innerScale(j)!,
+          width: Math.abs(seriesDatum.crossScale(0)! - seriesDatum.crossScale(v)!),
           height: innerScale.bandwidth(),
         });
       }
@@ -89,17 +89,6 @@ export function dataBarsGrouped(
   }
 
   return data;
-}
-
-export interface DataSeriesBarGrouped extends DataSeries<DataBarGrouped> {}
-
-export function dataSeriesBarGrouped(
-  creationData: DataSeriesBarGroupedCreation
-): DataSeriesBarGrouped {
-  return dataSeries({
-    data: (s) => dataBarsGrouped(creationData, s.bounds()!),
-    key: (d) => d.key,
-  });
 }
 
 export function seriesBarGrouped<

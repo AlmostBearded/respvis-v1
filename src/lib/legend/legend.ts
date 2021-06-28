@@ -1,14 +1,20 @@
 import { BaseType, create, select, Selection } from 'd3-selection';
-import { DataSeries, debug, nodeToString, textHorizontalAttrs, textTitleAttrs } from '../core';
-
-export interface DataLegend extends DataSeries<DataLegendItem> {
-  title: string;
-}
+import {
+  DataSeriesGenerator,
+  debug,
+  nodeToString,
+  textHorizontalAttrs,
+  textTitleAttrs,
+} from '../core';
 
 export interface DataLegendItem {
   symbolTag: string;
   symbolAttributes: { name: string; value: string }[];
   label: string;
+}
+
+export interface DataLegend extends DataSeriesGenerator<DataLegendItem> {
+  title: string;
 }
 
 export function legend<
@@ -54,7 +60,7 @@ export function legend<
 
       s.selectAll('.items')
         .selectAll<SVGGElement, DataLegendItem>('.item')
-        .data(d.data instanceof Function ? d.data(s) : d.data, d.key)
+        .data(d.dataGenerator(s), (d) => d.label)
         .join((enter) =>
           enter
             .append('g')

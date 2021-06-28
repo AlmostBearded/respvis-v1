@@ -56,6 +56,10 @@
             title: 'Revenue',
             subtitle: '[Million USD]',
           },
+          legend: {
+            title: 'Years',
+            labels: years,
+          },
         }),
         chart = layouter
           .append('svg')
@@ -83,7 +87,7 @@
         labelSeries = chart.selectAll('.series-label'),
         labelDatum = labelSeries.datum();
 
-      labelDatum.creation.labels = revenues.flat();
+      labelDatum.labels = revenues.flat();
 
       window.addEventListener('resize', configure);
       configure();

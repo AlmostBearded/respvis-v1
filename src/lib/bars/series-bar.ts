@@ -1,13 +1,16 @@
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { BaseType, select, selection, Selection } from 'd3-selection';
-import { COLORS_CATEGORICAL, debug, nodeToString } from '../core';
+import { COLORS_CATEGORICAL, DataSeriesGenerator, debug, nodeToString } from '../core';
 import { Rect, rectMinimized, rectToAttrs } from '../core/utility/rect';
-import { dataSeries, DataSeries } from '../core/series';
-import { Size } from '../core/utils';
 import { Transition } from 'd3-transition';
 import { easeCubicOut } from 'd3-ease';
 
-export interface DataSeriesBarCreation {
+export interface DataBar extends Rect {
+  index: number;
+  key: string;
+}
+
+export interface DataSeriesBar extends DataSeriesGenerator<DataBar> {
   mainValues: any[];
   mainScale: ScaleBand<any>;
   crossValues: number[];
@@ -16,81 +19,68 @@ export interface DataSeriesBarCreation {
   flipped: boolean;
 }
 
-export function dataSeriesBarCreation(
-  data?: Partial<DataSeriesBarCreation>
-): DataSeriesBarCreation {
+export function dataSeriesBar(data: Partial<DataSeriesBar>): DataSeriesBar {
   return {
-    mainValues: data?.mainValues || [],
+    mainValues: data.mainValues || [],
     mainScale:
-      data?.mainScale ||
+      data.mainScale ||
       scaleBand()
-        .domain(data?.mainValues || [])
+        .domain(data.mainValues || [])
         .padding(0.1),
-    crossValues: data?.crossValues || [],
+    crossValues: data.crossValues || [],
     crossScale:
-      data?.crossScale ||
+      data.crossScale ||
       scaleLinear()
-        .domain([0, Math.max(...(data?.crossValues || []))])
+        .domain([0, Math.max(...(data.crossValues || []))])
         .nice(),
-    flipped: data?.flipped || false,
+    flipped: data.flipped || false,
+    dataGenerator: data.dataGenerator || dataBarGenerator,
   };
 }
 
-export interface DataBar extends Rect {
-  index: number;
-  key: string;
-}
-
-export function dataBars(creationData: DataSeriesBarCreation, bounds: Size): DataBar[] {
-  if (!creationData.flipped) {
-    creationData.mainScale.range([0, bounds.width]);
-    creationData.crossScale.range([bounds.height, 0]);
+export function dataBarGenerator(selection: Selection<Element, DataSeriesBar>): DataBar[] {
+  const seriesDatum = selection.datum(),
+    bounds = selection.bounds()!;
+  if (!seriesDatum.flipped) {
+    seriesDatum.mainScale.range([0, bounds.width]);
+    seriesDatum.crossScale.range([bounds.height, 0]);
   } else {
-    creationData.mainScale.range([0, bounds.height]);
-    creationData.crossScale.range([0, bounds.width]);
+    seriesDatum.mainScale.range([0, bounds.height]);
+    seriesDatum.crossScale.range([0, bounds.width]);
   }
 
   const data: DataBar[] = [];
 
-  for (let i = 0; i < creationData.crossValues.length; ++i) {
-    const mv = creationData.mainValues[i];
-    const cv = creationData.crossValues[i];
+  for (let i = 0; i < seriesDatum.crossValues.length; ++i) {
+    const mv = seriesDatum.mainValues[i];
+    const cv = seriesDatum.crossValues[i];
 
-    if (!creationData.flipped) {
+    if (!seriesDatum.flipped) {
       data.push({
         index: i,
-        key: creationData.keys?.[i] || i.toString(),
-        x: creationData.mainScale(mv)!,
-        y: Math.min(creationData.crossScale(0)!, creationData.crossScale(cv)!),
-        width: creationData.mainScale.bandwidth(),
-        height: Math.abs(creationData.crossScale(0)! - creationData.crossScale(cv)!),
+        key: seriesDatum.keys?.[i] || i.toString(),
+        x: seriesDatum.mainScale(mv)!,
+        y: Math.min(seriesDatum.crossScale(0)!, seriesDatum.crossScale(cv)!),
+        width: seriesDatum.mainScale.bandwidth(),
+        height: Math.abs(seriesDatum.crossScale(0)! - seriesDatum.crossScale(cv)!),
       });
     } else {
       data.push({
         index: i,
-        key: creationData.keys?.[i] || i.toString(),
-        x: Math.min(creationData.crossScale(0)!, creationData.crossScale(cv)!),
-        y: creationData.mainScale(mv)!,
-        width: Math.abs(creationData.crossScale(0)! - creationData.crossScale(cv)!),
-        height: creationData.mainScale.bandwidth(),
+        key: seriesDatum.keys?.[i] || i.toString(),
+        x: Math.min(seriesDatum.crossScale(0)!, seriesDatum.crossScale(cv)!),
+        y: seriesDatum.mainScale(mv)!,
+        width: Math.abs(seriesDatum.crossScale(0)! - seriesDatum.crossScale(cv)!),
+        height: seriesDatum.mainScale.bandwidth(),
       });
     }
   }
   return data;
 }
 
-export interface DataSeriesBar extends DataSeries<DataBar> {}
-
-export function dataSeriesBar(creationData: DataSeriesBarCreation): DataSeriesBar {
-  return dataSeries<DataBar>({
-    data: (s) => dataBars(creationData, s.bounds()!),
-    key: (d) => d.key,
-  });
-}
-
 export function seriesBar<
   GElement extends Element,
-  Datum extends DataSeries<DataBar>,
+  Datum extends DataSeriesGenerator<DataBar>,
   PElement extends BaseType,
   PDatum
 >(
@@ -123,7 +113,7 @@ export interface JoinTransitionEvent<GElement extends Element, Datum>
 
 export function seriesBarRender<
   GElement extends Element,
-  Datum extends DataSeries<DataBar>,
+  Datum extends DataSeriesGenerator<DataBar>,
   PElement extends BaseType,
   PDatum
 >(
@@ -131,10 +121,10 @@ export function seriesBarRender<
 ): Selection<GElement, Datum, PElement, PDatum> {
   return selection.each((d, i, g) => {
     debug(`render bar series on ${nodeToString(g[i])}`);
-    const series = select(g[i]);
+    const series = select<GElement, Datum>(g[i]);
     series
       .selectAll<SVGRectElement, DataBar>('rect')
-      .data(d.data instanceof Function ? d.data(series) : d.data, d.key)
+      .data(d.dataGenerator(series), (d) => d.key)
       .join(
         (enter) =>
           enter

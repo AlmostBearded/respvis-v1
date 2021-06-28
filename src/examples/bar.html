@@ -57,7 +57,7 @@
         labelSeries = chart.selectAll('.series-label'),
         labelDatum = labelSeries.datum();
 
-      labelDatum.creation.labels = populations;
+      labelDatum.labels = populations;
 
       window.addEventListener('resize', configure);
       configure();

@@ -1,43 +1,41 @@
 import { BaseType, select, Selection } from 'd3-selection';
-import { Position, Rect, rectCenter, rectLeft, rectRight, rectTop } from '../core';
+import {
+  DataSeriesGenerator,
+  Position,
+  Rect,
+  rectCenter,
+  rectLeft,
+  rectRight,
+  rectTop,
+} from '../core';
 import { DataBar } from './series-bar';
-import { DataLabel, dataSeriesLabel, DataSeriesLabel } from './series-label';
+import { DataLabel } from './series-label';
 
-export interface DataLabelsBarCreation {
+export interface DataSeriesLabelBar extends DataSeriesGenerator<DataLabel> {
   barContainer: Selection<Element>;
-  positionFromRect: (rect: Rect) => Position;
+  rectPositioner: (rect: Rect) => Position;
   labels: (string | number)[];
 }
 
-export interface DataSeriesLabelBar extends DataSeriesLabel {
-  creation: DataLabelsBarCreation;
-}
-
-export function dataLabelsBarCreation(
-  data?: Partial<DataLabelsBarCreation>
-): DataLabelsBarCreation {
+export function dataSeriesLabelBar(data: Partial<DataSeriesLabelBar>): DataSeriesLabelBar {
   return {
-    barContainer: data?.barContainer || select('.chart'),
-    labels: data?.labels || [],
-    positionFromRect: rectCenter,
+    barContainer: data.barContainer || select('.chart'),
+    labels: data.labels || [],
+    rectPositioner: rectCenter,
+    dataGenerator: data.dataGenerator || dataLabelBarGenerator,
   };
 }
 
-export function dataSeriesLabelBar(creationData: DataLabelsBarCreation): DataSeriesLabelBar {
-  const seriesData: DataSeriesLabelBar = {
-    ...dataSeriesLabel({ data: () => dataLabelsBar(seriesData.creation) }),
-    creation: creationData,
-  };
-  return seriesData;
-}
-
-export function dataLabelsBar(data: DataLabelsBarCreation): DataLabel[] {
-  return data.barContainer
-    .selectAll<SVGRectElement, DataBar>('.bar')
+export function dataLabelBarGenerator(
+  selection: Selection<Element, DataSeriesLabelBar>
+): DataLabel[] {
+  const seriesDatum = selection.datum();
+  return seriesDatum.barContainer
+    .selectAll<SVGRectElement, DataBar>('.bar:not(.exiting)')
     .data()
     .map((barData, i) => ({
-      ...data.positionFromRect(barData),
-      text: data.labels[i],
+      ...seriesDatum.rectPositioner(barData),
+      text: seriesDatum.labels[i],
       key: barData.key,
     }));
 }
@@ -54,7 +52,7 @@ export function seriesLabelBarCenterConfig<
     .attr('text-anchor', 'center')
     .attr('dominant-baseline', 'middle')
     .datum((d) => {
-      d.creation.positionFromRect = rectCenter;
+      d.rectPositioner = rectCenter;
       return d;
     });
 }
@@ -72,7 +70,7 @@ export function seriesLabelBarLeftConfig<
     .attr('dominant-baseline', 'middle')
     .layout('margin', '0 0 0 0.25em')
     .datum((d) => {
-      d.creation.positionFromRect = rectLeft;
+      d.rectPositioner = rectLeft;
       return d;
     });
 }
@@ -90,7 +88,7 @@ export function seriesLabelBarRightConfig<
     .attr('dominant-baseline', 'middle')
     .layout('margin', '0 0 0 0.25em')
     .datum((d) => {
-      d.creation.positionFromRect = rectRight;
+      d.rectPositioner = rectRight;
       return d;
     });
 }
@@ -108,7 +106,7 @@ export function seriesLabelBarTopConfig<
     .attr('dominant-baseline', 'auto')
     .layout('margin', '-0.25em 0 0 0')
     .datum((d) => {
-      d.creation.positionFromRect = rectTop;
+      d.rectPositioner = rectTop;
       return d;
     });
 }

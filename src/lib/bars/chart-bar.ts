@@ -1,27 +1,20 @@
 import { BaseType, select, Selection } from 'd3-selection';
-import { axisBottom, axisLeft, ConfigureAxisFn, dataAxis, DataAxis } from '../axis';
-import { chart, debug, nodeToString } from '../core';
+import { debug, nodeToString } from '../core';
 import {
   chartCartesian,
   chartCartesianUpdateAxes,
   dataChartCartesian,
   DataChartCartesian,
 } from '../core/chart-cartesian';
-import {
-  DataSeriesBarCreation,
-  dataSeriesBarCreation,
-  seriesBar,
-  dataSeriesBar,
-  DataSeriesBar,
-} from './series-bar';
+import { seriesBar, dataSeriesBar, DataSeriesBar } from './series-bar';
 import { seriesLabel } from './series-label';
-import { dataLabelsBarCreation, dataSeriesLabelBar } from './series-label-bar';
+import { dataSeriesLabelBar } from './series-label-bar';
 
-export interface DataChartBar extends DataSeriesBarCreation, DataChartCartesian {}
+export interface DataChartBar extends DataSeriesBar, DataChartCartesian {}
 
-export function dataChartBar(data?: Partial<DataChartBar>): DataChartBar {
+export function dataChartBar(data: Partial<DataChartBar>): DataChartBar {
   return {
-    ...dataSeriesBarCreation(data),
+    ...dataSeriesBar(data),
     ...dataChartCartesian(data),
   };
 }
@@ -43,13 +36,13 @@ export function chartBar<
       const barSeries = drawArea
         .append('g')
         .layout('grid-area', '1 / 1')
-        .datum(dataSeriesBar(chartData))
+        .datum<DataSeriesBar>(chartData)
         .call((s) => seriesBar(s));
 
       drawArea
         .append('g')
         .layout('grid-area', '1 / 1')
-        .datum(dataSeriesLabelBar(dataLabelsBarCreation({ barContainer: barSeries })))
+        .datum(dataSeriesLabelBar({ barContainer: barSeries }))
         .call((s) => seriesLabel(s));
     })
     .on('datachange.debuglog', function () {

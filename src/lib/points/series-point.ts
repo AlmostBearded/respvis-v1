@@ -3,16 +3,20 @@ import { scaleLinear } from 'd3-scale';
 import { BaseType, select, Selection } from 'd3-selection';
 import {
   COLORS_CATEGORICAL,
-  dataSeries,
-  DataSeries,
+  DataSeriesGenerator,
   debug,
   nodeToString,
   Position,
   ScaleAny,
 } from '../core';
-import { Size } from '../core/utils';
 
-export interface DataSeriesPointCreation {
+export interface DataPoint extends Position {
+  radius: number;
+  index: number;
+  key: string;
+}
+
+export interface DataSeriesPoint extends DataSeriesGenerator<DataPoint> {
   mainValues: any[];
   mainScale: ScaleAny<any, number, number>;
   crossValues: any[];
@@ -21,40 +25,35 @@ export interface DataSeriesPointCreation {
   keys?: string[];
 }
 
-export function dataSeriesPointCreation(
-  data?: Partial<DataSeriesPointCreation>
-): DataSeriesPointCreation {
+export function dataSeriesPoint(data: Partial<DataSeriesPoint>): DataSeriesPoint {
   return {
-    mainValues: data?.mainValues || [],
-    mainScale: data?.mainScale || scaleLinear().domain([0, 1]),
-    crossValues: data?.crossValues || [],
-    crossScale: data?.crossScale || scaleLinear().domain([0, 1]),
-    radiuses: data?.radiuses || 5,
-    keys: data?.keys,
+    mainValues: data.mainValues || [],
+    mainScale: data.mainScale || scaleLinear().domain([0, 1]),
+    crossValues: data.crossValues || [],
+    crossScale: data.crossScale || scaleLinear().domain([0, 1]),
+    radiuses: data.radiuses || 5,
+    keys: data.keys || [],
+    dataGenerator: data.dataGenerator || dataPointGenerator,
   };
 }
 
-export interface DataPoint extends Position {
-  radius: number;
-  index: number;
-  key: string;
-}
-
-export function dataPoints(creationData: DataSeriesPointCreation, bounds: Size): DataPoint[] {
-  creationData.mainScale.range([0, bounds.width]);
-  creationData.crossScale.range([bounds.height, 0]);
+export function dataPointGenerator(selection: Selection<Element, DataSeriesPoint>): DataPoint[] {
+  const seriesDatum = selection.datum(),
+    bounds = selection.bounds()!;
+  seriesDatum.mainScale.range([0, bounds.width]);
+  seriesDatum.crossScale.range([bounds.height, 0]);
 
   const data: DataPoint[] = [];
 
-  for (let i = 0; i < creationData.mainValues.length; ++i) {
-    const x = creationData.mainValues[i],
-      y = creationData.crossValues[i],
-      r = Array.isArray(creationData.radiuses) ? creationData.radiuses[i] : creationData.radiuses;
+  for (let i = 0; i < seriesDatum.mainValues.length; ++i) {
+    const x = seriesDatum.mainValues[i],
+      y = seriesDatum.crossValues[i],
+      r = Array.isArray(seriesDatum.radiuses) ? seriesDatum.radiuses[i] : seriesDatum.radiuses;
     data.push({
       index: i,
-      key: creationData.keys?.[i] || i.toString(),
-      x: creationData.mainScale(x)!,
-      y: creationData.crossScale(y)!,
+      key: seriesDatum.keys?.[i] || i.toString(),
+      x: seriesDatum.mainScale(x)!,
+      y: seriesDatum.crossScale(y)!,
       radius: r,
     });
   }
@@ -62,18 +61,9 @@ export function dataPoints(creationData: DataSeriesPointCreation, bounds: Size):
   return data;
 }
 
-export interface DataSeriesPoint extends DataSeries<DataPoint> {}
-
-export function dataSeriesPoint(creationData: DataSeriesPointCreation): DataSeriesPoint {
-  return dataSeries<DataPoint>({
-    data: (s) => dataPoints(creationData, s.bounds()!),
-    key: (d) => d.key,
-  });
-}
-
 export function seriesPoint<
   GElement extends Element,
-  Datum extends DataSeries<DataPoint>,
+  Datum extends DataSeriesPoint,
   PElement extends BaseType,
   PDatum
 >(
@@ -100,7 +90,7 @@ export function seriesPoint<
 
 export function seriesPointRender<
   GElement extends Element,
-  Datum extends DataSeries<DataPoint>,
+  Datum extends DataSeriesPoint,
   PElement extends BaseType,
   PDatum
 >(
@@ -108,10 +98,10 @@ export function seriesPointRender<
 ): Selection<GElement, Datum, PElement, PDatum> {
   return selection.each((d, i, g) => {
     debug(`render point series on ${nodeToString(g[i])}`);
-    const series = select(g[i]);
+    const series = select<GElement, Datum>(g[i]);
     series
       .selectAll<SVGCircleElement, DataPoint>('circle')
-      .data(d.data instanceof Function ? d.data(series) : d.data, d.key)
+      .data(d.dataGenerator(series), (d) => d.key)
       .join(
         (enter) =>
           enter

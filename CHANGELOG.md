@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Highlight grouped bars on hover.
   - Highlight all grouped bars in category on hover over main axis tick.
   - Highlight all grouped bars with subcategory on hover over legend item.
+- Add generic DataSeriesGenerator interface for series data.
+- Add dataGenerator property to series data interfaces.
 
 ### Changed
 
@@ -43,6 +45,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Show horizontal bar labels on the right in grouped bar chart example.
 - Configure components only once in the configure function.
 - Highlight bars using a brightness filter.
+- Refactor & unify series data.
+  - Rename DataSeriesXCreation classes to just DataSeriesX.
+  - Set series data directly on data instead of on data.creation properties.
+  - Rename data creation functions (dataBars, dataGroupedBars, ..., dataPoints) to generator functions (dataBarGenerator, ..., dataPointGenerator).
+  - Uniformly pass series selection into data generator functions.
+  - Change all data creation inputs to be non-optional.
+- Rename bar label series data positionFromRect property to rectPositioner.
 
 ### Removed
 
@@ -55,11 +64,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove creation property from stacked bar series data.
 - Remove creation property from point series data.
 - Remove chroma.js dependency and the corresponding color functions.
+- Remove DataSeries interface and dataSeries creation function.
 
 ### Fixed
 
 - Fix dataAxis function ignoring passed in title and subtitle properties.
-- Fix bar label jittering in Firefox
+- Fix bar label jittering in Firefox.
+- Fix bar labels for exiting bars.
 
 ## [0.1.0] - 2021-06-02
 

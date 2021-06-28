@@ -67,7 +67,7 @@
         labelSeries = chart.selectAll('.series-label'), // todo: labels don't fit. find a better solution. tooltip?
         labelDatum = labelSeries.datum();
 
-      labelDatum.creation.labels = labels;
+      labelDatum.labels = labels;
 
       window.addEventListener('resize', configure);
       configure();

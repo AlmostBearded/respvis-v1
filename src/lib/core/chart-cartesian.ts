@@ -11,10 +11,10 @@ export interface DataChartCartesian {
   flipped: boolean;
 }
 
-export function dataChartCartesian(data?: Partial<DataChartCartesian>): DataChartCartesian {
+export function dataChartCartesian(data: Partial<DataChartCartesian>): DataChartCartesian {
   return {
-    mainAxis: dataAxis(data?.mainAxis),
-    crossAxis: dataAxis(data?.crossAxis),
+    mainAxis: dataAxis(data.mainAxis || {}),
+    crossAxis: dataAxis(data.crossAxis || {}),
     flipped: false,
   };
 }
@@ -50,13 +50,13 @@ export function chartCartesian<
 
       container
         .append('g')
-        .datum((d) => dataAxis())
+        .datum(d.crossAxis)
         .call((s) => axisLeft(s))
         .layout('grid-area', '1 / 1');
 
       container
         .append('g')
-        .datum((d) => dataAxis())
+        .datum(d.mainAxis)
         .call((s) => axisBottom(s))
         .layout('grid-area', '2 / 2');
     })
