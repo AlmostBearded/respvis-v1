@@ -68,6 +68,8 @@
           },
         }),
         chart = layouter.append('svg').datum(chartDatum).call(respVis.chartPoint),
+        defs = chart.append('defs'),
+        highlightFilter = defs.append('filter').call(respVis.filterBrightness, 1.3),
         zoom = d3
           .zoom()
           .scaleExtent([1, 20])
@@ -90,9 +92,7 @@
         pointSeries = chart
           .selectAll('.series-point')
           .on('mouseover', (e) => hoverPoint(e.target, true))
-          .on('mouseout', (e) => hoverPoint(e.target, false)),
-        pointColor = pointSeries.attr('fill'),
-        pointHighlightColor = respVis.brighten(pointColor, 0.5);
+          .on('mouseout', (e) => hoverPoint(e.target, false));
 
       window.addEventListener('resize', configure);
       configure();
@@ -107,7 +107,7 @@
       function hoverPoint(element, hover) {
         const selection = d3.select(element);
         const datum = selection.datum();
-        selection.attr('fill', hover ? pointHighlightColor : null).raise();
+        selection.attr('filter', hover ? `url(#${highlightFilter.attr('id')})` : null).raise();
         chart
           .selectAll('.axis-main .tick')
           .filter((d, i) => i === datum.index)

@@ -45,7 +45,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Show horizontal bar labels on the right in bar chart example.
 - Show horizontal bar labels on the right in grouped bar chart example.
 - Configure components only once in the configure function.
-- Highlight bars using a brightness filter.
+- Highlight bars in bar chart example using a brightness filter.
+- Highlight points in scatterplot example with a brightness filter.
 - Refactor & unify series data.
   - Rename DataSeriesXCreation classes to just DataSeriesX.
   - Set series data directly on data instead of on data.creation properties.
