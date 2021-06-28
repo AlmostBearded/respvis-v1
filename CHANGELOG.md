@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Highlight all grouped bars with subcategory on hover over legend item.
 - Add generic DataSeriesGenerator interface for series data.
 - Add dataGenerator property to series data interfaces.
+- Add properties function to selections to get an array of a property from all elements in a selection.
 
 ### Changed
 
