@@ -2,10 +2,13 @@ import { BaseType, create, select, Selection } from 'd3-selection';
 import {
   DataSeriesGenerator,
   debug,
+  findByDataProperty,
+  findByIndex,
   nodeToString,
   textHorizontalAttrs,
   textTitleAttrs,
 } from '../core';
+import { filterBrightness } from '../filters';
 
 export interface DataLegendItem {
   symbolTag: string;
@@ -31,22 +34,26 @@ export function legend<
     .layout('flex-direction', 'column')
     .layout('align-items', 'center')
     .attr('font-size', '0.8em') // todo: font size incosistent with 0.7em used mostly everywhere else
-    .call((legend) =>
+    .call((legend) => {
       legend
         .append('text')
         .classed('title', true)
         .layout('margin', '0 0.5em')
         .call((s) => textHorizontalAttrs(s))
-        .call((s) => textTitleAttrs(s))
-    )
-    .call((legend) =>
+        .call((s) => textTitleAttrs(s));
       legend
         .append('g')
         .classed('items', true)
         .layout('display', 'flex')
         .layout('flex-direction', 'row')
         .layout('justify-content', 'center')
-        .layout('align-items', 'flex-start')
+        .layout('align-items', 'flex-start');
+    })
+    .call((s) =>
+      s
+        .append('defs')
+        .append('filter')
+        .call((s) => filterBrightness(s, 1.3))
     )
     .on('datachange.legend', function () {
       debug(`data change on ${nodeToString(this)}`);
@@ -59,12 +66,12 @@ export function legend<
       s.selectAll('.title').text(d.title);
 
       s.selectAll('.items')
-        .selectAll<SVGGElement, DataLegendItem>('.item')
+        .selectAll<SVGGElement, DataLegendItem>('.legend-item')
         .data(d.dataGenerator(s), (d) => d.label)
         .join((enter) =>
           enter
             .append('g')
-            .classed('item', true)
+            .classed('legend-item', true)
             .layout('display', 'flex')
             .layout('flex-direction', 'row')
             .layout('justify-content', 'center')
@@ -93,4 +100,33 @@ export function legend<
         )
         .call((s) => s.select('.label').text((d) => d.label.toString()));
     });
+}
+
+export function legendItemHighlight(item: Selection, highlight: boolean): void {
+  if (highlight) {
+    item
+      .selectAll('.symbol')
+      .attr(
+        'filter',
+        `url(#${item.closest('.legend').selectAll('.filter-brightness').attr('id')})`
+      );
+    item.selectAll('.label').attr('text-decoration', 'underline');
+  } else {
+    item.selectAll('.symbol').attr('filter', null);
+    item.selectAll('.label').attr('text-decoration', null);
+  }
+}
+
+export function legendItemFindByLabel(
+  container: Selection,
+  label: string
+): Selection<SVGGElement, DataLegendItem> {
+  return findByDataProperty<SVGGElement, DataLegendItem>(container, '.legend-item', 'label', label);
+}
+
+export function legendItemFindByIndex(
+  container: Selection,
+  index: number
+): Selection<SVGGElement, DataLegendItem> {
+  return findByIndex<SVGGElement, DataLegendItem>(container, '.legend-item', index);
 }

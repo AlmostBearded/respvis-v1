@@ -3,7 +3,7 @@ import { BaseType, Selection } from 'd3-selection';
 export function findByDataProperty<GElement extends BaseType, Datum>(
   container: Selection,
   selector: string,
-  property: string,
+  property: keyof Datum,
   value: any
 ): Selection<GElement, Datum> {
   return container.selectAll<GElement, Datum>(selector).filter((d) => d[property] === value);

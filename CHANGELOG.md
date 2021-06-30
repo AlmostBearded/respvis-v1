@@ -40,10 +40,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add labelFind function find labels by key.
 - Add axisTickHighlight function.
 - Add axisTickFindByIndex function.
-- Add automatic highlighting of bars, labels and main axis ticks on hover over bars in bar chart.
+- Add chartBarHoverBar function to apply hover over bar effects to bar chart.
+- Add automatic highlighting of bars, labels and main axis ticks to bar chart.
 - Add findByDataProperty utility function.
 - Add findByKey utility function.
 - Add findByIndex utility function.
+- Add legendItemHighlight function.
+- Add legendItemFindByLabel function.
+- Add legendItemFindByIndex function.
+- Add closest method to selections (D3 equivalent to Element.closest).
+- Add automatic highlighting of bars to grouped bar series.
+- Add automatic highlighting of bars, labels, main axis ticks and legend items to grouped bar chart.
+- Add chartBarGroupedHoverBar function to apply hover over bar effects to grouped bar chart.
 
 ### Changed
 

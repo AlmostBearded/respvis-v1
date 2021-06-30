@@ -97,7 +97,12 @@ export function seriesBar<
   return selection
     .classed('series-bar', true)
     .attr('fill', COLORS_CATEGORICAL[0])
-    .call((s) => s.append('defs').append('filter').call(filterBrightness, 1.3))
+    .call((s) =>
+      s
+        .append('defs')
+        .append('filter')
+        .call((s) => filterBrightness(s, 1.3))
+    )
     .on(
       'render.seriesbar-initial',
       function () {
@@ -168,8 +173,12 @@ export function seriesBarRender<
   });
 }
 
-export function barHighlight(series: Selection, bar: Selection, highlight: boolean): void {
-  if (highlight) bar.attr('filter', `url(#${series.selectAll('.filter-brightness').attr('id')})`);
+export function barHighlight(bar: Selection, highlight: boolean): void {
+  if (highlight)
+    bar.attr(
+      'filter',
+      `url(#${bar.closest('.series-bar').selectAll('.filter-brightness').attr('id')})`
+    );
   else bar.attr('filter', null);
 }
 

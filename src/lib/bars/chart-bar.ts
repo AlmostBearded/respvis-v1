@@ -40,8 +40,8 @@ export function chartBar<
         .layout('grid-area', '1 / 1')
         .datum<DataSeriesBar>(chartData)
         .call((s) => seriesBar(s))
-        .on('mouseover.chartbarhighlight', (e) => chartBarHighlight(chart, select(e.target), true))
-        .on('mouseout.chartbarhighlight', (e) => chartBarHighlight(chart, select(e.target), false));
+        .on('mouseover.chartbarhighlight', (e) => chartBarHoverBar(chart, select(e.target), true))
+        .on('mouseout.chartbarhighlight', (e) => chartBarHoverBar(chart, select(e.target), false));
 
       drawArea
         .append('g')
@@ -78,7 +78,7 @@ export function chartBarDataChange<
   });
 }
 
-export function chartBarHighlight(
+export function chartBarHoverBar(
   chart: Selection,
   bar: Selection<Element, DataBar> | string,
   hover: boolean

@@ -1,4 +1,4 @@
-import { BaseType, select, Selection, selection, ValueFn } from 'd3-selection';
+import { BaseType, select, selectAll, Selection, selection, ValueFn } from 'd3-selection';
 import 'd3-transition';
 import { Transition } from 'd3-transition';
 import { debug, nodeToString } from './log';
@@ -67,6 +67,8 @@ declare module 'd3-selection' {
     properties(name: string): any[];
 
     dispatch(type: string, parameters?: Partial<CustomEventParameters>): this;
+
+    closest<PElement extends BaseType, PDatum>(selector: string): Selection<PElement, PDatum>;
   }
 }
 
@@ -198,6 +200,17 @@ selection.prototype.properties = function (this: Selection<Element>, name: strin
   const properties: any[] = new Array(this.size());
   this.each((d, i, g) => (properties[i] = g[i][name]));
   return properties;
+};
+
+selection.prototype.closest = function <PElement extends Element, PDatum>(
+  this: Selection<Element>,
+  selector: string
+): Selection<PElement | null, PDatum> {
+  const closests: (PElement | null)[] = [];
+  this.each(function () {
+    closests.push(this.closest<PElement>(selector));
+  });
+  return selectAll<PElement | null, PDatum>(closests);
 };
 
 export function isTransition<GElement extends BaseType, Datum, PElement extends BaseType, PDatum>(
