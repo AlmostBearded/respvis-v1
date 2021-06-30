@@ -32,7 +32,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add dropdown menus.
 - Add tool dropdown menu.
 - Add nominal filter tool.
-- Add subcategory filter to grouped bar chart example. 
+- Add subcategory filter to grouped bar chart example.
+- Add barHighlight function.
+- Add barFind function to find bars by key.
+- Add automatic highlighting of bars on hover to bar series.
+- Add labelHighlight function.
+- Add labelFind function find labels by key.
+- Add axisTickHighlight function.
+- Add axisTickFindByIndex function.
+- Add automatic highlighting of bars, labels and main axis ticks on hover over bars in bar chart.
 
 ### Changed
 
@@ -52,7 +60,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Show horizontal bar labels on the right in bar chart example.
 - Show horizontal bar labels on the right in grouped bar chart example.
 - Configure components only once in the configure function.
-- Highlight bars in bar chart example using a brightness filter.
 - Highlight points in scatterplot example with a brightness filter.
 - Refactor & unify series data.
   - Rename DataSeriesXCreation classes to just DataSeriesX.
@@ -62,6 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Change all data creation inputs to be non-optional.
 - Rename bar label series data positionFromRect property to rectPositioner.
 - Wrap grouped bar chart example into chart window with toolbar.
+- Move highlighting code from examples into framework components.
 
 ### Removed
 

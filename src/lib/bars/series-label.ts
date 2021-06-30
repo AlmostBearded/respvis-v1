@@ -94,3 +94,12 @@ export function seriesLabelRender<
       .call((s) => selection.dispatch('labelupdate', { detail: { selection: s } }));
   });
 }
+
+export function labelHighlight(label: Selection, highlight: boolean): void {
+  if (highlight) label.attr('font-size', '1.2em').attr('text-decoration', 'underline');
+  else label.attr('font-size', null).attr('text-decoration', null);
+}
+
+export function labelFind(container: Selection, key: string): Selection<SVGTextElement, DataLabel> {
+  return container.selectAll<SVGTextElement, DataLabel>('.label').filter((d) => d.key === key);
+}

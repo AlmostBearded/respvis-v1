@@ -1,4 +1,5 @@
 import { BaseType, select, Selection } from 'd3-selection';
+import { axisTickFindByIndex, axisTickHighlight } from '../axis';
 import { debug, nodeToString } from '../core';
 import {
   chartCartesian,
@@ -6,8 +7,8 @@ import {
   dataChartCartesian,
   DataChartCartesian,
 } from '../core/chart-cartesian';
-import { seriesBar, dataSeriesBar, DataSeriesBar } from './series-bar';
-import { seriesLabel } from './series-label';
+import { seriesBar, dataSeriesBar, DataSeriesBar, DataBar, barFind } from './series-bar';
+import { labelHighlight, seriesLabel, labelFind } from './series-label';
 import { dataSeriesLabelBar } from './series-label-bar';
 
 export interface DataChartBar extends DataSeriesBar, DataChartCartesian {}
@@ -31,13 +32,16 @@ export function chartBar<
     .call((s) => chartCartesian(s, false))
     .classed('chart-bar', true)
     .each((chartData, i, g) => {
-      const drawArea = select<GElement, Datum>(g[i]).selectAll('.draw-area');
+      const chart = select<GElement, Datum>(g[i]);
+      const drawArea = chart.selectAll('.draw-area');
 
       const barSeries = drawArea
         .append('g')
         .layout('grid-area', '1 / 1')
         .datum<DataSeriesBar>(chartData)
-        .call((s) => seriesBar(s));
+        .call((s) => seriesBar(s))
+        .on('mouseover.chartbarhighlight', (e) => chartBarHighlight(chart, select(e.target), true))
+        .on('mouseout.chartbarhighlight', (e) => chartBarHighlight(chart, select(e.target), false));
 
       drawArea
         .append('g')
@@ -72,4 +76,18 @@ export function chartBarDataChange<
 
     chartCartesianUpdateAxes(s);
   });
+}
+
+export function chartBarHighlight(
+  chart: Selection,
+  bar: Selection<Element, DataBar> | string,
+  hover: boolean
+) {
+  const barS = typeof bar === 'string' ? barFind(chart, bar) : bar,
+    barD = barS.datum(),
+    labelS = labelFind(chart, barD.key),
+    tickS = axisTickFindByIndex(chart.selectAll('.axis-main'), barD.index);
+
+  labelHighlight(labelS, hover);
+  axisTickHighlight(tickS, hover);
 }

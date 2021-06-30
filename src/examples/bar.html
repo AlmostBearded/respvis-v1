@@ -48,12 +48,6 @@
           },
         }),
         chart = layouter.append('svg').datum(chartDatum).call(respVis.chartBar),
-        defs = chart.append('defs'),
-        highlightFilter = defs.append('filter').call(respVis.filterBrightness, 1.3),
-        barSeries = chart
-          .selectAll('.series-bar')
-          .on('mouseover', (e) => hoverBar(e.target, true))
-          .on('mouseout', (e) => hoverBar(e.target, false)),
         labelSeries = chart.selectAll('.series-label'),
         labelDatum = labelSeries.datum();
 
@@ -74,21 +68,6 @@
         chartDatum.flipped = flippedBars;
         labelSeries.call(labelConfig);
         chart.datum(chartDatum);
-      }
-
-      function hoverBar(element, hover) {
-        const selection = d3.select(element);
-        const datum = selection.datum();
-        selection.attr('filter', hover ? `url(#${highlightFilter.attr('id')})` : null);
-        labelSeries
-          .selectAll('.label')
-          .filter((d) => d.key === datum.key)
-          .attr('font-size', hover ? '1.2em' : null)
-          .attr('text-decoration', hover ? 'underline' : null);
-        chart
-          .selectAll('.axis-main .tick')
-          .filter((d, i) => i === datum.index)
-          .attr('text-decoration', hover ? 'underline' : null);
       }
     </script>
   </body>

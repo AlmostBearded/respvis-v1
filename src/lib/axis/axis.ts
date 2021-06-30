@@ -229,3 +229,12 @@ export function xyAttrsToTransformAttr(
     .attr('x', null)
     .attr('y', null);
 }
+
+export function axisTickFindByIndex(container: Selection, index: number): Selection<SVGGElement> {
+  return container.selectAll<SVGGElement, unknown>('.tick').filter((d, i) => i === index);
+}
+
+export function axisTickHighlight(tick: Selection, highlight: boolean): void {
+  if (highlight) tick.attr('text-decoration', 'underline');
+  else tick.attr('text-decoration', null);
+}

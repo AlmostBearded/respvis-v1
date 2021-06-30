@@ -4,6 +4,7 @@ import { COLORS_CATEGORICAL, DataSeriesGenerator, debug, nodeToString } from '..
 import { Rect, rectMinimized, rectToAttrs } from '../core/utility/rect';
 import { Transition } from 'd3-transition';
 import { easeCubicOut } from 'd3-ease';
+import { filterBrightness } from '../filters';
 
 export interface DataBar extends Rect {
   index: number;
@@ -89,6 +90,7 @@ export function seriesBar<
   return selection
     .classed('series-bar', true)
     .attr('fill', COLORS_CATEGORICAL[0])
+    .call((s) => s.append('defs').append('filter').call(filterBrightness, 1.3))
     .on(
       'render.seriesbar-initial',
       function () {
@@ -102,7 +104,10 @@ export function seriesBar<
     )
     .on('render.seriesbar', function (e, d) {
       seriesBarRender(select<GElement, Datum>(this));
-    });
+    })
+    .on('mouseover.seriesbarhighlight mouseout.seriesbarhighlight', (e) =>
+      barHighlight(select(e.currentTarget), select(e.target), e.type.endsWith('over'))
+    );
 }
 
 export interface JoinEvent<GElement extends Element, Datum>
@@ -154,4 +159,13 @@ export function seriesBarRender<
       )
       .call((s) => selection.dispatch('barupdate', { detail: { selection: s } }));
   });
+}
+
+export function barHighlight(series: Selection, bar: Selection, highlight: boolean): void {
+  if (highlight) bar.attr('filter', `url(#${series.selectAll('.filter-brightness').attr('id')})`);
+  else bar.attr('filter', null);
+}
+
+export function barFind(container: Selection, key: string): Selection<SVGRectElement, DataBar> {
+  return container.selectAll<SVGRectElement, DataBar>('.bar').filter((d) => d.key === key);
 }
