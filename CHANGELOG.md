@@ -26,6 +26,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add generic DataSeriesGenerator interface for series data.
 - Add dataGenerator property to series data interfaces.
 - Add properties function to selections to get an array of a property from all elements in a selection.
+- Add HTML checkbox series.
+- Add chart windows that encapsulate charts.
+- Add toolbar to chart windows.
+- Add dropdown menus.
+- Add tool dropdown menu.
+- Add nominal filter tool.
+- Add subcategory filter to grouped bar chart example. 
 
 ### Changed
 
@@ -54,6 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Uniformly pass series selection into data generator functions.
   - Change all data creation inputs to be non-optional.
 - Rename bar label series data positionFromRect property to rectPositioner.
+- Wrap grouped bar chart example into chart window with toolbar.
 
 ### Removed
 
