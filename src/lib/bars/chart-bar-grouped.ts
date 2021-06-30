@@ -13,19 +13,15 @@ import { seriesLabel } from './series-label';
 import { dataSeriesLabelBar } from './series-label-bar';
 
 export interface DataChartBarGrouped extends DataSeriesBarGrouped, DataChartCartesian {
-  legend: DataLegendSquares;
+  legend: Partial<DataLegendSquares>;
   colors: string[];
 }
 
-export type DataChartBarGroupedInput = Omit<Partial<DataChartBarGrouped>, 'legend'> & {
-  legend?: Partial<DataLegendSquares>;
-};
-
-export function dataChartBarGrouped(data: DataChartBarGroupedInput): DataChartBarGrouped {
+export function dataChartBarGrouped(data: Partial<DataChartBarGrouped>): DataChartBarGrouped {
   return {
     ...dataSeriesBarGrouped(data),
     ...dataChartCartesian(data),
-    legend: dataLegendSquares(data.legend || {}),
+    legend: data.legend || {},
     colors: data.colors || COLORS_CATEGORICAL,
   };
 }
@@ -64,7 +60,7 @@ export function chartBarGrouped<
       chart
         .append('g')
         .classed('legend', true)
-        .datum(chartData.legend)
+        .datum(dataLegendSquares(chartData.legend))
         .call((s) => legend(s))
         .layout('margin', '0.5rem')
         .layout('justify-content', 'flex-end');
@@ -91,8 +87,10 @@ export function chartBarGroupedDataChange<
 
     s.selectAll('.series-bar-grouped').dispatch('datachange');
 
-    chartData.legend.colors = chartData.colors;
-    s.selectAll('.legend').dispatch('datachange');
+    s.selectAll<Element, DataLegendSquares>('.legend').datum((d) => {
+      d.colors = chartData.colors;
+      return d;
+    });
 
     chartData.mainAxis.scale = chartData.mainScale;
     chartData.crossAxis.scale = chartData.crossScale;

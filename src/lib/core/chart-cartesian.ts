@@ -6,15 +6,15 @@ import { debug, nodeToString } from './log';
 import { ScaleAny } from './scale';
 
 export interface DataChartCartesian {
-  mainAxis: DataAxis;
-  crossAxis: DataAxis;
+  mainAxis: Partial<DataAxis>;
+  crossAxis: Partial<DataAxis>;
   flipped: boolean;
 }
 
 export function dataChartCartesian(data: Partial<DataChartCartesian>): DataChartCartesian {
   return {
-    mainAxis: dataAxis(data.mainAxis || {}),
-    crossAxis: dataAxis(data.crossAxis || {}),
+    mainAxis: data.mainAxis || {},
+    crossAxis: data.crossAxis || {},
     flipped: false,
   };
 }
@@ -50,13 +50,13 @@ export function chartCartesian<
 
       container
         .append('g')
-        .datum(d.crossAxis)
+        .datum(dataAxis(d.crossAxis))
         .call((s) => axisLeft(s))
         .layout('grid-area', '1 / 1');
 
       container
         .append('g')
-        .datum(d.mainAxis)
+        .datum(dataAxis(d.mainAxis))
         .call((s) => axisBottom(s))
         .layout('grid-area', '2 / 2');
     })
