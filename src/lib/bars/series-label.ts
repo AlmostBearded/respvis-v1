@@ -3,6 +3,7 @@ import { BaseType, select, Selection } from 'd3-selection';
 import {
   DataSeriesGenerator,
   debug,
+  findByKey,
   nodeToString,
   Position,
   positionToTransformAttr,
@@ -101,5 +102,5 @@ export function labelHighlight(label: Selection, highlight: boolean): void {
 }
 
 export function labelFind(container: Selection, key: string): Selection<SVGTextElement, DataLabel> {
-  return container.selectAll<SVGTextElement, DataLabel>('.label').filter((d) => d.key === key);
+  return findByKey<SVGTextElement, DataLabel>(container, '.label', key);
 }

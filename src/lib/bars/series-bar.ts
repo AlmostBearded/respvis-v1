@@ -1,6 +1,13 @@
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { BaseType, select, selection, Selection } from 'd3-selection';
-import { COLORS_CATEGORICAL, DataSeriesGenerator, debug, nodeToString } from '../core';
+import {
+  COLORS_CATEGORICAL,
+  DataSeriesGenerator,
+  debug,
+  findByDataProperty,
+  findByKey,
+  nodeToString,
+} from '../core';
 import { Rect, rectMinimized, rectToAttrs } from '../core/utility/rect';
 import { Transition } from 'd3-transition';
 import { easeCubicOut } from 'd3-ease';
@@ -166,6 +173,9 @@ export function barHighlight(series: Selection, bar: Selection, highlight: boole
   else bar.attr('filter', null);
 }
 
-export function barFind(container: Selection, key: string): Selection<SVGRectElement, DataBar> {
-  return container.selectAll<SVGRectElement, DataBar>('.bar').filter((d) => d.key === key);
+export function barFind<Data extends DataBar>(
+  container: Selection,
+  key: string
+): Selection<SVGRectElement, Data> {
+  return findByKey<SVGRectElement, Data>(container, '.bar', key);
 }

@@ -11,6 +11,7 @@ import { BaseType, select, Selection } from 'd3-selection';
 import { SelectionOrTransition, Transition } from 'd3-transition';
 import {
   debug,
+  findByIndex,
   nodeToString,
   textHorizontalAttrs,
   textTitleAttrs,
@@ -231,7 +232,7 @@ export function xyAttrsToTransformAttr(
 }
 
 export function axisTickFindByIndex(container: Selection, index: number): Selection<SVGGElement> {
-  return container.selectAll<SVGGElement, unknown>('.tick').filter((d, i) => i === index);
+  return findByIndex<SVGGElement>(container, '.tick', index);
 }
 
 export function axisTickHighlight(tick: Selection, highlight: boolean): void {
