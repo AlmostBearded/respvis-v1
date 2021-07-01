@@ -102,6 +102,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove creation property from point series data.
 - Remove chroma.js dependency and the corresponding color functions.
 - Remove DataSeries interface and dataSeries creation function.
+- Remove unused transformData, transformAttr and transformCall selection methods.
 
 ### Fixed
 
