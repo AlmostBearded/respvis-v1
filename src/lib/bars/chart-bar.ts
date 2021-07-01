@@ -80,14 +80,14 @@ export function chartBarDataChange<
 
 export function chartBarHoverBar(
   chart: Selection,
-  bar: Selection<Element, DataBar> | string,
+  bar: Selection<Element, DataBar>,
   hover: boolean
 ) {
-  const barS = typeof bar === 'string' ? barFind(chart, bar) : bar,
-    barD = barS.datum(),
-    labelS = labelFind(chart, barD.key),
-    tickS = axisTickFindByIndex(chart.selectAll('.axis-main'), barD.index);
+  bar.each((barD) => {
+    const labelS = labelFind(chart, barD.key),
+      tickS = axisTickFindByIndex(chart.selectAll('.axis-main'), barD.index);
 
-  labelHighlight(labelS, hover);
-  axisTickHighlight(tickS, hover);
+    labelHighlight(labelS, hover);
+    axisTickHighlight(tickS, hover);
+  });
 }
