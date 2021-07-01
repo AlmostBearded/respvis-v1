@@ -53,6 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add automatic highlighting of bars to grouped bar series.
 - Add automatic highlighting of bars, labels, main axis ticks and legend items to grouped bar chart.
 - Add chartBarGroupedHoverBar function to apply hover over bar effects to grouped bar chart.
+- Add siblingIndex utility function to get sibling index of a node with an optional selector that siblings need to match.
 
 ### Changed
 

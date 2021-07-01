@@ -4,6 +4,7 @@ export * from './utility/position';
 export * from './utility/array';
 export * from './utility/bounds';
 export * from './utility/find';
+export * from './utility/index';
 
 export { v4 as uuid } from 'uuid';
 
