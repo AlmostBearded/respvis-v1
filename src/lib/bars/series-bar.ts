@@ -188,3 +188,10 @@ export function barFind<Data extends DataBar>(
 ): Selection<SVGRectElement, Data> {
   return findByKey<SVGRectElement, Data>(container, '.bar', key);
 }
+
+export function barFindByIndex<Data extends DataBar>(
+  container: Selection,
+  index: number
+): Selection<SVGRectElement, Data> {
+  return findByDataProperty<SVGRectElement, Data>(container, '.bar', 'index', index);
+}
