@@ -205,12 +205,13 @@ selection.prototype.properties = function (this: Selection<Element>, name: strin
 selection.prototype.closest = function <PElement extends Element, PDatum>(
   this: Selection<Element>,
   selector: string
-): Selection<PElement | null, PDatum> {
-  const closests: (PElement | null)[] = [];
+): Selection<PElement, PDatum> {
+  const closests: PElement[] = [];
   this.each(function () {
-    closests.push(this.closest<PElement>(selector));
+    const closest = this.closest<PElement>(selector);
+    if (closest) closests.push(closest);
   });
-  return selectAll<PElement | null, PDatum>(closests);
+  return selectAll<PElement, PDatum>(closests);
 };
 
 export function isTransition<GElement extends BaseType, Datum, PElement extends BaseType, PDatum>(
