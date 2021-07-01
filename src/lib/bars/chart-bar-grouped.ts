@@ -122,10 +122,9 @@ export function chartBarGroupedDataChange<
 
     s.selectAll('.series-bar-grouped').dispatch('datachange');
 
-    s.selectAll<Element, DataLegendSquares>('.legend').datum((d) => {
-      d.colors = chartData.colors;
-      return d;
-    });
+    s.selectAll<Element, DataLegendSquares>('.legend').datum((d) =>
+      Object.assign(d, { colors: chartData.colors }, chartData.legend)
+    );
 
     chartData.mainAxis.scale = chartData.mainScale;
     chartData.crossAxis.scale = chartData.crossScale;
