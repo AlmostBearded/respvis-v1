@@ -31,7 +31,6 @@
         revenueDomain = (revs) => [0, Math.max(...revs.flat()) * 1.05],
         years = data.years,
         colors = ['#4f8c9d', '#e23209', '#539322'],
-        colorScale = d3.scaleOrdinal().domain(years).range(colors),
         keys = revenues.map((yearlyRevs, i) => yearlyRevs.map((_, j) => sites[i] + years[j]));
 
       let activeSites = sites,
@@ -45,7 +44,7 @@
       const root = d3.select('#chart'),
         chartWindow = root.append('div').call(respVis.chartWindow),
         toolMenuItems = chartWindow.selectAll('.menu-tools .items'),
-        categoryFilter = toolMenuItems
+        siteFilter = toolMenuItems
           .append('li')
           .datum(
             respVis.dataToolFilterNominal({
@@ -54,27 +53,8 @@
             })
           )
           .call(respVis.toolFilterNominal)
-          .on('change', function (e, filterD) {
-            const filter = (_, i) => filterD.shown[i];
-
-            activeSites = sites.filter(filter);
-            activeRevenues = revenues.filter(filter);
-            activeKeys = keys.filter(filter);
-
-            chart.datum((d) => {
-              d.mainScale.domain(activeSites);
-              return Object.assign(d, {
-                mainValues: activeSites,
-                crossValues: activeRevenues,
-                keys: activeKeys,
-              });
-            });
-            labelSeries.datum((d) => {
-              d.labels = activeRevenues.flat();
-              return d;
-            });
-          }),
-        subcategoryFilter = toolMenuItems
+          .on('change', applyFilters),
+        yearFilter = toolMenuItems
           .append('li')
           .datum(
             respVis.dataToolFilterNominal({
@@ -83,28 +63,7 @@
             })
           )
           .call(respVis.toolFilterNominal)
-          .on('change', function (e, filterD) {
-            const filter = (_, i) => filterD.shown[i];
-
-            activeYears = years.filter(filter);
-            activeRevenues = revenues.map((yearly) => yearly.filter(filter));
-            activeKeys = keys.map((yearly, i) => yearly.filter(filter));
-            activeColors = colors.filter(filter);
-
-            chart.datum((d) => {
-              d.crossScale.domain(revenueDomain(activeRevenues));
-              return Object.assign(d, {
-                crossValues: activeRevenues,
-                keys: activeKeys,
-                colors: activeColors,
-                legend: Object.assign(d.legend, { labels: activeYears }),
-              });
-            });
-            labelSeries.datum((d) => {
-              d.labels = activeRevenues.flat();
-              return d;
-            });
-          }),
+          .on('change', applyFilters),
         chartDatum = respVis.dataChartBarGrouped({
           mainValues: activeSites,
           crossValues: activeRevenues,
@@ -159,6 +118,35 @@
           .layout('flex-direction', legendItemsFlexDirection);
 
         chart.datum(chartDatum);
+      }
+
+      function applyFilters() {
+        const siteFilterDatum = siteFilter.datum(),
+          yearFilterDatum = yearFilter.datum(),
+          filterSites = (_, i) => siteFilterDatum.shown[i],
+          filterYears = (_, i) => yearFilterDatum.shown[i];
+
+        activeSites = sites.filter(filterSites);
+        activeYears = years.filter(filterYears);
+        activeRevenues = revenues.filter(filterSites).map((yearly) => yearly.filter(filterYears));
+        activeKeys = keys.filter(filterSites).map((yearly) => yearly.filter(filterYears));
+        activeColors = colors.filter(filterYears);
+
+        chart.datum((d) => {
+          d.mainScale.domain(activeSites);
+          d.crossScale.domain(revenueDomain(activeRevenues)).nice();
+          return Object.assign(d, {
+            mainValues: activeSites,
+            crossValues: activeRevenues,
+            keys: activeKeys,
+            colors: activeColors,
+            legend: Object.assign(d.legend, { labels: activeYears }),
+          });
+        });
+        labelSeries.datum((d) => {
+          d.labels = activeRevenues.flat();
+          return d;
+        });
       }
     </script>
   </body>
