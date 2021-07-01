@@ -118,7 +118,7 @@ export function seriesBar<
       seriesBarRender(select<GElement, Datum>(this));
     })
     .on('mouseover.seriesbarhighlight mouseout.seriesbarhighlight', (e) =>
-      barHighlight(select(e.currentTarget), select(e.target), e.type.endsWith('over'))
+      barHighlight(select(e.target), e.type.endsWith('over'))
     );
 }
 
