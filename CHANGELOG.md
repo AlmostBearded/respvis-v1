@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add barHighlight function.
 - Add barFind function to find bars by key.
 - Add barFindByIndex function.
+- Add barGroupedFindByGroupIndex function.
 - Add automatic highlighting of bars on hover to bar series.
 - Add labelHighlight function.
 - Add labelFind function find labels by key.

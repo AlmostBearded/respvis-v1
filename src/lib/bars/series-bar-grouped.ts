@@ -1,7 +1,7 @@
 import { range } from 'd3-array';
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { BaseType, Selection } from 'd3-selection';
-import { COLORS_CATEGORICAL, DataSeriesGenerator } from '../core';
+import { COLORS_CATEGORICAL, DataSeriesGenerator, findByDataProperty } from '../core';
 import { Size } from '../core/utils';
 import { DataBar, JoinEvent, seriesBar } from './series-bar';
 
@@ -105,4 +105,11 @@ export function seriesBarGrouped<
     .on('barenter.seriesbargrouped', (e: JoinEvent<SVGRectElement, DataBarGrouped>) =>
       e.detail.selection.attr('fill', (d) => COLORS_CATEGORICAL[d.index])
     );
+}
+
+export function barGroupedFindByGroupIndex(
+  container: Selection,
+  index: number
+): Selection<SVGRectElement, DataBarGrouped> {
+  return findByDataProperty<SVGRectElement, DataBarGrouped>(container, '.bar', 'groupIndex', index);
 }
