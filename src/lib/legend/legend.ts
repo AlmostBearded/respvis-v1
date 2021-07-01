@@ -86,9 +86,7 @@ export function legend<
               .layout('margin', '0.25em')
               .call((s) =>
                 s
-                  .append((d) =>
-                    document.createElementNS('http://www.w3.org/2000/svg', d.symbolTag)
-                  )
+                  .append((d) => create(`svg:${d.symbolTag}`).node()!)
                   .classed('symbol', true)
                   .layout('width', 'fit')
                   .layout('height', 'fit')
