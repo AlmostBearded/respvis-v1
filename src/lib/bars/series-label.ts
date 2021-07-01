@@ -1,8 +1,10 @@
 import { easeCubicOut } from 'd3-ease';
-import { BaseType, select, Selection } from 'd3-selection';
+import { BaseType, select, Selection, ValueFn } from 'd3-selection';
 import {
   DataSeriesGenerator,
   debug,
+  findByFilter,
+  findByIndex,
   findByKey,
   nodeToString,
   Position,
@@ -103,4 +105,18 @@ export function labelHighlight(label: Selection, highlight: boolean): void {
 
 export function labelFind(container: Selection, key: string): Selection<SVGTextElement, DataLabel> {
   return findByKey<SVGTextElement, DataLabel>(container, '.label', key);
+}
+
+export function labelFindByIndex(
+  container: Selection,
+  index: number
+): Selection<SVGTextElement, DataLabel> {
+  return findByIndex<SVGTextElement, DataLabel>(container, '.label', index);
+}
+
+export function labelFindByFilter(
+  container: Selection,
+  filter: ValueFn<SVGTextElement, DataLabel, boolean>
+): Selection<SVGTextElement, DataLabel> {
+  return findByFilter<SVGTextElement, DataLabel>(container, '.label', filter);
 }
