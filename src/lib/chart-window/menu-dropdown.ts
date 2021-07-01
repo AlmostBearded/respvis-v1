@@ -12,7 +12,6 @@ export function menuDropdown(selection: Selection<HTMLElement>): void {
     .on('mouseover.menu', (e) =>
       select(e.currentTarget)
         .selectChildren('.items')
-        .interrupt('hide')
         .style('filter', 'brightness(105%)')
         .style('display', 'block')
     )
@@ -20,8 +19,6 @@ export function menuDropdown(selection: Selection<HTMLElement>): void {
       select(e.currentTarget)
         .selectChildren('.items')
         .style('filter', null)
-        .transition('hide')
-        .delay(250)
         .style('display', 'none')
     );
 
