@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add tool dropdown menu.
 - Add nominal filter tool.
 - Add subcategory filter to grouped bar chart example.
+- Add category filter to grouped bar chart example.
 - Add barHighlight function.
 - Add barFind function to find bars by key.
 - Add barFindByIndex function.

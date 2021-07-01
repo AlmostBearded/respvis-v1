@@ -34,7 +34,8 @@
         colorScale = d3.scaleOrdinal().domain(years).range(colors),
         keys = revenues.map((yearlyRevs, i) => yearlyRevs.map((_, j) => sites[i] + years[j]));
 
-      let activeRevenues = revenues,
+      let activeSites = sites,
+        activeRevenues = revenues,
         activeYears = years,
         activeColors = colors,
         activeKeys = keys;
@@ -44,6 +45,35 @@
       const root = d3.select('#chart'),
         chartWindow = root.append('div').call(respVis.chartWindow),
         toolMenuItems = chartWindow.selectAll('.menu-tools .items'),
+        categoryFilter = toolMenuItems
+          .append('li')
+          .datum(
+            respVis.dataToolFilterNominal({
+              text: 'Sites',
+              options: sites,
+            })
+          )
+          .call(respVis.toolFilterNominal)
+          .on('change', function (e, filterD) {
+            const filter = (_, i) => filterD.shown[i];
+
+            activeSites = sites.filter(filter);
+            activeRevenues = revenues.filter(filter);
+            activeKeys = keys.filter(filter);
+
+            chart.datum((d) => {
+              d.mainScale.domain(activeSites);
+              return Object.assign(d, {
+                mainValues: activeSites,
+                crossValues: activeRevenues,
+                keys: activeKeys,
+              });
+            });
+            labelSeries.datum((d) => {
+              d.labels = activeRevenues.flat();
+              return d;
+            });
+          }),
         subcategoryFilter = toolMenuItems
           .append('li')
           .datum(
@@ -76,7 +106,7 @@
             });
           }),
         chartDatum = respVis.dataChartBarGrouped({
-          mainValues: sites,
+          mainValues: activeSites,
           crossValues: activeRevenues,
           crossScale: d3.scaleLinear().domain(revenueDomain(revenues)).nice(),
           colors: activeColors,
