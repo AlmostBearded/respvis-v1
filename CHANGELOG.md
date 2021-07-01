@@ -50,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add findByKey utility function.
 - Add findByIndex utility function.
 - Add legendItemHighlight function.
+- Add automatic highlighting of legend items on hover to legend.
 - Add legendItemFindByLabel function.
 - Add legendItemFindByIndex function.
 - Add closest method to selections (D3 equivalent to Element.closest).

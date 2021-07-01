@@ -1,4 +1,5 @@
 import { BaseType, create, select, Selection } from 'd3-selection';
+import { JoinEvent } from '../bars';
 import {
   DataSeriesGenerator,
   debug,
@@ -55,6 +56,11 @@ export function legend<
         .append('filter')
         .call((s) => filterBrightness(s, 1.3))
     )
+    .on('legenditementer.legend', (e: JoinEvent<SVGGElement, DataLegendItem>) => {
+      e.detail.selection.on('mouseover.legend mouseout.legend', (e) => {
+        legendItemHighlight(select(e.currentTarget), e.type.endsWith('over'));
+      });
+    })
     .on('datachange.legend', function () {
       debug(`data change on ${nodeToString(this)}`);
       select(this).dispatch('render');
@@ -71,29 +77,29 @@ export function legend<
         .data(d.dataGenerator(legend), (d) => d.label)
         .join(
           (enter) =>
-          enter
-            .append('g')
-            .classed('legend-item', true)
-            .layout('display', 'flex')
-            .layout('flex-direction', 'row')
-            .layout('justify-content', 'center')
-            .layout('margin', '0.25em')
+            enter
+              .append('g')
+              .classed('legend-item', true)
+              .layout('display', 'flex')
+              .layout('flex-direction', 'row')
+              .layout('justify-content', 'center')
+              .layout('margin', '0.25em')
               .call((s) =>
                 s
                   .append((d) =>
                     document.createElementNS('http://www.w3.org/2000/svg', d.symbolTag)
                   )
-                .classed('symbol', true)
-                .layout('width', 'fit')
-                .layout('height', 'fit')
-                .layout('margin-right', '0.5em')
-            )
+                  .classed('symbol', true)
+                  .layout('width', 'fit')
+                  .layout('height', 'fit')
+                  .layout('margin-right', '0.5em')
+              )
               .call((s) =>
                 s
-                .append('text')
-                .classed('label', true)
-                .call((s) => textHorizontalAttrs(s))
-            )
+                  .append('text')
+                  .classed('label', true)
+                  .call((s) => textHorizontalAttrs(s))
+              )
               .call((s) => legend.dispatch('legenditementer', { detail: { selection: s } })),
           undefined,
           (exit) =>
