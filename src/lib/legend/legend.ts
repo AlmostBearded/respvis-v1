@@ -61,14 +61,16 @@ export function legend<
     })
     .on('render.legend', function (e, d) {
       debug(`render legend on ${nodeToString(this)}`);
-      const s = select<GElement, Datum>(this);
+      const legend = select<GElement, Datum>(this);
 
-      s.selectAll('.title').text(d.title);
+      legend.selectAll('.title').text(d.title);
 
-      s.selectAll('.items')
+      legend
+        .selectAll('.items')
         .selectAll<SVGGElement, DataLegendItem>('.legend-item')
-        .data(d.dataGenerator(s), (d) => d.label)
-        .join((enter) =>
+        .data(d.dataGenerator(legend), (d) => d.label)
+        .join(
+          (enter) =>
           enter
             .append('g')
             .classed('legend-item', true)
@@ -76,20 +78,28 @@ export function legend<
             .layout('flex-direction', 'row')
             .layout('justify-content', 'center')
             .layout('margin', '0.25em')
-            .call((item) =>
-              item
-                .append((d) => document.createElementNS('http://www.w3.org/2000/svg', d.symbolTag))
+              .call((s) =>
+                s
+                  .append((d) =>
+                    document.createElementNS('http://www.w3.org/2000/svg', d.symbolTag)
+                  )
                 .classed('symbol', true)
                 .layout('width', 'fit')
                 .layout('height', 'fit')
                 .layout('margin-right', '0.5em')
             )
-            .call((item) =>
-              item
+              .call((s) =>
+                s
                 .append('text')
                 .classed('label', true)
                 .call((s) => textHorizontalAttrs(s))
             )
+              .call((s) => legend.dispatch('legenditementer', { detail: { selection: s } })),
+          undefined,
+          (exit) =>
+            exit
+              .remove()
+              .call((s) => legend.dispatch('legenditemexit', { detail: { selection: s } }))
         )
         .call((s) =>
           s
@@ -98,7 +108,8 @@ export function legend<
               d.symbolAttributes.forEach((a) => select(g[i]).attr(a.name, a.value))
             )
         )
-        .call((s) => s.select('.label').text((d) => d.label.toString()));
+        .call((s) => s.select('.label').text((d) => d.label.toString()))
+        .call((s) => legend.dispatch('legenditemupdate', { detail: { selection: s } }));
     });
 }
 
