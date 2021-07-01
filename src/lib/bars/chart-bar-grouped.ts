@@ -13,23 +13,17 @@ import {
   dataLegendSquares,
   legend,
   legendItemFindByIndex,
-  legendItemFindByLabel,
   legendItemHighlight,
 } from '../legend';
-import { barFind, barFindByIndex, barHighlight, DataBar, JoinEvent, seriesBar } from './series-bar';
+import { barFindByIndex, barHighlight, DataBar, JoinEvent } from './series-bar';
 import {
+  barGroupedFindByGroupIndex,
   DataBarGrouped,
   DataSeriesBarGrouped,
   dataSeriesBarGrouped,
   seriesBarGrouped,
 } from './series-bar-grouped';
-import {
-  labelFind,
-  labelFindByFilter,
-  labelFindByIndex,
-  labelHighlight,
-  seriesLabel,
-} from './series-label';
+import { labelFind, labelFindByFilter, labelHighlight, seriesLabel } from './series-label';
 import { dataSeriesLabelBar } from './series-label-bar';
 
 export interface DataChartBarGrouped extends DataSeriesBarGrouped, DataChartCartesian {
@@ -129,6 +123,10 @@ export function chartBarGroupedDataChange<
     chartData.mainAxis.scale = chartData.mainScale;
     chartData.crossAxis.scale = chartData.crossScale;
     chartCartesianUpdateAxes(s);
+
+    s.selectAll('.axis-main .tick').on('mouseover mouseout', (e) =>
+      chartBarGroupedHoverAxisTick(s, select(e.currentTarget), e.type.endsWith('over'))
+    );
   });
 }
 
@@ -136,7 +134,7 @@ export function chartBarGroupedHoverBar(
   chart: Selection,
   bar: Selection<SVGRectElement, DataBarGrouped>,
   hover: boolean
-) {
+): void {
   bar.each((barD, i, g) => {
     const labelS = labelFind(chart, barD.key),
       tickS = axisTickFindByIndex(chart.selectAll('.axis-main'), barD.groupIndex),
@@ -152,11 +150,10 @@ export function chartBarGroupedHoverLegendItem(
   chart: Selection,
   legendItem: Selection<Element, DataLegendItem>,
   hover: boolean
-) {
+): void {
   const legendItemCount = chart.selectAll('.legend-item').size();
   legendItem.each((_, i, g) => {
-    const legendItemS = select<Element, DataLegendItem>(g[i]),
-      legendItemI = siblingIndex(g[i], '.legend-item'),
+    const legendItemI = siblingIndex(g[i], '.legend-item'),
       barS = barFindByIndex<DataBarGrouped>(chart, legendItemI),
       labelS = labelFindByFilter(
         chart.selectAll('.series-label'),
@@ -166,4 +163,23 @@ export function chartBarGroupedHoverLegendItem(
     barHighlight(barS, hover);
     labelHighlight(labelS, hover);
   });
+}
+
+export function chartBarGroupedHoverAxisTick(
+  chart: Selection,
+  tick: Selection<Element>,
+  hover: boolean
+): void {
+  const legendItemCount = chart.selectAll('.legend-item').size();
+  tick.each((_, i, g) => {
+    const tickI = siblingIndex(g[i], '.tick'),
+      barS = barGroupedFindByGroupIndex(chart, tickI),
+      labelS = labelFindByFilter(
+        chart.selectAll('.series-label'),
+        (_, i) => Math.floor(i / legendItemCount) === tickI
+      );
+    barHighlight(barS, hover);
+    labelHighlight(labelS, hover);
+  });
+  axisTickHighlight(tick, hover);
 }
