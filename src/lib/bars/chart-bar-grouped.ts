@@ -160,7 +160,7 @@ export function chartBarGroupedHoverLegendItem(
       legendItemI = siblingIndex(g[i], '.legend-item'),
       barS = barFindByIndex<DataBarGrouped>(chart, legendItemI),
       labelS = labelFindByFilter(
-        chart.selectAll('.series-label .label'),
+        chart.selectAll('.series-label'),
         (_, i) => i % legendItemCount === legendItemI
       );
 
