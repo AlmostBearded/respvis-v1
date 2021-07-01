@@ -94,24 +94,9 @@
           },
         }),
         chart = chartWindow.append('svg').datum(chartDatum).call(respVis.chartBarGrouped),
-        // .on('datachange', () => {
-        //   chart
-        //     .selectAll('.axis-main .tick')
-        //     .on('mouseover mouseout', (e) =>
-        //       hoverAxisTick(e.currentTarget, e.type.endsWith('over'))
-        //     );
-        //   chart
-        //     .selectAll('.legend .item')
-        //     .on('mouseover mouseout', (e) =>
-        //       hoverLegendItem(e.currentTarget, e.type.endsWith('over'))
-        //     );
-        // }),
         defs = chart.append('defs'),
         highlightFilter = defs.append('filter').call(respVis.filterBrightness, 1.3),
         highlightFilterUrl = `url(#${highlightFilter.attr('id')})`,
-        // barSeries = chart
-        // .selectAll('.series-bar')
-        // .on('mouseover mouseout', (e) => hoverBar(e.target, e.type.endsWith('over'))),
         legend = chart.selectAll('.legend').attr('cursor', 'default'),
         labelSeries = chart.selectAll('.series-label'),
         labelDatum = labelSeries.datum();
@@ -145,73 +130,6 @@
 
         chart.datum(chartDatum);
       }
-
-      // function highlightBar(groupIndex, barIndex, highlight) {
-      //   barSeries
-      //     .selectAll('.bar')
-      //     .filter((d) => d.groupIndex === groupIndex && d.index === barIndex)
-      //     .attr('filter', highlight ? highlightFilterUrl : null);
-      // }
-
-      // function highlightLabel(index, highlight) {
-      //   labelSeries
-      //     .selectAll('.label')
-      //     .filter((d, i) => i === index)
-      //     .attr('font-size', highlight ? '1.2em' : null)
-      //     .attr('text-decoration', highlight ? 'underline' : null);
-      // }
-
-      // function highlightAxisTick(index, highlight) {
-      //   chart
-      //     .selectAll('.axis-main .tick')
-      //     .filter((d, i) => i === index)
-      //     .attr('text-decoration', highlight ? 'underline' : null);
-      // }
-
-      // function highlightLegendItem(index, highlight) {
-      //   legend
-      //     .selectAll('.legend-item')
-      //     .filter((d, i) => i === index)
-      //     .call((item) =>
-      //       item.selectAll('.symbol').attr('filter', highlight ? highlightFilterUrl : null)
-      //     )
-      //     .call((item) =>
-      //       item.selectAll('.label').attr('text-decoration', highlight ? 'underline' : null)
-      //     );
-      // }
-
-      // function hoverBar(element, hover) {
-      //   const barDatum = d3.select(element).datum();
-      //   highlightBar(barDatum.groupIndex, barDatum.index, hover);
-      //   highlightLabel(barDatum.groupIndex * activeYears.length + barDatum.index, hover);
-      //   highlightAxisTick(barDatum.groupIndex, hover);
-      //   highlightLegendItem(barDatum.index, hover);
-      // }
-
-      // function siblingIndex(element) {
-      //   let tickIndex = 0;
-      //   let sibling = element;
-      //   while ((sibling = sibling.previousElementSibling)) tickIndex++;
-      //   return tickIndex;
-      // }
-
-      // function hoverAxisTick(element, hover) {
-      //   const tickIndex = siblingIndex(element) - 1; // -1 because domain is 1st sibling
-      //   activeYears.forEach((_, i) => {
-      //     highlightBar(tickIndex, i, hover);
-      //     highlightLabel(tickIndex * activeYears.length + i, hover);
-      //   });
-      //   highlightAxisTick(tickIndex, hover);
-      // }
-
-      // function hoverLegendItem(element, hover) {
-      //   const itemIndex = siblingIndex(element);
-      //   sites.forEach((_, siteIndex) => {
-      //     highlightBar(siteIndex, itemIndex, hover);
-      //     highlightLabel(siteIndex * activeYears.length + itemIndex, hover);
-      //   });
-      //   highlightLegendItem(itemIndex, hover);
-      // }
     </script>
   </body>
 </html>
