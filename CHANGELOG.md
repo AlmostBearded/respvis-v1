@@ -42,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add axisTickFindByIndex function.
 - Add chartBarHoverBar function to apply hover over bar effects to bar chart.
 - Add automatic highlighting of bars, labels and main axis ticks to bar chart.
+- Add findByFilter utility function.
 - Add findByDataProperty utility function.
 - Add findByKey utility function.
 - Add findByIndex utility function.
