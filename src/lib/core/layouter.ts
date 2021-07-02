@@ -159,7 +159,7 @@ function layedOutChildren(parent: Element): SVGElement[] {
 
 export function layouter<Datum, PElement extends BaseType, PDatum>(
   selection: Selection<HTMLDivElement, Datum, PElement, PDatum>
-): Selection<HTMLDivElement, DataLayouter, PElement, PDatum> {
+): Selection<HTMLDivElement, Datum & DataLayouter, PElement, PDatum> {
   return selection
     .classed('layouter', true)
     .style('display', 'grid')
@@ -167,7 +167,7 @@ export function layouter<Datum, PElement extends BaseType, PDatum>(
     .style('width', '100%')
     .style('height', '100%')
     .style('position', 'relative')
-    .datum((d, i, g) => dataLayouter(g[i]))
+    .datum((d, i, g) => Object.assign(d, dataLayouter(g[i])))
     .each((d, i, g) => {
       d.layoutNodeResizeObserver.observe(g[i]);
       d.layoutAttrMutationObserver.observe(g[i], {
