@@ -82,7 +82,11 @@
             labels: activeYears,
           },
         }),
-        chart = chartWindow.append('svg').datum(chartDatum).call(respVis.chartBarGrouped),
+        chart = chartWindow
+          .selectAll('.layouter')
+          .append('svg')
+          .datum(chartDatum)
+          .call(respVis.chartBarGrouped),
         defs = chart.append('defs'),
         highlightFilter = defs.append('filter').call(respVis.filterBrightness, 1.3),
         highlightFilterUrl = `url(#${highlightFilter.attr('id')})`,

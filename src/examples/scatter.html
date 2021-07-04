@@ -49,7 +49,11 @@
       // todo: only render points visible in current zoom frame
 
       const root = d3.select('#chart'),
-        layouter = root.append('div').call(respVis.layouter),
+        layouter = root
+          .append('div')
+          .datum((_, i, g) => respVis.dataLayouter(g[i]))
+          .call(respVis.layouter)
+          .style('height', '100%'),
         chartDatum = respVis.dataChartPoint({
           mainValues: areas,
           mainScale: areaScale,

@@ -15,8 +15,6 @@ export interface DataLayouter {
 
 export function dataLayouter(layouter: HTMLDivElement): DataLayouter {
   const layoutNodeResizeObserver = new ResizeObserver((entries) => {
-    const changedNodePaths: number[][] = [];
-
     select(layouter)
       .selectAll<HTMLDivElement, SVGElement>('.layout')
       .call((s) => layoutNodeObserveResize(s, layoutNodeResizeObserver))
@@ -157,17 +155,12 @@ function layedOutChildren(parent: Element): SVGElement[] {
   return select(parent).selectChildren<SVGElement, unknown>('[layout]').nodes();
 }
 
-export function layouter<Datum, PElement extends BaseType, PDatum>(
-  selection: Selection<HTMLDivElement, Datum, PElement, PDatum>
-): Selection<HTMLDivElement, Datum & DataLayouter, PElement, PDatum> {
-  return selection
+export function layouter(selection: Selection<HTMLDivElement, DataLayouter>): void {
+  selection
     .classed('layouter', true)
     .style('display', 'grid')
     .style('grid-template', '[chart] 1fr / [chart] 1fr')
-    .style('width', '100%')
-    .style('height', '100%')
     .style('position', 'relative')
-    .datum((d, i, g) => Object.assign(d, dataLayouter(g[i])))
     .each((d, i, g) => {
       d.layoutNodeResizeObserver.observe(g[i]);
       d.layoutAttrMutationObserver.observe(g[i], {

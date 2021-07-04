@@ -89,6 +89,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rename bar label series data positionFromRect property to rectPositioner.
 - Wrap grouped bar chart example into chart window with toolbar.
 - Move highlighting code from examples into framework components.
+- Require layouter data to be set before initializing layouter nodes.
 
 ### Removed
 

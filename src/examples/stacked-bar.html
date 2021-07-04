@@ -41,7 +41,11 @@
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
       const root = d3.select('#chart'),
-        layouter = root.append('div').call(respVis.layouter),
+        layouter = root
+          .append('div')
+          .datum((_, i, g) => respVis.dataLayouter(g[i]))
+          .call(respVis.layouter)
+          .style('height', '100%'),
         chartDatum = respVis.dataChartBarStacked({
           mainValues: years,
           crossValues: shares,
