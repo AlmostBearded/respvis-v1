@@ -35,7 +35,7 @@
           const rounded = roundShare(value);
           return rounded === 0 ? '' : `${rounded}`;
         },
-        keys = shares.map((pS, i) => pS.map((_, j) => `${platforms[i]}${years[j]}`)),
+        keys = shares.map((pS, i) => pS.map((_, j) => `${years[i]}${platforms[j]}`)),
         labels = shares.flat().map(formatShare);
 
       const wideMediaQuery = 'screen and (min-width: 40rem)';
