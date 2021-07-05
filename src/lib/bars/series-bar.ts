@@ -42,6 +42,7 @@ export function dataSeriesBar(data: Partial<DataSeriesBar>): DataSeriesBar {
         .domain([0, Math.max(...(data.crossValues || []))])
         .nice(),
     flipped: data.flipped || false,
+    keys: data.keys,
     dataGenerator: data.dataGenerator || dataBarGenerator,
   };
 }

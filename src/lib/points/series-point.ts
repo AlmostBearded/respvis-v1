@@ -32,7 +32,7 @@ export function dataSeriesPoint(data: Partial<DataSeriesPoint>): DataSeriesPoint
     crossValues: data.crossValues || [],
     crossScale: data.crossScale || scaleLinear().domain([0, 1]),
     radiuses: data.radiuses || 5,
-    keys: data.keys || [],
+    keys: data.keys,
     dataGenerator: data.dataGenerator || dataPointGenerator,
   };
 }

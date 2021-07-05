@@ -38,6 +38,7 @@ export function dataSeriesBarStacked(data: Partial<DataSeriesBarStacked>): DataS
         .nice(),
     flipped: data.flipped || false,
     innerPadding: data.innerPadding || 0.1,
+    keys: data.keys,
     dataGenerator: data.dataGenerator || dataBarStackedGenerator,
   };
 }

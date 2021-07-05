@@ -36,6 +36,7 @@ export function dataSeriesBarGrouped(data: Partial<DataSeriesBarGrouped>): DataS
     flipped: data.flipped || false,
     innerPadding: data.innerPadding || 0.1,
     dataGenerator: data.dataGenerator || dataBarGroupedGenerator,
+    keys: data.keys,
   };
 }
 
@@ -87,7 +88,6 @@ export function dataBarGroupedGenerator(
       }
     }
   }
-
   return data;
 }
 
