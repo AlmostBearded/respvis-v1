@@ -91,8 +91,8 @@ export function chartBarStackedDataChange<
     s.selectAll('.series-bar-stacked').dispatch('datachange');
     s.selectAll('.legend').dispatch('datachange');
 
-    chartData.mainAxis.scale = chartData.mainScale;
-    chartData.crossAxis.scale = chartData.crossScale;
+    chartData.xAxis.scale = chartData.categoryScale;
+    chartData.yAxis.scale = chartData.valueScale;
 
     chartCartesianUpdateAxes(s);
   });

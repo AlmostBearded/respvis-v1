@@ -17,20 +17,20 @@ export interface DataPoint extends Position {
 }
 
 export interface DataSeriesPoint extends DataSeriesGenerator<DataPoint> {
-  mainValues: any[];
-  mainScale: ScaleAny<any, number, number>;
-  crossValues: any[];
-  crossScale: ScaleAny<any, number, number>;
+  xValues: any[];
+  xScale: ScaleAny<any, number, number>;
+  yValues: any[];
+  yScale: ScaleAny<any, number, number>;
   radiuses: number[] | number;
   keys?: string[];
 }
 
 export function dataSeriesPoint(data: Partial<DataSeriesPoint>): DataSeriesPoint {
   return {
-    mainValues: data.mainValues || [],
-    mainScale: data.mainScale || scaleLinear().domain([0, 1]),
-    crossValues: data.crossValues || [],
-    crossScale: data.crossScale || scaleLinear().domain([0, 1]),
+    xValues: data.xValues || [],
+    xScale: data.xScale || scaleLinear().domain([0, 1]),
+    yValues: data.yValues || [],
+    yScale: data.yScale || scaleLinear().domain([0, 1]),
     radiuses: data.radiuses || 5,
     keys: data.keys,
     dataGenerator: data.dataGenerator || dataPointGenerator,
@@ -40,20 +40,20 @@ export function dataSeriesPoint(data: Partial<DataSeriesPoint>): DataSeriesPoint
 export function dataPointGenerator(selection: Selection<Element, DataSeriesPoint>): DataPoint[] {
   const seriesDatum = selection.datum(),
     bounds = selection.bounds()!;
-  seriesDatum.mainScale.range([0, bounds.width]);
-  seriesDatum.crossScale.range([bounds.height, 0]);
+  seriesDatum.xScale.range([0, bounds.width]);
+  seriesDatum.yScale.range([bounds.height, 0]);
 
   const data: DataPoint[] = [];
 
-  for (let i = 0; i < seriesDatum.mainValues.length; ++i) {
-    const x = seriesDatum.mainValues[i],
-      y = seriesDatum.crossValues[i],
+  for (let i = 0; i < seriesDatum.xValues.length; ++i) {
+    const x = seriesDatum.xValues[i],
+      y = seriesDatum.yValues[i],
       r = Array.isArray(seriesDatum.radiuses) ? seriesDatum.radiuses[i] : seriesDatum.radiuses;
     data.push({
       index: i,
       key: seriesDatum.keys?.[i] || i.toString(),
-      x: seriesDatum.mainScale(x)!,
-      y: seriesDatum.crossScale(y)!,
+      x: seriesDatum.xScale(x)!,
+      y: seriesDatum.yScale(y)!,
       radius: r,
     });
   }

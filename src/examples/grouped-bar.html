@@ -65,9 +65,9 @@
           .call(respVis.toolFilterNominal)
           .on('change', applyFilters),
         chartDatum = respVis.dataChartBarGrouped({
-          mainValues: activeSites,
-          crossValues: activeRevenues,
-          crossScale: d3.scaleLinear().domain(revenueDomain(revenues)).nice(),
+          categories: activeSites,
+          values: activeRevenues,
+          valueScale: d3.scaleLinear().domain(revenueDomain(revenues)).nice(),
           colors: activeColors,
           keys: activeKeys,
           mainAxis: {
@@ -137,11 +137,11 @@
         activeColors = colors.filter(filterYears);
 
         chart.datum((d) => {
-          d.mainScale.domain(activeSites);
-          d.crossScale.domain(revenueDomain(activeRevenues)).nice();
+          d.categoryScale.domain(activeSites);
+          d.valueScale.domain(revenueDomain(activeRevenues)).nice();
           return Object.assign(d, {
-            mainValues: activeSites,
-            crossValues: activeRevenues,
+            categories: activeSites,
+            values: activeRevenues,
             keys: activeKeys,
             colors: activeColors,
             legend: Object.assign(d.legend, { labels: activeYears }),

@@ -71,8 +71,8 @@ export function chartBarDataChange<
 
     s.selectAll('.series-bar').dispatch('datachange');
 
-    chartData.mainAxis.scale = chartData.mainScale;
-    chartData.crossAxis.scale = chartData.crossScale;
+    chartData.xAxis.scale = chartData.categoryScale;
+    chartData.yAxis.scale = chartData.valueScale;
 
     chartCartesianUpdateAxes(s);
   });

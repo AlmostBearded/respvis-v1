@@ -55,18 +55,18 @@
           .call(respVis.layouter)
           .style('height', '100%'),
         chartDatum = respVis.dataChartPoint({
-          mainValues: areas,
-          mainScale: areaScale,
-          crossValues: prices,
-          crossScale: priceScale,
+          xValues: areas,
+          xScale: areaScale,
+          yValues: prices,
+          yScale: priceScale,
           radiuses: 5,
           keys: areas.map((a, i) => i),
-          mainAxis: {
+          xAxis: {
             title: 'Area',
             subtitle: '[ft²]',
             configureAxis: (a) => a.ticks(window.matchMedia(wideMediaQuery).matches ? 10 : 5),
           },
-          crossAxis: {
+          yAxis: {
             title: 'Price',
             subtitle: '[1000 USD]',
           },
@@ -112,10 +112,6 @@
         const selection = d3.select(element);
         const datum = selection.datum();
         selection.attr('filter', hover ? `url(#${highlightFilter.attr('id')})` : null).raise();
-        chart
-          .selectAll('.axis-main .tick')
-          .filter((d, i) => i === datum.index)
-          .attr('text-decoration', hover ? 'underline' : null);
       }
     </script>
   </body>

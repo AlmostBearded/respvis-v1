@@ -41,8 +41,8 @@
           .call(respVis.layouter)
           .style('height', '100%'),
         chartDatum = respVis.dataChartBar({
-          mainValues: cities,
-          crossValues: populations,
+          categories: cities,
+          values: populations,
           mainAxis: {
             title: 'City',
           },

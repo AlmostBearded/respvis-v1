@@ -29,6 +29,8 @@ import { dataSeriesLabelBar } from './series-label-bar';
 export interface DataChartBarGrouped extends DataSeriesBarGrouped, DataChartCartesian {
   legend: Partial<DataLegendSquares>;
   colors: string[];
+  mainTitle: string;
+  crossTitle: string;
 }
 
 export function dataChartBarGrouped(data: Partial<DataChartBarGrouped>): DataChartBarGrouped {
@@ -37,6 +39,8 @@ export function dataChartBarGrouped(data: Partial<DataChartBarGrouped>): DataCha
     ...dataChartCartesian(data),
     legend: data.legend || {},
     colors: data.colors || COLORS_CATEGORICAL,
+    mainTitle: data.mainTitle || '',
+    crossTitle: data.crossTitle || '',
   };
 }
 
@@ -120,8 +124,8 @@ export function chartBarGroupedDataChange<
       Object.assign(d, { colors: chartData.colors }, chartData.legend)
     );
 
-    chartData.mainAxis.scale = chartData.mainScale;
-    chartData.crossAxis.scale = chartData.crossScale;
+    chartData.xAxis.scale = chartData.categoryScale;
+    chartData.yAxis.scale = chartData.valueScale;
     chartCartesianUpdateAxes(s);
 
     s.selectAll('.axis-main .tick').on('mouseover mouseout', (e) =>

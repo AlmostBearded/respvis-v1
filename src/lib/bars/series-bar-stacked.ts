@@ -10,30 +10,30 @@ export interface DataBarStacked extends DataBar {
 }
 
 export interface DataSeriesBarStacked extends DataSeriesGenerator<DataBarStacked> {
-  mainValues: any[];
-  mainScale: ScaleBand<any>;
+  categories: any[];
+  categoryScale: ScaleBand<any>;
   innerPadding: number;
-  crossValues: number[][];
-  crossScale: ScaleContinuousNumeric<number, number>;
+  values: number[][];
+  valueScale: ScaleContinuousNumeric<number, number>;
   keys?: string[];
   flipped: boolean;
 }
 
 export function dataSeriesBarStacked(data: Partial<DataSeriesBarStacked>): DataSeriesBarStacked {
   return {
-    mainValues: data.mainValues || [],
-    mainScale:
-      data.mainScale ||
+    categories: data.categories || [],
+    categoryScale:
+      data.categoryScale ||
       scaleBand()
-        .domain(data.mainValues || [])
+        .domain(data.categories || [])
         .padding(0.1),
-    crossValues: data.crossValues || [],
-    crossScale:
-      data.crossScale ||
+    values: data.values || [],
+    valueScale:
+      data.valueScale ||
       scaleLinear()
         .domain([
           0,
-          Math.max(...(data.crossValues?.map((values) => values.reduce((a, b) => a + b)) || [])),
+          Math.max(...(data.values?.map((values) => values.reduce((a, b) => a + b)) || [])),
         ])
         .nice(),
     flipped: data.flipped || false,
@@ -49,19 +49,19 @@ export function dataBarStackedGenerator(
   const seriesDatum = selection.datum(),
     bounds = selection.bounds()!;
   if (!seriesDatum.flipped) {
-    seriesDatum.mainScale.range([0, bounds.width]);
-    seriesDatum.crossScale.range([bounds.height, 0]);
+    seriesDatum.categoryScale.range([0, bounds.width]);
+    seriesDatum.valueScale.range([bounds.height, 0]);
   } else {
-    seriesDatum.mainScale.range([0, bounds.height]);
-    seriesDatum.crossScale.range([0, bounds.width]);
+    seriesDatum.categoryScale.range([0, bounds.height]);
+    seriesDatum.valueScale.range([0, bounds.width]);
   }
 
   const data: DataBarStacked[] = [];
-  for (let i = 0; i < seriesDatum.mainValues.length; ++i) {
-    const subcategoryValues = seriesDatum.crossValues[i];
+  for (let i = 0; i < seriesDatum.categories.length; ++i) {
+    const subcategoryValues = seriesDatum.values[i];
     let sum = 0;
     for (let j = 0; j < subcategoryValues.length; ++j) {
-      const c = seriesDatum.mainValues[i];
+      const c = seriesDatum.categories[i];
       const v = subcategoryValues[j];
 
       if (!seriesDatum.flipped) {
@@ -69,10 +69,10 @@ export function dataBarStackedGenerator(
           stackIndex: i,
           index: j,
           key: seriesDatum.keys?.[i][j] || `${i}/${j}`,
-          x: seriesDatum.mainScale(c)!,
-          y: -sum + Math.min(seriesDatum.crossScale(0)!, seriesDatum.crossScale(v)!),
-          width: seriesDatum.mainScale.bandwidth(),
-          height: Math.abs(seriesDatum.crossScale(0)! - seriesDatum.crossScale(v)!),
+          x: seriesDatum.categoryScale(c)!,
+          y: -sum + Math.min(seriesDatum.valueScale(0)!, seriesDatum.valueScale(v)!),
+          width: seriesDatum.categoryScale.bandwidth(),
+          height: Math.abs(seriesDatum.valueScale(0)! - seriesDatum.valueScale(v)!),
         });
         sum += data[data.length - 1].height;
       } else {
@@ -80,10 +80,10 @@ export function dataBarStackedGenerator(
           stackIndex: i,
           index: j,
           key: seriesDatum.keys?.[i][j] || `${i}/${j}`,
-          x: sum + Math.min(seriesDatum.crossScale(0)!, seriesDatum.crossScale(v)!),
-          y: seriesDatum.mainScale(c)!,
-          width: Math.abs(seriesDatum.crossScale(0)! - seriesDatum.crossScale(v)!),
-          height: seriesDatum.mainScale.bandwidth(),
+          x: sum + Math.min(seriesDatum.valueScale(0)!, seriesDatum.valueScale(v)!),
+          y: seriesDatum.categoryScale(c)!,
+          width: Math.abs(seriesDatum.valueScale(0)! - seriesDatum.valueScale(v)!),
+          height: seriesDatum.categoryScale.bandwidth(),
         });
         sum += data[data.length - 1].width;
       }

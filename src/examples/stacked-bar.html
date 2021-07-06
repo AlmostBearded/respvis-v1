@@ -47,9 +47,9 @@
           .call(respVis.layouter)
           .style('height', '100%'),
         chartDatum = respVis.dataChartBarStacked({
-          mainValues: years,
-          crossValues: shares,
-          crossScale: shareScale,
+          categories: years,
+          values: shares,
+          valueScale: shareScale,
           keys: keys,
           innerValues: platforms,
           mainAxis: {

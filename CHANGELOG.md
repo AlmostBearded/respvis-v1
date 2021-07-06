@@ -90,6 +90,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Wrap grouped bar chart example into chart window with toolbar.
 - Move highlighting code from examples into framework components.
 - Require layouter data to be set before initializing layouter nodes.
+- Rename bar series data properties:
+  - mainValues → categories
+  - mainScale → categoryScale
+  - crossValues → values
+  - crossScale → valueScale
+- Rename grouped bar series data property innerPadding → subcategoryPadding.
+- Rename cartesian chart data axes properties:
+  - mainAxis → xAxis
+  - crossAxis → yAxis
+- Rename point series data properties:
+  - mainValues → xValues
+  - mainScale → xScale
+  - crossValues → yValues
+  - crossScale → yScale
 
 ### Removed
 

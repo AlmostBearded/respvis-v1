@@ -1,5 +1,5 @@
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
-import { BaseType, select, selection, Selection } from 'd3-selection';
+import { BaseType, select, Selection } from 'd3-selection';
 import {
   COLORS_CATEGORICAL,
   DataSeriesGenerator,
@@ -19,27 +19,27 @@ export interface DataBar extends Rect {
 }
 
 export interface DataSeriesBar extends DataSeriesGenerator<DataBar> {
-  mainValues: any[];
-  mainScale: ScaleBand<any>;
-  crossValues: number[];
-  crossScale: ScaleContinuousNumeric<number, number>;
+  categories: any[];
+  categoryScale: ScaleBand<any>;
+  values: number[];
+  valueScale: ScaleContinuousNumeric<number, number>;
   keys?: string[];
   flipped: boolean;
 }
 
 export function dataSeriesBar(data: Partial<DataSeriesBar>): DataSeriesBar {
   return {
-    mainValues: data.mainValues || [],
-    mainScale:
-      data.mainScale ||
+    categories: data.categories || [],
+    categoryScale:
+      data.categoryScale ||
       scaleBand()
-        .domain(data.mainValues || [])
+        .domain(data.categories || [])
         .padding(0.1),
-    crossValues: data.crossValues || [],
-    crossScale:
-      data.crossScale ||
+    values: data.values || [],
+    valueScale:
+      data.valueScale ||
       scaleLinear()
-        .domain([0, Math.max(...(data.crossValues || []))])
+        .domain([0, Math.max(...(data.values || []))])
         .nice(),
     flipped: data.flipped || false,
     keys: data.keys,
@@ -51,36 +51,36 @@ export function dataBarGenerator(selection: Selection<Element, DataSeriesBar>): 
   const seriesDatum = selection.datum(),
     bounds = selection.bounds()!;
   if (!seriesDatum.flipped) {
-    seriesDatum.mainScale.range([0, bounds.width]);
-    seriesDatum.crossScale.range([bounds.height, 0]);
+    seriesDatum.categoryScale.range([0, bounds.width]);
+    seriesDatum.valueScale.range([bounds.height, 0]);
   } else {
-    seriesDatum.mainScale.range([0, bounds.height]);
-    seriesDatum.crossScale.range([0, bounds.width]);
+    seriesDatum.categoryScale.range([0, bounds.height]);
+    seriesDatum.valueScale.range([0, bounds.width]);
   }
 
   const data: DataBar[] = [];
 
-  for (let i = 0; i < seriesDatum.crossValues.length; ++i) {
-    const mv = seriesDatum.mainValues[i];
-    const cv = seriesDatum.crossValues[i];
+  for (let i = 0; i < seriesDatum.values.length; ++i) {
+    const c = seriesDatum.categories[i];
+    const v = seriesDatum.values[i];
 
     if (!seriesDatum.flipped) {
       data.push({
         index: i,
         key: seriesDatum.keys?.[i] || i.toString(),
-        x: seriesDatum.mainScale(mv)!,
-        y: Math.min(seriesDatum.crossScale(0)!, seriesDatum.crossScale(cv)!),
-        width: seriesDatum.mainScale.bandwidth(),
-        height: Math.abs(seriesDatum.crossScale(0)! - seriesDatum.crossScale(cv)!),
+        x: seriesDatum.categoryScale(c)!,
+        y: Math.min(seriesDatum.valueScale(0)!, seriesDatum.valueScale(v)!),
+        width: seriesDatum.categoryScale.bandwidth(),
+        height: Math.abs(seriesDatum.valueScale(0)! - seriesDatum.valueScale(v)!),
       });
     } else {
       data.push({
         index: i,
         key: seriesDatum.keys?.[i] || i.toString(),
-        x: Math.min(seriesDatum.crossScale(0)!, seriesDatum.crossScale(cv)!),
-        y: seriesDatum.mainScale(mv)!,
-        width: Math.abs(seriesDatum.crossScale(0)! - seriesDatum.crossScale(cv)!),
-        height: seriesDatum.mainScale.bandwidth(),
+        x: Math.min(seriesDatum.valueScale(0)!, seriesDatum.valueScale(v)!),
+        y: seriesDatum.categoryScale(c)!,
+        width: Math.abs(seriesDatum.valueScale(0)! - seriesDatum.valueScale(v)!),
+        height: seriesDatum.categoryScale.bandwidth(),
       });
     }
   }

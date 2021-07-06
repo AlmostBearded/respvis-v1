@@ -68,8 +68,8 @@ export function chartPointDataChange<
     s.selectAll('.series-point').dispatch('datachange');
 
     chartData.flipped = false;
-    chartData.mainAxis.scale = chartData.mainScale;
-    chartData.crossAxis.scale = chartData.crossScale;
+    chartData.xAxis.scale = chartData.xScale;
+    chartData.yAxis.scale = chartData.yScale;
 
     chartCartesianUpdateAxes(s);
   });
