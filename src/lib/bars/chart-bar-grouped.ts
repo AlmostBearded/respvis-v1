@@ -135,7 +135,7 @@ export function chartBarGroupedDataChange<
     chartData.yAxis.scale = chartData.valueScale;
     chartCartesianUpdateAxes(s);
 
-    s.selectAll('.axis-main .tick').on('mouseover mouseout', (e) =>
+    s.selectAll(`.axis-x .tick`).on('mouseover mouseout', (e) =>
       chartBarGroupedHoverAxisTick(s, select(e.currentTarget), e.type.endsWith('over'))
     );
   });
