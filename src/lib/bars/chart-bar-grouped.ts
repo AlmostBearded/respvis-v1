@@ -30,8 +30,6 @@ export interface DataChartBarGrouped extends DataSeriesBarGrouped, DataChartCart
   legend: Partial<DataLegendSquares>;
   colors: string[];
   subcategories: string[];
-  mainTitle: string;
-  crossTitle: string;
 }
 
 export function dataChartBarGrouped(data: Partial<DataChartBarGrouped>): DataChartBarGrouped {
@@ -42,8 +40,6 @@ export function dataChartBarGrouped(data: Partial<DataChartBarGrouped>): DataCha
     legend: data.legend || {},
     subcategories: data.subcategories || seriesData.values.map((d, i) => i.toString()),
     colors: data.colors || COLORS_CATEGORICAL,
-    mainTitle: data.mainTitle || '',
-    crossTitle: data.crossTitle || '',
   };
 }
 
