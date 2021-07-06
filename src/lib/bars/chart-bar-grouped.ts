@@ -29,15 +29,18 @@ import { dataSeriesLabelBar } from './series-label-bar';
 export interface DataChartBarGrouped extends DataSeriesBarGrouped, DataChartCartesian {
   legend: Partial<DataLegendSquares>;
   colors: string[];
+  subcategories: string[];
   mainTitle: string;
   crossTitle: string;
 }
 
 export function dataChartBarGrouped(data: Partial<DataChartBarGrouped>): DataChartBarGrouped {
+  const seriesData = dataSeriesBarGrouped(data);
   return {
-    ...dataSeriesBarGrouped(data),
+    ...seriesData,
     ...dataChartCartesian(data),
     legend: data.legend || {},
+    subcategories: data.subcategories || seriesData.values.map((d, i) => i.toString()),
     colors: data.colors || COLORS_CATEGORICAL,
     mainTitle: data.mainTitle || '',
     crossTitle: data.crossTitle || '',
@@ -121,7 +124,11 @@ export function chartBarGroupedDataChange<
     s.selectAll('.series-bar-grouped').dispatch('datachange');
 
     s.selectAll<Element, DataLegendSquares>('.legend').datum((d) =>
-      Object.assign(d, { colors: chartData.colors }, chartData.legend)
+      Object.assign(
+        d,
+        { colors: chartData.colors, labels: chartData.subcategories },
+        chartData.legend
+      )
     );
 
     chartData.xAxis.scale = chartData.categoryScale;
