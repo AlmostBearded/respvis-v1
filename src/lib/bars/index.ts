@@ -11,6 +11,8 @@ export * from './chart-bar-grouped';
 export * from './chart-bar-stacked';
 export * from './series-label';
 export * from './series-label-bar';
+export * from './chart-window-bar-grouped';
+
 // export * from './grouped-bars';
 // export * from './stacked-bars';
 // export * from './bar-points';

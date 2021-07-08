@@ -27,13 +27,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add dataGenerator property to series data interfaces.
 - Add properties function to selections to get an array of a property from all elements in a selection.
 - Add HTML checkbox series.
-- Add chart windows that encapsulate charts.
+- Add ChartWindow (= chart + toolbar).
 - Add toolbar to chart windows.
 - Add dropdown menus.
 - Add tool dropdown menu.
 - Add nominal filter tool.
-- Add subcategory filter to grouped bar chart example.
-- Add category filter to grouped bar chart example.
 - Add barHighlight function.
 - Add barFind function to find bars by key.
 - Add barFindByIndex function.
@@ -60,7 +58,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add automatic highlighting of bars, labels, main axis ticks and legend items to grouped bar chart.
 - Add chartBarGroupedHoverBar function to apply hover over bar effects to grouped bar chart.
 - Add siblingIndex utility function to get sibling index of a node with an optional selector that siblings need to match.
-- Add subcategories property to grouped bar chart data.
+- Add subcategories property to DataChartBarGrouped.
+- Add ChartWindowBarGrouped (= ChartBarGrouped + Toolbar with category & subcategory filters)
 
 ### Changed
 
@@ -105,6 +104,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - mainScale → xScale
   - crossValues → yValues
   - crossScale → yScale
+- Use ChartWindowBarGrouped in grouped bar chart example.
 
 ### Removed
 

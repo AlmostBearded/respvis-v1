@@ -33,68 +33,38 @@
         colors = ['#4f8c9d', '#e23209', '#539322'],
         keys = revenues.map((yearlyRevs, i) => yearlyRevs.map((_, j) => sites[i] + years[j]));
 
-      let activeSites = sites,
-        activeRevenues = revenues,
-        activeYears = years,
-        activeColors = colors,
-        activeKeys = keys;
-
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
       const root = d3.select('#chart'),
-        chartWindow = root.append('div').call(respVis.chartWindow),
-        toolMenuItems = chartWindow.selectAll('.menu-tools .items'),
-        siteFilter = toolMenuItems
-          .append('li')
-          .datum(
-            respVis.dataToolFilterNominal({
-              text: 'Sites',
-              options: sites,
-            })
-          )
-          .call(respVis.toolFilterNominal)
-          .on('change', applyFilters),
-        yearFilter = toolMenuItems
-          .append('li')
-          .datum(
-            respVis.dataToolFilterNominal({
-              text: 'Years',
-              options: years,
-            })
-          )
-          .call(respVis.toolFilterNominal)
-          .on('change', applyFilters),
-        chartDatum = respVis.dataChartBarGrouped({
-          categories: activeSites,
-          values: activeRevenues,
+        chartWindowDatum = respVis.dataChartWindowBarGrouped({
+          categoryEntity: 'Sites',
+          categories: sites,
+          subcategoryEntity: 'Years',
+          subcategories: years,
+          valueEntity: 'Revenue',
+          values: revenues,
           valueScale: d3.scaleLinear().domain(revenueDomain(revenues)).nice(),
-          colors: activeColors,
-          keys: activeKeys,
-          mainAxis: {
+          colors: colors,
+          keys: keys,
+          xAxis: {
             title: 'Site',
           },
-          crossAxis: {
+          yAxis: {
             title: 'Revenue',
             subtitle: '[Million USD]',
           },
           legend: {
             title: 'Years',
-            labels: activeYears,
           },
         }),
-        chart = chartWindow
-          .selectAll('.layouter')
-          .append('svg')
-          .datum(chartDatum)
-          .call(respVis.chartBarGrouped),
-        defs = chart.append('defs'),
-        highlightFilter = defs.append('filter').call(respVis.filterBrightness, 1.3),
-        highlightFilterUrl = `url(#${highlightFilter.attr('id')})`,
-        legend = chart.selectAll('.legend').attr('cursor', 'default'),
-        labelSeries = chart.selectAll('.series-label'),
+        chartWindow = root
+          .append('div')
+          .datum(chartWindowDatum)
+          .call(respVis.chartWindowBarGrouped),
+        labelSeries = chartWindow.selectAll('svg.chart .series-label'),
         labelDatum = labelSeries.datum();
 
-      labelDatum.labels = activeRevenues.flat();
+      labelDatum.labels = revenues.flat();
 
       window.addEventListener('resize', configure);
       configure();
@@ -111,46 +81,16 @@
         const legendAlignSelf = narrow ? 'flex-end' : 'flex-start';
         const legendItemsFlexDirection = narrow ? 'row' : 'column';
 
-        chartDatum.flipped = flippedBars;
+        chartWindow.datum((d) => Object.assign(d, { flipped: flippedBars }));
         labelSeries.call(labelConfig);
 
-        chart.layout('flex-direction', chartFlexDirection);
+        chartWindow.selectAll('svg.chart').layout('flex-direction', chartFlexDirection);
 
-        legend
+        chartWindow
+          .selectAll('svg.chart .legend')
           .layout('align-self', legendAlignSelf)
           .selectAll('.items')
           .layout('flex-direction', legendItemsFlexDirection);
-
-        chart.datum(chartDatum);
-      }
-
-      function applyFilters() {
-        const siteFilterDatum = siteFilter.datum(),
-          yearFilterDatum = yearFilter.datum(),
-          filterSites = (_, i) => siteFilterDatum.shown[i],
-          filterYears = (_, i) => yearFilterDatum.shown[i];
-
-        activeSites = sites.filter(filterSites);
-        activeYears = years.filter(filterYears);
-        activeRevenues = revenues.filter(filterSites).map((yearly) => yearly.filter(filterYears));
-        activeKeys = keys.filter(filterSites).map((yearly) => yearly.filter(filterYears));
-        activeColors = colors.filter(filterYears);
-
-        chart.datum((d) => {
-          d.categoryScale.domain(activeSites);
-          d.valueScale.domain(revenueDomain(activeRevenues)).nice();
-          return Object.assign(d, {
-            categories: activeSites,
-            values: activeRevenues,
-            keys: activeKeys,
-            colors: activeColors,
-            legend: Object.assign(d.legend, { labels: activeYears }),
-          });
-        });
-        labelSeries.datum((d) => {
-          d.labels = activeRevenues.flat();
-          return d;
-        });
       }
     </script>
   </body>
