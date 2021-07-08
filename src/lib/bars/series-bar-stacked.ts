@@ -15,7 +15,7 @@ export interface DataSeriesBarStacked extends DataSeriesGenerator<DataBarStacked
   innerPadding: number;
   values: number[][];
   valueScale: ScaleContinuousNumeric<number, number>;
-  keys?: string[];
+  keys?: string[][];
   flipped: boolean;
 }
 

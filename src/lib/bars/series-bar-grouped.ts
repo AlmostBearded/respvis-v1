@@ -14,7 +14,7 @@ export interface DataSeriesBarGrouped extends DataSeriesGenerator<DataBarGrouped
   subcategoryPadding: number;
   values: number[][];
   valueScale: ScaleContinuousNumeric<number, number>;
-  keys?: string[];
+  keys?: string[][];
   flipped: boolean;
 }
 

@@ -127,6 +127,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix bar labels for exiting bars.
 - Fix stacked bar keys in stacked bar chart example.
 - Fix keys not being passed into series data from partial parameter.
+- Fix keys type in DataSeriesBarGrouped & DataSeriesBarStacked.
 
 ## [0.1.0] - 2021-06-02
 
