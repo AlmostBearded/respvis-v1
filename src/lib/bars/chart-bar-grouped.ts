@@ -144,7 +144,7 @@ export function chartBarGroupedHoverBar(
 ): void {
   bar.each((barD, i, g) => {
     const labelS = labelFind(chart, barD.key),
-      tickS = axisTickFindByIndex(chart.selectAll('.axis-main'), barD.groupIndex),
+      tickS = axisTickFindByIndex(chart.selectAll('.axis-x'), barD.groupIndex),
       legendItemS = legendItemFindByIndex(chart, barD.index);
 
     labelHighlight(labelS, hover);
