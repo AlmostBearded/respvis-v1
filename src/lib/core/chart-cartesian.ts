@@ -15,7 +15,7 @@ export function dataChartCartesian(data: Partial<DataChartCartesian>): DataChart
   return {
     xAxis: data.xAxis || {},
     yAxis: data.yAxis || {},
-    flipped: false,
+    flipped: data.flipped || false,
   };
 }
 
