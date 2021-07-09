@@ -9,116 +9,105 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add [d3 legend](https://d3-legend.susielu.com/) library for usage in examples.
-- Add subtitles to axes.
-- Add cartesian chart component to handle flipping of axes.
-- Add legend component.
-- Add square symbol legend data function.
-- Add square legend to grouped bar charts.
-- Add square legend to stacked bar charts.
-- Add seriesLabelBarRightConfig function to configure right bar labels.
-- Add chroma.js library as external library for examples.
-- Add brightness filter.
-- Grouped bar chart example:
-  - Highlight grouped bars on hover.
-  - Highlight all grouped bars in category on hover over main axis tick.
-  - Highlight all grouped bars with subcategory on hover over legend item.
-- Add generic DataSeriesGenerator interface for series data.
-- Add dataGenerator property to series data interfaces.
-- Add properties function to selections to get an array of a property from all elements in a selection.
-- Add HTML checkbox series.
-- Add ChartWindow (= chart + toolbar).
-- Add toolbar to chart windows.
-- Add dropdown menus.
-- Add tool dropdown menu.
-- Add nominal filter tool.
+- Add chartCartesian.
+  - Handles flipping of axes.
+- Add legend.
+- Add dataLegendItemSquareGenerator
+  - To create legend with square symbols.
+- Add legend to chartBarGrouped.
+- Add legend to chartBarStacked.
+- Add menuDropdown.
+- Add menuTools (menuDropdown).
+- Add toolbar.
+- Add chartWindow (= chart + toolbar).
+- Add seriesCheckbox.
+- Add toolFilterNominal.
+- Add chartWindowBarGrouped (= chartBarGrouped + toolbar with category & subcategory filters)
 - Add barHighlight function.
-- Add barFind function to find bars by key.
-- Add barFindByIndex function.
-- Add barGroupedFindByGroupIndex function.
-- Add automatic highlighting of bars on hover to bar series.
 - Add labelHighlight function.
-- Add labelFind function find labels by key.
-- Add labelFindByIndex function.
-- Add labelFindByFilter function.
+- Add legendItemHighlight function.
 - Add axisTickHighlight function.
-- Add axisTickFindByIndex function.
-- Add chartBarHoverBar function to apply hover over bar effects to bar chart.
-- Add automatic highlighting of bars, labels and main axis ticks to bar chart.
 - Add findByFilter utility function.
 - Add findByDataProperty utility function.
 - Add findByKey utility function.
 - Add findByIndex utility function.
-- Add legendItemHighlight function.
-- Add automatic highlighting of legend items on hover to legend.
+- Add siblingIndex utility function
+  - Get sibling index of a node with optional selector that siblings need to match.
+- Add barFind function to find bars by key.
+- Add barFindByIndex function.
+- Add barGroupedFindByGroupIndex function.
+- Add labelFind function find labels by key.
+- Add labelFindByIndex function.
+- Add labelFindByFilter function.
+- Add axisTickFindByIndex function.
 - Add legendItemFindByLabel function.
 - Add legendItemFindByIndex function.
-- Add closest method to selections (D3 equivalent to Element.closest).
-- Add automatic highlighting of bars to grouped bar series.
-- Add automatic highlighting of bars, labels, main axis ticks and legend items to grouped bar chart.
-- Add chartBarGroupedHoverBar function to apply hover over bar effects to grouped bar chart.
-- Add siblingIndex utility function to get sibling index of a node with an optional selector that siblings need to match.
-- Add subcategories property to DataChartBarGrouped.
-- Add ChartWindowBarGrouped (= ChartBarGrouped + Toolbar with category & subcategory filters)
+- Add automatic highlighting of bars on hover to seriesBar.
+- Add automatic highlighting of bars on hover to seriesBarGrouped.
+- Add automatic highlighting of legend items on hover to legend.
+- Add automatic highlighting of bars, labels and main axis ticks to chartBar.
+- Add automatic highlighting of bars, labels, main axis ticks and legend items to chartBarGrouped.
+- Add Selection.properties function.
+  - Get an array of a property from all elements in a selection.
+- Add Selection.closest function.
+  - Select the closest ancestors that match a selector (equivalent to Element.closest).
+- Add subcategories to dataChartBarGrouped.
+  - Used as default legend labels.
+- Add subtitle to dataAxis & axisX.
+- Add seriesLabelBarRightConfig.
+  - Configures seriesLabelBar labels to appear to the right of bars.
+- Add filterBrightness.
+- Add generic DataSeriesGenerator interface.
+- Add dataGenerator property to dataSeriesX.
 
 ### Changed
 
-- Set custom colors in grouped bar example.
-- Set sans-serif font family on whole chart.
-- Decrease font-size of axis titles.
-- Make bar chart a subcomponent of cartesian chart.
-- Make grouped bar chart a subcomponent of cartesian chart.
-- Make stacked bar chart a subcomponent of cartesian chart.
-- Make point chart a subcomponent of cartesian chart.
-- Use flipped property of cartesian charts to flip bar charts.
-- Rename DataBarsCreation interface to DataSeriesBarCreation.
-- Rename DataBarsGroupedCreation interface to DataSeriesBarGroupedCreation.
-- Rename DataBarsStackedCreation interface to DataSeriesBarStackedCreation.
-- Rename DataPointsCreation interface to DataSeriesPointCreation.
-- Wrap contents of cartesian charts into a chart container wrapper.
+- Set custom colors in grouped bar chart example.
 - Show horizontal bar labels on the right in bar chart example.
 - Show horizontal bar labels on the right in grouped bar chart example.
-- Configure components only once in the configure function.
+- Use chartWindowBarGrouped in grouped bar chart example.
+- Configure components only once in configure function of examples.
+- Move highlighting code from examples into series & chart components.
+- Set sans-serif font family on chart.
+- Decrease font-size of axis title.
+- Make chartBar a subcomponent of chartCartesian.
+- Make chartBarGrouped a subcomponent of chartCartesian.
+- Make chartBarStacked a subcomponent of chartCartesian.
+- Make chartPoint a subcomponent of chartCartesian.
 - Highlight points in scatterplot example with a brightness filter.
-- Refactor & unify series data.
-  - Rename DataSeriesXCreation classes to just DataSeriesX.
-  - Set series data directly on data instead of on data.creation properties.
-  - Rename data creation functions (dataBars, dataGroupedBars, ..., dataPoints) to generator functions (dataBarGenerator, ..., dataPointGenerator).
-  - Uniformly pass series selection into data generator functions.
-  - Change all data creation inputs to be non-optional.
-- Rename bar label series data positionFromRect property to rectPositioner.
-- Wrap grouped bar chart example into chart window with toolbar.
-- Move highlighting code from examples into framework components.
-- Require layouter data to be set before initializing layouter nodes.
-- Rename bar series data properties:
+- Rename dataSeriesXCreation to just dataSeriesX.
+- Rename data creation functions (dataBars, dataGroupedBars, ..., dataPoints) to generator functions (dataBarGenerator, ..., dataPointGenerator).
+- Pass series selection into dataXGenerator functions.
+- Make partial inputs of dataX functions non-optional.
+- Rename dataSeriesLabelBar positionFromRect property to rectPositioner.
+- Require layouter data to be set before initializing layouter.
+- Rename dataSeriesBar properties:
   - mainValues → categories
   - mainScale → categoryScale
   - crossValues → values
   - crossScale → valueScale
-- Rename grouped bar series data property innerPadding → subcategoryPadding.
-- Rename cartesian chart data axes properties:
-  - mainAxis → xAxis
-  - crossAxis → yAxis
-- Rename point series data properties:
+- Rename dataSeriesBarGrouped property innerPadding → subcategoryPadding.
+- Rename dataSeriesPoint properties:
   - mainValues → xValues
   - mainScale → xScale
   - crossValues → yValues
   - crossScale → yScale
-- Use ChartWindowBarGrouped in grouped bar chart example.
 
 ### Removed
 
-- Remove bar orientation enum.
-- Remove orientation property from bar series and bar charts data.
-- Remove DataSeriesBarCustom interface & dataSeriesBarCustom function.
-- Remove DataSeriesPointCustom interface & dataSeriesPointCustom function.
-- Remove creation property from bar series data.
-- Remove creation property from grouped bar series data.
-- Remove creation property from stacked bar series data.
-- Remove creation property from point series data.
+- Remove BarOrientation enum.
+- Remove orientation property from dataSeriesBar & dataChartBar.
+- Remove dataSeriesBarCustom.
+- Remove dataSeriesPointCustom.
+- Remove creation property from dataSeriesBar.
+- Remove creation property from dataSeriesBarGrouped.
+- Remove creation property from dataSeriesBarStacked.
+- Remove creation property from dataSeriesPoint.
 - Remove chroma.js dependency and the corresponding color functions.
 - Remove DataSeries interface and dataSeries creation function.
-- Remove unused transformData, transformAttr and transformCall selection methods.
+- Remove unused Selection.transformData.
+- Remove unused Selection.transformAttr.
+- Remove unused Selection.transformCall.
 
 ### Fixed
 
@@ -159,10 +148,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove FaberJS-based layouter and its dependencies.
 - Remove old brush components and example.
 - Remove all transition events on series joins.
-
-### Deprecated
-
-- Deprecate IE support due to usage of modern Web APIs.
+- Remove IE support due to usage of modern Web APIs.
 
 ### Fixed
 
