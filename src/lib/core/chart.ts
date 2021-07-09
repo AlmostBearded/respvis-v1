@@ -8,5 +8,8 @@ export function chart<
 >(
   selection: Selection<GElement, Datum, PElement, PDatum>
 ): Selection<GElement, Datum, PElement, PDatum> {
-  return selection.classed('chart', true).attr('font-family', 'sans-serif');
+  return selection
+    .classed('chart', true)
+    .attr('xmlns', 'http://www.w3.org/2000/svg')
+    .attr('font-family', 'sans-serif');
 }
