@@ -25,7 +25,7 @@ export function chartSaveSVG<Datum>(
       parentInnerHTML = parentS.html(),
       chartOuterHTML = parentInnerHTML
         .match(/<svg.*class=.*chart.*<\/svg>/)![0]
-        .replace(/ style=".*?"/g, ''),
+        .replace(/ (style|layout|bounds)=".*?"/g, ''),
       chartBlob = new Blob([chartOuterHTML], {
         type: 'image/svg+xml;charset=utf-8',
       }),
