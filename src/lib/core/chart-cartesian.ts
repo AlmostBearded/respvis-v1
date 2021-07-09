@@ -6,16 +6,16 @@ import { debug, nodeToString } from './log';
 import { ScaleAny } from './scale';
 
 export interface DataChartCartesian {
-  mainAxis: DataAxis;
-  crossAxis: DataAxis;
+  xAxis: Partial<DataAxis>;
+  yAxis: Partial<DataAxis>;
   flipped: boolean;
 }
 
-export function dataChartCartesian(data?: Partial<DataChartCartesian>): DataChartCartesian {
+export function dataChartCartesian(data: Partial<DataChartCartesian>): DataChartCartesian {
   return {
-    mainAxis: dataAxis(data?.mainAxis),
-    crossAxis: dataAxis(data?.crossAxis),
-    flipped: false,
+    xAxis: data.xAxis || {},
+    yAxis: data.yAxis || {},
+    flipped: data.flipped || false,
   };
 }
 
@@ -50,13 +50,13 @@ export function chartCartesian<
 
       container
         .append('g')
-        .datum((d) => dataAxis())
+        .datum(dataAxis(d.yAxis))
         .call((s) => axisLeft(s))
         .layout('grid-area', '1 / 1');
 
       container
         .append('g')
-        .datum((d) => dataAxis())
+        .datum(dataAxis(d.xAxis))
         .call((s) => axisBottom(s))
         .layout('grid-area', '2 / 2');
     })
@@ -85,11 +85,11 @@ export function chartCartesianUpdateAxes<
   return selection.each(function (chartData, i, g) {
     const s = select<GElement, Datum>(g[i]);
 
-    const axisConfig = (selection: Selection<Element, DataAxis>, main: boolean) =>
+    const axisConfig = (selection: Selection<Element, DataAxis>, x: boolean) =>
       selection
-        .datum((d) => Object.assign(d, main ? chartData.mainAxis : chartData.crossAxis))
-        .classed('axis-main', main)
-        .classed('axis-cross', !main);
+        .datum((d) => Object.assign(d, x ? chartData.xAxis : chartData.yAxis))
+        .classed('axis-x', x)
+        .classed('axis-y', !x);
 
     if (chartData.flipped) {
       s.selectAll<SVGGElement, DataAxis>('.axis-left').call((s) => axisConfig(s, true));

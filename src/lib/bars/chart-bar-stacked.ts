@@ -7,27 +7,21 @@ import {
   DataChartCartesian,
 } from '../core/chart-cartesian';
 import { dataLegendSquares, legend } from '../legend';
-import {
-  dataSeriesBarStackedCreation,
-  DataSeriesBarStackedCreation,
-  DataSeriesBarStacked,
-  dataSeriesBarStacked,
-  seriesBarStacked,
-} from './series-bar-stacked';
+import { DataSeriesBarStacked, dataSeriesBarStacked, seriesBarStacked } from './series-bar-stacked';
 import { seriesLabel } from './series-label';
-import { dataLabelsBarCreation, dataSeriesLabelBar } from './series-label-bar';
+import { dataSeriesLabelBar } from './series-label-bar';
 
-export interface DataChartBarStacked extends DataSeriesBarStackedCreation, DataChartCartesian {
+export interface DataChartBarStacked extends DataSeriesBarStacked, DataChartCartesian {
   innerValues: string[];
   colors: string[];
 }
 
-export function dataChartBarStacked(data?: Partial<DataChartBarStacked>): DataChartBarStacked {
+export function dataChartBarStacked(data: Partial<DataChartBarStacked>): DataChartBarStacked {
   return {
-    ...dataSeriesBarStackedCreation(data),
+    ...dataSeriesBarStacked(data),
     ...dataChartCartesian(data),
-    innerValues: data?.innerValues || [],
-    colors: data?.colors || COLORS_CATEGORICAL,
+    innerValues: data.innerValues || [],
+    colors: data.colors || COLORS_CATEGORICAL,
   };
 }
 
@@ -52,13 +46,13 @@ export function chartBarStacked<
       const barSeries = drawArea
         .append('g')
         .layout('grid-area', '1 / 1')
-        .datum(dataSeriesBarStacked(chartData))
+        .datum(chartData)
         .call((s) => seriesBarStacked(s));
 
       drawArea
         .append('g')
         .layout('grid-area', '1 / 1')
-        .datum(dataSeriesLabelBar(dataLabelsBarCreation({ barContainer: barSeries })))
+        .datum(dataSeriesLabelBar({ barContainer: barSeries }))
         .call((s) => seriesLabel(s));
 
       chart
@@ -97,8 +91,8 @@ export function chartBarStackedDataChange<
     s.selectAll('.series-bar-stacked').dispatch('datachange');
     s.selectAll('.legend').dispatch('datachange');
 
-    chartData.mainAxis.scale = chartData.mainScale;
-    chartData.crossAxis.scale = chartData.crossScale;
+    chartData.xAxis.scale = chartData.categoryScale;
+    chartData.yAxis.scale = chartData.valueScale;
 
     chartCartesianUpdateAxes(s);
   });

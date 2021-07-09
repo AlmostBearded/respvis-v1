@@ -1,105 +1,93 @@
 import { range } from 'd3-array';
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { BaseType, Selection } from 'd3-selection';
-import { COLORS_CATEGORICAL, dataSeries, DataSeries } from '../core';
-import { Size } from '../core/utils';
+import { COLORS_CATEGORICAL, DataSeriesGenerator, findByDataProperty } from '../core';
 import { DataBar, JoinEvent, seriesBar } from './series-bar';
-
-export interface DataSeriesBarGroupedCreation {
-  mainValues: any[];
-  mainScale: ScaleBand<any>;
-  innerPadding: number;
-  crossValues: number[][];
-  crossScale: ScaleContinuousNumeric<number, number>;
-  keys?: string[];
-  flipped: boolean;
-}
-
-export function dataSeriesBarGroupedCreation(
-  data?: Partial<DataSeriesBarGroupedCreation>
-): DataSeriesBarGroupedCreation {
-  return {
-    mainValues: data?.mainValues || [],
-    mainScale:
-      data?.mainScale ||
-      scaleBand()
-        .domain(data?.mainValues || [])
-        .padding(0.1),
-    crossValues: data?.crossValues || [],
-    crossScale:
-      data?.crossScale ||
-      scaleLinear()
-        .domain([0, Math.max(...(data?.crossValues?.map((values) => Math.max(...values)) || []))])
-        .nice(),
-    flipped: data?.flipped || false,
-    innerPadding: data?.innerPadding || 0.1,
-  };
-}
 
 export interface DataBarGrouped extends DataBar {
   groupIndex: number;
 }
 
-export function dataBarsGrouped(
-  creationData: DataSeriesBarGroupedCreation,
-  bounds: Size
+export interface DataSeriesBarGrouped extends DataSeriesGenerator<DataBarGrouped> {
+  categories: any[];
+  categoryScale: ScaleBand<any>;
+  subcategoryPadding: number;
+  values: number[][];
+  valueScale: ScaleContinuousNumeric<number, number>;
+  keys?: string[][];
+  flipped: boolean;
+}
+
+export function dataSeriesBarGrouped(data: Partial<DataSeriesBarGrouped>): DataSeriesBarGrouped {
+  return {
+    categories: data.categories || [],
+    categoryScale:
+      data.categoryScale ||
+      scaleBand()
+        .domain(data.categories || [])
+        .padding(0.1),
+    values: data.values || [],
+    valueScale:
+      data.valueScale ||
+      scaleLinear()
+        .domain([0, Math.max(...(data.values?.map((values) => Math.max(...values)) || []))])
+        .nice(),
+    flipped: data.flipped || false,
+    subcategoryPadding: data.subcategoryPadding || 0.1,
+    dataGenerator: data.dataGenerator || dataBarGroupedGenerator,
+    keys: data.keys,
+  };
+}
+
+export function dataBarGroupedGenerator(
+  selection: Selection<Element, DataSeriesBarGrouped>
 ): DataBarGrouped[] {
-  if (!creationData.flipped) {
-    creationData.mainScale.range([0, bounds.width]);
-    creationData.crossScale.range([bounds.height, 0]);
+  const seriesDatum = selection.datum(),
+    bounds = selection.bounds()!;
+  if (!seriesDatum.flipped) {
+    seriesDatum.categoryScale.range([0, bounds.width]);
+    seriesDatum.valueScale.range([bounds.height, 0]);
   } else {
-    creationData.mainScale.range([0, bounds.height]);
-    creationData.crossScale.range([0, bounds.width]);
+    seriesDatum.categoryScale.range([0, bounds.height]);
+    seriesDatum.valueScale.range([0, bounds.width]);
   }
 
   const innerScale = scaleBand<number>()
-    .domain(range(creationData.crossValues[0]?.length || 0))
-    .range([0, creationData.mainScale.bandwidth()])
-    .padding(creationData.innerPadding);
+    .domain(range(seriesDatum.values[0]?.length || 0))
+    .range([0, seriesDatum.categoryScale.bandwidth()])
+    .padding(seriesDatum.subcategoryPadding);
 
   const data: DataBarGrouped[] = [];
-  for (let i = 0; i < creationData.crossValues.length; ++i) {
-    const subcategoryValues = creationData.crossValues[i];
+  for (let i = 0; i < seriesDatum.values.length; ++i) {
+    const subcategoryValues = seriesDatum.values[i];
     for (let j = 0; j < subcategoryValues.length; ++j) {
-      const c = creationData.mainValues[i];
+      const c = seriesDatum.categories[i];
       const v = subcategoryValues[j];
 
-      if (!creationData.flipped) {
+      if (!seriesDatum.flipped) {
         data.push({
           groupIndex: i,
           index: j,
-          key: creationData.keys?.[i][j] || `${i}/${j}`,
-          x: creationData.mainScale(c)! + innerScale(j)!,
-          y: Math.min(creationData.crossScale(0)!, creationData.crossScale(v)!),
+          key: seriesDatum.keys?.[i][j] || `${i}/${j}`,
+          x: seriesDatum.categoryScale(c)! + innerScale(j)!,
+          y: Math.min(seriesDatum.valueScale(0)!, seriesDatum.valueScale(v)!),
           width: innerScale.bandwidth(),
-          height: Math.abs(creationData.crossScale(0)! - creationData.crossScale(v)!),
+          height: Math.abs(seriesDatum.valueScale(0)! - seriesDatum.valueScale(v)!),
         });
       } else {
         data.push({
           groupIndex: i,
           index: j,
-          key: creationData.keys?.[i][j] || `${i}/${j}`,
-          x: Math.min(creationData.crossScale(0)!, creationData.crossScale(v)!),
-          y: creationData.mainScale(c)! + innerScale(j)!,
-          width: Math.abs(creationData.crossScale(0)! - creationData.crossScale(v)!),
+          key: seriesDatum.keys?.[i][j] || `${i}/${j}`,
+          x: Math.min(seriesDatum.valueScale(0)!, seriesDatum.valueScale(v)!),
+          y: seriesDatum.categoryScale(c)! + innerScale(j)!,
+          width: Math.abs(seriesDatum.valueScale(0)! - seriesDatum.valueScale(v)!),
           height: innerScale.bandwidth(),
         });
       }
     }
   }
-
   return data;
-}
-
-export interface DataSeriesBarGrouped extends DataSeries<DataBarGrouped> {}
-
-export function dataSeriesBarGrouped(
-  creationData: DataSeriesBarGroupedCreation
-): DataSeriesBarGrouped {
-  return dataSeries({
-    data: (s) => dataBarsGrouped(creationData, s.bounds()!),
-    key: (d) => d.key,
-  });
 }
 
 export function seriesBarGrouped<
@@ -116,4 +104,11 @@ export function seriesBarGrouped<
     .on('barenter.seriesbargrouped', (e: JoinEvent<SVGRectElement, DataBarGrouped>) =>
       e.detail.selection.attr('fill', (d) => COLORS_CATEGORICAL[d.index])
     );
+}
+
+export function barGroupedFindByGroupIndex(
+  container: Selection,
+  index: number
+): Selection<SVGRectElement, DataBarGrouped> {
+  return findByDataProperty<SVGRectElement, DataBarGrouped>(container, '.bar', 'groupIndex', index);
 }

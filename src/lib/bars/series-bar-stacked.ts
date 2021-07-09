@@ -1,104 +1,95 @@
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { BaseType, Selection } from 'd3-selection';
-import { COLORS_CATEGORICAL, dataSeries, DataSeries } from '../core';
+import { COLORS_CATEGORICAL, DataSeriesGenerator } from '../core';
 import { Size } from '../core/utils';
 import { DataBar, JoinEvent, seriesBar } from './series-bar';
-
-export interface DataSeriesBarStackedCreation {
-  mainValues: any[];
-  mainScale: ScaleBand<any>;
-  innerPadding: number;
-  crossValues: number[][];
-  crossScale: ScaleContinuousNumeric<number, number>;
-  keys?: string[];
-  flipped: boolean;
-}
-
-export function dataSeriesBarStackedCreation(
-  data?: Partial<DataSeriesBarStackedCreation>
-): DataSeriesBarStackedCreation {
-  return {
-    mainValues: data?.mainValues || [],
-    mainScale:
-      data?.mainScale ||
-      scaleBand()
-        .domain(data?.mainValues || [])
-        .padding(0.1),
-    crossValues: data?.crossValues || [],
-    crossScale:
-      data?.crossScale ||
-      scaleLinear()
-        .domain([
-          0,
-          Math.max(...(data?.crossValues?.map((values) => values.reduce((a, b) => a + b)) || [])),
-        ])
-        .nice(),
-    flipped: data?.flipped || false,
-    innerPadding: data?.innerPadding || 0.1,
-  };
-}
+import { DataSeriesBarGrouped } from './series-bar-grouped';
 
 export interface DataBarStacked extends DataBar {
   stackIndex: number;
 }
 
-export function dataBarsStacked(
-  creationData: DataSeriesBarStackedCreation,
-  bounds: Size
+export interface DataSeriesBarStacked extends DataSeriesGenerator<DataBarStacked> {
+  categories: any[];
+  categoryScale: ScaleBand<any>;
+  innerPadding: number;
+  values: number[][];
+  valueScale: ScaleContinuousNumeric<number, number>;
+  keys?: string[][];
+  flipped: boolean;
+}
+
+export function dataSeriesBarStacked(data: Partial<DataSeriesBarStacked>): DataSeriesBarStacked {
+  return {
+    categories: data.categories || [],
+    categoryScale:
+      data.categoryScale ||
+      scaleBand()
+        .domain(data.categories || [])
+        .padding(0.1),
+    values: data.values || [],
+    valueScale:
+      data.valueScale ||
+      scaleLinear()
+        .domain([
+          0,
+          Math.max(...(data.values?.map((values) => values.reduce((a, b) => a + b)) || [])),
+        ])
+        .nice(),
+    flipped: data.flipped || false,
+    innerPadding: data.innerPadding || 0.1,
+    keys: data.keys,
+    dataGenerator: data.dataGenerator || dataBarStackedGenerator,
+  };
+}
+
+export function dataBarStackedGenerator(
+  selection: Selection<Element, DataSeriesBarStacked>
 ): DataBarStacked[] {
-  if (!creationData.flipped) {
-    creationData.mainScale.range([0, bounds.width]);
-    creationData.crossScale.range([bounds.height, 0]);
+  const seriesDatum = selection.datum(),
+    bounds = selection.bounds()!;
+  if (!seriesDatum.flipped) {
+    seriesDatum.categoryScale.range([0, bounds.width]);
+    seriesDatum.valueScale.range([bounds.height, 0]);
   } else {
-    creationData.mainScale.range([0, bounds.height]);
-    creationData.crossScale.range([0, bounds.width]);
+    seriesDatum.categoryScale.range([0, bounds.height]);
+    seriesDatum.valueScale.range([0, bounds.width]);
   }
 
   const data: DataBarStacked[] = [];
-  for (let i = 0; i < creationData.mainValues.length; ++i) {
-    const subcategoryValues = creationData.crossValues[i];
+  for (let i = 0; i < seriesDatum.categories.length; ++i) {
+    const subcategoryValues = seriesDatum.values[i];
     let sum = 0;
     for (let j = 0; j < subcategoryValues.length; ++j) {
-      const c = creationData.mainValues[i];
+      const c = seriesDatum.categories[i];
       const v = subcategoryValues[j];
 
-      if (!creationData.flipped) {
+      if (!seriesDatum.flipped) {
         data.push({
           stackIndex: i,
           index: j,
-          key: creationData.keys?.[i][j] || `${i}/${j}`,
-          x: creationData.mainScale(c)!,
-          y: -sum + Math.min(creationData.crossScale(0)!, creationData.crossScale(v)!),
-          width: creationData.mainScale.bandwidth(),
-          height: Math.abs(creationData.crossScale(0)! - creationData.crossScale(v)!),
+          key: seriesDatum.keys?.[i][j] || `${i}/${j}`,
+          x: seriesDatum.categoryScale(c)!,
+          y: -sum + Math.min(seriesDatum.valueScale(0)!, seriesDatum.valueScale(v)!),
+          width: seriesDatum.categoryScale.bandwidth(),
+          height: Math.abs(seriesDatum.valueScale(0)! - seriesDatum.valueScale(v)!),
         });
         sum += data[data.length - 1].height;
       } else {
         data.push({
           stackIndex: i,
           index: j,
-          key: creationData.keys?.[i][j] || `${i}/${j}`,
-          x: sum + Math.min(creationData.crossScale(0)!, creationData.crossScale(v)!),
-          y: creationData.mainScale(c)!,
-          width: Math.abs(creationData.crossScale(0)! - creationData.crossScale(v)!),
-          height: creationData.mainScale.bandwidth(),
+          key: seriesDatum.keys?.[i][j] || `${i}/${j}`,
+          x: sum + Math.min(seriesDatum.valueScale(0)!, seriesDatum.valueScale(v)!),
+          y: seriesDatum.categoryScale(c)!,
+          width: Math.abs(seriesDatum.valueScale(0)! - seriesDatum.valueScale(v)!),
+          height: seriesDatum.categoryScale.bandwidth(),
         });
         sum += data[data.length - 1].width;
       }
     }
   }
   return data;
-}
-
-export interface DataSeriesBarStacked extends DataSeries<DataBarStacked> {}
-
-export function dataSeriesBarStacked(
-  creationData: DataSeriesBarStackedCreation
-): DataSeriesBarStacked {
-  return dataSeries({
-    data: (s) => dataBarsStacked(creationData, s.bounds()!),
-    key: (d) => d.key,
-  });
 }
 
 export function seriesBarStacked<

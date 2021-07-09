@@ -6,19 +6,13 @@ import {
   dataChartCartesian,
   DataChartCartesian,
 } from '../core/chart-cartesian';
-import {
-  dataSeriesPointCreation,
-  DataSeriesPointCreation,
-  DataSeriesPoint,
-  dataSeriesPoint,
-  seriesPoint,
-} from './series-point';
+import { DataSeriesPoint, dataSeriesPoint, seriesPoint } from './series-point';
 
-export interface DataChartPoint extends DataSeriesPointCreation, DataChartCartesian {}
+export interface DataChartPoint extends DataSeriesPoint, DataChartCartesian {}
 
-export function dataChartPoint(data?: Partial<DataChartPoint>): DataChartPoint {
+export function dataChartPoint(data: Partial<DataChartPoint>): DataChartPoint {
   return {
-    ...dataSeriesPointCreation(data),
+    ...dataSeriesPoint(data),
     ...dataChartCartesian(data),
   };
 }
@@ -48,7 +42,7 @@ export function chartPoint<
       drawArea
         .append('g')
         .layout('grid-area', '1 / 1')
-        .datum(dataSeriesPoint(d))
+        .datum(d)
         .call((s) => seriesPoint(s));
     })
     .on('datachange.debuglog', function () {
@@ -74,8 +68,8 @@ export function chartPointDataChange<
     s.selectAll('.series-point').dispatch('datachange');
 
     chartData.flipped = false;
-    chartData.mainAxis.scale = chartData.mainScale;
-    chartData.crossAxis.scale = chartData.crossScale;
+    chartData.xAxis.scale = chartData.xScale;
+    chartData.yAxis.scale = chartData.yScale;
 
     chartCartesianUpdateAxes(s);
   });

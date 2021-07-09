@@ -1,26 +1,25 @@
 import { easeCubicOut } from 'd3-ease';
-import { BaseType, select, Selection } from 'd3-selection';
-import { debug, nodeToString, Position, positionToTransformAttr } from '../core';
-import { dataSeries, DataSeries } from '../core/series';
+import { BaseType, select, Selection, ValueFn } from 'd3-selection';
+import {
+  DataSeriesGenerator,
+  debug,
+  findByFilter,
+  findByIndex,
+  findByKey,
+  nodeToString,
+  Position,
+  positionToTransformAttr,
+} from '../core';
 
 export interface DataLabel extends Position {
   text: string | number;
   // todo: add index property?
-  key?: string;
-}
-
-export interface DataSeriesLabel extends DataSeries<DataLabel> {}
-
-export function dataSeriesLabel(data?: Partial<DataSeriesLabel>): DataSeriesLabel {
-  return dataSeries({
-    data: data?.data,
-    key: data?.key || ((d, i) => d.key || i),
-  });
+  key: string;
 }
 
 export function seriesLabel<
   GElement extends Element,
-  Datum extends DataSeriesLabel,
+  Datum extends DataSeriesGenerator<DataLabel>,
   PElement extends BaseType,
   PDatum
 >(
@@ -49,7 +48,7 @@ export function seriesLabel<
 
 export function seriesLabelRender<
   GElement extends Element,
-  Datum extends DataSeriesLabel,
+  Datum extends DataSeriesGenerator<DataLabel>,
   PElement extends BaseType,
   PDatum
 >(
@@ -57,10 +56,10 @@ export function seriesLabelRender<
 ): Selection<GElement, Datum, PElement, PDatum> {
   return selection.each((d, i, g) => {
     debug(`render label series on ${nodeToString(g[i])}`);
-    const series = select(g[i]);
+    const series = select<GElement, Datum>(g[i]);
     series
       .selectAll<SVGTextElement, DataLabel>('text')
-      .data(d.data instanceof Function ? d.data(series) : d.data, d.key)
+      .data(d.dataGenerator(series), (d) => d.key)
       .join(
         (enter) =>
           enter
@@ -97,4 +96,27 @@ export function seriesLabelRender<
       .text((d) => d.text)
       .call((s) => selection.dispatch('labelupdate', { detail: { selection: s } }));
   });
+}
+
+export function labelHighlight(label: Selection, highlight: boolean): void {
+  if (highlight) label.attr('font-size', '1.2em').attr('text-decoration', 'underline');
+  else label.attr('font-size', null).attr('text-decoration', null);
+}
+
+export function labelFind(container: Selection, key: string): Selection<SVGTextElement, DataLabel> {
+  return findByKey<SVGTextElement, DataLabel>(container, '.label', key);
+}
+
+export function labelFindByIndex(
+  container: Selection,
+  index: number
+): Selection<SVGTextElement, DataLabel> {
+  return findByIndex<SVGTextElement, DataLabel>(container, '.label', index);
+}
+
+export function labelFindByFilter(
+  container: Selection,
+  filter: ValueFn<SVGTextElement, DataLabel, boolean>
+): Selection<SVGTextElement, DataLabel> {
+  return findByFilter<SVGTextElement, DataLabel>(container, '.label', filter);
 }

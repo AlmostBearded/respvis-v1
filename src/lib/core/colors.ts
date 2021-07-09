@@ -1,8 +1,3 @@
-import chroma from 'chroma-js';
-
-// todo: remove chroma dependency or find a way to optimize tree shaking
-// chroma issue with tree shaking: https://github.com/gka/chroma.js/issues/138
-
 export const COLORS_CATEGORICAL = [
   '#78b4c6',
   '#1c9820',

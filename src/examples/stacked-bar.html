@@ -35,17 +35,21 @@
           const rounded = roundShare(value);
           return rounded === 0 ? '' : `${rounded}`;
         },
-        keys = shares.map((pS, i) => pS.map((_, j) => `${platforms[i]}${years[j]}`)),
+        keys = shares.map((pS, i) => pS.map((_, j) => `${years[i]}${platforms[j]}`)),
         labels = shares.flat().map(formatShare);
 
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
       const root = d3.select('#chart'),
-        layouter = root.append('div').call(respVis.layouter),
+        layouter = root
+          .append('div')
+          .datum((_, i, g) => respVis.dataLayouter(g[i]))
+          .call(respVis.layouter)
+          .style('height', '100%'),
         chartDatum = respVis.dataChartBarStacked({
-          mainValues: years,
-          crossValues: shares,
-          crossScale: shareScale,
+          categories: years,
+          values: shares,
+          valueScale: shareScale,
           keys: keys,
           innerValues: platforms,
           mainAxis: {
@@ -67,7 +71,7 @@
         labelSeries = chart.selectAll('.series-label'), // todo: labels don't fit. find a better solution. tooltip?
         labelDatum = labelSeries.datum();
 
-      labelDatum.creation.labels = labels;
+      labelDatum.labels = labels;
 
       window.addEventListener('resize', configure);
       configure();

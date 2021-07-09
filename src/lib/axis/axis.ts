@@ -11,6 +11,7 @@ import { BaseType, select, Selection } from 'd3-selection';
 import { SelectionOrTransition, Transition } from 'd3-transition';
 import {
   debug,
+  findByIndex,
   nodeToString,
   textHorizontalAttrs,
   textTitleAttrs,
@@ -28,12 +29,12 @@ export interface DataAxis {
   configureAxis: ConfigureAxisFn;
 }
 
-export function dataAxis(data?: Partial<DataAxis>): DataAxis {
+export function dataAxis(data: Partial<DataAxis>): DataAxis {
   return {
-    scale: data?.scale || scaleLinear().domain([0, 1]).range([0, 600]),
-    title: data?.title || '',
-    subtitle: data?.subtitle || '',
-    configureAxis: data?.configureAxis || (() => {}),
+    scale: data.scale || scaleLinear().domain([0, 1]).range([0, 600]),
+    title: data.title || '',
+    subtitle: data.subtitle || '',
+    configureAxis: data.configureAxis || (() => {}),
   };
 }
 
@@ -228,4 +229,13 @@ export function xyAttrsToTransformAttr(
     })
     .attr('x', null)
     .attr('y', null);
+}
+
+export function axisTickFindByIndex(container: Selection, index: number): Selection<SVGGElement> {
+  return findByIndex<SVGGElement>(container, '.tick', index);
+}
+
+export function axisTickHighlight(tick: Selection, highlight: boolean): void {
+  if (highlight) tick.attr('text-decoration', 'underline');
+  else tick.attr('text-decoration', null);
 }

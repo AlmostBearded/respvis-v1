@@ -21,69 +21,49 @@
 
     <div id="chart"></div>
     <script src="./vendor/d3.v6.js"></script>
-    <script src="./vendor/chroma.min.js"></script>
     <script src="../respvis.js"></script>
     <script type="module">
       import data from './data/company.js';
 
       const sites = data.sites,
         revenues = data.revenues,
+        revenueDomain = (revs) => [0, Math.max(...revs.flat()) * 1.05],
         years = data.years,
         colors = ['#4f8c9d', '#e23209', '#539322'],
-        highlightedColors = colors.map((c) => chroma.hex(c).brighten(0.25).hex()),
-        activeColors = [...colors],
-        colorScale = d3.scaleOrdinal().domain(years).range(colors),
         keys = revenues.map((yearlyRevs, i) => yearlyRevs.map((_, j) => sites[i] + years[j]));
 
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
       const root = d3.select('#chart'),
-        layouter = root.append('div').call(respVis.layouter),
-        chartDatum = respVis.dataChartBarGrouped({
-          mainValues: sites,
-          crossValues: revenues,
-          crossScale: d3
-            .scaleLinear()
-            .domain([0, Math.max(...revenues.flat()) * 1.05])
-            .nice(),
-          legendTitle: 'Years',
-          innerValues: years,
-          colors: activeColors,
-          mainAxis: {
+        chartWindowDatum = respVis.dataChartWindowBarGrouped({
+          categoryEntity: 'Sites',
+          categories: sites,
+          subcategoryEntity: 'Years',
+          subcategories: years,
+          valueEntity: 'Revenue',
+          values: revenues,
+          valueScale: d3.scaleLinear().domain(revenueDomain(revenues)).nice(),
+          colors: colors,
+          keys: keys,
+          xAxis: {
             title: 'Site',
           },
-          crossAxis: {
+          yAxis: {
             title: 'Revenue',
             subtitle: '[Million USD]',
           },
+          legend: {
+            title: 'Years',
+          },
         }),
-        chart = layouter
-          .append('svg')
-          .datum(chartDatum)
-          .call(respVis.chartBarGrouped)
-          .on('datachange', () => {
-            chart
-              .selectAll('.axis-main .tick')
-              .on('mouseover mouseout', (e) =>
-                hoverAxisTick(e.currentTarget, e.type.endsWith('over'))
-              );
-            chart
-              .selectAll('.legend .item')
-              .on('mouseover mouseout', (e) =>
-                hoverLegendItem(e.currentTarget, e.type.endsWith('over'))
-              );
-          }),
-        defs = chart.append('defs'),
-        highlightFilter = defs.append('filter').call(respVis.filterBrightness, 1.3),
-        highlightFilterUrl = `url(#${highlightFilter.attr('id')})`,
-        barSeries = chart
-          .selectAll('.series-bar')
-          .on('mouseover mouseout', (e) => hoverBar(e.target, e.type.endsWith('over'))),
-        legend = chart.selectAll('.legend').attr('cursor', 'default'),
-        labelSeries = chart.selectAll('.series-label'),
+        chartWindow = root
+          .append('div')
+          .datum(chartWindowDatum)
+          .call(respVis.chartWindowBarGrouped),
+        labelSeries = chartWindow.selectAll('svg.chart .series-label'),
         labelDatum = labelSeries.datum();
 
-      labelDatum.creation.labels = revenues.flat();
+      labelDatum.labels = revenues.flat();
 
       window.addEventListener('resize', configure);
       configure();
@@ -100,298 +80,17 @@
         const legendAlignSelf = narrow ? 'flex-end' : 'flex-start';
         const legendItemsFlexDirection = narrow ? 'row' : 'column';
 
-        chartDatum.flipped = flippedBars;
+        chartWindow.datum((d) => Object.assign(d, { flipped: flippedBars }));
         labelSeries.call(labelConfig);
 
-        chart.layout('flex-direction', chartFlexDirection);
+        chartWindow.selectAll('svg.chart').layout('flex-direction', chartFlexDirection);
 
-        legend
+        chartWindow
+          .selectAll('svg.chart .legend')
           .layout('align-self', legendAlignSelf)
           .selectAll('.items')
           .layout('flex-direction', legendItemsFlexDirection);
-
-        chart.datum(chartDatum);
       }
-
-      function highlightBar(groupIndex, barIndex, highlight) {
-        barSeries
-          .selectAll('.bar')
-          .filter((d) => d.groupIndex === groupIndex && d.index === barIndex)
-          .attr('filter', highlight ? highlightFilterUrl : null);
-      }
-
-      function highlightLabel(index, highlight) {
-        labelSeries
-          .selectAll('.label')
-          .filter((d, i) => i === index)
-          .attr('font-size', highlight ? '1.2em' : null)
-          .attr('text-decoration', highlight ? 'underline' : null);
-      }
-
-      function highlightAxisTick(index, highlight) {
-        chart
-          .selectAll('.axis-main .tick')
-          .filter((d, i) => i === index)
-          .attr('text-decoration', highlight ? 'underline' : null);
-      }
-
-      function highlightLegendItem(index, highlight) {
-        legend
-          .selectAll('.item')
-          .filter((d, i) => i === index)
-          .call((item) =>
-            item.selectAll('.symbol').attr('filter', highlight ? highlightFilterUrl : null)
-          )
-          .call((item) =>
-            item.selectAll('.label').attr('text-decoration', highlight ? 'underline' : null)
-          );
-      }
-
-      function hoverBar(element, hover) {
-        const barDatum = d3.select(element).datum();
-        highlightBar(barDatum.groupIndex, barDatum.index, hover);
-        highlightLabel(barDatum.groupIndex * years.length + barDatum.index, hover);
-        highlightAxisTick(barDatum.groupIndex, hover);
-        highlightLegendItem(barDatum.index, hover);
-      }
-
-      function siblingIndex(element) {
-        let tickIndex = 0;
-        let sibling = element;
-        while ((sibling = sibling.previousElementSibling)) tickIndex++;
-        return tickIndex;
-      }
-
-      function hoverAxisTick(element, hover) {
-        const tickIndex = siblingIndex(element) - 1; // -1 because domain is 1st sibling
-        years.forEach((_, i) => {
-          highlightBar(tickIndex, i, hover);
-          highlightLabel(tickIndex * years.length + i, hover);
-        });
-        highlightAxisTick(tickIndex, hover);
-      }
-
-      function hoverLegendItem(element, hover) {
-        const itemIndex = siblingIndex(element);
-        sites.forEach((_, siteIndex) => {
-          highlightBar(siteIndex, itemIndex, hover);
-          highlightLabel(siteIndex * years.length + itemIndex, hover);
-        });
-        highlightLegendItem(itemIndex, hover);
-      }
-
-      // // needed to toggle years
-      // let yearToggles = [true, true, true],
-      //   filteredBarColors = barColors;
-
-      // const chart = respVis.chart(),
-      //   root = chart.root().layout('margin-horizontal', 20).layout('margin-top', 20);
-
-      // const barChart = respVis
-      //     .groupedBarChart()
-      //     .mainValues(sites)
-      //     .mainScale(siteScale)
-      //     .mainTitle('Sites')
-      //     .crossValues(revenues)
-      //     .crossScale(revenueScale)
-      //     .crossTitle('Revenues')
-      //     .keys(keys),
-      //   bars = barChart
-      //     .bars()
-      //     .onUpdateBars((selection) => respVis.updateGroupedBars(selection, filteredBarColors))
-      //     .on('mouseover', (e, d) => hoverBar(d.mainIndex, d.crossIndex, true))
-      //     .on('mouseout', (e, d) => hoverBar(d.mainIndex, d.crossIndex, false)),
-      //   drawArea = barChart.drawArea();
-      // root.child('bar-chart', barChart);
-
-      // const barLabels = respVis
-      //   .barLabels(() =>
-      //     bars
-      //       .barData()
-      //       .flat()
-      //       .map((bD) => bD.rect)
-      //   )
-      //   .labels(revenues.flat().map(revenueFormatter))
-      //   .attr('pointer-events', 'none')
-      //   .attr('font-size', 0);
-      // drawArea.child('bar-labels', barLabels);
-
-      // const legend = respVis
-      //   .legend(years.length)
-      //   .attr('cursor', 'default')
-      //   .on('mouseover', (event, data) => hoverLegendSwatch(data.childIndex, true))
-      //   .on('mouseout', (event, data) => hoverLegendSwatch(data.childIndex, false))
-      //   .on('click', (event, data) => clickLegendSwatch(data.childIndex))
-      //   .layout('place-content', 'start end')
-      //   .call((legend) =>
-      //     legend.swatches().forEach((swatch, i) => {
-      //       swatch.rect().attr('fill', barColors[i]);
-      //       swatch.label().text(years[i]);
-      //     })
-      //   );
-      // root.child('legend', legend);
-
-      // barChart
-      //   .configurator(0, (bC) => {
-      //     root.layout('grid-template', 'auto 1fr / 1fr');
-      //     bC.layout('grid-area', '2 / 1 / 3 / 2')
-      //       .orientation(respVis.BarOrientation.Horizontal)
-      //       .call(configureBarChartAxes);
-      //     barLabels.call(configureHorizontalBarLabels);
-      //     legend
-      //       .layout('grid-area', '1 / 1 / 2 / 2')
-      //       .layout('margin-bottom', 10)
-      //       .layout('margin-left', 0)
-      //       .rowCount(1)
-      //       .columnCount(years.length);
-      //   })
-      //   .mediaQueryConfigurator(1, wideMediaQuery, (bC) => {
-      //     root.layout('grid-template', '1fr / 1fr auto');
-      //     bC.layout('grid-area', '1 / 1 / 2 / 2')
-      //       .orientation(respVis.BarOrientation.Vertical)
-      //       .call(configureBarChartAxes);
-      //     barLabels.call(configureVerticalBarLabels);
-      //     legend
-      //       .layout('grid-area', '1 / 2 / 2 / 3')
-      //       .layout('margin-bottom', 0)
-      //       .layout('margin-left', 10)
-      //       .rowCount(years.length)
-      //       .columnCount(1);
-      //   });
-
-      // chart.mount('#chart');
-
-      // function configureHorizontalBarLabels(barLabels) {
-      //   barLabels
-      //     .widthPercent(0)
-      //     .heightPercent(0.5)
-      //     .attr('dominant-baseline', 'middle')
-      //     .attr('text-anchor', 'start')
-      //     .attr('transform', 'translate(4, 0)');
-      // }
-
-      // function configureVerticalBarLabels(barLabels) {
-      //   barLabels
-      //     .widthPercent(0.5)
-      //     .heightPercent(1)
-      //     .attr('dominant-baseline', 'auto')
-      //     .attr('text-anchor', 'middle')
-      //     .attr('transform', 'translate(0, -4)');
-      // }
-
-      // function configureBarChartAxes(barChart) {
-      //   barChart
-      //     .mainAxis()
-      //     .ticks()
-      //     .attr('cursor', 'default')
-      //     .onConfigureAxis((axis) => {})
-      //     .on('mouseover', (event, data) => hoverMainAxisTick(data.tickIndex, true))
-      //     .on('mouseout', (event, data) => hoverMainAxisTick(data.tickIndex, false));
-
-      //   barChart
-      //     .crossAxis()
-      //     .ticks()
-      //     .attr('cursor', 'auto')
-      //     .onConfigureAxis((axis) => axis.tickFormat(revenueFormatter).ticks(5))
-      //     .on('mouseover', null)
-      //     .on('mouseout', null);
-      // }
-
-      // function legendSwatchIndexToBarIndex(swatchIndex) {
-      //   return yearToggles.slice(0, swatchIndex).filter((t) => t).length;
-      // }
-
-      // function barIndexToRevenueIndex(barIndex) {
-      //   let lastIndex = -1;
-      //   for (let i = 0; i <= barIndex; ++i) lastIndex = yearToggles.indexOf(true, lastIndex + 1);
-      //   return lastIndex;
-      // }
-
-      // function nthOfType(index) {
-      //   return `:nth-of-type(${index + 1})`;
-      // }
-
-      // function highlightBar(categoryIndex, barIndex, highlight) {
-      //   const c = filteredBarColors[barIndex];
-      //   bars
-      //     .select(`.bar-group${nthOfType(categoryIndex)} rect${nthOfType(barIndex)}`)
-      //     .attr('fill', highlight ? respVis.brighten(c, 0.5) : c);
-      // }
-
-      // function highlightMainAxisTick(tickIndex, highlight) {
-      //   barChart
-      //     .mainAxis()
-      //     .select(`.tick${nthOfType(tickIndex)}`)
-      //     .attr('text-decoration', highlight ? 'underline' : null);
-      // }
-
-      // function highlightLegendSwatch(swatchIndex, highlight) {
-      //   const c = barColors[swatchIndex];
-      //   const swatch = legend.swatches()[swatchIndex];
-      //   swatch.rect().attr('fill', highlight ? respVis.brighten(c, 0.5) : c);
-      //   swatch.label().attr('text-decoration', highlight ? 'underline' : null);
-      // }
-
-      // function disableLegendSwatch(swatchIndex, disable) {
-      //   const c = barColors[swatchIndex];
-      //   const swatch = legend.swatches()[swatchIndex];
-      //   swatch.rect().attr('fill', disable ? respVis.desaturate(c, 4) : c);
-      //   swatch.label().attr('fill', disable ? '#ababab' : null);
-      // }
-
-      // function showLabel(labelIndex, show) {
-      //   barLabels.select(`text${nthOfType(labelIndex)} `).attr('font-size', show ? '1rem' : null);
-      // }
-
-      // function hoverBar(categoryIndex, barIndex, hover) {
-      //   const flatBarIndex = categoryIndex * yearToggles.filter((t) => t).length + barIndex;
-      //   highlightBar(categoryIndex, barIndex, hover);
-      //   showLabel(flatBarIndex, hover);
-      //   highlightMainAxisTick(categoryIndex, hover);
-      //   highlightLegendSwatch(barIndexToRevenueIndex(barIndex), hover);
-      // }
-
-      // function hoverMainAxisTick(tickIndex, hover) {
-      //   highlightMainAxisTick(tickIndex, hover);
-      //   const yearCount = yearToggles.filter((t) => t).length;
-      //   for (let i = 0; i < yearCount; ++i) {
-      //     const flatBarIndex = tickIndex * yearCount + i;
-      //     highlightBar(tickIndex, i, hover);
-      //     showLabel(flatBarIndex, hover);
-      //   }
-      // }
-
-      // function hoverLegendSwatch(swatchIndex, hover) {
-      //   if (yearToggles[swatchIndex] === false) return;
-
-      //   highlightLegendSwatch(swatchIndex, hover);
-      //   const yearCount = yearToggles.filter((t) => t).length;
-      //   sites.forEach((site, siteIndex) => {
-      //     let barIndex = legendSwatchIndexToBarIndex(swatchIndex);
-      //     const flatBarIndex = siteIndex * yearCount + barIndex;
-      //     highlightBar(siteIndex, barIndex, hover);
-      //     showLabel(flatBarIndex, hover);
-      //   });
-      // }
-
-      // function clickLegendSwatch(swatchIndex) {
-      //   // Prevent hiding the last subcategory
-      //   if (yearToggles.filter((t) => t).length === 1 && yearToggles[swatchIndex] === true) return;
-
-      //   hoverLegendSwatch(swatchIndex, false);
-      //   yearToggles[swatchIndex] = !yearToggles[swatchIndex];
-      //   disableLegendSwatch(swatchIndex, !yearToggles[swatchIndex]);
-
-      //   const newRevs = revenues.map((yearlyRevs) => yearlyRevs.filter((_, i) => yearToggles[i]));
-      //   const newKeys = keys.map((yearlyKeys) => yearlyKeys.filter((_, i) => yearToggles[i]));
-      //   bars.crossValues(newRevs).keys(newKeys);
-
-      //   filteredBarColors = barColors.filter((c, i) => yearToggles[i]);
-
-      //   barLabels.labels(newRevs.flat().map(revenueFormatter));
-
-      //   chart.transition();
-      // }
     </script>
   </body>
 </html>

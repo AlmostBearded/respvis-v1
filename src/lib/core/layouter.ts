@@ -15,29 +15,26 @@ export interface DataLayouter {
 
 export function dataLayouter(layouter: HTMLDivElement): DataLayouter {
   const layoutNodeResizeObserver = new ResizeObserver((entries) => {
-    const changedNodePaths: number[][] = [];
+    select(layouter)
+      .selectAll<HTMLDivElement, SVGElement>('.layout')
+      .call((s) => layoutNodeObserveResize(s, layoutNodeResizeObserver))
+      .call((s) => layoutNodeStyleAttr(s))
+      .each((d, i, g) => layoutNodeBounds(select(g[i])) && renderQueueEnqueue(d));
 
-    let layoutNodes = select(layouter).selectChildren<HTMLDivElement, SVGElement>('.layout');
-
-    while (!layoutNodes.empty()) {
-      layoutNodes = layoutNodes
-        .call((s) => layoutNodeObserveResize(s, layoutNodeResizeObserver))
-        .call((s) => layoutNodeStyleAttr(s))
-        .each((d, i, g) => layoutNodeBounds(select(g[i])) && renderQueueEnqueue(d))
-        .selectChildren<HTMLDivElement, SVGElement>('.layout');
-    }
+    select(layouter)
+      .selectChildren('[layout]')
+      .call((s) => {
+        const bounds = s.bounds()!;
+        s.style('left', bounds.x).style('top', bounds.y).attr('x', null).attr('y', null);
+      });
 
     renderQueueRender();
   });
 
   const svgNodeResizeObserver = new ResizeObserver((entries) => {
-    let layoutNodes = select(layouter).selectChildren<HTMLDivElement, SVGElement>('.layout');
-
-    while (!layoutNodes.empty()) {
-      layoutNodes = layoutNodes
-        .call((s) => layoutNodeStyleAttr(s))
-        .selectChildren<HTMLDivElement, SVGElement>('.layout');
-    }
+    select(layouter)
+      .selectAll<HTMLDivElement, SVGElement>('.layout')
+      .call((s) => layoutNodeStyleAttr(s));
   });
 
   const layoutAttrMutationObserver = new MutationObserver((mutations) => {
@@ -84,14 +81,7 @@ function layoutNodeRoot(layouter: HTMLDivElement): Selection<HTMLDivElement, SVG
     .selectChildren<HTMLDivElement, SVGElement>('.layout')
     .data(layedOutChildren(layouter))
     .join('div')
-    .each((d) =>
-      select(d)
-        .layout('position', 'absolute')
-        .layout('top', 0)
-        .layout('bottom', 0)
-        .layout('left', 0)
-        .layout('right', 0)
-    );
+    .each((d) => select(d).layout('grid-area', 'chart / chart').style('position', 'absolute'));
 }
 
 function layoutNodeStyleAttr(selection: Selection<HTMLDivElement, SVGElement>): void {
@@ -165,15 +155,12 @@ function layedOutChildren(parent: Element): SVGElement[] {
   return select(parent).selectChildren<SVGElement, unknown>('[layout]').nodes();
 }
 
-export function layouter<Datum, PElement extends BaseType, PDatum>(
-  selection: Selection<HTMLDivElement, Datum, PElement, PDatum>
-): Selection<HTMLDivElement, DataLayouter, PElement, PDatum> {
-  return selection
+export function layouter(selection: Selection<HTMLDivElement, DataLayouter>): void {
+  selection
     .classed('layouter', true)
+    .style('display', 'grid')
+    .style('grid-template', '[chart] 1fr / [chart] 1fr')
     .style('position', 'relative')
-    .style('width', '100%')
-    .style('height', '100%')
-    .datum((d, i, g) => dataLayouter(g[i]))
     .each((d, i, g) => {
       d.layoutNodeResizeObserver.observe(g[i]);
       d.layoutAttrMutationObserver.observe(g[i], {
