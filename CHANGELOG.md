@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add menuTools (menuDropdown).
 - Add toolbar.
 - Add chartWindow (= chart + toolbar).
+- Add toolDownloadSVG.
+  - To download the chart inside a chartWindow as an SVG file.
 - Add seriesCheckbox.
 - Add toolFilterNominal.
 - Add chartWindowBarGrouped (= chartBarGrouped + toolbar with category & subcategory filters)
