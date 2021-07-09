@@ -29,6 +29,8 @@ export function dataLayouter(layouter: HTMLDivElement): DataLayouter {
           .style('top', bounds.y)
           .attr('x', null)
           .attr('y', null)
+          .attr('width', null)
+          .attr('height', null)
           .attr('viewBox', rectToString({ ...bounds, x: 0, y: 0 }));
       });
 

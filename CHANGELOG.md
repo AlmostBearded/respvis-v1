@@ -94,7 +94,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - mainScale → xScale
   - crossValues → yValues
   - crossScale → yScale
-- Set viewBox attribute on chart root node.
+- Set viewBox attribute on chart root.
+- Remove width and height attributes from chart root.
 - Set namespace attribute on chart.
 
 ### Removed
