@@ -4,6 +4,7 @@ import {
   chartWindow,
   DataToolFilterNominal,
   dataToolFilterNominal,
+  toolDownloadSVG,
   toolFilterNominal,
 } from '../chart-window';
 import { chartBarGrouped, dataChartBarGrouped, DataChartBarGrouped } from './chart-bar-grouped';
@@ -64,6 +65,9 @@ export function chartWindowBarGrouped(
           })
         )
         .call(toolFilterNominal);
+
+      // download svg
+      menuItems.append('li').call((s) => toolDownloadSVG(s));
 
       chartWindow.on('change', function () {
         select<Element, DataChartWindowBarGrouped>(this).call((s) =>
