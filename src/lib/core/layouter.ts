@@ -25,7 +25,11 @@ export function dataLayouter(layouter: HTMLDivElement): DataLayouter {
       .selectChildren('[layout]')
       .call((s) => {
         const bounds = s.bounds()!;
-        s.style('left', bounds.x).style('top', bounds.y).attr('x', null).attr('y', null);
+        s.style('left', bounds.x)
+          .style('top', bounds.y)
+          .attr('x', null)
+          .attr('y', null)
+          .attr('viewBox', rectToString({ ...bounds, x: 0, y: 0 }));
       });
 
     renderQueueRender();
