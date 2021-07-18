@@ -1,6 +1,6 @@
 import { BaseType, select, Selection } from 'd3-selection';
 import { axisTickFindByIndex, axisTickHighlight } from '../axis';
-import { COLORS_CATEGORICAL, debug, nodeToString, siblingIndex } from '../core';
+import { debug, nodeToString, siblingIndex } from '../core';
 import {
   chartCartesian,
   chartCartesianUpdateAxes,
@@ -28,7 +28,6 @@ import { dataSeriesLabelBar } from './series-label-bar';
 
 export interface DataChartBarGrouped extends DataSeriesBarGrouped, DataChartCartesian {
   legend: Partial<DataLegendSquares>;
-  colors: string[];
   subcategories: string[];
 }
 
@@ -39,7 +38,6 @@ export function dataChartBarGrouped(data: Partial<DataChartBarGrouped>): DataCha
     ...dataChartCartesian(data),
     legend: data.legend || {},
     subcategories: data.subcategories || seriesData.values.map((d, i) => i.toString()),
-    colors: data.colors || COLORS_CATEGORICAL,
   };
 }
 
@@ -64,9 +62,6 @@ export function chartBarGrouped<
         .layout('grid-area', '1 / 1')
         .datum(chartData)
         .call((s) => seriesBarGrouped(s))
-        .on('barupdate', (e: JoinEvent<SVGRectElement, DataBar>) =>
-          e.detail.selection.attr('fill', (d) => chartData.colors[d.index])
-        )
         .on('mouseover.chartbargroupedhighlight mouseout.chartbargroupedhighlight', (e) =>
           chartBarGroupedHoverBar(chart, select(e.target), e.type.endsWith('over'))
         );

@@ -1,7 +1,7 @@
 import { range } from 'd3-array';
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
-import { BaseType, Selection } from 'd3-selection';
-import { COLORS_CATEGORICAL, DataSeriesGenerator, findByDataProperty } from '../core';
+import { BaseType, Selection, ValueFn } from 'd3-selection';
+import { COLORS_CATEGORICAL, DataSeriesGenerator, findByDataProperty, Rect } from '../core';
 import { DataBar, JoinEvent, seriesBar } from './series-bar';
 
 export interface DataBarGrouped extends DataBar {
@@ -14,6 +14,7 @@ export interface DataSeriesBarGrouped extends DataSeriesGenerator<DataBarGrouped
   subcategoryPadding: number;
   values: number[][];
   valueScale: ScaleContinuousNumeric<number, number>;
+  colors: string[];
   keys?: string[][];
   flipped: boolean;
 }
@@ -32,6 +33,7 @@ export function dataSeriesBarGrouped(data: Partial<DataSeriesBarGrouped>): DataS
       scaleLinear()
         .domain([0, Math.max(...(data.values?.map((values) => Math.max(...values)) || []))])
         .nice(),
+    colors: data.colors || COLORS_CATEGORICAL,
     flipped: data.flipped || false,
     subcategoryPadding: data.subcategoryPadding || 0.1,
     dataGenerator: data.dataGenerator || dataBarGroupedGenerator,
@@ -61,30 +63,28 @@ export function dataBarGroupedGenerator(
   for (let i = 0; i < seriesDatum.values.length; ++i) {
     const subcategoryValues = seriesDatum.values[i];
     for (let j = 0; j < subcategoryValues.length; ++j) {
-      const c = seriesDatum.categories[i];
-      const v = subcategoryValues[j];
-
-      if (!seriesDatum.flipped) {
-        data.push({
-          groupIndex: i,
-          index: j,
-          key: seriesDatum.keys?.[i][j] || `${i}/${j}`,
+      const c = seriesDatum.categories[i],
+        v = subcategoryValues[j],
+        rect: Rect = {
           x: seriesDatum.categoryScale(c)! + innerScale(j)!,
           y: Math.min(seriesDatum.valueScale(0)!, seriesDatum.valueScale(v)!),
           width: innerScale.bandwidth(),
           height: Math.abs(seriesDatum.valueScale(0)! - seriesDatum.valueScale(v)!),
-        });
-      } else {
-        data.push({
-          groupIndex: i,
-          index: j,
-          key: seriesDatum.keys?.[i][j] || `${i}/${j}`,
+        },
+        flippedRect: Rect = {
           x: Math.min(seriesDatum.valueScale(0)!, seriesDatum.valueScale(v)!),
           y: seriesDatum.categoryScale(c)! + innerScale(j)!,
           width: Math.abs(seriesDatum.valueScale(0)! - seriesDatum.valueScale(v)!),
           height: innerScale.bandwidth(),
-        });
-      }
+        },
+        bar: DataBarGrouped = {
+          groupIndex: i,
+          index: j,
+          key: seriesDatum.keys?.[i][j] || `${i}/${j}`,
+          color: seriesDatum.colors[j],
+          ...(seriesDatum.flipped ? flippedRect : rect),
+        };
+      data.push(bar);
     }
   }
   return data;
