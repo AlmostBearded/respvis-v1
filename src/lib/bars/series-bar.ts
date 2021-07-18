@@ -1,5 +1,5 @@
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
-import { BaseType, select, Selection } from 'd3-selection';
+import { BaseType, select, Selection, ValueFn } from 'd3-selection';
 import {
   COLORS_CATEGORICAL,
   DataSeriesGenerator,
@@ -16,6 +16,7 @@ import { filterBrightness } from '../filters';
 export interface DataBar extends Rect {
   index: number;
   key: string;
+  color: string | ValueFn<SVGRectElement, DataBar, string>;
 }
 
 export interface DataSeriesBar extends DataSeriesGenerator<DataBar> {
@@ -24,6 +25,7 @@ export interface DataSeriesBar extends DataSeriesGenerator<DataBar> {
   values: number[];
   valueScale: ScaleContinuousNumeric<number, number>;
   keys?: string[];
+  color: string | string[] | ValueFn<SVGRectElement, DataBar, string>;
   flipped: boolean;
 }
 
@@ -41,6 +43,7 @@ export function dataSeriesBar(data: Partial<DataSeriesBar>): DataSeriesBar {
       scaleLinear()
         .domain([0, Math.max(...(data.values || []))])
         .nice(),
+    color: data.color || COLORS_CATEGORICAL[0],
     flipped: data.flipped || false,
     keys: data.keys,
     dataGenerator: data.dataGenerator || dataBarGenerator,
@@ -72,6 +75,7 @@ export function dataBarGenerator(selection: Selection<Element, DataSeriesBar>): 
         y: Math.min(seriesDatum.valueScale(0)!, seriesDatum.valueScale(v)!),
         width: seriesDatum.categoryScale.bandwidth(),
         height: Math.abs(seriesDatum.valueScale(0)! - seriesDatum.valueScale(v)!),
+        color: Array.isArray(seriesDatum.color) ? seriesDatum.color[i] : seriesDatum.color,
       });
     } else {
       data.push({
@@ -81,6 +85,7 @@ export function dataBarGenerator(selection: Selection<Element, DataSeriesBar>): 
         y: seriesDatum.categoryScale(c)!,
         width: Math.abs(seriesDatum.valueScale(0)! - seriesDatum.valueScale(v)!),
         height: seriesDatum.categoryScale.bandwidth(),
+        color: Array.isArray(seriesDatum.color) ? seriesDatum.color[i] : seriesDatum.color,
       });
     }
   }
@@ -97,7 +102,6 @@ export function seriesBar<
 ): Selection<GElement, Datum, PElement, PDatum> {
   return selection
     .classed('series-bar', true)
-    .attr('fill', COLORS_CATEGORICAL[0])
     .call((s) =>
       s
         .append('defs')
@@ -169,6 +173,9 @@ export function seriesBarRender<
           .duration(250)
           .ease(easeCubicOut)
           .call((t) => rectToAttrs(t, (d) => d))
+      )
+      .attr('fill', (d, i, g) =>
+        d.color instanceof Function ? d.color.call(g[i], d, i, g) : d.color
       )
       .call((s) => selection.dispatch('barupdate', { detail: { selection: s } }));
   });
