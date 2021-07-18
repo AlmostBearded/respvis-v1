@@ -1,5 +1,5 @@
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
-import { BaseType, select, Selection } from 'd3-selection';
+import { BaseType, select, Selection, ValueFn } from 'd3-selection';
 import {
   COLORS_CATEGORICAL,
   DataSeriesGenerator,
@@ -16,6 +16,7 @@ import { filterBrightness } from '../filters';
 export interface DataBar extends Rect {
   index: number;
   key: string;
+  color: string;
 }
 
 export interface DataSeriesBar extends DataSeriesGenerator<DataBar> {
@@ -24,6 +25,7 @@ export interface DataSeriesBar extends DataSeriesGenerator<DataBar> {
   values: number[];
   valueScale: ScaleContinuousNumeric<number, number>;
   keys?: string[];
+  color: string;
   flipped: boolean;
 }
 
@@ -41,6 +43,7 @@ export function dataSeriesBar(data: Partial<DataSeriesBar>): DataSeriesBar {
       scaleLinear()
         .domain([0, Math.max(...(data.values || []))])
         .nice(),
+    color: data.color || COLORS_CATEGORICAL[0],
     flipped: data.flipped || false,
     keys: data.keys,
     dataGenerator: data.dataGenerator || dataBarGenerator,
@@ -61,28 +64,27 @@ export function dataBarGenerator(selection: Selection<Element, DataSeriesBar>): 
   const data: DataBar[] = [];
 
   for (let i = 0; i < seriesDatum.values.length; ++i) {
-    const c = seriesDatum.categories[i];
-    const v = seriesDatum.values[i];
-
-    if (!seriesDatum.flipped) {
-      data.push({
-        index: i,
-        key: seriesDatum.keys?.[i] || i.toString(),
+    const c = seriesDatum.categories[i],
+      v = seriesDatum.values[i],
+      rect: Rect = {
         x: seriesDatum.categoryScale(c)!,
         y: Math.min(seriesDatum.valueScale(0)!, seriesDatum.valueScale(v)!),
         width: seriesDatum.categoryScale.bandwidth(),
         height: Math.abs(seriesDatum.valueScale(0)! - seriesDatum.valueScale(v)!),
-      });
-    } else {
-      data.push({
-        index: i,
-        key: seriesDatum.keys?.[i] || i.toString(),
+      },
+      flippedRect: Rect = {
         x: Math.min(seriesDatum.valueScale(0)!, seriesDatum.valueScale(v)!),
         y: seriesDatum.categoryScale(c)!,
         width: Math.abs(seriesDatum.valueScale(0)! - seriesDatum.valueScale(v)!),
         height: seriesDatum.categoryScale.bandwidth(),
-      });
-    }
+      },
+      bar: DataBar = {
+        index: i,
+        key: seriesDatum.keys?.[i] || i.toString(),
+        color: seriesDatum.color,
+        ...(seriesDatum.flipped ? flippedRect : rect),
+      };
+    data.push(bar);
   }
   return data;
 }
@@ -97,7 +99,6 @@ export function seriesBar<
 ): Selection<GElement, Datum, PElement, PDatum> {
   return selection
     .classed('series-bar', true)
-    .attr('fill', COLORS_CATEGORICAL[0])
     .call((s) =>
       s
         .append('defs')
@@ -169,6 +170,9 @@ export function seriesBarRender<
           .duration(250)
           .ease(easeCubicOut)
           .call((t) => rectToAttrs(t, (d) => d))
+      )
+      .attr('fill', (d, i, g) =>
+        d.color instanceof Function ? d.color.call(g[i], d, i, g) : d.color
       )
       .call((s) => selection.dispatch('barupdate', { detail: { selection: s } }));
   });
