@@ -100,7 +100,6 @@ export function seriesBarGrouped<
 ): Selection<GElement, Datum, PElement, PDatum> {
   return seriesBar(selection)
     .classed('series-bar-grouped', true)
-    .attr('fill', null)
     .on('barenter.seriesbargrouped', (e: JoinEvent<SVGRectElement, DataBarGrouped>) =>
       e.detail.selection.attr('fill', (d) => COLORS_CATEGORICAL[d.index])
     );

@@ -1,5 +1,5 @@
 import { BaseType, select, Selection } from 'd3-selection';
-import { COLORS_CATEGORICAL, debug, nodeToString } from '../core';
+import { debug, nodeToString } from '../core';
 import {
   chartCartesian,
   chartCartesianUpdateAxes,
@@ -13,7 +13,6 @@ import { dataSeriesLabelBar } from './series-label-bar';
 
 export interface DataChartBarStacked extends DataSeriesBarStacked, DataChartCartesian {
   innerValues: string[];
-  colors: string[];
 }
 
 export function dataChartBarStacked(data: Partial<DataChartBarStacked>): DataChartBarStacked {
@@ -21,7 +20,6 @@ export function dataChartBarStacked(data: Partial<DataChartBarStacked>): DataCha
     ...dataSeriesBarStacked(data),
     ...dataChartCartesian(data),
     innerValues: data.innerValues || [],
-    colors: data.colors || COLORS_CATEGORICAL,
   };
 }
 
