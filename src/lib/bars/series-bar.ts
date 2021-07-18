@@ -64,30 +64,27 @@ export function dataBarGenerator(selection: Selection<Element, DataSeriesBar>): 
   const data: DataBar[] = [];
 
   for (let i = 0; i < seriesDatum.values.length; ++i) {
-    const c = seriesDatum.categories[i];
-    const v = seriesDatum.values[i];
-
-    if (!seriesDatum.flipped) {
-      data.push({
-        index: i,
-        key: seriesDatum.keys?.[i] || i.toString(),
+    const c = seriesDatum.categories[i],
+      v = seriesDatum.values[i],
+      rect: Rect = {
         x: seriesDatum.categoryScale(c)!,
         y: Math.min(seriesDatum.valueScale(0)!, seriesDatum.valueScale(v)!),
         width: seriesDatum.categoryScale.bandwidth(),
         height: Math.abs(seriesDatum.valueScale(0)! - seriesDatum.valueScale(v)!),
-        color: Array.isArray(seriesDatum.color) ? seriesDatum.color[i] : seriesDatum.color,
-      });
-    } else {
-      data.push({
-        index: i,
-        key: seriesDatum.keys?.[i] || i.toString(),
+      },
+      flippedRect: Rect = {
         x: Math.min(seriesDatum.valueScale(0)!, seriesDatum.valueScale(v)!),
         y: seriesDatum.categoryScale(c)!,
         width: Math.abs(seriesDatum.valueScale(0)! - seriesDatum.valueScale(v)!),
         height: seriesDatum.categoryScale.bandwidth(),
+      },
+      bar: DataBar = {
+        index: i,
+        key: seriesDatum.keys?.[i] || i.toString(),
         color: Array.isArray(seriesDatum.color) ? seriesDatum.color[i] : seriesDatum.color,
-      });
-    }
+        ...(seriesDatum.flipped ? flippedRect : rect),
+      };
+    data.push(bar);
   }
   return data;
 }
