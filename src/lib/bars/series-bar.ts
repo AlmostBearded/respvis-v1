@@ -16,7 +16,7 @@ import { filterBrightness } from '../filters';
 export interface DataBar extends Rect {
   index: number;
   key: string;
-  color: string | ValueFn<SVGRectElement, DataBar, string>;
+  color: string;
 }
 
 export interface DataSeriesBar extends DataSeriesGenerator<DataBar> {
@@ -25,7 +25,7 @@ export interface DataSeriesBar extends DataSeriesGenerator<DataBar> {
   values: number[];
   valueScale: ScaleContinuousNumeric<number, number>;
   keys?: string[];
-  color: string | string[] | ValueFn<SVGRectElement, DataBar, string>;
+  color: string;
   flipped: boolean;
 }
 
@@ -81,7 +81,7 @@ export function dataBarGenerator(selection: Selection<Element, DataSeriesBar>): 
       bar: DataBar = {
         index: i,
         key: seriesDatum.keys?.[i] || i.toString(),
-        color: Array.isArray(seriesDatum.color) ? seriesDatum.color[i] : seriesDatum.color,
+        color: seriesDatum.color,
         ...(seriesDatum.flipped ? flippedRect : rect),
       };
     data.push(bar);
