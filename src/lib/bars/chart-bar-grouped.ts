@@ -1,6 +1,6 @@
 import { BaseType, select, Selection } from 'd3-selection';
 import { axisTickFindByIndex, axisTickHighlight } from '../axis';
-import { debug, nodeToString, siblingIndex } from '../core';
+import { arrayIs2D, COLORS_CATEGORICAL, debug, nodeToString, siblingIndex } from '../core';
 import {
   chartCartesian,
   chartCartesianUpdateAxes,
@@ -37,7 +37,7 @@ export function dataChartBarGrouped(data: Partial<DataChartBarGrouped>): DataCha
     ...seriesData,
     ...dataChartCartesian(data),
     legend: data.legend || {},
-    subcategories: data.subcategories || seriesData.values.map((d, i) => i.toString()),
+    subcategories: data.subcategories || (seriesData.values[0] || []).map((d, i) => i.toString()),
   };
 }
 
@@ -110,14 +110,19 @@ export function chartBarGroupedDataChange<
   selection: Selection<GElement, Datum, PElement, PDatum>
 ): Selection<GElement, Datum, PElement, PDatum> {
   return selection.each(function (chartData, i, g) {
-    const s = select<GElement, Datum>(g[i]);
+    const s = select<GElement, Datum>(g[i]),
+      barSeries = s.selectAll('.series-bar-grouped'),
+      legend = s.selectAll<Element, DataLegendSquares>('.legend');
 
-    s.selectAll('.series-bar-grouped').dispatch('datachange');
+    barSeries.dispatch('datachange');
 
-    s.selectAll<Element, DataLegendSquares>('.legend').datum((d) =>
-      Object.assign(
+    legend.datum((d) =>
+      Object.assign<DataLegendSquares, Partial<DataLegendSquares>, Partial<DataLegendSquares>>(
         d,
-        { colors: chartData.colors, labels: chartData.subcategories },
+        {
+          colors: arrayIs2D(chartData.colors) ? chartData.colors[0] : chartData.colors,
+          labels: chartData.subcategories,
+        },
         chartData.legend
       )
     );

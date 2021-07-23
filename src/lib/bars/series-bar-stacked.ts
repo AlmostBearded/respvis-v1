@@ -1,6 +1,6 @@
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { BaseType, Selection } from 'd3-selection';
-import { COLORS_CATEGORICAL, DataSeriesGenerator, Rect } from '../core';
+import { arrayIs, arrayIs2D, COLORS_CATEGORICAL, DataSeriesGenerator, Rect } from '../core';
 import { Size } from '../core/utils';
 import { DataBar, JoinEvent, seriesBar } from './series-bar';
 import { DataSeriesBarGrouped } from './series-bar-grouped';
@@ -12,10 +12,9 @@ export interface DataBarStacked extends DataBar {
 export interface DataSeriesBarStacked extends DataSeriesGenerator<DataBarStacked> {
   categories: any[];
   categoryScale: ScaleBand<any>;
-  innerPadding: number;
   values: number[][];
   valueScale: ScaleContinuousNumeric<number, number>;
-  colors: string[];
+  colors: string | string[] | string[][];
   keys?: string[][];
   flipped: boolean;
 }
@@ -39,7 +38,6 @@ export function dataSeriesBarStacked(data: Partial<DataSeriesBarStacked>): DataS
         .nice(),
     colors: data.colors || COLORS_CATEGORICAL,
     flipped: data.flipped || false,
-    innerPadding: data.innerPadding || 0.1,
     keys: data.keys,
     dataGenerator: data.dataGenerator || dataBarStackedGenerator,
   };
@@ -48,44 +46,45 @@ export function dataSeriesBarStacked(data: Partial<DataSeriesBarStacked>): DataS
 export function dataBarStackedGenerator(
   selection: Selection<Element, DataSeriesBarStacked>
 ): DataBarStacked[] {
-  const seriesDatum = selection.datum(),
+  const { categories, categoryScale, values, valueScale, flipped, colors, keys } =
+      selection.datum(),
     bounds = selection.bounds()!;
-  if (!seriesDatum.flipped) {
-    seriesDatum.categoryScale.range([0, bounds.width]);
-    seriesDatum.valueScale.range([bounds.height, 0]);
+  if (!flipped) {
+    categoryScale.range([0, bounds.width]);
+    valueScale.range([bounds.height, 0]);
   } else {
-    seriesDatum.categoryScale.range([0, bounds.height]);
-    seriesDatum.valueScale.range([0, bounds.width]);
+    categoryScale.range([0, bounds.height]);
+    valueScale.range([0, bounds.width]);
   }
 
   const data: DataBarStacked[] = [];
-  for (let i = 0; i < seriesDatum.categories.length; ++i) {
-    const subcategoryValues = seriesDatum.values[i];
+  for (let i = 0; i < categories.length; ++i) {
+    const subcategoryValues = values[i];
     let sum = 0;
     for (let j = 0; j < subcategoryValues.length; ++j) {
-      const c = seriesDatum.categories[i],
+      const c = categories[i],
         v = subcategoryValues[j],
         rect: Rect = {
-          x: seriesDatum.categoryScale(c)!,
-          y: -sum + Math.min(seriesDatum.valueScale(0)!, seriesDatum.valueScale(v)!),
-          width: seriesDatum.categoryScale.bandwidth(),
-          height: Math.abs(seriesDatum.valueScale(0)! - seriesDatum.valueScale(v)!),
+          x: categoryScale(c)!,
+          y: -sum + Math.min(valueScale(0)!, valueScale(v)!),
+          width: categoryScale.bandwidth(),
+          height: Math.abs(valueScale(0)! - valueScale(v)!),
         },
         flippedRect: Rect = {
-          x: sum + Math.min(seriesDatum.valueScale(0)!, seriesDatum.valueScale(v)!),
-          y: seriesDatum.categoryScale(c)!,
-          width: Math.abs(seriesDatum.valueScale(0)! - seriesDatum.valueScale(v)!),
-          height: seriesDatum.categoryScale.bandwidth(),
+          x: sum + Math.min(valueScale(0)!, valueScale(v)!),
+          y: categoryScale(c)!,
+          width: Math.abs(valueScale(0)! - valueScale(v)!),
+          height: categoryScale.bandwidth(),
         },
         bar: DataBarStacked = {
           stackIndex: i,
           index: j,
-          key: seriesDatum.keys?.[i][j] || `${i}/${j}`,
-          color: seriesDatum.colors[j],
-          ...(seriesDatum.flipped ? flippedRect : rect),
+          key: keys?.[i][j] || `${i}/${j}`,
+          color: arrayIs2D(colors) ? colors[i][j] : arrayIs(colors) ? colors[j] : colors,
+          ...(flipped ? flippedRect : rect),
         };
 
-      sum += seriesDatum.flipped ? flippedRect.width : rect.height;
+      sum += flipped ? flippedRect.width : rect.height;
       data.push(bar);
     }
   }

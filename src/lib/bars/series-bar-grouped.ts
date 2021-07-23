@@ -1,7 +1,14 @@
 import { range } from 'd3-array';
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { BaseType, Selection, ValueFn } from 'd3-selection';
-import { COLORS_CATEGORICAL, DataSeriesGenerator, findByDataProperty, Rect } from '../core';
+import {
+  arrayIs,
+  arrayIs2D,
+  COLORS_CATEGORICAL,
+  DataSeriesGenerator,
+  findByDataProperty,
+  Rect,
+} from '../core';
 import { DataBar, JoinEvent, seriesBar } from './series-bar';
 
 export interface DataBarGrouped extends DataBar {
@@ -14,7 +21,7 @@ export interface DataSeriesBarGrouped extends DataSeriesGenerator<DataBarGrouped
   subcategoryPadding: number;
   values: number[][];
   valueScale: ScaleContinuousNumeric<number, number>;
-  colors: string[];
+  colors: string | string[] | string[][];
   keys?: string[][];
   flipped: boolean;
 }
@@ -81,7 +88,11 @@ export function dataBarGroupedGenerator(
           groupIndex: i,
           index: j,
           key: seriesDatum.keys?.[i][j] || `${i}/${j}`,
-          color: seriesDatum.colors[j],
+          color: arrayIs2D(seriesDatum.colors)
+            ? seriesDatum.colors[i][j]
+            : arrayIs(seriesDatum.colors)
+            ? seriesDatum.colors[j]
+            : seriesDatum.colors,
           ...(seriesDatum.flipped ? flippedRect : rect),
         };
       data.push(bar);

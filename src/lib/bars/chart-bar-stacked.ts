@@ -1,25 +1,28 @@
 import { BaseType, select, Selection } from 'd3-selection';
-import { debug, nodeToString } from '../core';
+import { arrayIs2D, debug, nodeToString } from '../core';
 import {
   chartCartesian,
   chartCartesianUpdateAxes,
   dataChartCartesian,
   DataChartCartesian,
 } from '../core/chart-cartesian';
-import { dataLegendSquares, legend } from '../legend';
+import { DataLegendSquares, dataLegendSquares, legend } from '../legend';
 import { DataSeriesBarStacked, dataSeriesBarStacked, seriesBarStacked } from './series-bar-stacked';
 import { seriesLabel } from './series-label';
 import { dataSeriesLabelBar } from './series-label-bar';
 
 export interface DataChartBarStacked extends DataSeriesBarStacked, DataChartCartesian {
-  innerValues: string[];
+  legend: Partial<DataLegendSquares>;
+  subcategories: string[];
 }
 
 export function dataChartBarStacked(data: Partial<DataChartBarStacked>): DataChartBarStacked {
+  const seriesData = dataSeriesBarStacked(data);
   return {
-    ...dataSeriesBarStacked(data),
+    ...seriesData,
     ...dataChartCartesian(data),
-    innerValues: data.innerValues || [],
+    legend: data.legend || {},
+    subcategories: data.subcategories || (seriesData.values[0] || []).map((d, i) => i.toString()),
   };
 }
 
@@ -56,12 +59,7 @@ export function chartBarStacked<
       chart
         .append('g')
         .classed('legend', true)
-        .datum(
-          dataLegendSquares({
-            labels: chartData.innerValues,
-            colors: chartData.colors,
-          })
-        )
+        .datum(dataLegendSquares(chartData.legend))
         .call((s) => legend(s))
         .layout('margin', '0.5rem')
         .layout('justify-content', 'flex-end');
@@ -84,10 +82,21 @@ export function chartBarStackedDataChange<
   selection: Selection<GElement, Datum, PElement, PDatum>
 ): Selection<GElement, Datum, PElement, PDatum> {
   return selection.each(function (chartData, i, g) {
-    const s = select<GElement, Datum>(g[i]);
+    const s = select<GElement, Datum>(g[i]),
+      barSeries = s.selectAll('.series-bar-stacked'),
+      legend = s.selectAll<Element, DataLegendSquares>('.legend');
 
-    s.selectAll('.series-bar-stacked').dispatch('datachange');
-    s.selectAll('.legend').dispatch('datachange');
+    barSeries.dispatch('datachange');
+    legend.datum((d) =>
+      Object.assign<DataLegendSquares, Partial<DataLegendSquares>, Partial<DataLegendSquares>>(
+        d,
+        {
+          colors: arrayIs2D(chartData.colors) ? chartData.colors[0] : chartData.colors,
+          labels: chartData.subcategories,
+        },
+        chartData.legend
+      )
+    );
 
     chartData.xAxis.scale = chartData.categoryScale;
     chartData.yAxis.scale = chartData.valueScale;
