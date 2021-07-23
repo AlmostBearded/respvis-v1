@@ -172,9 +172,7 @@ export function seriesBarRender<
           .ease(easeCubicOut)
           .call((t) => rectToAttrs(t, (d) => d))
       )
-      .attr('fill', (d, i, g) =>
-        d.color instanceof Function ? d.color.call(g[i], d, i, g) : d.color
-      )
+      .attr('fill', (d, i, g) => d.color)
       .call((s) => selection.dispatch('barupdate', { detail: { selection: s } }));
   });
 }
