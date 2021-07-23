@@ -7,6 +7,7 @@ import {
   toolDownloadSVG,
   toolFilterNominal,
 } from '../chart-window';
+import { arrayIs, arrayIs2D } from '../core';
 import { chartBarGrouped, dataChartBarGrouped, DataChartBarGrouped } from './chart-bar-grouped';
 import { DataSeriesLabelBar } from './series-label-bar';
 
@@ -133,7 +134,16 @@ export function chartWindowBarGroupedApplyFilters(
   selection: Selection<Element, DataChartWindowBarGrouped>
 ): void {
   selection.each((chartWindowD, i, g) => {
-    const chartWindowS = select<Element, DataChartWindowBarGrouped>(g[i]),
+    const {
+        categories,
+        subcategories,
+        values,
+        keys,
+        colors,
+        valueDomain,
+        legend: { colors: legendColors },
+      } = chartWindowD,
+      chartWindowS = select<Element, DataChartWindowBarGrouped>(g[i]),
       chartS = chartWindowS.selectAll<Element, DataChartBarGrouped>('svg.chart-bar-grouped'),
       labelSeriesS = chartS.selectAll<Element, DataSeriesLabelBar>('.series-label'),
       catFilterD = chartWindowS
@@ -145,31 +155,40 @@ export function chartWindowBarGroupedApplyFilters(
       filterCat = (_, i: number) => catFilterD.shown[i],
       filterSubcat = (_, i: number) => subcatFilterD.shown[i];
 
-    const cats = chartWindowD.categories.filter(filterCat),
-      subcats = chartWindowD.subcategories.filter(filterSubcat),
-      values = chartWindowD.values.filter(filterCat).map((v) => v.filter(filterSubcat)),
-      keys = chartWindowD.keys?.filter(filterCat).map((v) => v.filter(filterSubcat)),
-      colors = chartWindowD.colors.filter(filterSubcat),
-      valueDomain =
-        chartWindowD.valueDomain instanceof Function
-          ? chartWindowD.valueDomain(values)
-          : chartWindowD.valueDomain;
+    const filteredCats = categories.filter(filterCat),
+      filteredSubcats = subcategories.filter(filterSubcat),
+      filteredValues = values.filter(filterCat).map((v) => v.filter(filterSubcat)),
+      filteredKeys = keys?.filter(filterCat).map((v) => v.filter(filterSubcat)),
+      filteredColors = arrayIs2D(colors)
+        ? colors.filter(filterCat).map((v) => v.filter(filterSubcat))
+        : arrayIs(colors)
+        ? colors.filter(filterSubcat)
+        : colors,
+      filteredLegendColors = arrayIs(legendColors)
+        ? legendColors.filter(filterSubcat)
+        : legendColors,
+      filteredValueDomain =
+        valueDomain instanceof Function ? valueDomain(filteredValues) : valueDomain;
 
     chartS.datum(
       (d) => (
-        d.categoryScale.domain(cats),
-        d.valueScale.domain(valueDomain).nice(),
+        d.categoryScale.domain(filteredCats),
+        d.valueScale.domain(filteredValueDomain).nice(),
         Object.assign(d, dataChartBarGrouped(chartWindowD), {
-          categories: cats,
-          subcategories: subcats,
-          values: values,
-          keys: keys,
-          colors: colors,
+          categories: filteredCats,
+          subcategories: filteredSubcats,
+          values: filteredValues,
+          keys: filteredKeys,
+          colors: filteredColors,
+          legend: {
+            ...chartWindowD.legend,
+            ...(filteredLegendColors && { colors: filteredLegendColors }),
+          },
         })
       )
     );
     labelSeriesS.datum(
-      (d) => ((d.labels = values.reduce((out, v) => (out.push(...v), out), [])), d)
+      (d) => ((d.labels = filteredValues.reduce((out, v) => (out.push(...v), out), [])), d)
     );
   });
 }
