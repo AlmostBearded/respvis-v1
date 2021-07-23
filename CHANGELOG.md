@@ -44,6 +44,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add axisTickFindByIndex function.
 - Add legendItemFindByLabel function.
 - Add legendItemFindByIndex function.
+- Add arrayIs function.
+- Add arrayIs2D function.
 - Add automatic highlighting of bars on hover to seriesBar.
 - Add automatic highlighting of bars on hover to seriesBarGrouped.
 - Add automatic highlighting of legend items on hover to legend.

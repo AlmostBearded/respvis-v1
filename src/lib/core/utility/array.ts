@@ -9,3 +9,11 @@ export function arraysEqual(a: any[] | null, b: any[] | null): boolean {
   }
   return true;
 }
+
+export function arrayIs(array: any): array is any[] {
+  return Array.isArray(array);
+}
+
+export function arrayIs2D(array: any): array is any[][] {
+  return arrayIs(array) && array.every((e) => Array.isArray(e));
+}
