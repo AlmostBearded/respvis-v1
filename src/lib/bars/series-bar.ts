@@ -1,6 +1,7 @@
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { BaseType, select, Selection, ValueFn } from 'd3-selection';
 import {
+  arrayIs,
   COLORS_CATEGORICAL,
   DataSeriesGenerator,
   debug,
@@ -25,7 +26,7 @@ export interface DataSeriesBar extends DataSeriesGenerator<DataBar> {
   values: number[];
   valueScale: ScaleContinuousNumeric<number, number>;
   keys?: string[];
-  color: string;
+  color: string | string[];
   flipped: boolean;
 }
 
@@ -81,7 +82,7 @@ export function dataBarGenerator(selection: Selection<Element, DataSeriesBar>): 
       bar: DataBar = {
         index: i,
         key: seriesDatum.keys?.[i] || i.toString(),
-        color: seriesDatum.color,
+        color: arrayIs(seriesDatum.color) ? seriesDatum.color[i] : seriesDatum.color,
         ...(seriesDatum.flipped ? flippedRect : rect),
       };
     data.push(bar);
