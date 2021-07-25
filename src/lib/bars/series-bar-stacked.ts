@@ -1,6 +1,13 @@
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { BaseType, Selection } from 'd3-selection';
-import { arrayIs, arrayIs2D, COLORS_CATEGORICAL, DataSeriesGenerator, Rect } from '../core';
+import {
+  arrayIs,
+  arrayIs2D,
+  COLORS_CATEGORICAL,
+  DataSeriesGenerator,
+  Rect,
+  rectFitStroke,
+} from '../core';
 import { Size } from '../core/utils';
 import { DataBar, JoinEvent, seriesBar } from './series-bar';
 import { DataSeriesBarGrouped } from './series-bar-grouped';
@@ -15,6 +22,8 @@ export interface DataSeriesBarStacked extends DataSeriesGenerator<DataBarStacked
   values: number[][];
   valueScale: ScaleContinuousNumeric<number, number>;
   colors: string | string[] | string[][];
+  strokeWidth: number | number[] | number[][];
+  stroke: string | string[] | string[][];
   keys?: string[][];
   flipped: boolean;
 }
@@ -37,6 +46,8 @@ export function dataSeriesBarStacked(data: Partial<DataSeriesBarStacked>): DataS
         ])
         .nice(),
     colors: data.colors || COLORS_CATEGORICAL,
+    strokeWidth: data.strokeWidth || 1,
+    stroke: data.stroke || '#000',
     flipped: data.flipped || false,
     keys: data.keys,
     dataGenerator: data.dataGenerator || dataBarStackedGenerator,
@@ -46,8 +57,17 @@ export function dataSeriesBarStacked(data: Partial<DataSeriesBarStacked>): DataS
 export function dataBarStackedGenerator(
   selection: Selection<Element, DataSeriesBarStacked>
 ): DataBarStacked[] {
-  const { categories, categoryScale, values, valueScale, flipped, colors, keys } =
-      selection.datum(),
+  const {
+      categories,
+      categoryScale,
+      values,
+      valueScale,
+      flipped,
+      colors,
+      stroke,
+      strokeWidth,
+      keys,
+    } = selection.datum(),
     bounds = selection.bounds()!;
   if (!flipped) {
     categoryScale.range([0, bounds.width]);
@@ -60,31 +80,39 @@ export function dataBarStackedGenerator(
   const data: DataBarStacked[] = [];
   for (let i = 0; i < categories.length; ++i) {
     const subcategoryValues = values[i];
-    let sum = 0;
+    let nextStart = valueScale(0);
     for (let j = 0; j < subcategoryValues.length; ++j) {
       const c = categories[i],
         v = subcategoryValues[j],
-        rect: Rect = {
+        sw = arrayIs2D(strokeWidth)
+          ? strokeWidth[i][j]
+          : arrayIs(strokeWidth)
+          ? strokeWidth[j]
+          : strokeWidth,
+        unflippedRect: Rect = {
           x: categoryScale(c)!,
-          y: -sum + Math.min(valueScale(0)!, valueScale(v)!),
+          y: nextStart - Math.abs(valueScale(0)! - valueScale(v)!),
           width: categoryScale.bandwidth(),
-          height: Math.abs(valueScale(0)! - valueScale(v)!),
+          height: Math.abs(valueScale(0)! - valueScale(v)!) + (j > 0 ? sw : 0),
         },
         flippedRect: Rect = {
-          x: sum + Math.min(valueScale(0)!, valueScale(v)!),
+          x: nextStart,
           y: categoryScale(c)!,
-          width: Math.abs(valueScale(0)! - valueScale(v)!),
+          width: Math.abs(valueScale(0)! - valueScale(v)!) + (j > 0 ? sw : 0),
           height: categoryScale.bandwidth(),
         },
+        rect = flipped ? flippedRect : unflippedRect,
         bar: DataBarStacked = {
           stackIndex: i,
           index: j,
           key: keys?.[i][j] || `${i}/${j}`,
           color: arrayIs2D(colors) ? colors[i][j] : arrayIs(colors) ? colors[j] : colors,
-          ...(flipped ? flippedRect : rect),
+          strokeWidth: sw,
+          stroke: arrayIs2D(stroke) ? stroke[i][j] : arrayIs(stroke) ? stroke[j] : stroke,
+          ...rect,
         };
 
-      sum += flipped ? flippedRect.width : rect.height;
+      nextStart = flipped ? rect.x + rect.width - sw : rect.y+ sw;
       data.push(bar);
     }
   }

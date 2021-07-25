@@ -8,6 +8,7 @@ import {
   DataSeriesGenerator,
   findByDataProperty,
   Rect,
+  rectFitStroke,
 } from '../core';
 import { DataBar, JoinEvent, seriesBar } from './series-bar';
 
@@ -22,6 +23,8 @@ export interface DataSeriesBarGrouped extends DataSeriesGenerator<DataBarGrouped
   values: number[][];
   valueScale: ScaleContinuousNumeric<number, number>;
   colors: string | string[] | string[][];
+  strokeWidth: number | number[] | number[][];
+  stroke: string | string[] | string[][];
   keys?: string[][];
   flipped: boolean;
 }
@@ -41,6 +44,8 @@ export function dataSeriesBarGrouped(data: Partial<DataSeriesBarGrouped>): DataS
         .domain([0, Math.max(...(data.values?.map((values) => Math.max(...values)) || []))])
         .nice(),
     colors: data.colors || COLORS_CATEGORICAL,
+    strokeWidth: data.strokeWidth || 1,
+    stroke: data.stroke || '#000',
     flipped: data.flipped || false,
     subcategoryPadding: data.subcategoryPadding || 0.1,
     dataGenerator: data.dataGenerator || dataBarGroupedGenerator,
@@ -51,49 +56,63 @@ export function dataSeriesBarGrouped(data: Partial<DataSeriesBarGrouped>): DataS
 export function dataBarGroupedGenerator(
   selection: Selection<Element, DataSeriesBarGrouped>
 ): DataBarGrouped[] {
-  const seriesDatum = selection.datum(),
+  const {
+      categories,
+      categoryScale,
+      values,
+      valueScale,
+      flipped,
+      colors,
+      subcategoryPadding,
+      keys,
+      strokeWidth,
+      stroke,
+    } = selection.datum(),
     bounds = selection.bounds()!;
-  if (!seriesDatum.flipped) {
-    seriesDatum.categoryScale.range([0, bounds.width]);
-    seriesDatum.valueScale.range([bounds.height, 0]);
+  if (!flipped) {
+    categoryScale.range([0, bounds.width]);
+    valueScale.range([bounds.height, 0]);
   } else {
-    seriesDatum.categoryScale.range([0, bounds.height]);
-    seriesDatum.valueScale.range([0, bounds.width]);
+    categoryScale.range([0, bounds.height]);
+    valueScale.range([0, bounds.width]);
   }
 
   const innerScale = scaleBand<number>()
-    .domain(range(seriesDatum.values[0]?.length || 0))
-    .range([0, seriesDatum.categoryScale.bandwidth()])
-    .padding(seriesDatum.subcategoryPadding);
+    .domain(range(values[0]?.length || 0))
+    .range([0, categoryScale.bandwidth()])
+    .padding(subcategoryPadding);
 
   const data: DataBarGrouped[] = [];
-  for (let i = 0; i < seriesDatum.values.length; ++i) {
-    const subcategoryValues = seriesDatum.values[i];
+  for (let i = 0; i < values.length; ++i) {
+    const subcategoryValues = values[i];
     for (let j = 0; j < subcategoryValues.length; ++j) {
-      const c = seriesDatum.categories[i],
+      const c = categories[i],
         v = subcategoryValues[j],
+        sw = arrayIs2D(strokeWidth)
+          ? strokeWidth[i][j]
+          : arrayIs(strokeWidth)
+          ? strokeWidth[j]
+          : strokeWidth,
         rect: Rect = {
-          x: seriesDatum.categoryScale(c)! + innerScale(j)!,
-          y: Math.min(seriesDatum.valueScale(0)!, seriesDatum.valueScale(v)!),
+          x: categoryScale(c)! + innerScale(j)!,
+          y: Math.min(valueScale(0)!, valueScale(v)!),
           width: innerScale.bandwidth(),
-          height: Math.abs(seriesDatum.valueScale(0)! - seriesDatum.valueScale(v)!),
+          height: Math.abs(valueScale(0)! - valueScale(v)!),
         },
         flippedRect: Rect = {
-          x: Math.min(seriesDatum.valueScale(0)!, seriesDatum.valueScale(v)!),
-          y: seriesDatum.categoryScale(c)! + innerScale(j)!,
-          width: Math.abs(seriesDatum.valueScale(0)! - seriesDatum.valueScale(v)!),
+          x: Math.min(valueScale(0)!, valueScale(v)!),
+          y: categoryScale(c)! + innerScale(j)!,
+          width: Math.abs(valueScale(0)! - valueScale(v)!),
           height: innerScale.bandwidth(),
         },
         bar: DataBarGrouped = {
           groupIndex: i,
           index: j,
-          key: seriesDatum.keys?.[i][j] || `${i}/${j}`,
-          color: arrayIs2D(seriesDatum.colors)
-            ? seriesDatum.colors[i][j]
-            : arrayIs(seriesDatum.colors)
-            ? seriesDatum.colors[j]
-            : seriesDatum.colors,
-          ...(seriesDatum.flipped ? flippedRect : rect),
+          key: keys?.[i][j] || `${i}/${j}`,
+          color: arrayIs2D(colors) ? colors[i][j] : arrayIs(colors) ? colors[j] : colors,
+          strokeWidth: sw,
+          stroke: arrayIs2D(stroke) ? stroke[i][j] : arrayIs(stroke) ? stroke[j] : stroke,
+          ...(flipped ? flippedRect : rect),
         };
       data.push(bar);
     }

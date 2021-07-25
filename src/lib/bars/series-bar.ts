@@ -9,7 +9,7 @@ import {
   findByKey,
   nodeToString,
 } from '../core';
-import { Rect, rectMinimized, rectToAttrs } from '../core/utility/rect';
+import { Rect, rectFitStroke, rectMinimized, rectToAttrs } from '../core/utility/rect';
 import { Transition } from 'd3-transition';
 import { easeCubicOut } from 'd3-ease';
 import { filterBrightness } from '../filters';
@@ -18,6 +18,8 @@ export interface DataBar extends Rect {
   index: number;
   key: string;
   color: string;
+  strokeWidth: number;
+  stroke: string;
 }
 
 export interface DataSeriesBar extends DataSeriesGenerator<DataBar> {
@@ -27,6 +29,8 @@ export interface DataSeriesBar extends DataSeriesGenerator<DataBar> {
   valueScale: ScaleContinuousNumeric<number, number>;
   keys?: string[];
   color: string | string[];
+  strokeWidth: number | number[];
+  stroke: string | string[];
   flipped: boolean;
 }
 
@@ -45,6 +49,8 @@ export function dataSeriesBar(data: Partial<DataSeriesBar>): DataSeriesBar {
         .domain([0, Math.max(...(data.values || []))])
         .nice(),
     color: data.color || COLORS_CATEGORICAL[0],
+    strokeWidth: data.strokeWidth || 1,
+    stroke: data.stroke || '#000',
     flipped: data.flipped || false,
     keys: data.keys,
     dataGenerator: data.dataGenerator || dataBarGenerator,
@@ -52,38 +58,51 @@ export function dataSeriesBar(data: Partial<DataSeriesBar>): DataSeriesBar {
 }
 
 export function dataBarGenerator(selection: Selection<Element, DataSeriesBar>): DataBar[] {
-  const seriesDatum = selection.datum(),
+  const {
+      categories,
+      categoryScale,
+      values,
+      valueScale,
+      keys,
+      flipped,
+      color,
+      strokeWidth,
+      stroke,
+    } = selection.datum(),
     bounds = selection.bounds()!;
-  if (!seriesDatum.flipped) {
-    seriesDatum.categoryScale.range([0, bounds.width]);
-    seriesDatum.valueScale.range([bounds.height, 0]);
+  if (!flipped) {
+    categoryScale.range([0, bounds.width]);
+    valueScale.range([bounds.height, 0]);
   } else {
-    seriesDatum.categoryScale.range([0, bounds.height]);
-    seriesDatum.valueScale.range([0, bounds.width]);
+    categoryScale.range([0, bounds.height]);
+    valueScale.range([0, bounds.width]);
   }
 
   const data: DataBar[] = [];
 
-  for (let i = 0; i < seriesDatum.values.length; ++i) {
-    const c = seriesDatum.categories[i],
-      v = seriesDatum.values[i],
+  for (let i = 0; i < values.length; ++i) {
+    const c = categories[i],
+      v = values[i],
+      sw = arrayIs(strokeWidth) ? strokeWidth[i] : strokeWidth,
       rect: Rect = {
-        x: seriesDatum.categoryScale(c)!,
-        y: Math.min(seriesDatum.valueScale(0)!, seriesDatum.valueScale(v)!),
-        width: seriesDatum.categoryScale.bandwidth(),
-        height: Math.abs(seriesDatum.valueScale(0)! - seriesDatum.valueScale(v)!),
+        x: categoryScale(c)!,
+        y: Math.min(valueScale(0)!, valueScale(v)!),
+        width: categoryScale.bandwidth(),
+        height: Math.abs(valueScale(0)! - valueScale(v)!),
       },
       flippedRect: Rect = {
-        x: Math.min(seriesDatum.valueScale(0)!, seriesDatum.valueScale(v)!),
-        y: seriesDatum.categoryScale(c)!,
-        width: Math.abs(seriesDatum.valueScale(0)! - seriesDatum.valueScale(v)!),
-        height: seriesDatum.categoryScale.bandwidth(),
+        x: Math.min(valueScale(0)!, valueScale(v)!),
+        y: categoryScale(c)!,
+        width: Math.abs(valueScale(0)! - valueScale(v)!),
+        height: categoryScale.bandwidth(),
       },
       bar: DataBar = {
         index: i,
-        key: seriesDatum.keys?.[i] || i.toString(),
-        color: arrayIs(seriesDatum.color) ? seriesDatum.color[i] : seriesDatum.color,
-        ...(seriesDatum.flipped ? flippedRect : rect),
+        key: keys?.[i] || i.toString(),
+        color: arrayIs(color) ? color[i] : color,
+        strokeWidth: sw,
+        stroke: arrayIs(stroke) ? stroke[i] : stroke,
+        ...(flipped ? flippedRect : rect),
       };
     data.push(bar);
   }
@@ -170,9 +189,11 @@ export function seriesBarRender<
           .transition('position')
           .duration(250)
           .ease(easeCubicOut)
-          .call((t) => rectToAttrs(t, (d) => d))
+          .call((t) => rectToAttrs(t, (d) => rectFitStroke(d, d.strokeWidth)))
       )
       .attr('fill', (d, i, g) => d.color)
+      .attr('stroke-width', (d) => d.strokeWidth)
+      .attr('stroke', (d) => d.stroke)
       .call((s) => selection.dispatch('barupdate', { detail: { selection: s } }));
   });
 }
