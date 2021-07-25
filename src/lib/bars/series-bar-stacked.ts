@@ -22,8 +22,8 @@ export interface DataSeriesBarStacked extends DataSeriesGenerator<DataBarStacked
   values: number[][];
   valueScale: ScaleContinuousNumeric<number, number>;
   colors: string | string[] | string[][];
-  strokeWidth: number | number[] | number[][];
-  stroke: string | string[] | string[][];
+  strokeWidths: number | number[] | number[][];
+  strokes: string | string[] | string[][];
   keys?: string[][];
   flipped: boolean;
 }
@@ -46,8 +46,8 @@ export function dataSeriesBarStacked(data: Partial<DataSeriesBarStacked>): DataS
         ])
         .nice(),
     colors: data.colors || COLORS_CATEGORICAL,
-    strokeWidth: data.strokeWidth || 1,
-    stroke: data.stroke || '#000',
+    strokeWidths: data.strokeWidths || 1,
+    strokes: data.strokes || '#000',
     flipped: data.flipped || false,
     keys: data.keys,
     dataGenerator: data.dataGenerator || dataBarStackedGenerator,
@@ -64,8 +64,8 @@ export function dataBarStackedGenerator(
       valueScale,
       flipped,
       colors,
-      stroke,
-      strokeWidth,
+      strokes,
+      strokeWidths,
       keys,
     } = selection.datum(),
     bounds = selection.bounds()!;
@@ -84,11 +84,11 @@ export function dataBarStackedGenerator(
     for (let j = 0; j < subcategoryValues.length; ++j) {
       const c = categories[i],
         v = subcategoryValues[j],
-        sw = arrayIs2D(strokeWidth)
-          ? strokeWidth[i][j]
-          : arrayIs(strokeWidth)
-          ? strokeWidth[j]
-          : strokeWidth,
+        sw = arrayIs2D(strokeWidths)
+          ? strokeWidths[i][j]
+          : arrayIs(strokeWidths)
+          ? strokeWidths[j]
+          : strokeWidths,
         unflippedRect: Rect = {
           x: categoryScale(c)!,
           y: nextStart - Math.abs(valueScale(0)! - valueScale(v)!),
@@ -108,11 +108,11 @@ export function dataBarStackedGenerator(
           key: keys?.[i][j] || `${i}/${j}`,
           color: arrayIs2D(colors) ? colors[i][j] : arrayIs(colors) ? colors[j] : colors,
           strokeWidth: sw,
-          stroke: arrayIs2D(stroke) ? stroke[i][j] : arrayIs(stroke) ? stroke[j] : stroke,
+          stroke: arrayIs2D(strokes) ? strokes[i][j] : arrayIs(strokes) ? strokes[j] : strokes,
           ...rect,
         };
 
-      nextStart = flipped ? rect.x + rect.width - sw : rect.y+ sw;
+      nextStart = flipped ? rect.x + rect.width - sw : rect.y + sw;
       data.push(bar);
     }
   }
@@ -127,9 +127,5 @@ export function seriesBarStacked<
 >(
   selection: Selection<GElement, Datum, PElement, PDatum>
 ): Selection<GElement, Datum, PElement, PDatum> {
-  return seriesBar(selection)
-    .classed('series-bar-stacked', true)
-    .on('barenter', (e: JoinEvent<SVGRectElement, DataBarStacked>) =>
-      e.detail.selection.attr('fill', (d) => COLORS_CATEGORICAL[d.index])
-    );
+  return seriesBar(selection).classed('series-bar-stacked', true);
 }

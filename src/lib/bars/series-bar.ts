@@ -28,9 +28,9 @@ export interface DataSeriesBar extends DataSeriesGenerator<DataBar> {
   values: number[];
   valueScale: ScaleContinuousNumeric<number, number>;
   keys?: string[];
-  color: string | string[];
-  strokeWidth: number | number[];
-  stroke: string | string[];
+  colors: string | string[];
+  strokeWidths: number | number[];
+  strokes: string | string[];
   flipped: boolean;
 }
 
@@ -48,9 +48,9 @@ export function dataSeriesBar(data: Partial<DataSeriesBar>): DataSeriesBar {
       scaleLinear()
         .domain([0, Math.max(...(data.values || []))])
         .nice(),
-    color: data.color || COLORS_CATEGORICAL[0],
-    strokeWidth: data.strokeWidth || 1,
-    stroke: data.stroke || '#000',
+    colors: data.colors || COLORS_CATEGORICAL[0],
+    strokeWidths: data.strokeWidths || 1,
+    strokes: data.strokes || '#000',
     flipped: data.flipped || false,
     keys: data.keys,
     dataGenerator: data.dataGenerator || dataBarGenerator,
@@ -65,9 +65,9 @@ export function dataBarGenerator(selection: Selection<Element, DataSeriesBar>): 
       valueScale,
       keys,
       flipped,
-      color,
-      strokeWidth,
-      stroke,
+      colors,
+      strokeWidths,
+      strokes,
     } = selection.datum(),
     bounds = selection.bounds()!;
   if (!flipped) {
@@ -83,7 +83,7 @@ export function dataBarGenerator(selection: Selection<Element, DataSeriesBar>): 
   for (let i = 0; i < values.length; ++i) {
     const c = categories[i],
       v = values[i],
-      sw = arrayIs(strokeWidth) ? strokeWidth[i] : strokeWidth,
+      sw = arrayIs(strokeWidths) ? strokeWidths[i] : strokeWidths,
       rect: Rect = {
         x: categoryScale(c)!,
         y: Math.min(valueScale(0)!, valueScale(v)!),
@@ -99,9 +99,9 @@ export function dataBarGenerator(selection: Selection<Element, DataSeriesBar>): 
       bar: DataBar = {
         index: i,
         key: keys?.[i] || i.toString(),
-        color: arrayIs(color) ? color[i] : color,
+        color: arrayIs(colors) ? colors[i] : colors,
         strokeWidth: sw,
-        stroke: arrayIs(stroke) ? stroke[i] : stroke,
+        stroke: arrayIs(strokes) ? strokes[i] : strokes,
         ...(flipped ? flippedRect : rect),
       };
     data.push(bar);

@@ -23,8 +23,8 @@ export interface DataSeriesBarGrouped extends DataSeriesGenerator<DataBarGrouped
   values: number[][];
   valueScale: ScaleContinuousNumeric<number, number>;
   colors: string | string[] | string[][];
-  strokeWidth: number | number[] | number[][];
-  stroke: string | string[] | string[][];
+  strokeWidths: number | number[] | number[][];
+  strokes: string | string[] | string[][];
   keys?: string[][];
   flipped: boolean;
 }
@@ -44,8 +44,8 @@ export function dataSeriesBarGrouped(data: Partial<DataSeriesBarGrouped>): DataS
         .domain([0, Math.max(...(data.values?.map((values) => Math.max(...values)) || []))])
         .nice(),
     colors: data.colors || COLORS_CATEGORICAL,
-    strokeWidth: data.strokeWidth || 1,
-    stroke: data.stroke || '#000',
+    strokeWidths: data.strokeWidths || 1,
+    strokes: data.strokes || '#000',
     flipped: data.flipped || false,
     subcategoryPadding: data.subcategoryPadding || 0.1,
     dataGenerator: data.dataGenerator || dataBarGroupedGenerator,
@@ -65,8 +65,8 @@ export function dataBarGroupedGenerator(
       colors,
       subcategoryPadding,
       keys,
-      strokeWidth,
-      stroke,
+      strokeWidths,
+      strokes,
     } = selection.datum(),
     bounds = selection.bounds()!;
   if (!flipped) {
@@ -88,11 +88,11 @@ export function dataBarGroupedGenerator(
     for (let j = 0; j < subcategoryValues.length; ++j) {
       const c = categories[i],
         v = subcategoryValues[j],
-        sw = arrayIs2D(strokeWidth)
-          ? strokeWidth[i][j]
-          : arrayIs(strokeWidth)
-          ? strokeWidth[j]
-          : strokeWidth,
+        sw = arrayIs2D(strokeWidths)
+          ? strokeWidths[i][j]
+          : arrayIs(strokeWidths)
+          ? strokeWidths[j]
+          : strokeWidths,
         rect: Rect = {
           x: categoryScale(c)! + innerScale(j)!,
           y: Math.min(valueScale(0)!, valueScale(v)!),
@@ -111,7 +111,7 @@ export function dataBarGroupedGenerator(
           key: keys?.[i][j] || `${i}/${j}`,
           color: arrayIs2D(colors) ? colors[i][j] : arrayIs(colors) ? colors[j] : colors,
           strokeWidth: sw,
-          stroke: arrayIs2D(stroke) ? stroke[i][j] : arrayIs(stroke) ? stroke[j] : stroke,
+          stroke: arrayIs2D(strokes) ? strokes[i][j] : arrayIs(strokes) ? strokes[j] : strokes,
           ...(flipped ? flippedRect : rect),
         };
       data.push(bar);
@@ -128,11 +128,7 @@ export function seriesBarGrouped<
 >(
   selection: Selection<GElement, Datum, PElement, PDatum>
 ): Selection<GElement, Datum, PElement, PDatum> {
-  return seriesBar(selection)
-    .classed('series-bar-grouped', true)
-    .on('barenter.seriesbargrouped', (e: JoinEvent<SVGRectElement, DataBarGrouped>) =>
-      e.detail.selection.attr('fill', (d) => COLORS_CATEGORICAL[d.index])
-    );
+  return seriesBar(selection).classed('series-bar-grouped', true);
 }
 
 export function barGroupedFindByGroupIndex(
