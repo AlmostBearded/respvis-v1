@@ -110,7 +110,17 @@ export function chartBarGroupedDataChange<
   selection: Selection<GElement, Datum, PElement, PDatum>
 ): Selection<GElement, Datum, PElement, PDatum> {
   return selection.each(function (chartData, i, g) {
-    const s = select<GElement, Datum>(g[i]),
+    const {
+        colors,
+        strokes,
+        strokeWidths,
+        subcategories,
+        xAxis,
+        yAxis,
+        categoryScale,
+        valueScale,
+      } = chartData,
+      s = select<GElement, Datum>(g[i]),
       barSeries = s.selectAll('.series-bar-grouped'),
       legend = s.selectAll<Element, DataLegendSquares>('.legend');
 
@@ -120,15 +130,17 @@ export function chartBarGroupedDataChange<
       Object.assign<DataLegendSquares, Partial<DataLegendSquares>, Partial<DataLegendSquares>>(
         d,
         {
-          colors: arrayIs2D(chartData.colors) ? chartData.colors[0] : chartData.colors,
-          labels: chartData.subcategories,
+          colors: arrayIs2D(colors) ? colors[0] : colors,
+          strokes: arrayIs2D(strokes) ? strokes[0] : strokes,
+          strokeWidths: arrayIs2D(strokeWidths) ? strokeWidths[0] : strokeWidths,
+          labels: subcategories,
         },
         chartData.legend
       )
     );
 
-    chartData.xAxis.scale = chartData.categoryScale;
-    chartData.yAxis.scale = chartData.valueScale;
+    xAxis.scale = categoryScale;
+    yAxis.scale = valueScale;
     chartCartesianUpdateAxes(s);
 
     s.selectAll(`.axis-x .tick`).on('mouseover mouseout', (e) =>

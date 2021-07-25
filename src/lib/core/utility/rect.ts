@@ -96,3 +96,12 @@ export function rectWithUnits(rect: Rect<number | string>, units: string): Rect<
     height: `${rect.height}${units}`,
   };
 }
+
+export function rectFitStroke(rect: Rect, stroke: number): Rect {
+  return {
+    x: rect.x + stroke / 2,
+    y: rect.y + stroke / 2,
+    width: Math.max(0, rect.width - stroke),
+    height: Math.max(0, rect.height - stroke),
+  };
+}

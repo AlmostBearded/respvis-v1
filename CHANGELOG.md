@@ -63,6 +63,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add filterBrightness.
 - Add generic DataSeriesGenerator interface.
 - Add dataGenerator property to dataSeriesX.
+- Add colors property to seriesBar, seriesBarGrouped & seriesBarStacked.
+- Add stokeWidths property to seriesBar, seriesBarGrouped & seriesBarStacked.
+- Add stoke property to seriesBar, seriesBarGrouped & seriesBarStacked.
 
 ### Changed
 

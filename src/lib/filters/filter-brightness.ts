@@ -5,6 +5,10 @@ export function filterBrightness(selection: Selection<SVGFilterElement>, brightn
   selection
     .classed('filter-brightness', true)
     .attr('id', uuid())
+    .attr('x', '-100%')
+    .attr('y', '-100%')
+    .attr('width', '400%')
+    .attr('height', '400%')
     .append('feComponentTransfer')
     .call((s) =>
       ['R', 'G', 'B'].map((v) =>
