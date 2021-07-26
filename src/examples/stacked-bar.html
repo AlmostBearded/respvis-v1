@@ -60,6 +60,9 @@
             subtitle: '[%]',
             configureAxis: (a) => a.tickFormat(formatShare),
           },
+          legend: {
+            title: 'Platforms'
+          }
         }),
         chart = layouter.append('svg').datum(chartDatum).call(respVis.chartBarStacked),
         barSeries = chart.selectAll('.series-bar'),
@@ -82,17 +85,16 @@
         const narrow = !window.matchMedia(wideMediaQuery).matches;
         const flippedBars = narrow;
         const chartFlexDirection = narrow ? 'column-reverse' : 'row';
-        const legendFlexDirection = narrow ? 'row' : 'column';
-        const legendJustifyContent = narrow ? 'flex-end' : 'flex-start';
+        const legendAlignSelf = narrow ? 'flex-end' : 'flex-start';
+        const legendItemsFlexDirection = narrow ? 'row' : 'column';
 
-        chartDatum.flipped = flippedBars;
+        chart.datum((d) => Object.assign(d, { flipped: flippedBars }));
 
         chart.layout('flex-direction', chartFlexDirection);
         legend
-          .layout('flex-direction', legendFlexDirection)
-          .layout('justify-content', legendJustifyContent);
-
-        chart.datum(chartDatum);
+          .layout('align-self', legendAlignSelf)
+          .selectAll('.items')
+          .layout('flex-direction', legendItemsFlexDirection);
       }
     </script>
   </body>

@@ -1,14 +1,29 @@
 import { BaseType, select, Selection } from 'd3-selection';
-import { arrayIs2D, debug, nodeToString } from '../core';
+import { axisTickFindByIndex, axisTickHighlight } from '../axis';
+import { arrayIs2D, debug, nodeToString, siblingIndex } from '../core';
 import {
   chartCartesian,
   chartCartesianUpdateAxes,
   dataChartCartesian,
   DataChartCartesian,
 } from '../core/chart-cartesian';
-import { DataLegendSquares, dataLegendSquares, legend } from '../legend';
-import { DataSeriesBarStacked, dataSeriesBarStacked, seriesBarStacked } from './series-bar-stacked';
-import { seriesLabel } from './series-label';
+import {
+  DataLegendItem,
+  DataLegendSquares,
+  dataLegendSquares,
+  legend,
+  legendItemFindByIndex,
+  legendItemHighlight,
+} from '../legend';
+import { barFindByIndex, barHighlight } from './series-bar';
+import {
+  barStackedFindByStackIndex,
+  DataBarStacked,
+  DataSeriesBarStacked,
+  dataSeriesBarStacked,
+  seriesBarStacked,
+} from './series-bar-stacked';
+import { labelFind, labelFindByFilter, labelHighlight, seriesLabel } from './series-label';
 import { dataSeriesLabelBar } from './series-label-bar';
 
 export interface DataChartBarStacked extends DataSeriesBarStacked, DataChartCartesian {
@@ -48,7 +63,10 @@ export function chartBarStacked<
         .append('g')
         .layout('grid-area', '1 / 1')
         .datum(chartData)
-        .call((s) => seriesBarStacked(s));
+        .call((s) => seriesBarStacked(s))
+        .on('mouseover.chartbarstackedhighlight mouseout.chartbarstackedhighlight', (e) =>
+          chartBarStackedHoverBar(chart, select(e.target), e.type.endsWith('over'))
+        );
 
       drawArea
         .append('g')
@@ -62,7 +80,14 @@ export function chartBarStacked<
         .datum(dataLegendSquares(chartData.legend))
         .call((s) => legend(s))
         .layout('margin', '0.5rem')
-        .layout('justify-content', 'flex-end');
+        .layout('justify-content', 'flex-end')
+        .on('mouseover.chartbarstackedhighlight mouseout.chartbarstackedhighlight', (e) => {
+          chartBarStackedHoverLegendItem(
+            chart,
+            select(e.target.closest('.legend-item')),
+            e.type.endsWith('over')
+          );
+        });
     })
     .on('datachange.debuglog', function () {
       debug(`data change on ${nodeToString(this)}`);
@@ -102,5 +127,64 @@ export function chartBarStackedDataChange<
     chartData.yAxis.scale = chartData.valueScale;
 
     chartCartesianUpdateAxes(s);
+
+    s.selectAll(`.axis-x .tick`).on(
+      'mouseover.chartbarstackedhighlight mouseout.chartbarstackedhighlight',
+      (e) => chartBarStackedHoverAxisTick(s, select(e.currentTarget), e.type.endsWith('over'))
+    );
   });
+}
+
+export function chartBarStackedHoverBar(
+  chart: Selection,
+  bar: Selection<SVGRectElement, DataBarStacked>,
+  hover: boolean
+): void {
+  bar.each((barD, i, g) => {
+    const labelS = labelFind(chart, barD.key),
+      tickS = axisTickFindByIndex(chart.selectAll('.axis-x'), barD.stackIndex),
+      legendItemS = legendItemFindByIndex(chart, barD.index);
+
+    labelHighlight(labelS, hover);
+    axisTickHighlight(tickS, hover);
+    legendItemHighlight(legendItemS, hover);
+  });
+}
+
+export function chartBarStackedHoverLegendItem(
+  chart: Selection,
+  legendItem: Selection<Element, DataLegendItem>,
+  hover: boolean
+): void {
+  const legendItemCount = chart.selectAll('.legend-item').size();
+  legendItem.each((_, i, g) => {
+    const legendItemI = siblingIndex(g[i], '.legend-item'),
+      barS = barFindByIndex<DataBarStacked>(chart, legendItemI),
+      labelS = labelFindByFilter(
+        chart.selectAll('.series-label'),
+        (_, i) => i % legendItemCount === legendItemI
+      );
+
+    barHighlight(barS, hover);
+    labelHighlight(labelS, hover);
+  });
+}
+
+export function chartBarStackedHoverAxisTick(
+  chart: Selection,
+  tick: Selection<Element>,
+  hover: boolean
+): void {
+  const legendItemCount = chart.selectAll('.legend-item').size();
+  tick.each((_, i, g) => {
+    const tickI = siblingIndex(g[i], '.tick'),
+      barS = barStackedFindByStackIndex(chart, tickI),
+      labelS = labelFindByFilter(
+        chart.selectAll('.series-label'),
+        (_, i) => Math.floor(i / legendItemCount) === tickI
+      );
+    barHighlight(barS, hover);
+    labelHighlight(labelS, hover);
+  });
+  axisTickHighlight(tick, hover);
 }

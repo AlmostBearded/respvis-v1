@@ -79,16 +79,11 @@ export function chartBarGrouped<
         .call((s) => legend(s))
         .layout('margin', '0.5rem')
         .layout('justify-content', 'flex-end')
-        .on('enter.chartbargrouped', (e: JoinEvent<SVGGElement, DataLegendItem>) => {
-          e.detail.selection.on(
-            'mouseover.chartbargroupedhighlight mouseout.chartbargroupedhighlight',
-            (e) => {
-              chartBarGroupedHoverLegendItem(
-                chart,
-                select(e.currentTarget),
-                e.type.endsWith('over')
-              );
-            }
+        .on('mouseover.chartbargroupedhighlight mouseout.chartbargroupedhighlight', (e) => {
+          chartBarGroupedHoverLegendItem(
+            chart,
+            select(e.target.closest('.legend-item')),
+            e.type.endsWith('over')
           );
         });
     })
@@ -143,8 +138,9 @@ export function chartBarGroupedDataChange<
     yAxis.scale = valueScale;
     chartCartesianUpdateAxes(s);
 
-    s.selectAll(`.axis-x .tick`).on('mouseover mouseout', (e) =>
-      chartBarGroupedHoverAxisTick(s, select(e.currentTarget), e.type.endsWith('over'))
+    s.selectAll(`.axis-x .tick`).on(
+      'mouseover.chartbargroupedhighlight mouseout.chartbargroupedhighlight',
+      (e) => chartBarGroupedHoverAxisTick(s, select(e.currentTarget), e.type.endsWith('over'))
     );
   });
 }
