@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - To download the chart inside a chartWindow as an SVG file.
 - Add seriesCheckbox.
 - Add toolFilterNominal.
+- Add chartWindowBar (= chartBar + toolbar with category filter)
 - Add chartWindowBarGrouped (= chartBarGrouped + toolbar with category & subcategory filters)
 - Add barHighlight function.
 - Add labelHighlight function.
@@ -74,6 +75,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Set custom colors in grouped bar chart example.
 - Show horizontal bar labels on the right in bar chart example.
 - Show horizontal bar labels on the right in grouped bar chart example.
+- Use chartWindowBar in bar chart example.
 - Use chartWindowBarGrouped in grouped bar chart example.
 - Configure components only once in configure function of examples.
 - Move highlighting code from examples into series & chart components.

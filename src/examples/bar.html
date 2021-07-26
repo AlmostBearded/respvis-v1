@@ -34,27 +34,27 @@
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
       const root = d3.select('#chart'),
-        layouter = root
+        chartWindow = root
           .append('div')
-          .datum((_, i, g) => respVis.dataLayouter(g[i]))
-          .call(respVis.layouter)
-          .style('height', '100%'),
-        chartDatum = respVis.dataChartBar({
-          categories: cities,
-          values: populations,
-          mainAxis: {
-            title: 'City',
-          },
-          crossAxis: {
-            title: 'Population',
-            subtitle: '[1000 People]',
-          },
-        }),
-        chart = layouter.append('svg').datum(chartDatum).call(respVis.chartBar),
-        labelSeries = chart.selectAll('.series-label'),
-        labelDatum = labelSeries.datum();
-
-      labelDatum.labels = populations;
+          .datum(
+            respVis.dataChartWindowBar({
+              keys: cities,
+              categoryEntity: 'Cities',
+              categories: cities,
+              valueEntity: 'Populations',
+              values: populations,
+              xAxis: {
+                title: 'City',
+              },
+              yAxis: {
+                title: 'Population',
+                subtitle: '[1000 People]',
+              },
+            })
+          )
+          .call(respVis.chartWindowBar),
+        chart = chartWindow.selectAll('svg.chart'),
+        labelSeries = chart.selectAll('.series-label');
 
       window.addEventListener('resize', configure);
       configure();
@@ -68,9 +68,8 @@
           ? respVis.seriesLabelBarRightConfig
           : respVis.seriesLabelBarTopConfig;
 
-        chartDatum.flipped = flippedBars;
+        chartWindow.datum((d) => Object.assign(d, { flipped: flippedBars }));
         labelSeries.call(labelConfig);
-        chart.datum(chartDatum);
       }
     </script>
   </body>
