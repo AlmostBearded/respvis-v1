@@ -55,17 +55,17 @@ export function seriesCheckbox(selection: Selection<HTMLElement, DataSeriesCheck
                 s.append('input').attr('type', 'checkbox').attr('id', id);
                 s.append('label').attr('for', id);
               })
-              .call((s) => series.dispatch('checkboxenter', { detail: { selection: s } })),
+              .call((s) => series.dispatch('enter', { detail: { selection: s } })),
           undefined,
           (exit) =>
-            exit.remove().call((s) => series.dispatch('checkboxexit', { detail: { selection: s } }))
+            exit.remove().call((s) => series.dispatch('exit', { detail: { selection: s } }))
         )
         .each((d, i, g) => {
           const s = select(g[i]);
           s.selectChildren('input').property('checked', d.checked);
           s.selectChildren('label').text(d.label);
         })
-        .call((s) => series.dispatch('checkboxupdate', { detail: { selection: s } }));
+        .call((s) => series.dispatch('update', { detail: { selection: s } }));
     })
     .dispatch('datachange');
 }
