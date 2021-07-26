@@ -110,7 +110,7 @@ export function seriesPointRender<
             .attr('cx', (d) => d.x)
             .attr('cy', (d) => d.y)
             .attr('r', 0)
-            .call((s) => selection.dispatch('pointenter', { detail: { selection: s } })),
+            .call((s) => selection.dispatch('enter', { detail: { selection: s } })),
         undefined,
         (exit) =>
           exit
@@ -124,7 +124,7 @@ export function seriesPointRender<
                 .attr('r', 0)
                 .remove()
             )
-            .call((s) => selection.dispatch('pointexit', { detail: { selection: s } }))
+            .call((s) => selection.dispatch('exit', { detail: { selection: s } }))
       )
       .call((s) =>
         s
@@ -135,6 +135,6 @@ export function seriesPointRender<
           .attr('cy', (d) => d.y)
           .attr('r', (d) => d.radius)
       )
-      .call((s) => selection.dispatch('pointupdate', { detail: { selection: s } }));
+      .call((s) => selection.dispatch('update', { detail: { selection: s } }));
   });
 }

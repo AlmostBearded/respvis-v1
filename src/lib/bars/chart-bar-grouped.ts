@@ -79,7 +79,7 @@ export function chartBarGrouped<
         .call((s) => legend(s))
         .layout('margin', '0.5rem')
         .layout('justify-content', 'flex-end')
-        .on('legenditementer.chartbargrouped', (e: JoinEvent<SVGGElement, DataLegendItem>) => {
+        .on('enter.chartbargrouped', (e: JoinEvent<SVGGElement, DataLegendItem>) => {
           e.detail.selection.on(
             'mouseover.chartbargroupedhighlight mouseout.chartbargroupedhighlight',
             (e) => {

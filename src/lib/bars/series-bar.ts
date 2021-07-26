@@ -170,7 +170,7 @@ export function seriesBarRender<
             .append('rect')
             .classed('bar', true)
             .call((s) => rectToAttrs(s, (d) => rectMinimized(d)))
-            .call((s) => selection.dispatch('barenter', { detail: { selection: s } })),
+            .call((s) => selection.dispatch('enter', { detail: { selection: s } })),
         undefined,
         (exit) =>
           exit
@@ -182,7 +182,7 @@ export function seriesBarRender<
                 .call((t) => rectToAttrs(t, (d) => rectMinimized(d)))
                 .remove()
             )
-            .call((s) => selection.dispatch('barexit', { detail: { selection: s } }))
+            .call((s) => selection.dispatch('exit', { detail: { selection: s } }))
       )
       .call((s) =>
         s
@@ -194,7 +194,7 @@ export function seriesBarRender<
       .attr('fill', (d, i, g) => d.color)
       .attr('stroke-width', (d) => d.strokeWidth)
       .attr('stroke', (d) => d.stroke)
-      .call((s) => selection.dispatch('barupdate', { detail: { selection: s } }));
+      .call((s) => selection.dispatch('update', { detail: { selection: s } }));
   });
 }
 

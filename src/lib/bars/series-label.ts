@@ -71,7 +71,7 @@ export function seriesLabelRender<
             .call((s) =>
               s.transition('enter').duration(250).attr('font-size', '1em').attr('opacity', 1)
             )
-            .call((s) => selection.dispatch('labelenter', { detail: { selection: s } })),
+            .call((s) => selection.dispatch('enter', { detail: { selection: s } })),
         undefined,
         (exit) =>
           exit
@@ -84,7 +84,7 @@ export function seriesLabelRender<
                 .attr('opacity', 0)
                 .remove()
             )
-            .call((s) => selection.dispatch('labelexit', { detail: { selection: s } }))
+            .call((s) => selection.dispatch('exit', { detail: { selection: s } }))
       )
       .call((s) =>
         s
@@ -94,7 +94,7 @@ export function seriesLabelRender<
           .call((t) => positionToTransformAttr(t, (d) => d))
       )
       .text((d) => d.text)
-      .call((s) => selection.dispatch('labelupdate', { detail: { selection: s } }));
+      .call((s) => selection.dispatch('update', { detail: { selection: s } }));
   });
 }
 

@@ -56,7 +56,7 @@ export function legend<
         .append('filter')
         .call((s) => filterBrightness(s, 1.3))
     )
-    .on('legenditementer.legend', (e: JoinEvent<SVGGElement, DataLegendItem>) => {
+    .on('enter.legend', (e: JoinEvent<SVGGElement, DataLegendItem>) => {
       e.detail.selection.on('mouseover.legend mouseout.legend', (e) => {
         legendItemHighlight(select(e.currentTarget), e.type.endsWith('over'));
       });
@@ -98,12 +98,12 @@ export function legend<
                   .classed('label', true)
                   .call((s) => textHorizontalAttrs(s))
               )
-              .call((s) => legend.dispatch('legenditementer', { detail: { selection: s } })),
+              .call((s) => legend.dispatch('enter', { detail: { selection: s } })),
           undefined,
           (exit) =>
             exit
               .remove()
-              .call((s) => legend.dispatch('legenditemexit', { detail: { selection: s } }))
+              .call((s) => legend.dispatch('exit', { detail: { selection: s } }))
         )
         .call((s) =>
           s
@@ -113,7 +113,7 @@ export function legend<
             )
         )
         .call((s) => s.select('.label').text((d) => d.label.toString()))
-        .call((s) => legend.dispatch('legenditemupdate', { detail: { selection: s } }));
+        .call((s) => legend.dispatch('update', { detail: { selection: s } }));
     });
 }
 
