@@ -5,6 +5,7 @@ import {
   arrayIs2D,
   COLORS_CATEGORICAL,
   DataSeriesGenerator,
+  findByDataProperty,
   Rect,
   rectFitStroke,
 } from '../core';
@@ -128,4 +129,11 @@ export function seriesBarStacked<
   selection: Selection<GElement, Datum, PElement, PDatum>
 ): Selection<GElement, Datum, PElement, PDatum> {
   return seriesBar(selection).classed('series-bar-stacked', true);
+}
+
+export function barStackedFindByStackIndex(
+  container: Selection,
+  index: number
+): Selection<SVGRectElement, DataBarStacked> {
+  return findByDataProperty<SVGRectElement, DataBarStacked>(container, '.bar', 'stackIndex', index);
 }
