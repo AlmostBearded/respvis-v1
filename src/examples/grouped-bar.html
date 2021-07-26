@@ -27,7 +27,6 @@
 
       const sites = data.sites,
         revenues = data.revenues,
-        revenueDomain = (revs) => [0, Math.max(...revs.flat()) * 1.05],
         years = data.years,
         colors = ['#4f8c9d', '#e23209', '#539322'],
         keys = revenues.map((yearlyRevs, i) => yearlyRevs.map((_, j) => sites[i] + years[j]));
@@ -42,7 +41,6 @@
           subcategories: years,
           valueEntity: 'Revenue',
           values: revenues,
-          valueScale: d3.scaleLinear().domain(revenueDomain(revenues)).nice(),
           colors: colors,
           keys: keys,
           xAxis: {
@@ -60,10 +58,9 @@
           .append('div')
           .datum(chartWindowDatum)
           .call(respVis.chartWindowBarGrouped),
-        labelSeries = chartWindow.selectAll('svg.chart .series-label'),
-        labelDatum = labelSeries.datum();
-
-      labelDatum.labels = revenues.flat();
+        chart = chartWindow.selectAll('svg.chart'),
+        labelSeries = chart.selectAll('.series-label'),
+        legend = chart.selectAll('.legend');
 
       window.addEventListener('resize', configure);
       configure();
@@ -83,10 +80,9 @@
         chartWindow.datum((d) => Object.assign(d, { flipped: flippedBars }));
         labelSeries.call(labelConfig);
 
-        chartWindow.selectAll('svg.chart').layout('flex-direction', chartFlexDirection);
+        chart.layout('flex-direction', chartFlexDirection);
 
-        chartWindow
-          .selectAll('svg.chart .legend')
+        legend
           .layout('align-self', legendAlignSelf)
           .selectAll('.items')
           .layout('flex-direction', legendItemsFlexDirection);
