@@ -60,6 +60,9 @@
             subtitle: '[%]',
             configureAxis: (a) => a.tickFormat(formatShare),
           },
+          legend: {
+            title: 'Platforms'
+          }
         }),
         chart = layouter.append('svg').datum(chartDatum).call(respVis.chartBarStacked),
         barSeries = chart.selectAll('.series-bar'),
