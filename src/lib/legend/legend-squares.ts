@@ -41,8 +41,8 @@ export function dataLegendItemSquareGenerator(
     return {
       label: l,
       symbolTag: 'rect',
+      symbolSize: { width: size, height: size },
       symbolAttributes: [
-        ...['width', 'height'].map((name) => ({ name: name, value: size })),
         { name: 'fill', value: color },
         { name: 'stroke', value: stroke },
         { name: 'stroke-width', value: strokeWidth.toString() },

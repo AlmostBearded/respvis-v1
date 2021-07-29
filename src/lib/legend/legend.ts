@@ -9,11 +9,13 @@ import {
   textHorizontalAttrs,
   textTitleAttrs,
 } from '../core';
+import { Size } from '../core/utils';
 import { filterBrightness } from '../filters';
 
 export interface DataLegendItem {
   symbolTag: string;
   symbolAttributes: { name: string; value: string }[];
+  symbolSize: Size<string>;
   label: string;
 }
 
@@ -100,17 +102,14 @@ export function legend<
               )
               .call((s) => legend.dispatch('enter', { detail: { selection: s } })),
           undefined,
-          (exit) =>
-            exit
-              .remove()
-              .call((s) => legend.dispatch('exit', { detail: { selection: s } }))
+          (exit) => exit.remove().call((s) => legend.dispatch('exit', { detail: { selection: s } }))
         )
         .call((s) =>
-          s
-            .select('.symbol')
-            .each((d, i, g) =>
-              d.symbolAttributes.forEach((a) => select(g[i]).attr(a.name, a.value))
-            )
+          s.select('.symbol').each((d, i, g) => {
+            const s = select(g[i]);
+            s.layout('width', d.symbolSize.width).layout('height', d.symbolSize.height);
+            d.symbolAttributes.forEach((a) => s.attr(a.name, a.value));
+          })
         )
         .call((s) => s.select('.label').text((d) => d.label.toString()))
         .call((s) => legend.dispatch('update', { detail: { selection: s } }));
