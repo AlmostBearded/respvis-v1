@@ -5,19 +5,18 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Attach to Chrome",
-      "port": 9222,
-      "request": "attach",
-      "type": "pwa-chrome",
-      "url": "http://localhost:3000*",
-      "webRoot": "${workspaceFolder}/dist"
-    },
-    {
-      "type": "pwa-chrome",
+      "name": "Launch localhost",
+      "type": "firefox",
       "request": "launch",
-      "name": "Launch Chrome",
+      "reAttach": true,
       "url": "http://localhost:3000",
-      "webRoot": "${workspaceFolder}/dist"
+      "webRoot": "${workspaceFolder}/dist",
+      "pathMappings": [
+        {
+          "url": "http://localhost:3000/src",
+          "path": "${workspaceFolder}/src"
+        }
+      ]
     }
   ]
 }
