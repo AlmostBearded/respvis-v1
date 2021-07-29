@@ -11,17 +11,18 @@ import {
 } from '../core';
 import { Size } from '../core/utils';
 import { DataBar, JoinEvent, seriesBar } from './series-bar';
-import { DataSeriesBarGrouped } from './series-bar-grouped';
+import {
+  barGroupedFindBySubcategory,
+  DataBarGrouped,
+  DataSeriesBarGrouped,
+} from './series-bar-grouped';
 
-export interface DataBarStacked extends DataBar {
-  stackIndex: number;
-}
-
-export interface DataSeriesBarStacked extends DataSeriesGenerator<DataBarStacked> {
+export interface DataSeriesBarStacked extends DataSeriesGenerator<DataBarGrouped> {
   categories: any[];
   categoryScale: ScaleBand<any>;
   values: number[][];
   valueScale: ScaleContinuousNumeric<number, number>;
+  subcategories: string[];
   colors: string | string[] | string[][];
   strokeWidths: number | number[] | number[][];
   strokes: string | string[] | string[][];
@@ -46,6 +47,7 @@ export function dataSeriesBarStacked(data: Partial<DataSeriesBarStacked>): DataS
           Math.max(...(data.values?.map((values) => values.reduce((a, b) => a + b)) || [])),
         ])
         .nice(),
+    subcategories: data.subcategories || [],
     colors: data.colors || COLORS_CATEGORICAL,
     strokeWidths: data.strokeWidths || 1,
     strokes: data.strokes || '#000',
@@ -57,12 +59,13 @@ export function dataSeriesBarStacked(data: Partial<DataSeriesBarStacked>): DataS
 
 export function dataBarStackedGenerator(
   selection: Selection<Element, DataSeriesBarStacked>
-): DataBarStacked[] {
+): DataBarGrouped[] {
   const {
       categories,
       categoryScale,
       values,
       valueScale,
+      subcategories,
       flipped,
       colors,
       strokes,
@@ -78,12 +81,13 @@ export function dataBarStackedGenerator(
     valueScale.range([0, bounds.width]);
   }
 
-  const data: DataBarStacked[] = [];
+  const data: DataBarGrouped[] = [];
   for (let i = 0; i < categories.length; ++i) {
     const subcategoryValues = values[i];
     let nextStart = valueScale(0);
     for (let j = 0; j < subcategoryValues.length; ++j) {
       const c = categories[i],
+        sc = subcategories[j],
         v = subcategoryValues[j],
         sw = arrayIs2D(strokeWidths)
           ? strokeWidths[i][j]
@@ -103,10 +107,11 @@ export function dataBarStackedGenerator(
           height: categoryScale.bandwidth(),
         },
         rect = flipped ? flippedRect : unflippedRect,
-        bar: DataBarStacked = {
-          stackIndex: i,
-          index: j,
-          key: keys?.[i][j] || `${i}/${j}`,
+        bar: DataBarGrouped = {
+          category: c,
+          subcategory: sc,
+          value: v,
+          key: keys?.[i][j] || `${c}/${sc}`,
           color: arrayIs2D(colors) ? colors[i][j] : arrayIs(colors) ? colors[j] : colors,
           strokeWidth: sw,
           stroke: arrayIs2D(strokes) ? strokes[i][j] : arrayIs(strokes) ? strokes[j] : strokes,
@@ -131,9 +136,4 @@ export function seriesBarStacked<
   return seriesBar(selection).classed('series-bar-stacked', true);
 }
 
-export function barStackedFindByStackIndex(
-  container: Selection,
-  index: number
-): Selection<SVGRectElement, DataBarStacked> {
-  return findByDataProperty<SVGRectElement, DataBarStacked>(container, '.bar', 'stackIndex', index);
-}
+export const barStackedFindBySubcategory = barGroupedFindBySubcategory;

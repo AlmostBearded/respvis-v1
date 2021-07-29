@@ -38,9 +38,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Get sibling index of a node with optional selector that siblings need to match.
 - Add siblingIndexSameClasses function.
 - Add barFind function to find bars by key.
-- Add barFindByIndex function.
-- Add barGroupedFindByGroupIndex function.
-- Add barStackedFindByStackIndex function.
+- Add barFindByCategory function.
+- Add barGroupedFindBySubcategory function.
+- Add barStackedFindBySubcategory function.
 - Add labelFind function find labels by key.
 - Add labelFindByIndex function.
 - Add labelFindByFilter function.
@@ -74,6 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add colors property to seriesBar, seriesBarGrouped & seriesBarStacked.
 - Add stokeWidths property to seriesBar, seriesBarGrouped & seriesBarStacked.
 - Add stoke property to seriesBar, seriesBarGrouped & seriesBarStacked.
+- Add category, subcategory and value properties to DataBar & DataBarGrouped
 
 ### Changed
 
@@ -127,6 +128,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove unused Selection.transformData.
 - Remove unused Selection.transformAttr.
 - Remove unused Selection.transformCall.
+- Remove index and groupIndex properties from DataBar & DataBarGrouped.
+- Remove DataBarStacked.
 
 ### Fixed
 

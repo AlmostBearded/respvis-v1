@@ -83,9 +83,10 @@ export function chartBarHoverBar(
   bar: Selection<Element, DataBar>,
   hover: boolean
 ) {
-  bar.each((barD) => {
-    const labelS = labelFind(chart, barD.key),
-      tickS = axisTickFindByIndex(chart.selectAll('.axis-main'), barD.index);
+  bar.each((barD, i, g) => {
+    const categoryIndex = siblingIndexSameClasses(g[i]),
+      labelS = labelFind(chart, barD.key),
+      tickS = axisTickFindByIndex(chart.selectAll('.axis-x'), categoryIndex);
 
     labelHighlight(labelS, hover);
     axisTickHighlight(tickS, hover);
