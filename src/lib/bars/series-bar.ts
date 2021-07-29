@@ -198,13 +198,15 @@ export function seriesBarRender<
   });
 }
 
-export function barHighlight(bar: Selection, highlight: boolean): void {
+export function barHighlight(bar: Selection<Element>, highlight: boolean): void {
+  bar.each((_, i, g) => {
   if (highlight)
-    bar.attr(
+      g[i].setAttribute(
       'filter',
-      `url(#${bar.closest('.series-bar').selectAll('.filter-brightness').attr('id')})`
+        `url(#${select(g[i].closest('.series-bar')!).selectAll('.filter-brightness').attr('id')})`
     );
-  else bar.attr('filter', null);
+    else g[i].removeAttribute('filter');
+  });
 }
 
 export function barFind<Data extends DataBar>(
