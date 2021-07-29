@@ -32,11 +32,11 @@ import {
   seriesBarStacked,
 } from './series-bar-stacked';
 import { labelFind, labelFindByFilter, labelHighlight, seriesLabel } from './series-label';
-import { dataSeriesLabelBar } from './series-label-bar';
+import { DataSeriesLabelBar, dataSeriesLabelBar } from './series-label-bar';
 
 export interface DataChartBarStacked extends DataSeriesBarStacked, DataChartCartesian {
   legend: Partial<DataLegendSquares>;
-  subcategories: string[];
+  labels: Partial<DataSeriesLabelBar>;
 }
 
 export function dataChartBarStacked(data: Partial<DataChartBarStacked>): DataChartBarStacked {
@@ -45,7 +45,7 @@ export function dataChartBarStacked(data: Partial<DataChartBarStacked>): DataCha
     ...seriesData,
     ...dataChartCartesian(data),
     legend: data.legend || {},
-    subcategories: data.subcategories || (seriesData.values[0] || []).map((d, i) => i.toString()),
+    labels: data.labels || {},
   };
 }
 
@@ -117,6 +117,7 @@ export function chartBarStackedDataChange<
   return selection.each(function (chartData, i, g) {
     const s = select<GElement, Datum>(g[i]),
       barSeries = s.selectAll('.series-bar-stacked'),
+      labelSeries = s.selectAll<Element, DataSeriesLabelBar>('.series-label'),
       legend = s.selectAll<Element, DataLegendSquares>('.legend');
 
     barSeries.dispatch('datachange');
@@ -128,6 +129,14 @@ export function chartBarStackedDataChange<
           labels: chartData.subcategories,
         },
         chartData.legend
+      )
+    );
+
+    labelSeries.datum((d) =>
+      Object.assign<DataSeriesLabelBar, Partial<DataSeriesLabelBar>, Partial<DataSeriesLabelBar>>(
+        d,
+        { labels: arrayFlat(chartData.values).map((v) => v.toString()) },
+        chartData.labels
       )
     );
 

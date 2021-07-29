@@ -75,6 +75,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add stokeWidths property to seriesBar, seriesBarGrouped & seriesBarStacked.
 - Add stoke property to seriesBar, seriesBarGrouped & seriesBarStacked.
 - Add category, subcategory and value properties to DataBar & DataBarGrouped
+- Add labels property to chartBar, chartBarGrouped & chartBarStacked.
 
 ### Changed
 

@@ -7,7 +7,7 @@ import {
   toolDownloadSVG,
   toolFilterNominal,
 } from '../chart-window';
-import { arrayIs, arrayIs2D } from '../core';
+import { arrayFlat, arrayIs, arrayIs2D, arrayPartition } from '../core';
 import { chartBarGrouped, dataChartBarGrouped, DataChartBarGrouped } from './chart-bar-grouped';
 import { DataSeriesLabelBar } from './series-label-bar';
 
@@ -21,14 +21,21 @@ export interface DataChartWindowBarGrouped extends DataChartBarGrouped {
 export function dataChartWindowBarGrouped(
   data: Partial<DataChartWindowBarGrouped>
 ): DataChartWindowBarGrouped {
+  const chartData = dataChartBarGrouped(data),
+    valueDomain =
+      data.valueDomain ||
+      ((values) => [0, Math.max(...values.map((catV) => Math.max(...catV))) * 1.05]);
+
+  chartData.valueScale.domain(
+    valueDomain instanceof Function ? valueDomain(chartData.values) : valueDomain
+  );
+
   return {
-    ...dataChartBarGrouped(data),
+    ...chartData,
     categoryEntity: data.categoryEntity || '',
     subcategoryEntity: data.subcategoryEntity || '',
     valueEntity: data.valueEntity || '',
-    valueDomain:
-      data.valueDomain ||
-      ((values) => [0, Math.max(...values.map((catV) => Math.max(...catV))) * 1.05]),
+    valueDomain: valueDomain,
   };
 }
 
@@ -70,10 +77,8 @@ export function chartWindowBarGrouped(
       // download svg
       menuItems.append('li').call((s) => toolDownloadSVG(s));
 
-      chartWindow.on('change', function () {
-        select<Element, DataChartWindowBarGrouped>(this).call((s) =>
-          chartWindowBarGroupedApplyFilters(s)
-        );
+      chartWindow.on('change.chartwindowbargrouped', function () {
+        chartWindowBarGroupedApplyFilters(select<Element, DataChartWindowBarGrouped>(this));
       });
 
       // chart
@@ -142,6 +147,7 @@ export function chartWindowBarGroupedApplyFilters(
         colors,
         valueDomain,
         legend: { colors: legendColors },
+        labels: { labels: labels },
       } = chartWindowD,
       chartWindowS = select<Element, DataChartWindowBarGrouped>(g[i]),
       chartS = chartWindowS.selectAll<Element, DataChartBarGrouped>('svg.chart-bar-grouped'),
@@ -167,6 +173,13 @@ export function chartWindowBarGroupedApplyFilters(
       filteredLegendColors = arrayIs(legendColors)
         ? legendColors.filter(filterSubcat)
         : legendColors,
+      filteredLabels =
+        arrayIs(labels) &&
+        arrayFlat(
+          arrayPartition(labels, subcategories.length)
+            .filter(filterCat)
+            .map((v) => v.filter(filterSubcat))
+        ),
       filteredValueDomain =
         valueDomain instanceof Function ? valueDomain(filteredValues) : valueDomain;
 
@@ -184,11 +197,12 @@ export function chartWindowBarGroupedApplyFilters(
             ...chartWindowD.legend,
             ...(filteredLegendColors && { colors: filteredLegendColors }),
           },
+          labels: {
+            ...chartWindowD.labels,
+            ...(filteredLabels && { labels: filteredLabels }),
+          },
         })
       )
-    );
-    labelSeriesS.datum(
-      (d) => ((d.labels = filteredValues.reduce((out, v) => (out.push(...v), out), [])), d)
     );
   });
 }
