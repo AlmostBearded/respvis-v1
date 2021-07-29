@@ -48,6 +48,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add legendItemFindByIndex function.
 - Add arrayIs function.
 - Add arrayIs2D function.
+- Add arrayFlat function.
+- Add arrayPartition function.
+- Add ValueOrArray type.
+- Add NestedArray type.
 - Add automatic highlighting of bars on hover to seriesBar.
 - Add automatic highlighting of bars on hover to seriesBarGrouped.
 - Add automatic highlighting of legend items on hover to legend.
