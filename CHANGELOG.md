@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add toolFilterNominal.
 - Add chartWindowBar (= chartBar + toolbar with category filter)
 - Add chartWindowBarGrouped (= chartBarGrouped + toolbar with category & subcategory filters)
+- Add chartWindowBarStacked (= chartBarStacked + toolbar with category & subcategory filters)
 - Add barHighlight function.
 - Add labelHighlight function.
 - Add legendItemHighlight function.
@@ -34,12 +35,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add findByDataProperty utility function.
 - Add findByKey utility function.
 - Add findByIndex utility function.
-- Add siblingIndex utility function
+- Add siblingIndex utility function.
   - Get sibling index of a node with optional selector that siblings need to match.
+- Add siblingIndexSameClasses function.
 - Add barFind function to find bars by key.
-- Add barFindByIndex function.
-- Add barGroupedFindByGroupIndex function.
-- Add barStackedFindByStackIndex function.
+- Add barFindByCategory function.
+- Add barGroupedFindBySubcategory function.
+- Add barStackedFindBySubcategory function.
 - Add labelFind function find labels by key.
 - Add labelFindByIndex function.
 - Add labelFindByFilter function.
@@ -48,6 +50,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add legendItemFindByIndex function.
 - Add arrayIs function.
 - Add arrayIs2D function.
+- Add arrayFlat function.
+- Add arrayPartition function.
+- Add ValueOrArray type.
+- Add NestedArray type.
 - Add automatic highlighting of bars on hover to seriesBar.
 - Add automatic highlighting of bars on hover to seriesBarGrouped.
 - Add automatic highlighting of legend items on hover to legend.
@@ -69,6 +75,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add colors property to seriesBar, seriesBarGrouped & seriesBarStacked.
 - Add stokeWidths property to seriesBar, seriesBarGrouped & seriesBarStacked.
 - Add stoke property to seriesBar, seriesBarGrouped & seriesBarStacked.
+- Add category, subcategory and value properties to DataBar & DataBarGrouped
+- Add labels property to chartBar, chartBarGrouped & chartBarStacked.
 
 ### Changed
 
@@ -91,6 +99,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pass series selection into dataXGenerator functions.
 - Make partial inputs of dataX functions non-optional.
 - Rename dataSeriesLabelBar positionFromRect property to rectPositioner.
+- Allow passing ((DataBar) => string) function to labels property of DataLabelSeriesBar.
 - Require layouter data to be set before initializing layouter.
 - Rename dataSeriesBar properties:
   - mainValues → categories
@@ -122,6 +131,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove unused Selection.transformData.
 - Remove unused Selection.transformAttr.
 - Remove unused Selection.transformCall.
+- Remove index and groupIndex properties from DataBar & DataBarGrouped.
+- Remove DataBarStacked.
 
 ### Fixed
 

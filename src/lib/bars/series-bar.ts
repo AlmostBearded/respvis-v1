@@ -15,7 +15,8 @@ import { easeCubicOut } from 'd3-ease';
 import { filterBrightness } from '../filters';
 
 export interface DataBar extends Rect {
-  index: number;
+  category: string;
+  value: number;
   key: string;
   color: string;
   strokeWidth: number;
@@ -27,7 +28,7 @@ export interface DataSeriesBar extends DataSeriesGenerator<DataBar> {
   categoryScale: ScaleBand<any>;
   values: number[];
   valueScale: ScaleContinuousNumeric<number, number>;
-  keys?: string[];
+  keys: string[];
   colors: string | string[];
   strokeWidths: number | number[];
   strokes: string | string[];
@@ -35,8 +36,9 @@ export interface DataSeriesBar extends DataSeriesGenerator<DataBar> {
 }
 
 export function dataSeriesBar(data: Partial<DataSeriesBar>): DataSeriesBar {
+  const categories = data.categories || [];
   return {
-    categories: data.categories || [],
+    categories: categories,
     categoryScale:
       data.categoryScale ||
       scaleBand()
@@ -52,7 +54,7 @@ export function dataSeriesBar(data: Partial<DataSeriesBar>): DataSeriesBar {
     strokeWidths: data.strokeWidths || 1,
     strokes: data.strokes || '#000',
     flipped: data.flipped || false,
-    keys: data.keys,
+    keys: data.keys || categories,
     dataGenerator: data.dataGenerator || dataBarGenerator,
   };
 }
@@ -97,7 +99,8 @@ export function dataBarGenerator(selection: Selection<Element, DataSeriesBar>): 
         height: categoryScale.bandwidth(),
       },
       bar: DataBar = {
-        index: i,
+        category: c,
+        value: v,
         key: keys?.[i] || i.toString(),
         color: arrayIs(colors) ? colors[i] : colors,
         strokeWidth: sw,
@@ -198,13 +201,15 @@ export function seriesBarRender<
   });
 }
 
-export function barHighlight(bar: Selection, highlight: boolean): void {
-  if (highlight)
-    bar.attr(
-      'filter',
-      `url(#${bar.closest('.series-bar').selectAll('.filter-brightness').attr('id')})`
-    );
-  else bar.attr('filter', null);
+export function barHighlight(bar: Selection<Element>, highlight: boolean): void {
+  bar.each((_, i, g) => {
+    if (highlight)
+      g[i].setAttribute(
+        'filter',
+        `url(#${select(g[i].closest('.series-bar')!).selectAll('.filter-brightness').attr('id')})`
+      );
+    else g[i].removeAttribute('filter');
+  });
 }
 
 export function barFind<Data extends DataBar>(
@@ -214,9 +219,9 @@ export function barFind<Data extends DataBar>(
   return findByKey<SVGRectElement, Data>(container, '.bar', key);
 }
 
-export function barFindByIndex<Data extends DataBar>(
+export function barFindByCategory<Data extends DataBar>(
   container: Selection,
-  index: number
+  category: string
 ): Selection<SVGRectElement, Data> {
-  return findByDataProperty<SVGRectElement, Data>(container, '.bar', 'index', index);
+  return findByDataProperty<SVGRectElement, Data>(container, '.bar', 'category', category);
 }

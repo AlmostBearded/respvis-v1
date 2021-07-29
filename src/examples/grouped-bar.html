@@ -34,29 +34,29 @@
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
       const root = d3.select('#chart'),
-        chartWindowDatum = respVis.dataChartWindowBarGrouped({
-          categoryEntity: 'Sites',
-          categories: sites,
-          subcategoryEntity: 'Years',
-          subcategories: years,
-          valueEntity: 'Revenue',
-          values: revenues,
-          colors: colors,
-          keys: keys,
-          xAxis: {
-            title: 'Site',
-          },
-          yAxis: {
-            title: 'Revenue',
-            subtitle: '[Million USD]',
-          },
-          legend: {
-            title: 'Years',
-          },
-        }),
         chartWindow = root
           .append('div')
-          .datum(chartWindowDatum)
+          .datum(
+            respVis.dataChartWindowBarGrouped({
+              categoryEntity: 'Sites',
+              categories: sites,
+              subcategoryEntity: 'Years',
+              subcategories: years,
+              values: revenues,
+              colors: colors,
+              keys: keys,
+              xAxis: {
+                title: 'Site',
+              },
+              yAxis: {
+                title: 'Revenue',
+                subtitle: '[Million USD]',
+              },
+              legend: {
+                title: 'Years',
+              },
+            })
+          )
           .call(respVis.chartWindowBarGrouped),
         chart = chartWindow.selectAll('svg.chart'),
         labelSeries = chart.selectAll('.series-label'),

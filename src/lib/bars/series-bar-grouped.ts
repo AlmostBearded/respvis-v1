@@ -13,12 +13,13 @@ import {
 import { DataBar, JoinEvent, seriesBar } from './series-bar';
 
 export interface DataBarGrouped extends DataBar {
-  groupIndex: number;
+  subcategory: string;
 }
 
 export interface DataSeriesBarGrouped extends DataSeriesGenerator<DataBarGrouped> {
   categories: any[];
   categoryScale: ScaleBand<any>;
+  subcategories: string[];
   subcategoryPadding: number;
   values: number[][];
   valueScale: ScaleContinuousNumeric<number, number>;
@@ -43,6 +44,7 @@ export function dataSeriesBarGrouped(data: Partial<DataSeriesBarGrouped>): DataS
       scaleLinear()
         .domain([0, Math.max(...(data.values?.map((values) => Math.max(...values)) || []))])
         .nice(),
+    subcategories: data.subcategories || [],
     colors: data.colors || COLORS_CATEGORICAL,
     strokeWidths: data.strokeWidths || 1,
     strokes: data.strokes || '#000',
@@ -61,6 +63,7 @@ export function dataBarGroupedGenerator(
       categoryScale,
       values,
       valueScale,
+      subcategories,
       flipped,
       colors,
       subcategoryPadding,
@@ -106,8 +109,9 @@ export function dataBarGroupedGenerator(
           height: innerScale.bandwidth(),
         },
         bar: DataBarGrouped = {
-          groupIndex: i,
-          index: j,
+          category: c,
+          subcategory: subcategories[j],
+          value: v,
           key: keys?.[i][j] || `${i}/${j}`,
           color: arrayIs2D(colors) ? colors[i][j] : arrayIs(colors) ? colors[j] : colors,
           strokeWidth: sw,
@@ -131,9 +135,14 @@ export function seriesBarGrouped<
   return seriesBar(selection).classed('series-bar-grouped', true);
 }
 
-export function barGroupedFindByGroupIndex(
+export function barGroupedFindBySubcategory(
   container: Selection,
-  index: number
+  subcategory: string
 ): Selection<SVGRectElement, DataBarGrouped> {
-  return findByDataProperty<SVGRectElement, DataBarGrouped>(container, '.bar', 'groupIndex', index);
+  return findByDataProperty<SVGRectElement, DataBarGrouped>(
+    container,
+    '.bar',
+    'subcategory',
+    subcategory
+  );
 }

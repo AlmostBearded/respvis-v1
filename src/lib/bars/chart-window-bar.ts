@@ -18,11 +18,18 @@ export interface DataChartWindowBar extends DataChartBar {
 }
 
 export function dataChartWindowBar(data: Partial<DataChartWindowBar>): DataChartWindowBar {
+  const chartData = dataChartBar(data),
+    valueDomain = data.valueDomain || ((values) => [0, Math.max(...values) * 1.05]);
+
+  chartData.valueScale.domain(
+    valueDomain instanceof Function ? valueDomain(chartData.values) : valueDomain
+  );
+
   return {
-    ...dataChartBar(data),
+    ...chartData,
     categoryEntity: data.categoryEntity || '',
     valueEntity: data.valueEntity || '',
-    valueDomain: data.valueDomain || ((values) => [0, Math.max(...values) * 1.05]),
+    valueDomain: valueDomain,
   };
 }
 
@@ -50,8 +57,8 @@ export function chartWindowBar(selection: Selection<HTMLDivElement, DataChartWin
       // download svg
       menuItems.append('li').call((s) => toolDownloadSVG(s));
 
-      chartWindow.on('change', function () {
-        select<Element, DataChartWindowBar>(this).call((s) => chartWindowBarApplyFilters(s));
+      chartWindow.on('change.chartwindowbar', function () {
+        chartWindowBarApplyFilters(select<Element, DataChartWindowBar>(this));
       });
 
       // chart
@@ -96,7 +103,14 @@ export function chartWindowBarApplyFilters(
   selection: Selection<Element, DataChartWindowBar>
 ): void {
   selection.each((chartWindowD, i, g) => {
-    const { categories, values, keys, colors, valueDomain } = chartWindowD,
+    const {
+        categories,
+        values,
+        keys,
+        colors,
+        valueDomain,
+        labels: { labels: labels },
+      } = chartWindowD,
       chartWindowS = select<Element, DataChartWindowBar>(g[i]),
       chartS = chartWindowS.selectAll<Element, DataChartBarGrouped>('svg.chart-bar'),
       labelSeriesS = chartS.selectAll<Element, DataSeriesLabelBar>('.series-label'),
@@ -109,6 +123,7 @@ export function chartWindowBarApplyFilters(
       filteredValues = values.filter(filterCat),
       filteredKeys = keys?.filter(filterCat),
       filteredColors = arrayIs(colors) ? colors.filter(filterCat) : colors,
+      filteredLabels = arrayIs(labels) && labels.filter(filterCat),
       filteredValueDomain =
         valueDomain instanceof Function ? valueDomain(filteredValues) : valueDomain;
 
@@ -121,12 +136,12 @@ export function chartWindowBarApplyFilters(
           values: filteredValues,
           keys: filteredKeys,
           colors: filteredColors,
+          labels: {
+            ...chartWindowD.labels,
+            ...(filteredLabels && { labels: filteredLabels }),
+          },
         })
       )
     );
-    labelSeriesS.datum((d) => {
-      d.labels = filteredValues;
-      return d;
-    });
   });
 }

@@ -1,6 +1,6 @@
 import { BaseType, select, Selection } from 'd3-selection';
 import { axisTickFindByIndex, axisTickHighlight } from '../axis';
-import { debug, nodeToString } from '../core';
+import { arrayFlat, debug, nodeToString, siblingIndexSameClasses } from '../core';
 import {
   chartCartesian,
   chartCartesianUpdateAxes,
@@ -9,14 +9,17 @@ import {
 } from '../core/chart-cartesian';
 import { seriesBar, dataSeriesBar, DataSeriesBar, DataBar, barFind } from './series-bar';
 import { labelHighlight, seriesLabel, labelFind } from './series-label';
-import { dataSeriesLabelBar } from './series-label-bar';
+import { DataSeriesLabelBar, dataSeriesLabelBar } from './series-label-bar';
 
-export interface DataChartBar extends DataSeriesBar, DataChartCartesian {}
+export interface DataChartBar extends DataSeriesBar, DataChartCartesian {
+  labels: Partial<DataSeriesLabelBar>;
+}
 
 export function dataChartBar(data: Partial<DataChartBar>): DataChartBar {
   return {
     ...dataSeriesBar(data),
     ...dataChartCartesian(data),
+    labels: data.labels || {},
   };
 }
 
@@ -67,9 +70,18 @@ export function chartBarDataChange<
   selection: Selection<GElement, Datum, PElement, PDatum>
 ): Selection<GElement, Datum, PElement, PDatum> {
   return selection.each(function (chartData, i, g) {
-    const s = select<GElement, Datum>(g[i]);
+    const s = select<GElement, Datum>(g[i]),
+      labelSeries = s.selectAll<Element, DataSeriesLabelBar>('.series-label');
 
     s.selectAll('.series-bar').dispatch('datachange');
+
+    labelSeries.datum((d) =>
+      Object.assign<DataSeriesLabelBar, Partial<DataSeriesLabelBar>, Partial<DataSeriesLabelBar>>(
+        d,
+        { labels: chartData.values.map((v) => v.toString()) },
+        chartData.labels
+      )
+    );
 
     chartData.xAxis.scale = chartData.categoryScale;
     chartData.yAxis.scale = chartData.valueScale;
@@ -83,9 +95,10 @@ export function chartBarHoverBar(
   bar: Selection<Element, DataBar>,
   hover: boolean
 ) {
-  bar.each((barD) => {
-    const labelS = labelFind(chart, barD.key),
-      tickS = axisTickFindByIndex(chart.selectAll('.axis-main'), barD.index);
+  bar.each((barD, i, g) => {
+    const categoryIndex = siblingIndexSameClasses(g[i]),
+      labelS = labelFind(chart, barD.key),
+      tickS = axisTickFindByIndex(chart.selectAll('.axis-x'), categoryIndex);
 
     labelHighlight(labelS, hover);
     axisTickHighlight(tickS, hover);

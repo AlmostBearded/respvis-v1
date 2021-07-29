@@ -8,20 +8,21 @@ import {
   toolFilterNominal,
 } from '../chart-window';
 import { arrayFlat, arrayIs, arrayIs2D, arrayPartition } from '../core';
-import { chartBarGrouped, dataChartBarGrouped, DataChartBarGrouped } from './chart-bar-grouped';
+import { chartBarStacked, dataChartBarStacked, DataChartBarStacked } from './chart-bar-stacked';
 import { DataSeriesLabelBar } from './series-label-bar';
 
-export interface DataChartWindowBarGrouped extends DataChartBarGrouped {
+export interface DataChartWindowBarStacked extends DataChartBarStacked {
   categoryEntity: string;
   subcategoryEntity: string;
   valueEntity: string;
   valueDomain: number[] | ((values: number[][]) => number[]);
+  valuesAsRatios: boolean;
 }
 
-export function dataChartWindowBarGrouped(
-  data: Partial<DataChartWindowBarGrouped>
-): DataChartWindowBarGrouped {
-  const chartData = dataChartBarGrouped(data),
+export function dataChartWindowBarStacked(
+  data: Partial<DataChartWindowBarStacked>
+): DataChartWindowBarStacked {
+  const chartData = dataChartBarStacked(data),
     valueDomain =
       data.valueDomain ||
       ((values) => [0, Math.max(...values.map((catV) => Math.max(...catV))) * 1.05]);
@@ -36,17 +37,18 @@ export function dataChartWindowBarGrouped(
     subcategoryEntity: data.subcategoryEntity || '',
     valueEntity: data.valueEntity || '',
     valueDomain: valueDomain,
+    valuesAsRatios: data.valuesAsRatios || false,
   };
 }
 
-export function chartWindowBarGrouped(
-  selection: Selection<HTMLDivElement, DataChartWindowBarGrouped>
+export function chartWindowBarStacked(
+  selection: Selection<HTMLDivElement, DataChartWindowBarStacked>
 ): void {
   selection
-    .classed('chart-window-bar-grouped', true)
+    .classed('chart-window-bar-stacked', true)
     .call((s) => chartWindow(s))
     .each((chartWindowD, i, g) => {
-      const chartWindow = select<HTMLDivElement, DataChartWindowBarGrouped>(g[i]),
+      const chartWindow = select<HTMLDivElement, DataChartWindowBarStacked>(g[i]),
         menuItems = chartWindow.selectAll('.menu-tools .items'),
         layouter = chartWindow.selectAll('.layouter');
 
@@ -77,20 +79,20 @@ export function chartWindowBarGrouped(
       // download svg
       menuItems.append('li').call((s) => toolDownloadSVG(s));
 
-      chartWindow.on('change.chartwindowbargrouped', function () {
-        chartWindowBarGroupedApplyFilters(select<Element, DataChartWindowBarGrouped>(this));
+      chartWindow.on('change.chartwindowbarstacked', function () {
+        chartWindowBarStackedApplyFilters(select<Element, DataChartWindowBarStacked>(this));
       });
 
       // chart
       const chart = layouter
         .append('svg')
-        .datum(dataChartBarGrouped(chartWindowD))
-        .call((s) => chartBarGrouped(s));
+        .datum(dataChartBarStacked(chartWindowD))
+        .call((s) => chartBarStacked(s));
 
       chart.selectAll('.legend').attr('cursor', 'default');
 
-      chartWindow.on('datachange.chartwindowbargrouped', function (e, chartWindowD) {
-        const chartWindowS = select<Element, DataChartWindowBarGrouped>(this),
+      chartWindow.on('datachange.chartwindowbarstacked', function (e, chartWindowD) {
+        const chartWindowS = select<Element, DataChartWindowBarStacked>(this),
           categoryFilterS = chartWindowS.selectAll<Element, DataToolFilterNominal>(
             '.tool-filter-categories'
           ),
@@ -130,13 +132,13 @@ export function chartWindowBarGrouped(
           )
         );
 
-        chartWindowBarGroupedApplyFilters(chartWindowS);
+        chartWindowBarStackedApplyFilters(chartWindowS);
       });
     });
 }
 
-export function chartWindowBarGroupedApplyFilters(
-  selection: Selection<Element, DataChartWindowBarGrouped>
+export function chartWindowBarStackedApplyFilters(
+  selection: Selection<Element, DataChartWindowBarStacked>
 ): void {
   selection.each((chartWindowD, i, g) => {
     const {
@@ -146,11 +148,12 @@ export function chartWindowBarGroupedApplyFilters(
         keys,
         colors,
         valueDomain,
+        valuesAsRatios,
         legend: { colors: legendColors },
         labels: { labels: labels },
       } = chartWindowD,
-      chartWindowS = select<Element, DataChartWindowBarGrouped>(g[i]),
-      chartS = chartWindowS.selectAll<Element, DataChartBarGrouped>('svg.chart-bar-grouped'),
+      chartWindowS = select<Element, DataChartWindowBarStacked>(g[i]),
+      chartS = chartWindowS.selectAll<Element, DataChartBarStacked>('svg.chart-bar-stacked'),
       labelSeriesS = chartS.selectAll<Element, DataSeriesLabelBar>('.series-label'),
       catFilterD = chartWindowS
         .selectAll<Element, DataToolFilterNominal>('.tool-filter-categories')
@@ -163,7 +166,14 @@ export function chartWindowBarGroupedApplyFilters(
 
     const filteredCats = categories.filter(filterCat),
       filteredSubcats = subcategories.filter(filterSubcat),
-      filteredValues = values.filter(filterCat).map((v) => v.filter(filterSubcat)),
+      filteredValues = values
+        .filter(filterCat)
+        .map((catValues) => catValues.filter(filterSubcat))
+        .map((catValues) => {
+          if (!valuesAsRatios) return catValues;
+          const sum = catValues.reduce((prev, curr) => prev + curr, 0);
+          return catValues.map((v) => (v / sum) * 100 || 0);
+        }),
       filteredKeys = keys?.filter(filterCat).map((v) => v.filter(filterSubcat)),
       filteredColors = arrayIs2D(colors)
         ? colors.filter(filterCat).map((v) => v.filter(filterSubcat))
@@ -187,7 +197,7 @@ export function chartWindowBarGroupedApplyFilters(
       (d) => (
         d.categoryScale.domain(filteredCats),
         d.valueScale.domain(filteredValueDomain).nice(),
-        Object.assign(d, dataChartBarGrouped(chartWindowD), {
+        Object.assign(d, dataChartBarStacked(chartWindowD), {
           categories: filteredCats,
           subcategories: filteredSubcats,
           values: filteredValues,

@@ -11,6 +11,8 @@ export interface DataToolFilterNominal {
   text: string;
   options: string[];
   shown: boolean[];
+  minShown: number;
+  maxShown: number;
 }
 
 export function dataToolFilterNominal(data: Partial<DataToolFilterNominal>): DataToolFilterNominal {
@@ -19,6 +21,8 @@ export function dataToolFilterNominal(data: Partial<DataToolFilterNominal>): Dat
     text: data.text || 'Filter',
     options: options,
     shown: data.shown || options.map(() => true),
+    minShown: data.minShown || 1,
+    maxShown: data.maxShown || Infinity,
   };
 }
 
@@ -40,13 +44,17 @@ export function toolFilterNominal(
     .call((s) => seriesCheckbox(s));
 
   selection
-    .on('change.toolfilternominal', (e, d) => (d.shown = [...items.datum().checked]))
+    .on('change.toolfilternominal', (e, d) => {
+      d.shown = [...items.datum().checked];
+    })
     .on('datachange.toolfilternominal', function (e, toolD) {
       const s = select(this);
       s.selectAll('.text').text(`${toolD.text}`);
       s.selectAll<HTMLUListElement, DataSeriesCheckbox>('.items').datum((d) => {
         d.labels = toolD.options;
         d.checked = toolD.shown;
+        d.minChecked = toolD.minShown;
+        d.maxChecked = toolD.maxShown;
         return d;
       });
     })
