@@ -97,6 +97,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pass series selection into dataXGenerator functions.
 - Make partial inputs of dataX functions non-optional.
 - Rename dataSeriesLabelBar positionFromRect property to rectPositioner.
+- Allow passing ((DataBar) => string) function to labels property of DataLabelSeriesBar. 
 - Require layouter data to be set before initializing layouter.
 - Rename dataSeriesBar properties:
   - mainValues → categories

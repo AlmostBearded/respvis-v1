@@ -12,7 +12,7 @@ import {
 } from '../core';
 
 export interface DataLabel extends Position {
-  text: string | number;
+  text: string;
   // todo: add index property?
   key: string;
 }

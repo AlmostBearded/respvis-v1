@@ -14,13 +14,13 @@ import { DataLabel } from './series-label';
 export interface DataSeriesLabelBar extends DataSeriesGenerator<DataLabel> {
   barContainer: Selection<Element>;
   rectPositioner: (rect: Rect) => Position;
-  labels: (string | number)[];
+  labels: string[] | ((bar: DataBar) => string);
 }
 
 export function dataSeriesLabelBar(data: Partial<DataSeriesLabelBar>): DataSeriesLabelBar {
   return {
     barContainer: data.barContainer || select('.chart'),
-    labels: data.labels || [],
+    labels: data.labels || ((bar) => bar.value.toString()),
     rectPositioner: rectCenter,
     dataGenerator: data.dataGenerator || dataLabelBarGenerator,
   };
@@ -29,15 +29,17 @@ export function dataSeriesLabelBar(data: Partial<DataSeriesLabelBar>): DataSerie
 export function dataLabelBarGenerator(
   selection: Selection<Element, DataSeriesLabelBar>
 ): DataLabel[] {
-  const seriesDatum = selection.datum();
-  return seriesDatum.barContainer
+  const { barContainer, rectPositioner, labels } = selection.datum();
+  return barContainer
     .selectAll<SVGRectElement, DataBar>('.bar:not(.exiting)')
     .data()
-    .map((barData, i) => ({
-      ...seriesDatum.rectPositioner(barData),
-      text: seriesDatum.labels[i],
-      key: barData.key,
-    }));
+    .map(
+      (barData, i): DataLabel => ({
+        ...rectPositioner(barData),
+        text: labels instanceof Function ? labels(barData) : labels[i],
+        key: barData.key,
+      })
+    );
 }
 
 export function seriesLabelBarCenterConfig<
