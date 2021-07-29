@@ -6,3 +6,14 @@ export function siblingIndex(node: Element, selector: string = ''): number {
   }
   return index;
 }
+
+export function siblingIndexSameClasses(node: Element): number {
+  return siblingIndex(
+    node,
+    node
+      .getAttribute('class')
+      ?.split(' ')
+      .map((c) => `.${c}`)
+      .join('') || ''
+  );
+}

@@ -34,8 +34,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add findByDataProperty utility function.
 - Add findByKey utility function.
 - Add findByIndex utility function.
-- Add siblingIndex utility function
+- Add siblingIndex utility function.
   - Get sibling index of a node with optional selector that siblings need to match.
+- Add siblingIndexSameClasses function.
 - Add barFind function to find bars by key.
 - Add barFindByIndex function.
 - Add barGroupedFindByGroupIndex function.
