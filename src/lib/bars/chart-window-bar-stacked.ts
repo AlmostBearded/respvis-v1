@@ -2,16 +2,16 @@ import { max } from 'd3-array';
 import { select, Selection } from 'd3-selection';
 import {
   chartWindow,
-  DataToolFilterNominal,
-  dataToolFilterNominal,
+  ToolFilterNominal,
+  toolFilterNominalData,
   toolDownloadSVG,
   toolFilterNominal,
 } from '../chart-window';
 import { arrayFlat, arrayIs, arrayIs2D, arrayPartition } from '../core';
-import { chartBarStacked, dataChartBarStacked, DataChartBarStacked } from './chart-bar-stacked';
-import { DataSeriesLabelBar } from './series-label-bar';
+import { chartBarStacked, chartBarStackedData, ChartBarStacked } from './chart-bar-stacked';
+import { SeriesLabelBar } from './series-label-bar';
 
-export interface DataChartWindowBarStacked extends DataChartBarStacked {
+export interface ChartWindowBarStacked extends ChartBarStacked {
   categoryEntity: string;
   subcategoryEntity: string;
   valueEntity: string;
@@ -19,10 +19,10 @@ export interface DataChartWindowBarStacked extends DataChartBarStacked {
   valuesAsRatios: boolean;
 }
 
-export function dataChartWindowBarStacked(
-  data: Partial<DataChartWindowBarStacked>
-): DataChartWindowBarStacked {
-  const chartData = dataChartBarStacked(data),
+export function chartWindowBarStackedData(
+  data: Partial<ChartWindowBarStacked>
+): ChartWindowBarStacked {
+  const chartData = chartBarStackedData(data),
     valueDomain =
       data.valueDomain ||
       ((values) => [0, Math.max(...values.map((catV) => Math.max(...catV))) * 1.05]);
@@ -42,13 +42,13 @@ export function dataChartWindowBarStacked(
 }
 
 export function chartWindowBarStacked(
-  selection: Selection<HTMLDivElement, DataChartWindowBarStacked>
+  selection: Selection<HTMLDivElement, ChartWindowBarStacked>
 ): void {
   selection
     .classed('chart-window-bar-stacked', true)
     .call((s) => chartWindow(s))
     .each((chartWindowD, i, g) => {
-      const chartWindow = select<HTMLDivElement, DataChartWindowBarStacked>(g[i]),
+      const chartWindow = select<HTMLDivElement, ChartWindowBarStacked>(g[i]),
         menuItems = chartWindow.selectAll('.menu-tools .items'),
         layouter = chartWindow.selectAll('.layouter');
 
@@ -57,7 +57,7 @@ export function chartWindowBarStacked(
         .append('li')
         .classed('tool-filter-categories', true)
         .datum(
-          dataToolFilterNominal({
+          toolFilterNominalData({
             text: chartWindowD.categoryEntity,
             options: chartWindowD.categories,
           })
@@ -69,7 +69,7 @@ export function chartWindowBarStacked(
         .append('li')
         .classed('tool-filter-subcategories', true)
         .datum(
-          dataToolFilterNominal({
+          toolFilterNominalData({
             text: chartWindowD.subcategoryEntity,
             options: chartWindowD.subcategories,
           })
@@ -80,28 +80,28 @@ export function chartWindowBarStacked(
       menuItems.append('li').call((s) => toolDownloadSVG(s));
 
       chartWindow.on('change.chartwindowbarstacked', function () {
-        chartWindowBarStackedApplyFilters(select<Element, DataChartWindowBarStacked>(this));
+        chartWindowBarStackedApplyFilters(select<Element, ChartWindowBarStacked>(this));
       });
 
       // chart
       const chart = layouter
         .append('svg')
-        .datum(dataChartBarStacked(chartWindowD))
+        .datum(chartBarStackedData(chartWindowD))
         .call((s) => chartBarStacked(s));
 
       chart.selectAll('.legend').attr('cursor', 'default');
 
       chartWindow.on('datachange.chartwindowbarstacked', function (e, chartWindowD) {
-        const chartWindowS = select<Element, DataChartWindowBarStacked>(this),
-          categoryFilterS = chartWindowS.selectAll<Element, DataToolFilterNominal>(
+        const chartWindowS = select<Element, ChartWindowBarStacked>(this),
+          categoryFilterS = chartWindowS.selectAll<Element, ToolFilterNominal>(
             '.tool-filter-categories'
           ),
           categoryFilterD = categoryFilterS.datum(),
-          subcategoryFilterS = chartWindowS.selectAll<Element, DataToolFilterNominal>(
+          subcategoryFilterS = chartWindowS.selectAll<Element, ToolFilterNominal>(
             '.tool-filter-subcategories'
           ),
           subcategoryFilterD = subcategoryFilterS.datum(),
-          filterOptionMap = (data: DataToolFilterNominal) =>
+          filterOptionMap = (data: ToolFilterNominal) =>
             data.options.reduce<Record<string, boolean>>(
               (obj, option, i) => Object.assign(obj, { [`${option}`]: data.shown[i] }),
               {}
@@ -138,7 +138,7 @@ export function chartWindowBarStacked(
 }
 
 export function chartWindowBarStackedApplyFilters(
-  selection: Selection<Element, DataChartWindowBarStacked>
+  selection: Selection<Element, ChartWindowBarStacked>
 ): void {
   selection.each((chartWindowD, i, g) => {
     const {
@@ -152,14 +152,14 @@ export function chartWindowBarStackedApplyFilters(
         legend: { colors: legendColors },
         labels: { labels: labels },
       } = chartWindowD,
-      chartWindowS = select<Element, DataChartWindowBarStacked>(g[i]),
-      chartS = chartWindowS.selectAll<Element, DataChartBarStacked>('svg.chart-bar-stacked'),
-      labelSeriesS = chartS.selectAll<Element, DataSeriesLabelBar>('.series-label-bar'),
+      chartWindowS = select<Element, ChartWindowBarStacked>(g[i]),
+      chartS = chartWindowS.selectAll<Element, ChartBarStacked>('svg.chart-bar-stacked'),
+      labelSeriesS = chartS.selectAll<Element, SeriesLabelBar>('.series-label-bar'),
       catFilterD = chartWindowS
-        .selectAll<Element, DataToolFilterNominal>('.tool-filter-categories')
+        .selectAll<Element, ToolFilterNominal>('.tool-filter-categories')
         .datum(),
       subcatFilterD = chartWindowS
-        .selectAll<Element, DataToolFilterNominal>('.tool-filter-subcategories')
+        .selectAll<Element, ToolFilterNominal>('.tool-filter-subcategories')
         .datum(),
       filterCat = (_, i: number) => catFilterD.shown[i],
       filterSubcat = (_, i: number) => subcatFilterD.shown[i];
@@ -197,7 +197,7 @@ export function chartWindowBarStackedApplyFilters(
       (d) => (
         d.categoryScale.domain(filteredCats),
         d.valueScale.domain(filteredValueDomain).nice(),
-        Object.assign(d, dataChartBarStacked(chartWindowD), {
+        Object.assign(d, chartBarStackedData(chartWindowD), {
           categories: filteredCats,
           subcategories: filteredSubcats,
           values: filteredValues,

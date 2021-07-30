@@ -4,13 +4,13 @@ import { BaseType, select, Selection } from 'd3-selection';
 import { COLORS_CATEGORICAL, debug, nodeToString, Position, ScaleAny } from '../core';
 import { Size } from '../core/utils';
 
-export interface DataPoint extends Position {
+export interface Point extends Position {
   radius: number;
   index: number;
   key: string;
 }
 
-export interface DataSeriesPoint {
+export interface SeriesPoint {
   xValues: any[];
   xScale: ScaleAny<any, number, number>;
   yValues: any[];
@@ -20,7 +20,7 @@ export interface DataSeriesPoint {
   bounds: Size;
 }
 
-export function dataSeriesPoint(data: Partial<DataSeriesPoint>): DataSeriesPoint {
+export function seriesPointData(data: Partial<SeriesPoint>): SeriesPoint {
   return {
     xValues: data.xValues || [],
     xScale: data.xScale || scaleLinear().domain([0, 1]),
@@ -32,13 +32,13 @@ export function dataSeriesPoint(data: Partial<DataSeriesPoint>): DataSeriesPoint
   };
 }
 
-export function seriesPointCreatePoints(seriesData: DataSeriesPoint): DataPoint[] {
+export function seriesPointCreatePoints(seriesData: SeriesPoint): Point[] {
   const { xScale, yScale, xValues, yValues, radiuses, bounds, keys } = seriesData;
 
   xScale.range([0, bounds.width]);
   yScale.range([bounds.height, 0]);
 
-  const data: DataPoint[] = [];
+  const data: Point[] = [];
 
   for (let i = 0; i < xValues.length; ++i) {
     const x = xValues[i],
@@ -56,7 +56,7 @@ export function seriesPointCreatePoints(seriesData: DataSeriesPoint): DataPoint[
   return data;
 }
 
-export function seriesPoint(selection: Selection<Element, DataSeriesPoint>): void {
+export function seriesPoint(selection: Selection<Element, SeriesPoint>): void {
   selection
     .classed('series-point', true)
     .attr('fill', COLORS_CATEGORICAL[0])
@@ -73,10 +73,10 @@ export function seriesPoint(selection: Selection<Element, DataSeriesPoint>): voi
     )
     .on('render.seriespoint', function (e, d) {
       debug(`render point series on ${nodeToString(this)}`);
-      const series = select<Element, DataSeriesPoint>(this);
+      const series = select<Element, SeriesPoint>(this);
       d.bounds = series.bounds()!;
       series
-        .selectAll<SVGCircleElement, DataPoint>('circle')
+        .selectAll<SVGCircleElement, Point>('circle')
         .data(seriesPointCreatePoints(d), (d) => d.key)
         .call((s) => seriesPointJoin(series, s));
     });
@@ -84,7 +84,7 @@ export function seriesPoint(selection: Selection<Element, DataSeriesPoint>): voi
 
 export function seriesPointJoin(
   seriesSelection: Selection,
-  joinSelection: Selection<Element, DataPoint>
+  joinSelection: Selection<Element, Point>
 ): void {
   joinSelection
     .join(

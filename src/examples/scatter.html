@@ -51,10 +51,10 @@
       const root = d3.select('#chart'),
         layouter = root
           .append('div')
-          .datum((_, i, g) => respVis.dataLayouter(g[i]))
+          .datum((_, i, g) => respVis.layouterData(g[i]))
           .call(respVis.layouter)
           .style('height', '100%'),
-        chartDatum = respVis.dataChartPoint({
+        chartDatum = respVis.chartPointData({
           xValues: areas,
           xScale: areaScale,
           yValues: prices,

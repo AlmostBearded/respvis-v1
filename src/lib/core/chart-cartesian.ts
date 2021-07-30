@@ -1,17 +1,17 @@
 import { scaleLinear } from 'd3-scale';
 import { BaseType, select, Selection } from 'd3-selection';
-import { axisBottom, axisLeft, ConfigureAxisFn, DataAxis, dataAxis } from '../axis';
+import { axisBottom, axisLeft, ConfigureAxisFn, Axis, axisData } from '../axis';
 import { chart } from './chart';
 import { debug, nodeToString } from './log';
 import { ScaleAny } from './scale';
 
-export interface DataChartCartesian {
-  xAxis: Partial<DataAxis>;
-  yAxis: Partial<DataAxis>;
+export interface ChartCartesian {
+  xAxis: Partial<Axis>;
+  yAxis: Partial<Axis>;
   flipped: boolean;
 }
 
-export function dataChartCartesian(data: Partial<DataChartCartesian>): DataChartCartesian {
+export function chartCartesianData(data: Partial<ChartCartesian>): ChartCartesian {
   return {
     xAxis: data.xAxis || {},
     yAxis: data.yAxis || {},
@@ -19,20 +19,16 @@ export function dataChartCartesian(data: Partial<DataChartCartesian>): DataChart
   };
 }
 
-export function chartCartesian<
-  GElement extends SVGSVGElement | SVGGElement,
-  Datum extends DataChartCartesian,
-  PElement extends BaseType,
-  PDatum
->(
-  selection: Selection<GElement, Datum, PElement, PDatum>,
-  autoUpdateAxes: boolean
-): Selection<GElement, Datum, PElement, PDatum> {
-  return selection
+export type ChartCartesianSelection = Selection<SVGSVGElement | SVGGElement, ChartCartesian>;
+
+export function chartCartesian(selection: ChartCartesianSelection, autoUpdateAxes: boolean): void {
+  selection
     .call((s) => chart(s))
     .classed('chart-cartesian', true)
     .each((d, i, g) => {
-      const s = select<GElement, Datum>(g[i]).layout('display', 'flex').layout('padding', '20px');
+      const s = <ChartCartesianSelection>(
+        select(g[i]).layout('display', 'flex').layout('padding', '20px')
+      );
 
       const container = s
         .append('g')
@@ -50,13 +46,13 @@ export function chartCartesian<
 
       container
         .append('g')
-        .datum(dataAxis(d.yAxis))
+        .datum(axisData(d.yAxis))
         .call((s) => axisLeft(s))
         .layout('grid-area', '1 / 1');
 
       container
         .append('g')
-        .datum(dataAxis(d.xAxis))
+        .datum(axisData(d.xAxis))
         .call((s) => axisBottom(s))
         .layout('grid-area', '2 / 2');
     })
@@ -68,35 +64,28 @@ export function chartCartesian<
             debug(`data change on ${nodeToString(this)}`);
           })
           .on('datachange.updateaxes', function (e, chartData) {
-            chartCartesianUpdateAxes(select<GElement, Datum>(this));
+            chartCartesianUpdateAxes(<ChartCartesianSelection>select(this));
           })
     )
     .call((s) => chartCartesianUpdateAxes(s));
 }
 
-export function chartCartesianUpdateAxes<
-  GElement extends SVGSVGElement | SVGGElement,
-  Datum extends DataChartCartesian,
-  PElement extends BaseType,
-  PDatum
->(
-  selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<GElement, Datum, PElement, PDatum> {
-  return selection.each(function (chartData, i, g) {
-    const s = select<GElement, Datum>(g[i]);
+export function chartCartesianUpdateAxes(selection: ChartCartesianSelection): void {
+  selection.each(function (chartData, i, g) {
+    const s = <ChartCartesianSelection>select(g[i]);
 
-    const axisConfig = (selection: Selection<Element, DataAxis>, x: boolean) =>
+    const axisConfig = (selection: Selection<Element, Axis>, x: boolean) =>
       selection
         .datum((d) => Object.assign(d, x ? chartData.xAxis : chartData.yAxis))
         .classed('axis-x', x)
         .classed('axis-y', !x);
 
     if (chartData.flipped) {
-      s.selectAll<SVGGElement, DataAxis>('.axis-left').call((s) => axisConfig(s, true));
-      s.selectAll<SVGGElement, DataAxis>('.axis-bottom').call((s) => axisConfig(s, false));
+      s.selectAll<SVGGElement, Axis>('.axis-left').call((s) => axisConfig(s, true));
+      s.selectAll<SVGGElement, Axis>('.axis-bottom').call((s) => axisConfig(s, false));
     } else {
-      s.selectAll<SVGGElement, DataAxis>('.axis-left').call((s) => axisConfig(s, false));
-      s.selectAll<SVGGElement, DataAxis>('.axis-bottom').call((s) => axisConfig(s, true));
+      s.selectAll<SVGGElement, Axis>('.axis-left').call((s) => axisConfig(s, false));
+      s.selectAll<SVGGElement, Axis>('.axis-bottom').call((s) => axisConfig(s, true));
     }
   });
 }

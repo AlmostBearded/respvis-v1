@@ -7,13 +7,13 @@ import { relativeBounds } from './utility/bounds';
 import { positionToTransformAttr } from './utility/position';
 import { rectEquals, rectFromString, rectToAttrs, rectToString } from './utility/rect';
 
-export interface DataLayouter {
+export interface Layouter {
   layoutNodeResizeObserver: ResizeObserver;
   svgNodeResizeObserver: ResizeObserver;
   layoutAttrMutationObserver: MutationObserver;
 }
 
-export function dataLayouter(layouter: HTMLDivElement): DataLayouter {
+export function layouterData(layouter: HTMLDivElement): Layouter {
   const layoutNodeResizeObserver = new ResizeObserver((entries) => {
     select(layouter)
       .selectAll<HTMLDivElement, SVGElement>('.layout')
@@ -161,7 +161,7 @@ function layedOutChildren(parent: Element): SVGElement[] {
   return select(parent).selectChildren<SVGElement, unknown>('[layout]').nodes();
 }
 
-export function layouter(selection: Selection<HTMLDivElement, DataLayouter>): void {
+export function layouter(selection: Selection<HTMLDivElement, Layouter>): void {
   selection
     .classed('layouter', true)
     .style('display', 'grid')

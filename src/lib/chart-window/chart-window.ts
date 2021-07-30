@@ -1,5 +1,5 @@
 import { Selection } from 'd3-selection';
-import { dataLayouter, layouter } from '../core';
+import { layouterData, layouter } from '../core';
 import { toolbar } from './toolbar';
 
 export function chartWindow(selection: Selection<HTMLDivElement>): void {
@@ -17,7 +17,7 @@ export function chartWindow(selection: Selection<HTMLDivElement>): void {
     .call((s) => toolbar(s));
   selection
     .append('div')
-    .datum((_, i, g) => dataLayouter(g[i]))
+    .datum((_, i, g) => layouterData(g[i]))
     .call((s) => layouter(s))
     .style('grid-area', 'chart');
 }

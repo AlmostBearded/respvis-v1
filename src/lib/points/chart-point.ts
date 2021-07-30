@@ -3,35 +3,28 @@ import { debug, nodeToString } from '../core';
 import {
   chartCartesian,
   chartCartesianUpdateAxes,
-  dataChartCartesian,
-  DataChartCartesian,
+  chartCartesianData,
+  ChartCartesian,
 } from '../core/chart-cartesian';
-import { DataSeriesPoint, dataSeriesPoint, seriesPoint } from './series-point';
+import { SeriesPoint, seriesPointData, seriesPoint } from './series-point';
 
-export interface DataChartPoint extends DataSeriesPoint, DataChartCartesian {}
+export interface ChartPoint extends SeriesPoint, ChartCartesian {}
 
-export function dataChartPoint(data: Partial<DataChartPoint>): DataChartPoint {
+export function chartPointData(data: Partial<ChartPoint>): ChartPoint {
   return {
-    ...dataSeriesPoint(data),
-    ...dataChartCartesian(data),
+    ...seriesPointData(data),
+    ...chartCartesianData(data),
   };
 }
 
-export function chartPoint<
-  GElement extends SVGSVGElement | SVGGElement,
-  Datum extends DataChartPoint,
-  PElement extends BaseType,
-  PDatum
->(
-  selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<GElement, Datum, PElement, PDatum> {
-  return selection
+export type ChartPointSelection = Selection<SVGSVGElement | SVGGElement, ChartPoint>;
+
+export function chartPoint(selection: ChartPointSelection): void {
+  selection
     .call((s) => chartCartesian(s, false))
     .classed('chart-point', true)
     .each((d, i, g) => {
-      const drawArea = select<GElement, Datum>(g[i])
-        .selectAll('.draw-area')
-        .attr('overflow', 'hidden');
+      const drawArea = select(g[i]).selectAll('.draw-area').attr('overflow', 'hidden');
 
       drawArea
         .append('rect')
@@ -49,21 +42,14 @@ export function chartPoint<
       debug(`data change on ${nodeToString(this)}`);
     })
     .on('datachange.chartpoint', function (e, chartData) {
-      chartPointDataChange(select<GElement, Datum>(this));
+      chartPointDataChange(<ChartPointSelection>select(this));
     })
     .call((s) => chartPointDataChange(s));
 }
 
-export function chartPointDataChange<
-  GElement extends SVGSVGElement | SVGGElement,
-  Datum extends DataChartPoint,
-  PElement extends BaseType,
-  PDatum
->(
-  selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<GElement, Datum, PElement, PDatum> {
-  return selection.each(function (chartData, i, g) {
-    const s = select<GElement, Datum>(g[i]);
+export function chartPointDataChange(selection: ChartPointSelection): void {
+  selection.each(function (chartData, i, g) {
+    const s = <ChartPointSelection>select(g[i]);
 
     s.selectAll('.series-point').dispatch('datachange');
 

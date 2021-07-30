@@ -4,44 +4,43 @@ import { debug, nodeToString, siblingIndexSameClasses } from '../core';
 import {
   chartCartesian,
   chartCartesianUpdateAxes,
-  dataChartCartesian,
-  DataChartCartesian,
+  chartCartesianData,
+  ChartCartesian as ChartCartesian,
 } from '../core/chart-cartesian';
-import { seriesBar, dataSeriesBar, DataSeriesBar, DataBar, barFind } from './series-bar';
+import { seriesBar, seriesBarData, SeriesBar, Bar, barFind } from './series-bar';
 import { labelHighlight, labelFind } from './series-label';
-import { DataSeriesLabelBar, dataSeriesLabelBar, seriesLabelBar } from './series-label-bar';
+import {
+  SeriesLabelBar as SeriesLabelBar,
+  seriesLabelBarData as seriesLabelBarData,
+  seriesLabelBar,
+} from './series-label-bar';
 
-export interface DataChartBar extends DataSeriesBar, DataChartCartesian {
-  labels: Partial<DataSeriesLabelBar>;
+export interface ChartBar extends SeriesBar, ChartCartesian {
+  labels: Partial<SeriesLabelBar>;
 }
 
-export function dataChartBar(data: Partial<DataChartBar>): DataChartBar {
+export function chartBarData(data: Partial<ChartBar>): ChartBar {
   return {
-    ...dataSeriesBar(data),
-    ...dataChartCartesian(data),
+    ...seriesBarData(data),
+    ...chartCartesianData(data),
     labels: data.labels || {},
   };
 }
 
-export function chartBar<
-  GElement extends SVGSVGElement | SVGGElement,
-  Datum extends DataChartBar,
-  PElement extends BaseType,
-  PDatum
->(
-  selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<GElement, Datum, PElement, PDatum> {
-  return selection
+export type ChartBarSelection = Selection<SVGSVGElement | SVGGElement, ChartBar>;
+
+export function chartBar(selection: ChartBarSelection): void {
+  selection
     .call((s) => chartCartesian(s, false))
     .classed('chart-bar', true)
     .each((chartData, i, g) => {
-      const chart = select<GElement, Datum>(g[i]);
+      const chart = <ChartBarSelection>select(g[i]);
       const drawArea = chart.selectAll('.draw-area');
 
       const barSeries = drawArea
         .append('g')
         .layout('grid-area', '1 / 1')
-        .datum<DataSeriesBar>(chartData)
+        .datum<SeriesBar>(chartData)
         .call((s) => seriesBar(s))
         .on('mouseover.chartbarhighlight', (e) => chartBarHoverBar(chart, select(e.target), true))
         .on('mouseout.chartbarhighlight', (e) => chartBarHoverBar(chart, select(e.target), false));
@@ -49,34 +48,29 @@ export function chartBar<
       drawArea
         .append('g')
         .layout('grid-area', '1 / 1')
-        .datum(dataSeriesLabelBar({ barContainer: barSeries }))
+        .datum(seriesLabelBarData({ barContainer: barSeries }))
         .call((s) => seriesLabelBar(s));
     })
     .on('datachange.debuglog', function () {
       debug(`data change on ${nodeToString(this)}`);
     })
     .on('datachange.chartbar', function (e, chartData) {
-      chartBarDataChange(select<GElement, Datum>(this));
+      chartBarDataChange(<ChartBarSelection>select(this));
     })
     .call((s) => chartBarDataChange(s));
 }
 
-export function chartBarDataChange<
-  GElement extends SVGSVGElement | SVGGElement,
-  Datum extends DataChartBar,
-  PElement extends BaseType,
-  PDatum
->(
-  selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<GElement, Datum, PElement, PDatum> {
-  return selection.each(function (chartData, i, g) {
-    const s = select<GElement, Datum>(g[i]),
-      labelSeries = s.selectAll<Element, DataSeriesLabelBar>('.series-label-bar');
+export function chartBarDataChange(
+  selection: Selection<SVGSVGElement | SVGGElement, ChartBar>
+): void {
+  selection.each(function (chartData, i, g) {
+    const s = <ChartBarSelection>select(g[i]),
+      labelSeries = s.selectAll<Element, SeriesLabelBar>('.series-label-bar');
 
     s.selectAll('.series-bar').dispatch('datachange');
 
     labelSeries.datum((d) =>
-      Object.assign<DataSeriesLabelBar, Partial<DataSeriesLabelBar>, Partial<DataSeriesLabelBar>>(
+      Object.assign<SeriesLabelBar, Partial<SeriesLabelBar>, Partial<SeriesLabelBar>>(
         d,
         { labels: chartData.values.map((v) => v.toString()) },
         chartData.labels
@@ -90,11 +84,7 @@ export function chartBarDataChange<
   });
 }
 
-export function chartBarHoverBar(
-  chart: Selection,
-  bar: Selection<Element, DataBar>,
-  hover: boolean
-) {
+export function chartBarHoverBar(chart: Selection, bar: Selection<Element, Bar>, hover: boolean) {
   bar.each((barD, i, g) => {
     const categoryIndex = siblingIndexSameClasses(g[i]),
       labelS = labelFind(chart, barD.key),

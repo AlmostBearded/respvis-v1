@@ -1,13 +1,13 @@
 import { create, select, Selection } from 'd3-selection';
 import { menuDropdown, menuDropdownItem } from './menu-dropdown';
-import { DataSeriesCheckbox, dataSeriesCheckbox, seriesCheckbox } from './series-checkbox';
+import { SeriesCheckbox, seriesCheckboxData, seriesCheckbox } from './series-checkbox';
 
-export interface DataFilterNominalOption {
+export interface FilterNominalOption {
   name: string;
   shown: boolean;
 }
 
-export interface DataToolFilterNominal {
+export interface ToolFilterNominal {
   text: string;
   options: string[];
   shown: boolean[];
@@ -15,7 +15,7 @@ export interface DataToolFilterNominal {
   maxShown: number;
 }
 
-export function dataToolFilterNominal(data: Partial<DataToolFilterNominal>): DataToolFilterNominal {
+export function toolFilterNominalData(data: Partial<ToolFilterNominal>): ToolFilterNominal {
   const options = data.options || [];
   return {
     text: data.text || 'Filter',
@@ -27,14 +27,14 @@ export function dataToolFilterNominal(data: Partial<DataToolFilterNominal>): Dat
 }
 
 export function toolFilterNominal(
-  selection: Selection<HTMLLIElement, DataToolFilterNominal>
+  selection: Selection<HTMLLIElement, ToolFilterNominal>
 ): void {
   selection.classed('tool-filter-nominal', true).call((s) => menuDropdown(s));
 
   const items = selection
-    .selectAll<HTMLUListElement, DataSeriesCheckbox>('.items')
+    .selectAll<HTMLUListElement, SeriesCheckbox>('.items')
     .datum(
-      dataSeriesCheckbox({
+      seriesCheckboxData({
         container: () =>
           create('li')
             .call((s) => menuDropdownItem(s))
@@ -50,7 +50,7 @@ export function toolFilterNominal(
     .on('datachange.toolfilternominal', function (e, toolD) {
       const s = select(this);
       s.selectAll('.text').text(`${toolD.text}`);
-      s.selectAll<HTMLUListElement, DataSeriesCheckbox>('.items').datum((d) => {
+      s.selectAll<HTMLUListElement, SeriesCheckbox>('.items').datum((d) => {
         d.labels = toolD.options;
         d.checked = toolD.shown;
         d.minChecked = toolD.minShown;

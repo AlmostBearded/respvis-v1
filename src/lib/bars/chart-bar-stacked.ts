@@ -11,40 +11,40 @@ import {
 import {
   chartCartesian,
   chartCartesianUpdateAxes,
-  dataChartCartesian,
-  DataChartCartesian,
+  chartCartesianData,
+  ChartCartesian,
 } from '../core/chart-cartesian';
 import {
-  DataLegendSquares,
-  dataLegendSquares,
-  DataLegendSquaresItem,
+  LegendSquares,
+  legendSquaresData,
+  LegendSquaresItem,
   legendItemFindByIndex,
   legendItemFindByLabel,
   legendItemHighlight,
   legendSquares,
 } from '../legend';
 import { barFindByCategory } from './series-bar';
-import { DataBarGrouped } from './series-bar-grouped';
+import { BarGrouped } from './series-bar-grouped';
 import {
   barStackedFindBySubcategory,
   barStackedHighlight,
-  DataSeriesBarStacked,
-  dataSeriesBarStacked,
+  SeriesBarStacked,
+  seriesBarStackedData,
   seriesBarStacked,
 } from './series-bar-stacked';
 import { labelFind, labelFindByFilter, labelHighlight, seriesLabel } from './series-label';
-import { DataSeriesLabelBar, dataSeriesLabelBar, seriesLabelBar } from './series-label-bar';
+import { SeriesLabelBar, seriesLabelBarData, seriesLabelBar } from './series-label-bar';
 
-export interface DataChartBarStacked extends DataSeriesBarStacked, DataChartCartesian {
-  legend: Partial<DataLegendSquares>;
-  labels: Partial<DataSeriesLabelBar>;
+export interface ChartBarStacked extends SeriesBarStacked, ChartCartesian {
+  legend: Partial<LegendSquares>;
+  labels: Partial<SeriesLabelBar>;
 }
 
-export function dataChartBarStacked(data: Partial<DataChartBarStacked>): DataChartBarStacked {
-  const seriesData = dataSeriesBarStacked(data);
+export function chartBarStackedData(data: Partial<ChartBarStacked>): ChartBarStacked {
+  const seriesData = seriesBarStackedData(data);
   return {
     ...seriesData,
-    ...dataChartCartesian(data),
+    ...chartCartesianData(data),
     legend: data.legend || {},
     labels: data.labels || {},
   };
@@ -52,20 +52,15 @@ export function dataChartBarStacked(data: Partial<DataChartBarStacked>): DataCha
 
 // todo: unify the code for normal, grouped and stacked bar charts?
 
-export function chartBarStacked<
-  GElement extends SVGSVGElement | SVGGElement,
-  Datum extends DataChartBarStacked,
-  PElement extends BaseType,
-  PDatum
->(
-  selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<GElement, Datum, PElement, PDatum> {
-  return selection
+export type ChartBarStackedSelection = Selection<SVGSVGElement | SVGGElement, ChartBarStacked>;
+
+export function chartBarStacked(selection: ChartBarStackedSelection): void {
+  selection
     .call((s) => chartCartesian(s, false))
     .classed('chart-bar-stacked', true)
     .layout('flex-direction', 'column-reverse')
     .each((chartData, i, g) => {
-      const chart = select<GElement, Datum>(g[i]);
+      const chart = <ChartBarStackedSelection>select(g[i]);
       const drawArea = chart.selectAll('.draw-area');
 
       const barSeries = drawArea
@@ -80,13 +75,13 @@ export function chartBarStacked<
       drawArea
         .append('g')
         .layout('grid-area', '1 / 1')
-        .datum(dataSeriesLabelBar({ barContainer: barSeries }))
+        .datum(seriesLabelBarData({ barContainer: barSeries }))
         .call((s) => seriesLabelBar(s));
 
       chart
         .append('g')
         .classed('legend', true)
-        .datum(dataLegendSquares(chartData.legend))
+        .datum(legendSquaresData(chartData.legend))
         .call((s) => legendSquares(s))
         .layout('margin', '0.5rem')
         .layout('justify-content', 'flex-end')
@@ -102,28 +97,21 @@ export function chartBarStacked<
       debug(`data change on ${nodeToString(this)}`);
     })
     .on('datachange.chartbarstacked', function (e, chartData) {
-      chartBarStackedDataChange(select<GElement, Datum>(this));
+      chartBarStackedDataChange(<ChartBarStackedSelection>select(this));
     })
     .call((s) => chartBarStackedDataChange(s));
 }
 
-export function chartBarStackedDataChange<
-  GElement extends SVGSVGElement | SVGGElement,
-  Datum extends DataChartBarStacked,
-  PElement extends BaseType,
-  PDatum
->(
-  selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<GElement, Datum, PElement, PDatum> {
-  return selection.each(function (chartData, i, g) {
-    const s = select<GElement, Datum>(g[i]),
+export function chartBarStackedDataChange(selection: ChartBarStackedSelection): void {
+  selection.each(function (chartData, i, g) {
+    const s = <ChartBarStackedSelection>select(g[i]),
       barSeries = s.selectAll('.series-bar-stacked'),
-      labelSeries = s.selectAll<Element, DataSeriesLabelBar>('.series-label-bar'),
-      legend = s.selectAll<Element, DataLegendSquares>('.legend');
+      labelSeries = s.selectAll<Element, SeriesLabelBar>('.series-label-bar'),
+      legend = s.selectAll<Element, LegendSquares>('.legend');
 
     barSeries.dispatch('datachange');
     legend.datum((d) =>
-      Object.assign<DataLegendSquares, Partial<DataLegendSquares>, Partial<DataLegendSquares>>(
+      Object.assign<LegendSquares, Partial<LegendSquares>, Partial<LegendSquares>>(
         d,
         {
           colors: arrayIs2D(chartData.colors) ? chartData.colors[0] : chartData.colors,
@@ -134,7 +122,7 @@ export function chartBarStackedDataChange<
     );
 
     labelSeries.datum((d) =>
-      Object.assign<DataSeriesLabelBar, Partial<DataSeriesLabelBar>, Partial<DataSeriesLabelBar>>(
+      Object.assign<SeriesLabelBar, Partial<SeriesLabelBar>, Partial<SeriesLabelBar>>(
         d,
         { labels: arrayFlat(chartData.values).map((v) => v.toString()) },
         chartData.labels
@@ -154,8 +142,8 @@ export function chartBarStackedDataChange<
 }
 
 export function chartBarStackedHoverBar(
-  chart: Selection<Element, DataChartBarStacked>,
-  bar: Selection<SVGRectElement, DataBarGrouped>,
+  chart: Selection<Element, ChartBarStacked>,
+  bar: Selection<SVGRectElement, BarGrouped>,
   hover: boolean
 ): void {
   const chartD = chart.datum();
@@ -173,8 +161,8 @@ export function chartBarStackedHoverBar(
 }
 
 export function chartBarStackedHoverLegendItem(
-  chart: Selection<Element, DataChartBarStacked>,
-  legendItem: Selection<Element, DataLegendSquaresItem>,
+  chart: Selection<Element, ChartBarStacked>,
+  legendItem: Selection<Element, LegendSquaresItem>,
   hover: boolean
 ): void {
   const legendItemCount = chart.selectAll('.legend-item').size();
@@ -193,7 +181,7 @@ export function chartBarStackedHoverLegendItem(
 }
 
 export function chartBarStackedHoverAxisTick(
-  chart: Selection<Element, DataChartBarStacked>,
+  chart: Selection<Element, ChartBarStacked>,
   tick: Selection<Element>,
   hover: boolean
 ): void {

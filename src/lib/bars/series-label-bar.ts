@@ -9,21 +9,16 @@ import {
   rectRight,
   rectTop,
 } from '../core';
-import { DataBar } from './series-bar';
-import {
-  DataLabel,
-  seriesLabelAttrs,
-  seriesLabelCreateLabels,
-  seriesLabelJoin,
-} from './series-label';
+import { Bar } from './series-bar';
+import { Label, seriesLabelAttrs, seriesLabelCreateLabels, seriesLabelJoin } from './series-label';
 
-export interface DataSeriesLabelBar {
+export interface SeriesLabelBar {
   barContainer: Selection<Element>;
   rectPositioner: (rect: Rect) => Position;
-  labels: string[] | ((bar: DataBar) => string);
+  labels: string[] | ((bar: Bar) => string);
 }
 
-export function dataSeriesLabelBar(data: Partial<DataSeriesLabelBar>): DataSeriesLabelBar {
+export function seriesLabelBarData(data: Partial<SeriesLabelBar>): SeriesLabelBar {
   return {
     barContainer: data.barContainer || select('.chart'),
     labels: data.labels || ((bar) => bar.value.toString()),
@@ -31,13 +26,13 @@ export function dataSeriesLabelBar(data: Partial<DataSeriesLabelBar>): DataSerie
   };
 }
 
-export function seriesLabelBarCreateLabels(seriesData: DataSeriesLabelBar): DataLabel[] {
+export function seriesLabelBarCreateLabels(seriesData: SeriesLabelBar): Label[] {
   const { barContainer, rectPositioner, labels } = seriesData;
   return barContainer
-    .selectAll<SVGRectElement, DataBar>('.bar:not(.exiting)')
+    .selectAll<SVGRectElement, Bar>('.bar:not(.exiting)')
     .data()
     .map(
-      (barData, i): DataLabel => ({
+      (barData, i): Label => ({
         ...rectPositioner(barData),
         text: labels instanceof Function ? labels(barData) : labels[i],
         key: barData.key,
@@ -45,7 +40,7 @@ export function seriesLabelBarCreateLabels(seriesData: DataSeriesLabelBar): Data
     );
 }
 
-export function seriesLabelBar(selection: Selection<Element, DataSeriesLabelBar>): void {
+export function seriesLabelBar(selection: Selection<Element, SeriesLabelBar>): void {
   selection
     .classed('series-label-bar', true)
     .call((s) => seriesLabelAttrs(s))
@@ -62,17 +57,15 @@ export function seriesLabelBar(selection: Selection<Element, DataSeriesLabelBar>
     )
     .on('render.serieslabelbar', function (e, d) {
       debug(`render bar label series on ${nodeToString(this)}`);
-      const series = select<Element, DataSeriesLabelBar>(this);
+      const series = select<Element, SeriesLabelBar>(this);
       series
-        .selectAll<SVGTextElement, DataLabel>('text')
+        .selectAll<SVGTextElement, Label>('text')
         .data(seriesLabelBarCreateLabels(d), (d) => d.key)
         .call((s) => seriesLabelJoin(series, s));
     });
 }
 
-export function seriesLabelBarCenterConfig(
-  selection: Selection<Element, DataSeriesLabelBar>
-): void {
+export function seriesLabelBarCenterConfig(selection: Selection<Element, SeriesLabelBar>): void {
   selection
     .attr('text-anchor', 'center')
     .attr('dominant-baseline', 'middle')
@@ -82,7 +75,7 @@ export function seriesLabelBarCenterConfig(
     });
 }
 
-export function seriesLabelBarLeftConfig(selection: Selection<Element, DataSeriesLabelBar>): void {
+export function seriesLabelBarLeftConfig(selection: Selection<Element, SeriesLabelBar>): void {
   selection
     .attr('text-anchor', 'start')
     .attr('dominant-baseline', 'middle')
@@ -93,7 +86,7 @@ export function seriesLabelBarLeftConfig(selection: Selection<Element, DataSerie
     });
 }
 
-export function seriesLabelBarRightConfig(selection: Selection<Element, DataSeriesLabelBar>): void {
+export function seriesLabelBarRightConfig(selection: Selection<Element, SeriesLabelBar>): void {
   selection
     .attr('text-anchor', 'start')
     .attr('dominant-baseline', 'middle')
@@ -104,7 +97,7 @@ export function seriesLabelBarRightConfig(selection: Selection<Element, DataSeri
     });
 }
 
-export function seriesLabelBarTopConfig(selection: Selection<Element, DataSeriesLabelBar>): void {
+export function seriesLabelBarTopConfig(selection: Selection<Element, SeriesLabelBar>): void {
   selection
     .attr('text-anchor', 'middle')
     .attr('dominant-baseline', 'auto')

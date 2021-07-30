@@ -13,13 +13,13 @@ import {
 } from '../core';
 import { Size } from '../core/utils';
 import { filterBrightness } from '../filters';
-import { barHighlight, DataBar, JoinEvent, seriesBar, seriesBarJoin } from './series-bar';
+import { barHighlight, Bar, JoinEvent, seriesBar, seriesBarJoin } from './series-bar';
 
-export interface DataBarGrouped extends DataBar {
+export interface BarGrouped extends Bar {
   subcategory: string;
 }
 
-export interface DataSeriesBarGrouped {
+export interface SeriesBarGrouped {
   categories: any[];
   categoryScale: ScaleBand<any>;
   subcategories: string[];
@@ -34,7 +34,7 @@ export interface DataSeriesBarGrouped {
   bounds: Size;
 }
 
-export function dataSeriesBarGrouped(data: Partial<DataSeriesBarGrouped>): DataSeriesBarGrouped {
+export function seriesBarGroupedData(data: Partial<SeriesBarGrouped>): SeriesBarGrouped {
   return {
     categories: data.categories || [],
     categoryScale:
@@ -59,7 +59,7 @@ export function dataSeriesBarGrouped(data: Partial<DataSeriesBarGrouped>): DataS
   };
 }
 
-export function seriesBarGroupedCreateBars(seriesData: DataSeriesBarGrouped): DataBarGrouped[] {
+export function seriesBarGroupedCreateBars(seriesData: SeriesBarGrouped): BarGrouped[] {
   const {
     categories,
     categoryScale,
@@ -87,7 +87,7 @@ export function seriesBarGroupedCreateBars(seriesData: DataSeriesBarGrouped): Da
     .range([0, categoryScale.bandwidth()])
     .padding(subcategoryPadding);
 
-  const data: DataBarGrouped[] = [];
+  const data: BarGrouped[] = [];
   for (let i = 0; i < values.length; ++i) {
     const subcategoryValues = values[i];
     for (let j = 0; j < subcategoryValues.length; ++j) {
@@ -110,7 +110,7 @@ export function seriesBarGroupedCreateBars(seriesData: DataSeriesBarGrouped): Da
           width: Math.abs(valueScale(0)! - valueScale(v)!),
           height: innerScale.bandwidth(),
         },
-        bar: DataBarGrouped = {
+        bar: BarGrouped = {
           category: c,
           subcategory: subcategories[j],
           value: v,
@@ -126,7 +126,7 @@ export function seriesBarGroupedCreateBars(seriesData: DataSeriesBarGrouped): Da
   return data;
 }
 
-export function seriesBarGrouped(selection: Selection<Element, DataSeriesBarGrouped>): void {
+export function seriesBarGrouped(selection: Selection<Element, SeriesBarGrouped>): void {
   selection
     .classed('series-bar', true)
     .classed('series-bar-grouped', true)
@@ -149,10 +149,10 @@ export function seriesBarGrouped(selection: Selection<Element, DataSeriesBarGrou
     )
     .on('render.seriesbargrouped', function (e, d) {
       debug(`render grouped bar series on ${nodeToString(this)}`);
-      const series = select<Element, DataSeriesBarGrouped>(this);
+      const series = select<Element, SeriesBarGrouped>(this);
       d.bounds = series.bounds()!;
       series
-        .selectAll<SVGRectElement, DataBarGrouped>('rect')
+        .selectAll<SVGRectElement, BarGrouped>('rect')
         .data(seriesBarGroupedCreateBars(d), (d) => d.key)
         .call((s) => seriesBarJoin(series, s));
     })
@@ -166,8 +166,8 @@ export const barGroupedHighlight = barHighlight;
 export function barGroupedFindBySubcategory(
   container: Selection,
   subcategory: string
-): Selection<SVGRectElement, DataBarGrouped> {
-  return findByDataProperty<SVGRectElement, DataBarGrouped>(
+): Selection<SVGRectElement, BarGrouped> {
+  return findByDataProperty<SVGRectElement, BarGrouped>(
     container,
     '.bar',
     'subcategory',

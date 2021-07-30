@@ -2,26 +2,26 @@ import { max } from 'd3-array';
 import { select, Selection } from 'd3-selection';
 import {
   chartWindow,
-  DataToolFilterNominal,
-  dataToolFilterNominal,
+  ToolFilterNominal,
+  toolFilterNominalData,
   toolDownloadSVG,
   toolFilterNominal,
 } from '../chart-window';
 import { arrayFlat, arrayIs, arrayIs2D, arrayPartition } from '../core';
-import { chartBarGrouped, dataChartBarGrouped, DataChartBarGrouped } from './chart-bar-grouped';
-import { DataSeriesLabelBar } from './series-label-bar';
+import { chartBarGrouped, chartBarGroupedData, ChartBarGrouped } from './chart-bar-grouped';
+import { SeriesLabelBar } from './series-label-bar';
 
-export interface DataChartWindowBarGrouped extends DataChartBarGrouped {
+export interface ChartWindowBarGrouped extends ChartBarGrouped {
   categoryEntity: string;
   subcategoryEntity: string;
   valueEntity: string;
   valueDomain: number[] | ((values: number[][]) => number[]);
 }
 
-export function dataChartWindowBarGrouped(
-  data: Partial<DataChartWindowBarGrouped>
-): DataChartWindowBarGrouped {
-  const chartData = dataChartBarGrouped(data),
+export function chartWindowBarGroupedData(
+  data: Partial<ChartWindowBarGrouped>
+): ChartWindowBarGrouped {
+  const chartData = chartBarGroupedData(data),
     valueDomain =
       data.valueDomain ||
       ((values) => [0, Math.max(...values.map((catV) => Math.max(...catV))) * 1.05]);
@@ -40,13 +40,13 @@ export function dataChartWindowBarGrouped(
 }
 
 export function chartWindowBarGrouped(
-  selection: Selection<HTMLDivElement, DataChartWindowBarGrouped>
+  selection: Selection<HTMLDivElement, ChartWindowBarGrouped>
 ): void {
   selection
     .classed('chart-window-bar-grouped', true)
     .call((s) => chartWindow(s))
     .each((chartWindowD, i, g) => {
-      const chartWindow = select<HTMLDivElement, DataChartWindowBarGrouped>(g[i]),
+      const chartWindow = select<HTMLDivElement, ChartWindowBarGrouped>(g[i]),
         menuItems = chartWindow.selectAll('.menu-tools .items'),
         layouter = chartWindow.selectAll('.layouter');
 
@@ -55,7 +55,7 @@ export function chartWindowBarGrouped(
         .append('li')
         .classed('tool-filter-categories', true)
         .datum(
-          dataToolFilterNominal({
+          toolFilterNominalData({
             text: chartWindowD.categoryEntity,
             options: chartWindowD.categories,
           })
@@ -67,7 +67,7 @@ export function chartWindowBarGrouped(
         .append('li')
         .classed('tool-filter-subcategories', true)
         .datum(
-          dataToolFilterNominal({
+          toolFilterNominalData({
             text: chartWindowD.subcategoryEntity,
             options: chartWindowD.subcategories,
           })
@@ -78,28 +78,28 @@ export function chartWindowBarGrouped(
       menuItems.append('li').call((s) => toolDownloadSVG(s));
 
       chartWindow.on('change.chartwindowbargrouped', function () {
-        chartWindowBarGroupedApplyFilters(select<Element, DataChartWindowBarGrouped>(this));
+        chartWindowBarGroupedApplyFilters(select<Element, ChartWindowBarGrouped>(this));
       });
 
       // chart
       const chart = layouter
         .append('svg')
-        .datum(dataChartBarGrouped(chartWindowD))
+        .datum(chartBarGroupedData(chartWindowD))
         .call((s) => chartBarGrouped(s));
 
       chart.selectAll('.legend').attr('cursor', 'default');
 
       chartWindow.on('datachange.chartwindowbargrouped', function (e, chartWindowD) {
-        const chartWindowS = select<Element, DataChartWindowBarGrouped>(this),
-          categoryFilterS = chartWindowS.selectAll<Element, DataToolFilterNominal>(
+        const chartWindowS = select<Element, ChartWindowBarGrouped>(this),
+          categoryFilterS = chartWindowS.selectAll<Element, ToolFilterNominal>(
             '.tool-filter-categories'
           ),
           categoryFilterD = categoryFilterS.datum(),
-          subcategoryFilterS = chartWindowS.selectAll<Element, DataToolFilterNominal>(
+          subcategoryFilterS = chartWindowS.selectAll<Element, ToolFilterNominal>(
             '.tool-filter-subcategories'
           ),
           subcategoryFilterD = subcategoryFilterS.datum(),
-          filterOptionMap = (data: DataToolFilterNominal) =>
+          filterOptionMap = (data: ToolFilterNominal) =>
             data.options.reduce<Record<string, boolean>>(
               (obj, option, i) => Object.assign(obj, { [`${option}`]: data.shown[i] }),
               {}
@@ -136,7 +136,7 @@ export function chartWindowBarGrouped(
 }
 
 export function chartWindowBarGroupedApplyFilters(
-  selection: Selection<Element, DataChartWindowBarGrouped>
+  selection: Selection<Element, ChartWindowBarGrouped>
 ): void {
   selection.each((chartWindowD, i, g) => {
     const {
@@ -149,14 +149,14 @@ export function chartWindowBarGroupedApplyFilters(
         legend: { colors: legendColors },
         labels: { labels: labels },
       } = chartWindowD,
-      chartWindowS = select<Element, DataChartWindowBarGrouped>(g[i]),
-      chartS = chartWindowS.selectAll<Element, DataChartBarGrouped>('svg.chart-bar-grouped'),
-      labelSeriesS = chartS.selectAll<Element, DataSeriesLabelBar>('.series-label-bar'),
+      chartWindowS = select<Element, ChartWindowBarGrouped>(g[i]),
+      chartS = chartWindowS.selectAll<Element, ChartBarGrouped>('svg.chart-bar-grouped'),
+      labelSeriesS = chartS.selectAll<Element, SeriesLabelBar>('.series-label-bar'),
       catFilterD = chartWindowS
-        .selectAll<Element, DataToolFilterNominal>('.tool-filter-categories')
+        .selectAll<Element, ToolFilterNominal>('.tool-filter-categories')
         .datum(),
       subcatFilterD = chartWindowS
-        .selectAll<Element, DataToolFilterNominal>('.tool-filter-subcategories')
+        .selectAll<Element, ToolFilterNominal>('.tool-filter-subcategories')
         .datum(),
       filterCat = (_, i: number) => catFilterD.shown[i],
       filterSubcat = (_, i: number) => subcatFilterD.shown[i];
@@ -187,7 +187,7 @@ export function chartWindowBarGroupedApplyFilters(
       (d) => (
         d.categoryScale.domain(filteredCats),
         d.valueScale.domain(filteredValueDomain).nice(),
-        Object.assign(d, dataChartBarGrouped(chartWindowD), {
+        Object.assign(d, chartBarGroupedData(chartWindowD), {
           categories: filteredCats,
           subcategories: filteredSubcats,
           values: filteredValues,

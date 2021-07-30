@@ -10,19 +10,19 @@ import {
   positionToTransformAttr,
 } from '../core';
 
-export interface DataLabel extends Position {
+export interface Label extends Position {
   text: string;
   // todo: add index property?
   key: string;
 }
 
-export interface DataSeriesLabel {
+export interface SeriesLabel {
   texts: string[];
   positions: Position[];
   keys: string[];
 }
 
-export function dataSeriesLabel(data: Partial<DataSeriesLabel>): DataSeriesLabel {
+export function seriesLabelData(data: Partial<SeriesLabel>): SeriesLabel {
   return {
     texts: data.texts || [],
     positions: data.positions || [],
@@ -30,7 +30,7 @@ export function dataSeriesLabel(data: Partial<DataSeriesLabel>): DataSeriesLabel
   };
 }
 
-export function seriesLabelCreateLabels(seriesData: DataSeriesLabel): DataLabel[] {
+export function seriesLabelCreateLabels(seriesData: SeriesLabel): Label[] {
   const { texts, keys, positions } = seriesData;
   return texts.map((text, i) => ({
     text: text,
@@ -39,7 +39,7 @@ export function seriesLabelCreateLabels(seriesData: DataSeriesLabel): DataLabel[
   }));
 }
 
-export function seriesLabel(selection: Selection<Element, DataSeriesLabel>): void {
+export function seriesLabel(selection: Selection<Element, SeriesLabel>): void {
   selection
     .classed('series-label', true)
     .call((s) => seriesLabelAttrs(s))
@@ -56,9 +56,9 @@ export function seriesLabel(selection: Selection<Element, DataSeriesLabel>): voi
     )
     .on('render.serieslabel', function (e, d) {
       debug(`render label series on ${nodeToString(this)}`);
-      const series = select<Element, DataSeriesLabel>(this);
+      const series = select<Element, SeriesLabel>(this);
       series
-        .selectAll<SVGTextElement, DataLabel>('text')
+        .selectAll<SVGTextElement, Label>('text')
         .data(seriesLabelCreateLabels(d), (d) => d.key)
         .call((s) => seriesLabelJoin(series, s));
     });
@@ -73,7 +73,7 @@ export function seriesLabelAttrs(seriesSelection: Selection<Element>): void {
 
 export function seriesLabelJoin(
   seriesSelection: Selection,
-  joinSelection: Selection<Element, DataLabel>
+  joinSelection: Selection<Element, Label>
 ): void {
   joinSelection
     .join(
@@ -113,20 +113,20 @@ export function labelHighlight(label: Selection, highlight: boolean): void {
   else label.attr('font-size', null).attr('text-decoration', null);
 }
 
-export function labelFind(container: Selection, key: string): Selection<SVGTextElement, DataLabel> {
-  return findByKey<SVGTextElement, DataLabel>(container, '.label', key);
+export function labelFind(container: Selection, key: string): Selection<SVGTextElement, Label> {
+  return findByKey<SVGTextElement, Label>(container, '.label', key);
 }
 
 export function labelFindByIndex(
   container: Selection,
   index: number
-): Selection<SVGTextElement, DataLabel> {
-  return findByIndex<SVGTextElement, DataLabel>(container, '.label', index);
+): Selection<SVGTextElement, Label> {
+  return findByIndex<SVGTextElement, Label>(container, '.label', index);
 }
 
 export function labelFindByFilter(
   container: Selection,
-  filter: ValueFn<SVGTextElement, DataLabel, boolean>
-): Selection<SVGTextElement, DataLabel> {
-  return findByFilter<SVGTextElement, DataLabel>(container, '.label', filter);
+  filter: ValueFn<SVGTextElement, Label, boolean>
+): Selection<SVGTextElement, Label> {
+  return findByFilter<SVGTextElement, Label>(container, '.label', filter);
 }

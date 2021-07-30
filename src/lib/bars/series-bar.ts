@@ -7,10 +7,6 @@ import {
   findByDataProperty,
   findByKey,
   nodeToString,
-  tooltipContent,
-  tooltipHide,
-  tooltipPosition,
-  tooltipShow,
 } from '../core';
 import { Rect, rectFitStroke, rectMinimized, rectToAttrs } from '../core/utility/rect';
 import { Transition } from 'd3-transition';
@@ -18,7 +14,7 @@ import { easeCubicOut } from 'd3-ease';
 import { filterBrightness } from '../filters';
 import { Size } from '../core/utils';
 
-export interface DataBar extends Rect {
+export interface Bar extends Rect {
   category: string;
   value: number;
   key: string;
@@ -27,7 +23,7 @@ export interface DataBar extends Rect {
   stroke: string;
 }
 
-export interface DataSeriesBar {
+export interface SeriesBar {
   categories: any[];
   categoryScale: ScaleBand<any>;
   values: number[];
@@ -40,7 +36,7 @@ export interface DataSeriesBar {
   bounds: Size;
 }
 
-export function dataSeriesBar(data: Partial<DataSeriesBar>): DataSeriesBar {
+export function seriesBarData(data: Partial<SeriesBar>): SeriesBar {
   const categories = data.categories || [];
   return {
     bounds: data.bounds || { width: 600, height: 400 },
@@ -60,7 +56,7 @@ export function dataSeriesBar(data: Partial<DataSeriesBar>): DataSeriesBar {
   };
 }
 
-export function seriesBarCreateBars(seriesData: DataSeriesBar): DataBar[] {
+export function seriesBarCreateBars(seriesData: SeriesBar): Bar[] {
   const {
     categories,
     categoryScale,
@@ -82,7 +78,7 @@ export function seriesBarCreateBars(seriesData: DataSeriesBar): DataBar[] {
     valueScale.range([0, bounds.width]);
   }
 
-  const data: DataBar[] = [];
+  const data: Bar[] = [];
 
   for (let i = 0; i < values.length; ++i) {
     const c = categories[i],
@@ -100,7 +96,7 @@ export function seriesBarCreateBars(seriesData: DataSeriesBar): DataBar[] {
         width: Math.abs(valueScale(0)! - valueScale(v)!),
         height: categoryScale.bandwidth(),
       },
-      bar: DataBar = {
+      bar: Bar = {
         category: c,
         value: v,
         key: keys?.[i] || i.toString(),
@@ -114,7 +110,7 @@ export function seriesBarCreateBars(seriesData: DataSeriesBar): DataBar[] {
   return data;
 }
 
-export function seriesBar(selection: Selection<Element, DataSeriesBar>): void {
+export function seriesBar(selection: Selection<Element, SeriesBar>): void {
   selection
     .classed('series-bar', true)
     .call((s) =>
@@ -136,10 +132,10 @@ export function seriesBar(selection: Selection<Element, DataSeriesBar>): void {
     )
     .on('render.seriesbar', function (e, d) {
       debug(`render bar series on ${nodeToString(this)}`);
-      const series = select<Element, DataSeriesBar>(this);
+      const series = select<Element, SeriesBar>(this);
       d.bounds = series.bounds()!;
       series
-        .selectAll<SVGRectElement, DataBar>('rect')
+        .selectAll<SVGRectElement, Bar>('rect')
         .data(seriesBarCreateBars(d), (d) => d.key)
         .call((s) => seriesBarJoin(series, s));
     })
@@ -156,7 +152,7 @@ export interface JoinTransitionEvent<GElement extends Element, Datum>
 
 export function seriesBarJoin(
   seriesSelection: Selection,
-  joinSelection: Selection<SVGRectElement, DataBar>
+  joinSelection: Selection<SVGRectElement, Bar>
 ): void {
   joinSelection
     .join(
@@ -203,14 +199,14 @@ export function barHighlight(bar: Selection<Element>, highlight: boolean): void 
   });
 }
 
-export function barFind<Data extends DataBar>(
+export function barFind<Data extends Bar>(
   container: Selection,
   key: string
 ): Selection<SVGRectElement, Data> {
   return findByKey<SVGRectElement, Data>(container, '.bar', key);
 }
 
-export function barFindByCategory<Data extends DataBar>(
+export function barFindByCategory<Data extends Bar>(
   container: Selection,
   category: string
 ): Selection<SVGRectElement, Data> {

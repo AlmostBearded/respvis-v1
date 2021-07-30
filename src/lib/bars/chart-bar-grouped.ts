@@ -11,13 +11,13 @@ import {
 import {
   chartCartesian,
   chartCartesianUpdateAxes,
-  dataChartCartesian,
-  DataChartCartesian,
+  chartCartesianData,
+  ChartCartesian as ChartCartesian,
 } from '../core/chart-cartesian';
 import {
-  DataLegendSquares,
-  dataLegendSquares,
-  DataLegendSquaresItem,
+  LegendSquares as LegendSquares,
+  legendSquaresData,
+  LegendSquaresItem,
   legendItemFindByIndex,
   legendItemHighlight,
   legendSquares,
@@ -26,24 +26,24 @@ import { barFindByCategory } from './series-bar';
 import {
   barGroupedFindBySubcategory,
   barGroupedHighlight,
-  DataBarGrouped,
-  DataSeriesBarGrouped,
-  dataSeriesBarGrouped,
+  BarGrouped,
+  SeriesBarGrouped,
+  seriesBarGroupedData,
   seriesBarGrouped,
 } from './series-bar-grouped';
 import { labelFind, labelFindByFilter, labelHighlight, seriesLabel } from './series-label';
-import { DataSeriesLabelBar, dataSeriesLabelBar, seriesLabelBar } from './series-label-bar';
+import { SeriesLabelBar, seriesLabelBarData, seriesLabelBar } from './series-label-bar';
 
-export interface DataChartBarGrouped extends DataSeriesBarGrouped, DataChartCartesian {
-  legend: Partial<DataLegendSquares>;
-  labels: Partial<DataSeriesLabelBar>;
+export interface ChartBarGrouped extends SeriesBarGrouped, ChartCartesian {
+  legend: Partial<LegendSquares>;
+  labels: Partial<SeriesLabelBar>;
 }
 
-export function dataChartBarGrouped(data: Partial<DataChartBarGrouped>): DataChartBarGrouped {
-  const seriesData = dataSeriesBarGrouped(data);
+export function chartBarGroupedData(data: Partial<ChartBarGrouped>): ChartBarGrouped {
+  const seriesData = seriesBarGroupedData(data);
   return {
     ...seriesData,
-    ...dataChartCartesian(data),
+    ...chartCartesianData(data),
     legend: data.legend || {},
     labels: data.labels || {},
   };
@@ -51,7 +51,7 @@ export function dataChartBarGrouped(data: Partial<DataChartBarGrouped>): DataCha
 
 export function chartBarGrouped<
   GElement extends SVGSVGElement | SVGGElement,
-  Datum extends DataChartBarGrouped,
+  Datum extends ChartBarGrouped,
   PElement extends BaseType,
   PDatum
 >(
@@ -77,13 +77,13 @@ export function chartBarGrouped<
       drawArea
         .append('g')
         .layout('grid-area', '1 / 1')
-        .datum(dataSeriesLabelBar({ barContainer: barSeries }))
+        .datum(seriesLabelBarData({ barContainer: barSeries }))
         .call((s) => seriesLabelBar(s));
 
       chart
         .append('g')
         .classed('legend', true)
-        .datum(dataLegendSquares(chartData.legend))
+        .datum(legendSquaresData(chartData.legend))
         .call((s) => legendSquares(s))
         .layout('margin', '0.5rem')
         .layout('justify-content', 'flex-end')
@@ -106,7 +106,7 @@ export function chartBarGrouped<
 
 export function chartBarGroupedDataChange<
   GElement extends SVGSVGElement | SVGGElement,
-  Datum extends DataChartBarGrouped,
+  Datum extends ChartBarGrouped,
   PElement extends BaseType,
   PDatum
 >(
@@ -125,13 +125,13 @@ export function chartBarGroupedDataChange<
       } = chartData,
       s = select<GElement, Datum>(g[i]),
       barSeries = s.selectAll('.series-bar-grouped'),
-      labelSeries = s.selectAll<Element, DataSeriesLabelBar>('.series-label-bar'),
-      legend = s.selectAll<Element, DataLegendSquares>('.legend');
+      labelSeries = s.selectAll<Element, SeriesLabelBar>('.series-label-bar'),
+      legend = s.selectAll<Element, LegendSquares>('.legend');
 
     barSeries.dispatch('datachange');
 
     legend.datum((d) =>
-      Object.assign<DataLegendSquares, Partial<DataLegendSquares>, Partial<DataLegendSquares>>(
+      Object.assign<LegendSquares, Partial<LegendSquares>, Partial<LegendSquares>>(
         d,
         {
           colors: arrayIs2D(colors) ? colors[0] : colors,
@@ -144,7 +144,7 @@ export function chartBarGroupedDataChange<
     );
 
     labelSeries.datum((d) =>
-      Object.assign<DataSeriesLabelBar, Partial<DataSeriesLabelBar>, Partial<DataSeriesLabelBar>>(
+      Object.assign<SeriesLabelBar, Partial<SeriesLabelBar>, Partial<SeriesLabelBar>>(
         d,
         { labels: arrayFlat(chartData.values).map((v) => v.toString()) },
         chartData.labels
@@ -163,8 +163,8 @@ export function chartBarGroupedDataChange<
 }
 
 export function chartBarGroupedHoverBar(
-  chart: Selection<Element, DataChartBarGrouped>,
-  bar: Selection<SVGRectElement, DataBarGrouped>,
+  chart: Selection<Element, ChartBarGrouped>,
+  bar: Selection<SVGRectElement, BarGrouped>,
   hover: boolean
 ): void {
   const chartD = chart.datum();
@@ -182,8 +182,8 @@ export function chartBarGroupedHoverBar(
 }
 
 export function chartBarGroupedHoverLegendItem(
-  chart: Selection<Element, DataChartBarGrouped>,
-  legendItem: Selection<Element, DataLegendSquaresItem>,
+  chart: Selection<Element, ChartBarGrouped>,
+  legendItem: Selection<Element, LegendSquaresItem>,
   hover: boolean
 ): void {
   const legendItemCount = chart.selectAll('.legend-item').size();
@@ -202,7 +202,7 @@ export function chartBarGroupedHoverLegendItem(
 }
 
 export function chartBarGroupedHoverAxisTick(
-  chart: Selection<Element, DataChartBarGrouped>,
+  chart: Selection<Element, ChartBarGrouped>,
   tick: Selection<Element>,
   hover: boolean
 ): void {

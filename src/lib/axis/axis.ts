@@ -1,5 +1,5 @@
 import {
-  Axis,
+  Axis as D3Axis,
   AxisDomain,
   axisLeft as d3AxisLeft,
   axisBottom as d3AxisBottom,
@@ -19,17 +19,17 @@ import {
 } from '../core';
 
 export interface ConfigureAxisFn {
-  (axis: Axis<AxisDomain>): void;
+  (axis: D3Axis<AxisDomain>): void;
 }
 
-export interface DataAxis {
+export interface Axis {
   scale: AxisScale<AxisDomain>;
   title: string;
   subtitle: string;
   configureAxis: ConfigureAxisFn;
 }
 
-export function dataAxis(data: Partial<DataAxis>): DataAxis {
+export function axisData(data: Partial<Axis>): Axis {
   return {
     scale: data.scale || scaleLinear().domain([0, 1]).range([0, 600]),
     title: data.title || '',
@@ -38,84 +38,63 @@ export function dataAxis(data: Partial<DataAxis>): DataAxis {
   };
 }
 
-export function axisLeft<
-  GElement extends SVGSVGElement | SVGGElement,
-  Datum extends DataAxis,
-  PElement extends BaseType,
-  PDatum
->(
-  selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<GElement, Datum, PElement, PDatum> {
-  return (
-    axis(selection)
-      .classed('axis-left', true)
-      // .layout('display', 'grid')
-      // .layout('grid-template', 'auto auto 1fr / auto auto')
-      .layout('display', 'flex')
-      .layout('flex-direction', 'row')
-      .layout('justify-content', 'flex-start')
-      .call(
-        (s) =>
-          s
-            .selectAll<SVGTextElement, unknown>('.subtitle')
-            .call((title) => textVerticalAttrs(title)) //.layout('grid-area', '2 / 1'))
-      )
-      .call((s) =>
-        s
-          .selectAll<SVGTextElement, unknown>('.title')
-          .layout('margin-right', '0.5em')
-          // .layout('grid-area', '1 / 1')
-          .call((title) => textVerticalAttrs(title))
-          .call((title) => textTitleAttrs(title))
-          .raise()
-      )
-      .call((s) =>
-        s
-          .selectAll('.ticks-transform')
-          // .layout('grid-area', '1 / 2 / 3')
-          .layout('width', 'fit')
-          .layout('height', '100%')
-          .raise()
-          .selectAll('.ticks')
-          .layout('width', '100%')
-          .layout('height', '100%')
-          .layout('margin-left', '100%')
-      )
-      .on('render.axisleft', function (e, d) {
-        axisLeftTransition(
-          select<GElement, DataAxis>(this).transition('axis').duration(0).ease(easeCubicOut)
-        );
-      })
-      .dispatch('render')
-  );
+export type AxisSelection = Selection<SVGSVGElement | SVGGElement, Axis>;
+export type AxisTransition = Transition<SVGSVGElement | SVGGElement, Axis>;
+
+export function axisLeft(selection: AxisSelection): void {
+  axis(selection);
+
+  selection
+    .classed('axis-left', true)
+    .layout('display', 'flex')
+    .layout('flex-direction', 'row')
+    .layout('justify-content', 'flex-start')
+    .call(
+      (s) =>
+        s.selectAll<SVGTextElement, unknown>('.subtitle').call((title) => textVerticalAttrs(title)) //.layout('grid-area', '2 / 1'))
+    )
+    .call((s) =>
+      s
+        .selectAll<SVGTextElement, unknown>('.title')
+        .layout('margin-right', '0.5em')
+        // .layout('grid-area', '1 / 1')
+        .call((title) => textVerticalAttrs(title))
+        .call((title) => textTitleAttrs(title))
+        .raise()
+    )
+    .call((s) =>
+      s
+        .selectAll('.ticks-transform')
+        // .layout('grid-area', '1 / 2 / 3')
+        .layout('width', 'fit')
+        .layout('height', '100%')
+        .raise()
+        .selectAll('.ticks')
+        .layout('width', '100%')
+        .layout('height', '100%')
+        .layout('margin-left', '100%')
+    )
+    .on('render.axisleft', function (e, d) {
+      axisLeftTransition(
+        (<AxisSelection>select(this)).transition('axis').duration(0).ease(easeCubicOut)
+      );
+    })
+    .dispatch('render');
 }
 
-export function axisLeftTransition<
-  GElement extends SVGSVGElement | SVGGElement,
-  Datum extends DataAxis,
-  PElement extends BaseType,
-  PDatum
->(
-  transition: Transition<GElement, Datum, PElement, PDatum>
-): Transition<GElement, Datum, PElement, PDatum> {
-  return transition.each((d, i, g) => {
+export function axisLeftTransition(transition: AxisTransition): void {
+  transition.each((d, i, g) => {
     debug(`transition left axis on ${nodeToString(g[i])}`);
-    const s = select(g[i]);
+    const s = <AxisSelection>select(g[i]);
     const t = s.transition(transition);
     axisTransition(t, d3Axis(d3AxisLeft, d), d.title, d.subtitle);
     s.selectAll('.tick text').attr('dy', null).attr('dominant-baseline', 'middle');
   });
 }
 
-export function axisBottom<
-  GElement extends SVGSVGElement | SVGGElement,
-  Datum extends DataAxis,
-  PElement extends BaseType,
-  PDatum
->(
-  selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<GElement, Datum, PElement, PDatum> {
-  return axis(selection)
+export function axisBottom(selection: AxisSelection): void {
+  axis(selection);
+  selection
     .classed('axis-bottom', true)
     .layout('display', 'flex')
     .layout('flex-direction', 'column')
@@ -133,37 +112,23 @@ export function axisBottom<
     )
     .on('render.axisbottom', function (e, d) {
       axisBottomTransition(
-        select<GElement, DataAxis>(this).transition('axis').duration(0).ease(easeCubicOut)
+        (<AxisSelection>select(this)).transition('axis').duration(0).ease(easeCubicOut)
       );
     })
     .dispatch('render');
 }
 
-export function axisBottomTransition<
-  GElement extends SVGSVGElement | SVGGElement,
-  Datum extends DataAxis,
-  PElement extends BaseType,
-  PDatum
->(
-  transition: Transition<GElement, Datum, PElement, PDatum>
-): Transition<GElement, Datum, PElement, PDatum> {
-  return transition.each((d, i, g) => {
+export function axisBottomTransition(transition: AxisTransition): void {
+  transition.each((d, i, g) => {
     debug(`transition bottom axis on ${nodeToString(g[i])}`);
-    const s = select(g[i]);
+    const s = <AxisSelection>select(g[i]);
     axisTransition(s.transition(transition), d3Axis(d3AxisBottom, d), d.title, d.subtitle);
     s.selectAll('.tick text').attr('dy', null).attr('dominant-baseline', 'hanging');
   });
 }
 
-function axis<
-  GElement extends SVGSVGElement | SVGGElement,
-  Datum,
-  PElement extends BaseType,
-  PDatum
->(
-  selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<GElement, Datum, PElement, PDatum> {
-  return selection
+function axis(selection: AxisSelection): void {
+  selection
     .classed('axis', true)
     .attr('font-size', '0.7em')
     .call((s) => s.append('g').classed('ticks-transform', true).append('g').classed('ticks', true))
@@ -182,18 +147,13 @@ function axis<
     );
 }
 
-function axisTransition<
-  GElement extends SVGSVGElement | SVGGElement,
-  Datum,
-  PElement extends BaseType,
-  PDatum
->(
-  transition: Transition<GElement, Datum, PElement, PDatum>,
-  axis: Axis<AxisDomain>,
+function axisTransition(
+  transition: AxisTransition,
+  axis: D3Axis<AxisDomain>,
   title: string,
   subtitle: string
-): Transition<GElement, Datum, PElement, PDatum> {
-  return transition
+): void {
+  transition
     .call((t) =>
       t
         .selectAll<SVGGElement, unknown>('.ticks')
@@ -212,9 +172,9 @@ function axisTransition<
 }
 
 function d3Axis(
-  axisGenerator: (scale: AxisScale<AxisDomain>) => Axis<AxisDomain>,
-  data: DataAxis
-): Axis<AxisDomain> {
+  axisGenerator: (scale: AxisScale<AxisDomain>) => D3Axis<AxisDomain>,
+  data: Axis
+): D3Axis<AxisDomain> {
   const axis = axisGenerator(data.scale);
   data.configureAxis(axis);
   return axis;

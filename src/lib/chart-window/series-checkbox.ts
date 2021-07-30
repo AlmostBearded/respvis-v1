@@ -1,15 +1,15 @@
 import { create, EnterElement, select, Selection, ValueFn } from 'd3-selection';
 import { siblingIndexSameClasses, uuid } from '../core';
 
-export interface DataCheckbox {
-  container: string | ValueFn<EnterElement, DataCheckbox, HTMLElement>;
+export interface Checkbox {
+  container: string | ValueFn<EnterElement, Checkbox, HTMLElement>;
   label: string;
   checked: boolean;
   disabled: boolean;
 }
 
-export interface DataSeriesCheckbox {
-  container: string | ValueFn<EnterElement, DataCheckbox, HTMLElement>;
+export interface SeriesCheckbox {
+  container: string | ValueFn<EnterElement, Checkbox, HTMLElement>;
   labels: string[];
   checked: boolean[];
   disabled?: boolean[];
@@ -17,7 +17,7 @@ export interface DataSeriesCheckbox {
   maxChecked: number;
 }
 
-export function dataSeriesCheckbox(data: Partial<DataSeriesCheckbox>): DataSeriesCheckbox {
+export function seriesCheckboxData(data: Partial<SeriesCheckbox>): SeriesCheckbox {
   return {
     container: data.container || 'div',
     labels: data.labels || [],
@@ -28,7 +28,7 @@ export function dataSeriesCheckbox(data: Partial<DataSeriesCheckbox>): DataSerie
   };
 }
 
-export function seriesCheckboxCreateCheckboxes(seriesData: DataSeriesCheckbox): DataCheckbox[] {
+export function seriesCheckboxCreateCheckboxes(seriesData: SeriesCheckbox): Checkbox[] {
   const { labels, checked, disabled, minChecked, maxChecked, container } = seriesData;
   const checkedCount = checked.reduce((count, checked) => count + (checked ? 1 : 0), 0);
   return labels.map((l, i) => {
@@ -44,13 +44,13 @@ export function seriesCheckboxCreateCheckboxes(seriesData: DataSeriesCheckbox): 
   });
 }
 
-export function seriesCheckbox(selection: Selection<HTMLElement, DataSeriesCheckbox>): void {
+export function seriesCheckbox(selection: Selection<HTMLElement, SeriesCheckbox>): void {
   selection
     .classed('series-checkbox', true)
     .on('change.seriescheckbox', function (e, d) {
       const checkbox = <HTMLInputElement>e.target;
       const index = siblingIndexSameClasses(checkbox.closest('.checkbox')!);
-      select<Element, DataSeriesCheckbox>(this).datum((d) => {
+      select<Element, SeriesCheckbox>(this).datum((d) => {
         d.checked[index] = checkbox.checked;
         return d;
       });
@@ -60,9 +60,9 @@ export function seriesCheckbox(selection: Selection<HTMLElement, DataSeriesCheck
       (e) => e.target.classList.contains('checkbox') && e.target.querySelector('input').click()
     )
     .on('datachange.seriescheckbox', function (e, d) {
-      const series = select<HTMLElement, DataSeriesCheckbox>(this);
+      const series = select<HTMLElement, SeriesCheckbox>(this);
       series
-        .selectAll<Element, DataCheckbox>('.checkbox')
+        .selectAll<Element, Checkbox>('.checkbox')
         .data(seriesCheckboxCreateCheckboxes(d), (d) => d.label)
         .call((s) => seriesCheckboxJoin(series, s));
     })
@@ -71,7 +71,7 @@ export function seriesCheckbox(selection: Selection<HTMLElement, DataSeriesCheck
 
 export function seriesCheckboxJoin(
   seriesSelection: Selection,
-  joinSelection: Selection<Element, DataCheckbox>
+  joinSelection: Selection<Element, Checkbox>
 ): void {
   joinSelection
     .join(

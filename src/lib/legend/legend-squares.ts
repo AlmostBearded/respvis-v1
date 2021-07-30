@@ -11,7 +11,7 @@ import {
 } from '../core';
 import { filterBrightness } from '../filters';
 
-export interface DataLegendSquaresItem {
+export interface LegendSquaresItem {
   label: string;
   color: string;
   size: string;
@@ -19,7 +19,7 @@ export interface DataLegendSquaresItem {
   strokeWidth: number;
 }
 
-export interface DataLegendSquares {
+export interface LegendSquares {
   title: string;
   labels: string[];
   colors: string | string[] | ((label: string) => string);
@@ -28,7 +28,7 @@ export interface DataLegendSquares {
   strokeWidths: number | number[] | ((label: string) => number);
 }
 
-export function dataLegendSquares(data: Partial<DataLegendSquares>): DataLegendSquares {
+export function legendSquaresData(data: Partial<LegendSquares>): LegendSquares {
   return {
     labels: data.labels || [],
     colors: data.colors || '#000000',
@@ -39,7 +39,7 @@ export function dataLegendSquares(data: Partial<DataLegendSquares>): DataLegendS
   };
 }
 
-export function legendSquaresCreateItems(legendData: DataLegendSquares): DataLegendSquaresItem[] {
+export function legendSquaresCreateItems(legendData: LegendSquares): LegendSquaresItem[] {
   const { labels, colors, sizes, strokes, strokeWidths } = legendData;
 
   return labels.map((l, i) => {
@@ -59,18 +59,11 @@ export function legendSquaresCreateItems(legendData: DataLegendSquares): DataLeg
       size: size,
       stroke: stroke,
       strokeWidth: strokeWidth,
-      // symbolTag: 'rect',
-      // symbolSize: { width: size, height: size },
-      // symbolAttributes: [
-      //   { name: 'fill', value: color },
-      //   { name: 'stroke', value: stroke },
-      //   { name: 'stroke-width', value: strokeWidth.toString() },
-      // ],
     };
   });
 }
 
-export function legendSquares(selection: Selection<Element, DataLegendSquares>): void {
+export function legendSquares(selection: Selection<Element, LegendSquares>): void {
   selection
     .classed('legend', true)
     .classed('legend-squares', true)
@@ -113,13 +106,13 @@ export function legendSquares(selection: Selection<Element, DataLegendSquares>):
     })
     .on('render.legend', function (e, d) {
       debug(`render squares legend on ${nodeToString(this)}`);
-      const legend = select<Element, DataLegendSquares>(this);
+      const legend = select<Element, LegendSquares>(this);
 
       legend.selectAll('.title').text(d.title);
 
       legend
         .selectAll('.items')
-        .selectAll<SVGGElement, DataLegendSquaresItem>('.legend-item')
+        .selectAll<SVGGElement, LegendSquaresItem>('.legend-item')
         .data(legendSquaresCreateItems(d), (d) => d.label)
         .join(
           (enter) =>
@@ -173,8 +166,8 @@ export function legendItemHighlight(item: Selection, highlight: boolean): void {
 export function legendItemFindByLabel(
   container: Selection,
   label: string
-): Selection<SVGGElement, DataLegendSquaresItem> {
-  return findByDataProperty<SVGGElement, DataLegendSquaresItem>(
+): Selection<SVGGElement, LegendSquaresItem> {
+  return findByDataProperty<SVGGElement, LegendSquaresItem>(
     container,
     '.legend-item',
     'label',
@@ -185,6 +178,6 @@ export function legendItemFindByLabel(
 export function legendItemFindByIndex(
   container: Selection,
   index: number
-): Selection<SVGGElement, DataLegendSquaresItem> {
-  return findByIndex<SVGGElement, DataLegendSquaresItem>(container, '.legend-item', index);
+): Selection<SVGGElement, LegendSquaresItem> {
+  return findByIndex<SVGGElement, LegendSquaresItem>(container, '.legend-item', index);
 }
