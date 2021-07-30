@@ -1,22 +1,25 @@
 import { range } from 'd3-array';
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
-import { BaseType, Selection, ValueFn } from 'd3-selection';
+import { BaseType, select, Selection, ValueFn } from 'd3-selection';
 import {
   arrayIs,
   arrayIs2D,
   COLORS_CATEGORICAL,
-  DataSeriesGenerator,
+  debug,
   findByDataProperty,
+  nodeToString,
   Rect,
   rectFitStroke,
 } from '../core';
-import { DataBar, JoinEvent, seriesBar } from './series-bar';
+import { Size } from '../core/utils';
+import { filterBrightness } from '../filters';
+import { barHighlight, DataBar, JoinEvent, seriesBar, seriesBarJoin } from './series-bar';
 
 export interface DataBarGrouped extends DataBar {
   subcategory: string;
 }
 
-export interface DataSeriesBarGrouped extends DataSeriesGenerator<DataBarGrouped> {
+export interface DataSeriesBarGrouped {
   categories: any[];
   categoryScale: ScaleBand<any>;
   subcategories: string[];
@@ -28,6 +31,7 @@ export interface DataSeriesBarGrouped extends DataSeriesGenerator<DataBarGrouped
   strokes: string | string[] | string[][];
   keys?: string[][];
   flipped: boolean;
+  bounds: Size;
 }
 
 export function dataSeriesBarGrouped(data: Partial<DataSeriesBarGrouped>): DataSeriesBarGrouped {
@@ -50,28 +54,26 @@ export function dataSeriesBarGrouped(data: Partial<DataSeriesBarGrouped>): DataS
     strokes: data.strokes || '#000',
     flipped: data.flipped || false,
     subcategoryPadding: data.subcategoryPadding || 0.1,
-    dataGenerator: data.dataGenerator || dataBarGroupedGenerator,
     keys: data.keys,
+    bounds: data.bounds || { width: 600, height: 400 },
   };
 }
 
-export function dataBarGroupedGenerator(
-  selection: Selection<Element, DataSeriesBarGrouped>
-): DataBarGrouped[] {
+export function seriesBarGroupedCreateBars(seriesData: DataSeriesBarGrouped): DataBarGrouped[] {
   const {
-      categories,
-      categoryScale,
-      values,
-      valueScale,
-      subcategories,
-      flipped,
-      colors,
-      subcategoryPadding,
-      keys,
-      strokeWidths,
-      strokes,
-    } = selection.datum(),
-    bounds = selection.bounds()!;
+    categories,
+    categoryScale,
+    values,
+    valueScale,
+    subcategories,
+    flipped,
+    colors,
+    subcategoryPadding,
+    keys,
+    strokeWidths,
+    strokes,
+    bounds,
+  } = seriesData;
   if (!flipped) {
     categoryScale.range([0, bounds.width]);
     valueScale.range([bounds.height, 0]);
@@ -124,16 +126,42 @@ export function dataBarGroupedGenerator(
   return data;
 }
 
-export function seriesBarGrouped<
-  GElement extends Element,
-  Datum extends DataSeriesBarGrouped,
-  PElement extends BaseType,
-  PDatum
->(
-  selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<GElement, Datum, PElement, PDatum> {
-  return seriesBar(selection).classed('series-bar-grouped', true);
+export function seriesBarGrouped(selection: Selection<Element, DataSeriesBarGrouped>): void {
+  selection
+    .classed('series-bar', true)
+    .classed('series-bar-grouped', true)
+    .call((s) =>
+      s
+        .append('defs')
+        .append('filter')
+        .call((s) => filterBrightness(s, 1.3))
+    )
+    .on(
+      'render.seriesbargrouped-initial',
+      function () {
+        debug(`render on data change on ${nodeToString(this)}`);
+        select(this).on('datachange.seriesbar', function () {
+          debug(`data change on ${nodeToString(this)}`);
+          select(this).dispatch('render');
+        });
+      },
+      { once: true }
+    )
+    .on('render.seriesbargrouped', function (e, d) {
+      debug(`render grouped bar series on ${nodeToString(this)}`);
+      const series = select<Element, DataSeriesBarGrouped>(this);
+      d.bounds = series.bounds()!;
+      series
+        .selectAll<SVGRectElement, DataBarGrouped>('rect')
+        .data(seriesBarGroupedCreateBars(d), (d) => d.key)
+        .call((s) => seriesBarJoin(series, s));
+    })
+    .on('mouseover.seriesbargroupedhighlight mouseout.seriesbargroupedhighlight', (e) =>
+      barGroupedHighlight(select(e.target), e.type.endsWith('over'))
+    );
 }
+
+export const barGroupedHighlight = barHighlight;
 
 export function barGroupedFindBySubcategory(
   container: Selection,

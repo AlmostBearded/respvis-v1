@@ -1,23 +1,25 @@
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
-import { BaseType, Selection } from 'd3-selection';
+import { BaseType, select, Selection } from 'd3-selection';
 import {
   arrayIs,
   arrayIs2D,
   COLORS_CATEGORICAL,
-  DataSeriesGenerator,
+  debug,
   findByDataProperty,
+  nodeToString,
   Rect,
   rectFitStroke,
 } from '../core';
 import { Size } from '../core/utils';
-import { DataBar, JoinEvent, seriesBar } from './series-bar';
+import { filterBrightness } from '../filters';
+import { barHighlight, DataBar, JoinEvent, seriesBar, seriesBarJoin } from './series-bar';
 import {
   barGroupedFindBySubcategory,
   DataBarGrouped,
   DataSeriesBarGrouped,
 } from './series-bar-grouped';
 
-export interface DataSeriesBarStacked extends DataSeriesGenerator<DataBarGrouped> {
+export interface DataSeriesBarStacked {
   categories: any[];
   categoryScale: ScaleBand<any>;
   values: number[][];
@@ -28,6 +30,7 @@ export interface DataSeriesBarStacked extends DataSeriesGenerator<DataBarGrouped
   strokes: string | string[] | string[][];
   keys?: string[][];
   flipped: boolean;
+  bounds: Size;
 }
 
 export function dataSeriesBarStacked(data: Partial<DataSeriesBarStacked>): DataSeriesBarStacked {
@@ -53,26 +56,24 @@ export function dataSeriesBarStacked(data: Partial<DataSeriesBarStacked>): DataS
     strokes: data.strokes || '#000',
     flipped: data.flipped || false,
     keys: data.keys,
-    dataGenerator: data.dataGenerator || dataBarStackedGenerator,
+    bounds: data.bounds || { width: 600, height: 400 },
   };
 }
 
-export function dataBarStackedGenerator(
-  selection: Selection<Element, DataSeriesBarStacked>
-): DataBarGrouped[] {
+export function seriesBarStackedCreateBars(seriesData: DataSeriesBarStacked): DataBarGrouped[] {
   const {
-      categories,
-      categoryScale,
-      values,
-      valueScale,
-      subcategories,
-      flipped,
-      colors,
-      strokes,
-      strokeWidths,
-      keys,
-    } = selection.datum(),
-    bounds = selection.bounds()!;
+    categories,
+    categoryScale,
+    values,
+    valueScale,
+    subcategories,
+    flipped,
+    colors,
+    strokes,
+    strokeWidths,
+    keys,
+    bounds,
+  } = seriesData;
   if (!flipped) {
     categoryScale.range([0, bounds.width]);
     valueScale.range([bounds.height, 0]);
@@ -125,15 +126,41 @@ export function dataBarStackedGenerator(
   return data;
 }
 
-export function seriesBarStacked<
-  GElement extends Element,
-  Datum extends DataSeriesBarStacked,
-  PElement extends BaseType,
-  PDatum
->(
-  selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<GElement, Datum, PElement, PDatum> {
-  return seriesBar(selection).classed('series-bar-stacked', true);
+export function seriesBarStacked(selection: Selection<Element, DataSeriesBarStacked>): void {
+  selection
+    .classed('series-bar', true)
+    .classed('series-bar-stacked', true)
+    .call((s) =>
+      s
+        .append('defs')
+        .append('filter')
+        .call((s) => filterBrightness(s, 1.3))
+    )
+    .on(
+      'render.seriesbargrouped-initial',
+      function () {
+        debug(`render on data change on ${nodeToString(this)}`);
+        select(this).on('datachange.seriesbar', function () {
+          debug(`data change on ${nodeToString(this)}`);
+          select(this).dispatch('render');
+        });
+      },
+      { once: true }
+    )
+    .on('render.seriesbargrouped', function (e, d) {
+      debug(`render grouped bar series on ${nodeToString(this)}`);
+      const series = select<Element, DataSeriesBarGrouped>(this);
+      d.bounds = series.bounds()!;
+      series
+        .selectAll<SVGRectElement, DataBarGrouped>('rect')
+        .data(seriesBarStackedCreateBars(d), (d) => d.key)
+        .call((s) => seriesBarJoin(series, s));
+    })
+    .on('mouseover.seriesbargroupedhighlight mouseout.seriesbargroupedhighlight', (e) =>
+      barStackedHighlight(select(e.target), e.type.endsWith('over'))
+    );
 }
+
+export const barStackedHighlight = barHighlight;
 
 export const barStackedFindBySubcategory = barGroupedFindBySubcategory;

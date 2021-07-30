@@ -1,14 +1,8 @@
 import { easeCubicOut } from 'd3-ease';
 import { scaleLinear } from 'd3-scale';
 import { BaseType, select, Selection } from 'd3-selection';
-import {
-  COLORS_CATEGORICAL,
-  DataSeriesGenerator,
-  debug,
-  nodeToString,
-  Position,
-  ScaleAny,
-} from '../core';
+import { COLORS_CATEGORICAL, debug, nodeToString, Position, ScaleAny } from '../core';
+import { Size } from '../core/utils';
 
 export interface DataPoint extends Position {
   radius: number;
@@ -16,13 +10,14 @@ export interface DataPoint extends Position {
   key: string;
 }
 
-export interface DataSeriesPoint extends DataSeriesGenerator<DataPoint> {
+export interface DataSeriesPoint {
   xValues: any[];
   xScale: ScaleAny<any, number, number>;
   yValues: any[];
   yScale: ScaleAny<any, number, number>;
   radiuses: number[] | number;
   keys?: string[];
+  bounds: Size;
 }
 
 export function dataSeriesPoint(data: Partial<DataSeriesPoint>): DataSeriesPoint {
@@ -33,27 +28,27 @@ export function dataSeriesPoint(data: Partial<DataSeriesPoint>): DataSeriesPoint
     yScale: data.yScale || scaleLinear().domain([0, 1]),
     radiuses: data.radiuses || 5,
     keys: data.keys,
-    dataGenerator: data.dataGenerator || dataPointGenerator,
+    bounds: data.bounds || { width: 600, height: 400 },
   };
 }
 
-export function dataPointGenerator(selection: Selection<Element, DataSeriesPoint>): DataPoint[] {
-  const seriesDatum = selection.datum(),
-    bounds = selection.bounds()!;
-  seriesDatum.xScale.range([0, bounds.width]);
-  seriesDatum.yScale.range([bounds.height, 0]);
+export function seriesPointCreatePoints(seriesData: DataSeriesPoint): DataPoint[] {
+  const { xScale, yScale, xValues, yValues, radiuses, bounds, keys } = seriesData;
+
+  xScale.range([0, bounds.width]);
+  yScale.range([bounds.height, 0]);
 
   const data: DataPoint[] = [];
 
-  for (let i = 0; i < seriesDatum.xValues.length; ++i) {
-    const x = seriesDatum.xValues[i],
-      y = seriesDatum.yValues[i],
-      r = Array.isArray(seriesDatum.radiuses) ? seriesDatum.radiuses[i] : seriesDatum.radiuses;
+  for (let i = 0; i < xValues.length; ++i) {
+    const x = xValues[i],
+      y = yValues[i],
+      r = Array.isArray(radiuses) ? radiuses[i] : radiuses;
     data.push({
       index: i,
-      key: seriesDatum.keys?.[i] || i.toString(),
-      x: seriesDatum.xScale(x)!,
-      y: seriesDatum.yScale(y)!,
+      key: keys?.[i] || i.toString(),
+      x: xScale(x)!,
+      y: yScale(y)!,
       radius: r,
     });
   }
@@ -61,15 +56,8 @@ export function dataPointGenerator(selection: Selection<Element, DataSeriesPoint
   return data;
 }
 
-export function seriesPoint<
-  GElement extends Element,
-  Datum extends DataSeriesPoint,
-  PElement extends BaseType,
-  PDatum
->(
-  selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<GElement, Datum, PElement, PDatum> {
-  return selection
+export function seriesPoint(selection: Selection<Element, DataSeriesPoint>): void {
+  selection
     .classed('series-point', true)
     .attr('fill', COLORS_CATEGORICAL[0])
     .on(
@@ -84,57 +72,53 @@ export function seriesPoint<
       { once: true }
     )
     .on('render.seriespoint', function (e, d) {
-      seriesPointRender(select<GElement, Datum>(this));
+      debug(`render point series on ${nodeToString(this)}`);
+      const series = select<Element, DataSeriesPoint>(this);
+      d.bounds = series.bounds()!;
+      series
+        .selectAll<SVGCircleElement, DataPoint>('circle')
+        .data(seriesPointCreatePoints(d), (d) => d.key)
+        .call((s) => seriesPointJoin(series, s));
     });
 }
 
-export function seriesPointRender<
-  GElement extends Element,
-  Datum extends DataSeriesPoint,
-  PElement extends BaseType,
-  PDatum
->(
-  selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<GElement, Datum, PElement, PDatum> {
-  return selection.each((d, i, g) => {
-    debug(`render point series on ${nodeToString(g[i])}`);
-    const series = select<GElement, Datum>(g[i]);
-    series
-      .selectAll<SVGCircleElement, DataPoint>('circle')
-      .data(d.dataGenerator(series), (d) => d.key)
-      .join(
-        (enter) =>
-          enter
-            .append('circle')
-            .classed('point', true)
-            .attr('cx', (d) => d.x)
-            .attr('cy', (d) => d.y)
-            .attr('r', 0)
-            .call((s) => selection.dispatch('enter', { detail: { selection: s } })),
-        undefined,
-        (exit) =>
-          exit
-            .classed('exiting', true)
-            .call((s) =>
-              s
-                .transition('exit')
-                .duration(250)
-                .attr('cx', (d) => d.x)
-                .attr('cy', (d) => d.y)
-                .attr('r', 0)
-                .remove()
-            )
-            .call((s) => selection.dispatch('exit', { detail: { selection: s } }))
-      )
-      .call((s) =>
-        s
-          .transition('update')
-          .duration(250)
-          .ease(easeCubicOut)
+export function seriesPointJoin(
+  seriesSelection: Selection,
+  joinSelection: Selection<Element, DataPoint>
+): void {
+  joinSelection
+    .join(
+      (enter) =>
+        enter
+          .append('circle')
+          .classed('point', true)
           .attr('cx', (d) => d.x)
           .attr('cy', (d) => d.y)
-          .attr('r', (d) => d.radius)
-      )
-      .call((s) => selection.dispatch('update', { detail: { selection: s } }));
-  });
+          .attr('r', 0)
+          .call((s) => seriesSelection.dispatch('enter', { detail: { selection: s } })),
+      undefined,
+      (exit) =>
+        exit
+          .classed('exiting', true)
+          .call((s) =>
+            s
+              .transition('exit')
+              .duration(250)
+              .attr('cx', (d) => d.x)
+              .attr('cy', (d) => d.y)
+              .attr('r', 0)
+              .remove()
+          )
+          .call((s) => seriesSelection.dispatch('exit', { detail: { selection: s } }))
+    )
+    .call((s) =>
+      s
+        .transition('update')
+        .duration(250)
+        .ease(easeCubicOut)
+        .attr('cx', (d) => d.x)
+        .attr('cy', (d) => d.y)
+        .attr('r', (d) => d.radius)
+    )
+    .call((s) => seriesSelection.dispatch('update', { detail: { selection: s } }));
 }

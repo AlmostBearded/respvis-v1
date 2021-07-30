@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add chartWindowBarGrouped (= chartBarGrouped + toolbar with category & subcategory filters)
 - Add chartWindowBarStacked (= chartBarStacked + toolbar with category & subcategory filters)
 - Add barHighlight function.
+- Add barGroupedHighlight function.
+- Add barStackedHighlight function.
 - Add labelHighlight function.
 - Add legendItemHighlight function.
 - Add axisTickHighlight function.
@@ -70,8 +72,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add seriesLabelBarRightConfig.
   - Configures seriesLabelBar labels to appear to the right of bars.
 - Add filterBrightness.
-- Add generic DataSeriesGenerator interface.
-- Add dataGenerator property to dataSeriesX.
 - Add colors property to seriesBar, seriesBarGrouped & seriesBarStacked.
 - Add stokeWidths property to seriesBar, seriesBarGrouped & seriesBarStacked.
 - Add stoke property to seriesBar, seriesBarGrouped & seriesBarStacked.
@@ -95,8 +95,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Make chartPoint a subcomponent of chartCartesian.
 - Highlight points in scatterplot example with a brightness filter.
 - Rename dataSeriesXCreation to just dataSeriesX.
-- Rename data creation functions (dataBars, dataGroupedBars, ..., dataPoints) to generator functions (dataBarGenerator, ..., dataPointGenerator).
-- Pass series selection into dataXGenerator functions.
 - Make partial inputs of dataX functions non-optional.
 - Rename dataSeriesLabelBar positionFromRect property to rectPositioner.
 - Allow passing ((DataBar) => string) function to labels property of DataLabelSeriesBar.

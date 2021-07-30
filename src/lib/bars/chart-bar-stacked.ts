@@ -15,24 +15,25 @@ import {
   DataChartCartesian,
 } from '../core/chart-cartesian';
 import {
-  DataLegendItem,
   DataLegendSquares,
   dataLegendSquares,
-  legend,
+  DataLegendSquaresItem,
   legendItemFindByIndex,
   legendItemFindByLabel,
   legendItemHighlight,
+  legendSquares,
 } from '../legend';
-import { barFindByCategory, barHighlight } from './series-bar';
+import { barFindByCategory } from './series-bar';
 import { DataBarGrouped } from './series-bar-grouped';
 import {
   barStackedFindBySubcategory,
+  barStackedHighlight,
   DataSeriesBarStacked,
   dataSeriesBarStacked,
   seriesBarStacked,
 } from './series-bar-stacked';
 import { labelFind, labelFindByFilter, labelHighlight, seriesLabel } from './series-label';
-import { DataSeriesLabelBar, dataSeriesLabelBar } from './series-label-bar';
+import { DataSeriesLabelBar, dataSeriesLabelBar, seriesLabelBar } from './series-label-bar';
 
 export interface DataChartBarStacked extends DataSeriesBarStacked, DataChartCartesian {
   legend: Partial<DataLegendSquares>;
@@ -80,13 +81,13 @@ export function chartBarStacked<
         .append('g')
         .layout('grid-area', '1 / 1')
         .datum(dataSeriesLabelBar({ barContainer: barSeries }))
-        .call((s) => seriesLabel(s));
+        .call((s) => seriesLabelBar(s));
 
       chart
         .append('g')
         .classed('legend', true)
         .datum(dataLegendSquares(chartData.legend))
-        .call((s) => legend(s))
+        .call((s) => legendSquares(s))
         .layout('margin', '0.5rem')
         .layout('justify-content', 'flex-end')
         .on('mouseover.chartbarstackedhighlight mouseout.chartbarstackedhighlight', (e) => {
@@ -117,7 +118,7 @@ export function chartBarStackedDataChange<
   return selection.each(function (chartData, i, g) {
     const s = select<GElement, Datum>(g[i]),
       barSeries = s.selectAll('.series-bar-stacked'),
-      labelSeries = s.selectAll<Element, DataSeriesLabelBar>('.series-label'),
+      labelSeries = s.selectAll<Element, DataSeriesLabelBar>('.series-label-bar'),
       legend = s.selectAll<Element, DataLegendSquares>('.legend');
 
     barSeries.dispatch('datachange');
@@ -173,7 +174,7 @@ export function chartBarStackedHoverBar(
 
 export function chartBarStackedHoverLegendItem(
   chart: Selection<Element, DataChartBarStacked>,
-  legendItem: Selection<Element, DataLegendItem>,
+  legendItem: Selection<Element, DataLegendSquaresItem>,
   hover: boolean
 ): void {
   const legendItemCount = chart.selectAll('.legend-item').size();
@@ -182,11 +183,11 @@ export function chartBarStackedHoverLegendItem(
       subcategory = chart.datum().subcategories[legendItemI],
       barS = barStackedFindBySubcategory(chart, subcategory),
       labelS = labelFindByFilter(
-        chart.selectAll('.series-label'),
+        chart.selectAll('.series-label-bar'),
         (_, i) => i % legendItemCount === legendItemI
       );
 
-    barHighlight(barS, hover);
+    barStackedHighlight(barS, hover);
     labelHighlight(labelS, hover);
   });
 }
@@ -202,10 +203,10 @@ export function chartBarStackedHoverAxisTick(
       category = chart.datum().categories[tickI],
       barS = barFindByCategory(chart, category),
       labelS = labelFindByFilter(
-        chart.selectAll('.series-label'),
+        chart.selectAll('.series-label-bar'),
         (_, i) => Math.floor(i / legendItemCount) === tickI
       );
-    barHighlight(barS, hover);
+    barStackedHighlight(barS, hover);
     labelHighlight(labelS, hover);
   });
   axisTickHighlight(tick, hover);

@@ -1,18 +1,22 @@
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
-import { BaseType, select, Selection, ValueFn } from 'd3-selection';
+import { BaseType, pointer, select, Selection, ValueFn } from 'd3-selection';
 import {
   arrayIs,
   COLORS_CATEGORICAL,
-  DataSeriesGenerator,
   debug,
   findByDataProperty,
   findByKey,
   nodeToString,
+  tooltipContent,
+  tooltipHide,
+  tooltipPosition,
+  tooltipShow,
 } from '../core';
 import { Rect, rectFitStroke, rectMinimized, rectToAttrs } from '../core/utility/rect';
 import { Transition } from 'd3-transition';
 import { easeCubicOut } from 'd3-ease';
 import { filterBrightness } from '../filters';
+import { Size } from '../core/utils';
 
 export interface DataBar extends Rect {
   category: string;
@@ -23,7 +27,7 @@ export interface DataBar extends Rect {
   stroke: string;
 }
 
-export interface DataSeriesBar extends DataSeriesGenerator<DataBar> {
+export interface DataSeriesBar {
   categories: any[];
   categoryScale: ScaleBand<any>;
   values: number[];
@@ -33,17 +37,15 @@ export interface DataSeriesBar extends DataSeriesGenerator<DataBar> {
   strokeWidths: number | number[];
   strokes: string | string[];
   flipped: boolean;
+  bounds: Size;
 }
 
 export function dataSeriesBar(data: Partial<DataSeriesBar>): DataSeriesBar {
   const categories = data.categories || [];
   return {
+    bounds: data.bounds || { width: 600, height: 400 },
     categories: categories,
-    categoryScale:
-      data.categoryScale ||
-      scaleBand()
-        .domain(data.categories || [])
-        .padding(0.1),
+    categoryScale: data.categoryScale || scaleBand().domain(categories).padding(0.1),
     values: data.values || [],
     valueScale:
       data.valueScale ||
@@ -55,23 +57,23 @@ export function dataSeriesBar(data: Partial<DataSeriesBar>): DataSeriesBar {
     strokes: data.strokes || '#000',
     flipped: data.flipped || false,
     keys: data.keys || categories,
-    dataGenerator: data.dataGenerator || dataBarGenerator,
   };
 }
 
-export function dataBarGenerator(selection: Selection<Element, DataSeriesBar>): DataBar[] {
+export function seriesBarCreateBars(seriesData: DataSeriesBar): DataBar[] {
   const {
-      categories,
-      categoryScale,
-      values,
-      valueScale,
-      keys,
-      flipped,
-      colors,
-      strokeWidths,
-      strokes,
-    } = selection.datum(),
-    bounds = selection.bounds()!;
+    categories,
+    categoryScale,
+    values,
+    valueScale,
+    keys,
+    flipped,
+    colors,
+    strokeWidths,
+    strokes,
+    bounds,
+  } = seriesData;
+
   if (!flipped) {
     categoryScale.range([0, bounds.width]);
     valueScale.range([bounds.height, 0]);
@@ -112,15 +114,8 @@ export function dataBarGenerator(selection: Selection<Element, DataSeriesBar>): 
   return data;
 }
 
-export function seriesBar<
-  GElement extends Element,
-  Datum extends DataSeriesGenerator<DataBar>,
-  PElement extends BaseType,
-  PDatum
->(
-  selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<GElement, Datum, PElement, PDatum> {
-  return selection
+export function seriesBar(selection: Selection<Element, DataSeriesBar>): void {
+  selection
     .classed('series-bar', true)
     .call((s) =>
       s
@@ -140,7 +135,13 @@ export function seriesBar<
       { once: true }
     )
     .on('render.seriesbar', function (e, d) {
-      seriesBarRender(select<GElement, Datum>(this));
+      debug(`render bar series on ${nodeToString(this)}`);
+      const series = select<Element, DataSeriesBar>(this);
+      d.bounds = series.bounds()!;
+      series
+        .selectAll<SVGRectElement, DataBar>('rect')
+        .data(seriesBarCreateBars(d), (d) => d.key)
+        .call((s) => seriesBarJoin(series, s));
     })
     .on('mouseover.seriesbarhighlight mouseout.seriesbarhighlight', (e) =>
       barHighlight(select(e.target), e.type.endsWith('over'))
@@ -153,52 +154,42 @@ export interface JoinEvent<GElement extends Element, Datum>
 export interface JoinTransitionEvent<GElement extends Element, Datum>
   extends CustomEvent<{ transition: Transition<GElement, Datum> }> {}
 
-export function seriesBarRender<
-  GElement extends Element,
-  Datum extends DataSeriesGenerator<DataBar>,
-  PElement extends BaseType,
-  PDatum
->(
-  selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<GElement, Datum, PElement, PDatum> {
-  return selection.each((d, i, g) => {
-    debug(`render bar series on ${nodeToString(g[i])}`);
-    const series = select<GElement, Datum>(g[i]);
-    series
-      .selectAll<SVGRectElement, DataBar>('rect')
-      .data(d.dataGenerator(series), (d) => d.key)
-      .join(
-        (enter) =>
-          enter
-            .append('rect')
-            .classed('bar', true)
-            .call((s) => rectToAttrs(s, (d) => rectMinimized(d)))
-            .call((s) => selection.dispatch('enter', { detail: { selection: s } })),
-        undefined,
-        (exit) =>
-          exit
-            .classed('exiting', true)
-            .call((s) =>
-              s
-                .transition('minimize')
-                .duration(250)
-                .call((t) => rectToAttrs(t, (d) => rectMinimized(d)))
-                .remove()
-            )
-            .call((s) => selection.dispatch('exit', { detail: { selection: s } }))
-      )
-      .call((s) =>
-        s
-          .transition('position')
-          .duration(250)
-          .ease(easeCubicOut)
-          .call((t) => rectToAttrs(t, (d) => rectFitStroke(d, d.strokeWidth)))
-      )
-      .attr('fill', (d, i, g) => d.color)
-      .attr('stroke-width', (d) => d.strokeWidth)
-      .attr('stroke', (d) => d.stroke)
-      .call((s) => selection.dispatch('update', { detail: { selection: s } }));
-  });
+export function seriesBarJoin(
+  seriesSelection: Selection,
+  joinSelection: Selection<SVGRectElement, DataBar>
+): void {
+  joinSelection
+    .join(
+      (enter) =>
+        enter
+          .append('rect')
+          .classed('bar', true)
+          .call((s) => rectToAttrs(s, (d) => rectMinimized(d)))
+          .call((s) => seriesSelection.dispatch('enter', { detail: { selection: s } })),
+      undefined,
+      (exit) =>
+        exit
+          .classed('exiting', true)
+          .call((s) =>
+            s
+              .transition('minimize')
+              .duration(250)
+              .call((t) => rectToAttrs(t, (d) => rectMinimized(d)))
+              .remove()
+          )
+          .call((s) => seriesSelection.dispatch('exit', { detail: { selection: s } }))
+    )
+    .call((s) =>
+      s
+        .transition('position')
+        .duration(250)
+        .ease(easeCubicOut)
+        .call((t) => rectToAttrs(t, (d) => rectFitStroke(d, d.strokeWidth)))
+    )
+    .attr('fill', (d, i, g) => d.color)
+    .attr('stroke-width', (d) => d.strokeWidth)
+    .attr('stroke', (d) => d.stroke)
+    .call((s) => seriesSelection.dispatch('update', { detail: { selection: s } }));
 }
 
 export function barHighlight(bar: Selection<Element>, highlight: boolean): void {

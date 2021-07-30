@@ -154,7 +154,7 @@ export function chartWindowBarStackedApplyFilters(
       } = chartWindowD,
       chartWindowS = select<Element, DataChartWindowBarStacked>(g[i]),
       chartS = chartWindowS.selectAll<Element, DataChartBarStacked>('svg.chart-bar-stacked'),
-      labelSeriesS = chartS.selectAll<Element, DataSeriesLabelBar>('.series-label'),
+      labelSeriesS = chartS.selectAll<Element, DataSeriesLabelBar>('.series-label-bar'),
       catFilterD = chartWindowS
         .selectAll<Element, DataToolFilterNominal>('.tool-filter-categories')
         .datum(),

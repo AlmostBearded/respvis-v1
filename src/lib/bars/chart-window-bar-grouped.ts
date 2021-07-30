@@ -151,7 +151,7 @@ export function chartWindowBarGroupedApplyFilters(
       } = chartWindowD,
       chartWindowS = select<Element, DataChartWindowBarGrouped>(g[i]),
       chartS = chartWindowS.selectAll<Element, DataChartBarGrouped>('svg.chart-bar-grouped'),
-      labelSeriesS = chartS.selectAll<Element, DataSeriesLabelBar>('.series-label'),
+      labelSeriesS = chartS.selectAll<Element, DataSeriesLabelBar>('.series-label-bar'),
       catFilterD = chartWindowS
         .selectAll<Element, DataToolFilterNominal>('.tool-filter-categories')
         .datum(),

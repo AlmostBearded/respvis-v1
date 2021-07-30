@@ -3,7 +3,6 @@ import { axisTickFindByIndex, axisTickHighlight } from '../axis';
 import {
   arrayFlat,
   arrayIs2D,
-  COLORS_CATEGORICAL,
   debug,
   nodeToString,
   siblingIndex,
@@ -16,23 +15,24 @@ import {
   DataChartCartesian,
 } from '../core/chart-cartesian';
 import {
-  DataLegendItem,
   DataLegendSquares,
   dataLegendSquares,
-  legend,
+  DataLegendSquaresItem,
   legendItemFindByIndex,
   legendItemHighlight,
+  legendSquares,
 } from '../legend';
-import { barFindByCategory, barHighlight } from './series-bar';
+import { barFindByCategory } from './series-bar';
 import {
   barGroupedFindBySubcategory,
+  barGroupedHighlight,
   DataBarGrouped,
   DataSeriesBarGrouped,
   dataSeriesBarGrouped,
   seriesBarGrouped,
 } from './series-bar-grouped';
 import { labelFind, labelFindByFilter, labelHighlight, seriesLabel } from './series-label';
-import { DataSeriesLabelBar, dataSeriesLabelBar } from './series-label-bar';
+import { DataSeriesLabelBar, dataSeriesLabelBar, seriesLabelBar } from './series-label-bar';
 
 export interface DataChartBarGrouped extends DataSeriesBarGrouped, DataChartCartesian {
   legend: Partial<DataLegendSquares>;
@@ -78,13 +78,13 @@ export function chartBarGrouped<
         .append('g')
         .layout('grid-area', '1 / 1')
         .datum(dataSeriesLabelBar({ barContainer: barSeries }))
-        .call((s) => seriesLabel(s));
+        .call((s) => seriesLabelBar(s));
 
       chart
         .append('g')
         .classed('legend', true)
         .datum(dataLegendSquares(chartData.legend))
-        .call((s) => legend(s))
+        .call((s) => legendSquares(s))
         .layout('margin', '0.5rem')
         .layout('justify-content', 'flex-end')
         .on('mouseover.chartbargroupedhighlight mouseout.chartbargroupedhighlight', (e) => {
@@ -125,7 +125,7 @@ export function chartBarGroupedDataChange<
       } = chartData,
       s = select<GElement, Datum>(g[i]),
       barSeries = s.selectAll('.series-bar-grouped'),
-      labelSeries = s.selectAll<Element, DataSeriesLabelBar>('.series-label'),
+      labelSeries = s.selectAll<Element, DataSeriesLabelBar>('.series-label-bar'),
       legend = s.selectAll<Element, DataLegendSquares>('.legend');
 
     barSeries.dispatch('datachange');
@@ -183,7 +183,7 @@ export function chartBarGroupedHoverBar(
 
 export function chartBarGroupedHoverLegendItem(
   chart: Selection<Element, DataChartBarGrouped>,
-  legendItem: Selection<Element, DataLegendItem>,
+  legendItem: Selection<Element, DataLegendSquaresItem>,
   hover: boolean
 ): void {
   const legendItemCount = chart.selectAll('.legend-item').size();
@@ -192,11 +192,11 @@ export function chartBarGroupedHoverLegendItem(
       subcategory = chart.datum().subcategories[legendItemI],
       barS = barGroupedFindBySubcategory(chart, subcategory),
       labelS = labelFindByFilter(
-        chart.selectAll('.series-label'),
+        chart.selectAll('.series-label-bar'),
         (_, i) => i % legendItemCount === legendItemI
       );
 
-    barHighlight(barS, hover);
+    barGroupedHighlight(barS, hover);
     labelHighlight(labelS, hover);
   });
 }
@@ -212,10 +212,10 @@ export function chartBarGroupedHoverAxisTick(
       category = chart.datum().categories[tickI],
       barS = barFindByCategory(chart, category),
       labelS = labelFindByFilter(
-        chart.selectAll('.series-label'),
+        chart.selectAll('.series-label-bar'),
         (_, i) => Math.floor(i / legendItemCount) === tickI
       );
-    barHighlight(barS, hover);
+    barGroupedHighlight(barS, hover);
     labelHighlight(labelS, hover);
   });
   axisTickHighlight(tick, hover);

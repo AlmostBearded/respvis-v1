@@ -1,8 +1,26 @@
-import { Selection } from 'd3-selection';
-import { arrayIs } from '../core';
-import { DataLegend, DataLegendItem } from './legend';
+import { select, Selection } from 'd3-selection';
+import { JoinEvent } from '../bars';
+import {
+  arrayIs,
+  debug,
+  findByDataProperty,
+  findByIndex,
+  nodeToString,
+  textHorizontalAttrs,
+  textTitleAttrs,
+} from '../core';
+import { filterBrightness } from '../filters';
 
-export interface DataLegendSquares extends DataLegend {
+export interface DataLegendSquaresItem {
+  label: string;
+  color: string;
+  size: string;
+  stroke: string;
+  strokeWidth: number;
+}
+
+export interface DataLegendSquares {
+  title: string;
   labels: string[];
   colors: string | string[] | ((label: string) => string);
   sizes: string | string[] | ((label: string) => string);
@@ -18,14 +36,11 @@ export function dataLegendSquares(data: Partial<DataLegendSquares>): DataLegendS
     strokes: data.strokes || '#000',
     strokeWidths: data.strokeWidths || 1,
     title: data.title || '',
-    dataGenerator: data.dataGenerator || dataLegendItemSquareGenerator,
   };
 }
 
-export function dataLegendItemSquareGenerator(
-  selection: Selection<Element, DataLegendSquares>
-): DataLegendItem[] {
-  const { labels, colors, sizes, strokes, strokeWidths } = selection.datum();
+export function legendSquaresCreateItems(legendData: DataLegendSquares): DataLegendSquaresItem[] {
+  const { labels, colors, sizes, strokes, strokeWidths } = legendData;
 
   return labels.map((l, i) => {
     const color = typeof colors === 'string' ? colors : arrayIs(colors) ? colors[i] : colors(l);
@@ -40,13 +55,136 @@ export function dataLegendItemSquareGenerator(
         : strokeWidths(l);
     return {
       label: l,
-      symbolTag: 'rect',
-      symbolSize: { width: size, height: size },
-      symbolAttributes: [
-        { name: 'fill', value: color },
-        { name: 'stroke', value: stroke },
-        { name: 'stroke-width', value: strokeWidth.toString() },
-      ],
+      color: color,
+      size: size,
+      stroke: stroke,
+      strokeWidth: strokeWidth,
+      // symbolTag: 'rect',
+      // symbolSize: { width: size, height: size },
+      // symbolAttributes: [
+      //   { name: 'fill', value: color },
+      //   { name: 'stroke', value: stroke },
+      //   { name: 'stroke-width', value: strokeWidth.toString() },
+      // ],
     };
   });
+}
+
+export function legendSquares(selection: Selection<Element, DataLegendSquares>): void {
+  selection
+    .classed('legend', true)
+    .classed('legend-squares', true)
+    .layout('display', 'flex')
+    .layout('flex-direction', 'column')
+    .layout('align-items', 'center')
+    .attr('font-size', '0.8em'); // todo: font size incosistent with 0.7em used mostly everywhere else
+
+  selection
+    .append('text')
+    .classed('title', true)
+    .layout('margin', '0 0.5em')
+    .call((s) => textHorizontalAttrs(s))
+    .call((s) => textTitleAttrs(s));
+
+  selection
+    .append('g')
+    .classed('items', true)
+    .layout('display', 'flex')
+    .layout('flex-direction', 'row')
+    .layout('justify-content', 'center')
+    .layout('align-items', 'flex-start');
+
+  selection
+    .append('defs')
+    .append('filter')
+    .call((s) => filterBrightness(s, 1.3));
+
+  selection.on('mouseover.legend mouseout.legend', (e) => {
+    const item = (<Element>e.target).closest('.legend-item');
+    if (item) {
+      legendItemHighlight(select(item), e.type.endsWith('over'));
+    }
+  });
+
+  selection
+    .on('datachange.legend', function () {
+      debug(`data change on ${nodeToString(this)}`);
+      select(this).dispatch('render');
+    })
+    .on('render.legend', function (e, d) {
+      debug(`render squares legend on ${nodeToString(this)}`);
+      const legend = select<Element, DataLegendSquares>(this);
+
+      legend.selectAll('.title').text(d.title);
+
+      legend
+        .selectAll('.items')
+        .selectAll<SVGGElement, DataLegendSquaresItem>('.legend-item')
+        .data(legendSquaresCreateItems(d), (d) => d.label)
+        .join(
+          (enter) =>
+            enter
+              .append('g')
+              .classed('legend-item', true)
+              .layout('display', 'flex')
+              .layout('flex-direction', 'row')
+              .layout('justify-content', 'center')
+              .layout('margin', '0.25em')
+              .call((s) => s.append('rect').classed('symbol', true).layout('margin-right', '0.5em'))
+              .call((s) =>
+                s
+                  .append('text')
+                  .classed('label', true)
+                  .call((s) => textHorizontalAttrs(s))
+              )
+              .call((s) => legend.dispatch('enter', { detail: { selection: s } })),
+          undefined,
+          (exit) => exit.remove().call((s) => legend.dispatch('exit', { detail: { selection: s } }))
+        )
+        .each((d, i, g) => {
+          const s = select(g[i]);
+          s.selectAll('.symbol')
+            .layout('width', d.size)
+            .layout('height', d.size)
+            .attr('fill', d.color)
+            .attr('stroke', d.stroke)
+            .attr('stroke-width', d.strokeWidth);
+          s.selectAll('.label').text(d.label.toString());
+        })
+        .call((s) => legend.dispatch('update', { detail: { selection: s } }));
+    });
+}
+
+export function legendItemHighlight(item: Selection, highlight: boolean): void {
+  if (highlight) {
+    item
+      .selectAll('.symbol')
+      .attr(
+        'filter',
+        `url(#${item.closest('.legend').selectAll('.filter-brightness').attr('id')})`
+      );
+    item.selectAll('.label').attr('text-decoration', 'underline');
+  } else {
+    item.selectAll('.symbol').attr('filter', null);
+    item.selectAll('.label').attr('text-decoration', null);
+  }
+}
+
+export function legendItemFindByLabel(
+  container: Selection,
+  label: string
+): Selection<SVGGElement, DataLegendSquaresItem> {
+  return findByDataProperty<SVGGElement, DataLegendSquaresItem>(
+    container,
+    '.legend-item',
+    'label',
+    label
+  );
+}
+
+export function legendItemFindByIndex(
+  container: Selection,
+  index: number
+): Selection<SVGGElement, DataLegendSquaresItem> {
+  return findByIndex<SVGGElement, DataLegendSquaresItem>(container, '.legend-item', index);
 }

@@ -1,6 +1,6 @@
 import { BaseType, select, Selection } from 'd3-selection';
 import { axisTickFindByIndex, axisTickHighlight } from '../axis';
-import { arrayFlat, debug, nodeToString, siblingIndexSameClasses } from '../core';
+import { debug, nodeToString, siblingIndexSameClasses } from '../core';
 import {
   chartCartesian,
   chartCartesianUpdateAxes,
@@ -8,8 +8,8 @@ import {
   DataChartCartesian,
 } from '../core/chart-cartesian';
 import { seriesBar, dataSeriesBar, DataSeriesBar, DataBar, barFind } from './series-bar';
-import { labelHighlight, seriesLabel, labelFind } from './series-label';
-import { DataSeriesLabelBar, dataSeriesLabelBar } from './series-label-bar';
+import { labelHighlight, labelFind } from './series-label';
+import { DataSeriesLabelBar, dataSeriesLabelBar, seriesLabelBar } from './series-label-bar';
 
 export interface DataChartBar extends DataSeriesBar, DataChartCartesian {
   labels: Partial<DataSeriesLabelBar>;
@@ -50,7 +50,7 @@ export function chartBar<
         .append('g')
         .layout('grid-area', '1 / 1')
         .datum(dataSeriesLabelBar({ barContainer: barSeries }))
-        .call((s) => seriesLabel(s));
+        .call((s) => seriesLabelBar(s));
     })
     .on('datachange.debuglog', function () {
       debug(`data change on ${nodeToString(this)}`);
@@ -71,7 +71,7 @@ export function chartBarDataChange<
 ): Selection<GElement, Datum, PElement, PDatum> {
   return selection.each(function (chartData, i, g) {
     const s = select<GElement, Datum>(g[i]),
-      labelSeries = s.selectAll<Element, DataSeriesLabelBar>('.series-label');
+      labelSeries = s.selectAll<Element, DataSeriesLabelBar>('.series-label-bar');
 
     s.selectAll('.series-bar').dispatch('datachange');
 
