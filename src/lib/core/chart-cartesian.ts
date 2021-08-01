@@ -6,15 +6,20 @@ import { debug, nodeToString } from './log';
 import { ScaleAny } from './scale';
 
 export interface ChartCartesian {
-  xAxis: Partial<Axis>;
-  yAxis: Partial<Axis>;
+  xAxis: Axis;
+  yAxis: Axis;
   flipped: boolean;
 }
 
-export function chartCartesianData(data: Partial<ChartCartesian>): ChartCartesian {
+export function chartCartesianData(
+  data: Omit<Partial<ChartCartesian>, 'xAxis' | 'yAxis'> & {
+    xAxis?: Partial<Axis>;
+    yAxis?: Partial<Axis>;
+  }
+): ChartCartesian {
   return {
-    xAxis: data.xAxis || {},
-    yAxis: data.yAxis || {},
+    xAxis: axisData(data.xAxis || {}),
+    yAxis: axisData(data.yAxis || axisData({})),
     flipped: data.flipped || false,
   };
 }
