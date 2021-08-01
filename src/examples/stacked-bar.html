@@ -29,11 +29,6 @@
       const platforms = ['Desktop', 'Mobile', 'Tablet'],
         years = data.years,
         shares = data.desktop.map((d, i) => [data.desktop[i], data.mobile[i], data.tablet[i]]),
-        roundShare = (value) => Math.round(parseFloat(value) * 10) / 10,
-        formatShare = (value) => {
-          const rounded = roundShare(value);
-          return rounded === 0 ? '' : `${rounded}`;
-        },
         keys = shares.map((pS, i) => pS.map((_, j) => `${years[i]}${platforms[j]}`));
 
       const wideMediaQuery = 'screen and (min-width: 40rem)';
@@ -61,11 +56,8 @@
               yAxis: {
                 title: 'Market Share',
                 subtitle: '[%]',
-                configureAxis: (a) => a.tickFormat(formatShare),
               },
-              labels: {
-                labels: (bar) => formatShare(bar.value),
-              },
+              labelsEnabled: false,
               legend: {
                 title: 'Platforms',
               },
@@ -91,8 +83,6 @@
           d.flipped = flippedBars;
           return d;
         });
-
-        chartWindow.datum((d) => Object.assign(d, { flipped: flippedBars }));
 
         chart.layout('flex-direction', chartFlexDirection);
         legend

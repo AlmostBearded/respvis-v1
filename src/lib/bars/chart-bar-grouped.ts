@@ -36,6 +36,7 @@ import { SeriesLabelBar, seriesLabelBarData, seriesLabelBar } from './series-lab
 
 export interface ChartBarGrouped extends SeriesBarGrouped, ChartCartesian {
   legend: Partial<LegendSquares>;
+  labelsEnabled: boolean;
   labels: Partial<SeriesLabelBar>;
 }
 
@@ -45,6 +46,7 @@ export function chartBarGroupedData(data: Partial<ChartBarGrouped>): ChartBarGro
     ...seriesData,
     ...chartCartesianData(data),
     legend: data.legend || {},
+    labelsEnabled: data.labelsEnabled ?? true,
     labels: data.labels || {},
   };
 }
@@ -65,7 +67,7 @@ export function chartBarGrouped<
       const chart = select<GElement, Datum>(g[i]);
       const drawArea = chart.selectAll('.draw-area');
 
-      const barSeries = drawArea
+      drawArea
         .append('g')
         .layout('grid-area', '1 / 1')
         .datum(chartData)
@@ -73,12 +75,6 @@ export function chartBarGrouped<
         .on('mouseover.chartbargroupedhighlight mouseout.chartbargroupedhighlight', (e) =>
           chartBarGroupedHoverBar(chart, select(e.target), e.type.endsWith('over'))
         );
-
-      drawArea
-        .append('g')
-        .layout('grid-area', '1 / 1')
-        .datum(seriesLabelBarData({ barContainer: barSeries }))
-        .call((s) => seriesLabelBar(s));
 
       chart
         .append('g')
@@ -112,7 +108,7 @@ export function chartBarGroupedDataChange<
 >(
   selection: Selection<GElement, Datum, PElement, PDatum>
 ): Selection<GElement, Datum, PElement, PDatum> {
-  return selection.each(function (chartData, i, g) {
+  return selection.each(function (chartD, i, g) {
     const {
         colors,
         strokes,
@@ -122,15 +118,30 @@ export function chartBarGroupedDataChange<
         yAxis,
         categoryScale,
         valueScale,
-      } = chartData,
-      s = select<GElement, Datum>(g[i]),
-      barSeries = s.selectAll('.series-bar-grouped'),
-      labelSeries = s.selectAll<Element, SeriesLabelBar>('.series-label-bar'),
-      legend = s.selectAll<Element, LegendSquares>('.legend');
+      } = chartD,
+      chartS = select<GElement, Datum>(g[i]),
+      barSeriesS = chartS.selectAll<Element, SeriesBarGrouped>('.series-bar-grouped'),
+      legendS = chartS.selectAll<Element, LegendSquares>('.legend');
 
-    barSeries.dispatch('datachange');
+    barSeriesS.datum((d) => d);
 
-    legend.datum((d) =>
+    const labelSeriesD = seriesLabelBarData({
+      barContainer: barSeriesS,
+      labels: arrayFlat(chartD.values).map((v) => v.toString()),
+      ...chartD.labels,
+    });
+    chartS
+      .selectAll('.draw-area')
+      .selectAll<Element, SeriesLabelBar>('.series-label-bar')
+      .data(chartD.labelsEnabled ? [labelSeriesD] : [])
+      .join((enter) =>
+        enter
+          .append('g')
+          .layout('grid-area', '1 / 1')
+          .call((s) => seriesLabelBar(s))
+      );
+
+    legendS.datum((d) =>
       Object.assign<LegendSquares, Partial<LegendSquares>, Partial<LegendSquares>>(
         d,
         {
@@ -139,26 +150,19 @@ export function chartBarGroupedDataChange<
           strokeWidths: arrayIs2D(strokeWidths) ? strokeWidths[0] : strokeWidths,
           labels: subcategories,
         },
-        chartData.legend
-      )
-    );
-
-    labelSeries.datum((d) =>
-      Object.assign<SeriesLabelBar, Partial<SeriesLabelBar>, Partial<SeriesLabelBar>>(
-        d,
-        { labels: arrayFlat(chartData.values).map((v) => v.toString()) },
-        chartData.labels
+        chartD.legend
       )
     );
 
     xAxis.scale = categoryScale;
     yAxis.scale = valueScale;
-    chartCartesianUpdateAxes(s);
+    chartCartesianUpdateAxes(chartS);
 
-    s.selectAll(`.axis-x .tick`).on(
-      'mouseover.chartbargroupedhighlight mouseout.chartbargroupedhighlight',
-      (e) => chartBarGroupedHoverAxisTick(s, select(e.currentTarget), e.type.endsWith('over'))
-    );
+    chartS
+      .selectAll(`.axis-x .tick`)
+      .on('mouseover.chartbargroupedhighlight mouseout.chartbargroupedhighlight', (e) =>
+        chartBarGroupedHoverAxisTick(chartS, select(e.currentTarget), e.type.endsWith('over'))
+      );
   });
 }
 

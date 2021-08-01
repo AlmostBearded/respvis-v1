@@ -37,6 +37,7 @@ import { SeriesLabelBar, seriesLabelBarData, seriesLabelBar } from './series-lab
 
 export interface ChartBarStacked extends SeriesBarStacked, ChartCartesian {
   legend: Partial<LegendSquares>;
+  labelsEnabled: boolean;
   labels: Partial<SeriesLabelBar>;
 }
 
@@ -46,6 +47,7 @@ export function chartBarStackedData(data: Partial<ChartBarStacked>): ChartBarSta
     ...seriesData,
     ...chartCartesianData(data),
     legend: data.legend || {},
+    labelsEnabled: data.labelsEnabled ?? true,
     labels: data.labels || {},
   };
 }
@@ -63,7 +65,7 @@ export function chartBarStacked(selection: ChartBarStackedSelection): void {
       const chart = <ChartBarStackedSelection>select(g[i]);
       const drawArea = chart.selectAll('.draw-area');
 
-      const barSeries = drawArea
+      drawArea
         .append('g')
         .layout('grid-area', '1 / 1')
         .datum(chartData)
@@ -71,12 +73,6 @@ export function chartBarStacked(selection: ChartBarStackedSelection): void {
         .on('mouseover.chartbarstackedhighlight mouseout.chartbarstackedhighlight', (e) =>
           chartBarStackedHoverBar(chart, select(e.target), e.type.endsWith('over'))
         );
-
-      drawArea
-        .append('g')
-        .layout('grid-area', '1 / 1')
-        .datum(seriesLabelBarData({ barContainer: barSeries }))
-        .call((s) => seriesLabelBar(s));
 
       chart
         .append('g')
@@ -103,41 +99,50 @@ export function chartBarStacked(selection: ChartBarStackedSelection): void {
 }
 
 export function chartBarStackedDataChange(selection: ChartBarStackedSelection): void {
-  selection.each(function (chartData, i, g) {
-    const s = <ChartBarStackedSelection>select(g[i]),
-      barSeries = s.selectAll('.series-bar-stacked'),
-      labelSeries = s.selectAll<Element, SeriesLabelBar>('.series-label-bar'),
-      legend = s.selectAll<Element, LegendSquares>('.legend');
+  selection.each(function (chartD, i, g) {
+    const chartS = <ChartBarStackedSelection>select(g[i]),
+      barSeriesS = chartS.selectAll<Element, SeriesBarStacked>('.series-bar-stacked'),
+      legend = chartS.selectAll<Element, LegendSquares>('.legend');
 
-    barSeries.dispatch('datachange');
+    barSeriesS.datum((d) => d);
+
+    const labelSeriesD = seriesLabelBarData({
+      barContainer: barSeriesS,
+      labels: chartD.values.map((v) => v.toString()),
+      ...chartD.labels,
+    });
+    chartS
+      .selectAll('.draw-area')
+      .selectAll<Element, SeriesLabelBar>('.series-label-bar')
+      .data(chartD.labelsEnabled ? [labelSeriesD] : [])
+      .join((enter) =>
+        enter
+          .append('g')
+          .layout('grid-area', '1 / 1')
+          .call((s) => seriesLabelBar(s))
+      );
+
     legend.datum((d) =>
       Object.assign<LegendSquares, Partial<LegendSquares>, Partial<LegendSquares>>(
         d,
         {
-          colors: arrayIs2D(chartData.colors) ? chartData.colors[0] : chartData.colors,
-          labels: chartData.subcategories,
+          colors: arrayIs2D(chartD.colors) ? chartD.colors[0] : chartD.colors,
+          labels: chartD.subcategories,
         },
-        chartData.legend
+        chartD.legend
       )
     );
 
-    labelSeries.datum((d) =>
-      Object.assign<SeriesLabelBar, Partial<SeriesLabelBar>, Partial<SeriesLabelBar>>(
-        d,
-        { labels: arrayFlat(chartData.values).map((v) => v.toString()) },
-        chartData.labels
-      )
-    );
+    chartD.xAxis.scale = chartD.categoryScale;
+    chartD.yAxis.scale = chartD.valueScale;
 
-    chartData.xAxis.scale = chartData.categoryScale;
-    chartData.yAxis.scale = chartData.valueScale;
+    chartCartesianUpdateAxes(chartS);
 
-    chartCartesianUpdateAxes(s);
-
-    s.selectAll(`.axis-x .tick`).on(
-      'mouseover.chartbarstackedhighlight mouseout.chartbarstackedhighlight',
-      (e) => chartBarStackedHoverAxisTick(s, select(e.currentTarget), e.type.endsWith('over'))
-    );
+    chartS
+      .selectAll(`.axis-x .tick`)
+      .on('mouseover.chartbarstackedhighlight mouseout.chartbarstackedhighlight', (e) =>
+        chartBarStackedHoverAxisTick(chartS, select(e.currentTarget), e.type.endsWith('over'))
+      );
   });
 }
 

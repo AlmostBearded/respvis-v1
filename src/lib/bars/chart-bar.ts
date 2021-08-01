@@ -24,7 +24,7 @@ export function chartBarData(data: Partial<ChartBar>): ChartBar {
   return {
     ...seriesBarData(data),
     ...chartCartesianData(data),
-    labelsEnabled: data.labelsEnabled || true,
+    labelsEnabled: data.labelsEnabled ?? true,
     labels: data.labels || {},
   };
 }
@@ -39,19 +39,13 @@ export function chartBar(selection: ChartBarSelection): void {
       const chart = <ChartBarSelection>select(g[i]);
       const drawArea = chart.selectAll('.draw-area');
 
-      const barSeries = drawArea
+      drawArea
         .append('g')
         .layout('grid-area', '1 / 1')
         .datum<SeriesBar>(chartData)
         .call((s) => seriesBar(s))
         .on('mouseover.chartbarhighlight', (e) => chartBarHoverBar(chart, select(e.target), true))
         .on('mouseout.chartbarhighlight', (e) => chartBarHoverBar(chart, select(e.target), false));
-
-      drawArea
-        .append('g')
-        .layout('grid-area', '1 / 1')
-        .datum(seriesLabelBarData({ barContainer: barSeries }))
-        .call((s) => seriesLabelBar(s));
     })
     .on('datachange.debuglog', function () {
       debug(`data change on ${nodeToString(this)}`);

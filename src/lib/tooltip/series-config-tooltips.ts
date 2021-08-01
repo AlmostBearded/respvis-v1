@@ -21,7 +21,7 @@ export function seriesConfigTooltipsData<ItemElement extends Element, ItemDatum>
   data: Partial<SeriesConfigTooltips<ItemElement, ItemDatum>>
 ): SeriesConfigTooltips<Element, any> {
   return {
-    tooltipsEnabled: data.tooltipsEnabled || true,
+    tooltipsEnabled: data.tooltipsEnabled ?? true,
     tooltips: data.tooltips || ((data) => 'Tooltip'),
     tooltipPosition:
       data.tooltipPosition ||
