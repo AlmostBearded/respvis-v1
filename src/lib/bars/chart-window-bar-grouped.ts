@@ -45,6 +45,13 @@ export function chartWindowBarGrouped(
   selection
     .classed('chart-window-bar-grouped', true)
     .call((s) => chartWindow(s))
+    .on('resize.chartwindowbar', function (e, d) {
+      const { width, height } = e.detail.size;
+      const dataCount = arrayFlat(d.values).length;
+      select(this).dispatch('densitychange', {
+        detail: { density: { x: dataCount / width, y: dataCount / height } },
+      });
+    })
     .each((chartWindowD, i, g) => {
       const chartWindow = select<HTMLDivElement, ChartWindowBarGrouped>(g[i]),
         menuItems = chartWindow.selectAll('.menu-tools .items'),

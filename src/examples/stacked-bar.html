@@ -7,7 +7,7 @@
     <style>
       #chart {
         width: 100%;
-        height: 50vh;
+        height: 75vh;
         min-height: 25rem;
       }
 
@@ -55,41 +55,38 @@
               },
               yAxis: {
                 title: 'Market Share',
-                subtitle: '[%]',
-              },
-              labelsEnabled: false,
-              legend: {
-                title: 'Platforms',
               },
             })
           )
-          .call(respVis.chartWindowBarStacked),
+          .call(respVis.chartWindowBarStacked)
+          .on('densitychange', function (e, d) {
+            const density = e.detail.density;
+            console.log('density', density);
+            const flippedBars = density.x > 0.05;
+            const labelsEnabled = density.x < 0.06;
+            const yAxisSubtitle = density.x < 0.06 ? '[%]' : '';
+            const legendTitle = density.x < 0.06 ? 'Platforms' : '';
+            const chartFlexDirection = flippedBars ? 'column-reverse' : 'row';
+            const legendAlignSelf = flippedBars ? 'flex-end' : 'flex-start';
+            const legendItemsFlexDirection = flippedBars ? 'row' : 'column';
+
+            chartWindow.datum((d) => {
+              d.flipped = flippedBars;
+              d.labelsEnabled = labelsEnabled;
+              d.yAxis.subtitle = yAxisSubtitle;
+              d.legend.title = legendTitle;
+              return d;
+            });
+
+            chart.layout('flex-direction', chartFlexDirection);
+
+            legend
+              .layout('align-self', legendAlignSelf)
+              .selectAll('.items')
+              .layout('flex-direction', legendItemsFlexDirection);
+          }),
         chart = chartWindow.selectAll('svg.chart'),
         legend = chart.selectAll('.legend');
-
-      window.addEventListener('resize', configure);
-      configure();
-
-      // respVis.enableDebugLog(true);
-
-      function configure() {
-        const narrow = !window.matchMedia(wideMediaQuery).matches;
-        const flippedBars = narrow;
-        const chartFlexDirection = narrow ? 'column-reverse' : 'row';
-        const legendAlignSelf = narrow ? 'flex-end' : 'flex-start';
-        const legendItemsFlexDirection = narrow ? 'row' : 'column';
-
-        chartWindow.datum((d) => {
-          d.flipped = flippedBars;
-          return d;
-        });
-
-        chart.layout('flex-direction', chartFlexDirection);
-        legend
-          .layout('align-self', legendAlignSelf)
-          .selectAll('.items')
-          .layout('flex-direction', legendItemsFlexDirection);
-      }
     </script>
   </body>
 </html>

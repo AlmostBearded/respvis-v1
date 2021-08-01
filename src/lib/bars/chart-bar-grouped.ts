@@ -1,3 +1,4 @@
+import { format } from 'd3-format';
 import { BaseType, select, Selection } from 'd3-selection';
 import { axisTickFindByIndex, axisTickHighlight } from '../axis';
 import {
@@ -115,7 +116,6 @@ export function chartBarGroupedDataChange(selection: ChartBarGroupedSelection): 
 
     const labelSeriesD = seriesLabelBarData({
       barContainer: barSeriesS,
-      labels: arrayFlat(chartD.values).map((v) => v.toString()),
       ...chartD.labels,
     });
     chartS

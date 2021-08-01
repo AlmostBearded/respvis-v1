@@ -47,6 +47,13 @@ export function chartWindowBarStacked(
   selection
     .classed('chart-window-bar-stacked', true)
     .call((s) => chartWindow(s))
+    .on('resize.chartwindowbar', function (e, d) {
+      const { width, height } = e.detail.size;
+      const dataCount = arrayFlat(d.values).length;
+      select(this).dispatch('densitychange', {
+        detail: { density: { x: dataCount / width, y: dataCount / height } },
+      });
+    })
     .each((chartWindowD, i, g) => {
       const chartWindow = select<HTMLDivElement, ChartWindowBarStacked>(g[i]),
         menuItems = chartWindow.selectAll('.menu-tools .items'),
@@ -154,7 +161,6 @@ export function chartWindowBarStackedApplyFilters(
       } = chartWindowD,
       chartWindowS = select<Element, ChartWindowBarStacked>(g[i]),
       chartS = chartWindowS.selectAll<Element, ChartBarStacked>('svg.chart-bar-stacked'),
-      labelSeriesS = chartS.selectAll<Element, SeriesLabelBar>('.series-label-bar'),
       catFilterD = chartWindowS
         .selectAll<Element, ToolFilterNominal>('.tool-filter-categories')
         .datum(),

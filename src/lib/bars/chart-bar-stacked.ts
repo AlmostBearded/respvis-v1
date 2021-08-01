@@ -42,7 +42,13 @@ export function chartBarStackedData(data: Partial<ChartBarStacked>): ChartBarSta
     ...chartCartesianData(data),
     legend: data.legend || {},
     labelsEnabled: data.labelsEnabled ?? true,
-    labels: data.labels || {},
+    labels: {
+      labels: (bar) => {
+        const v = Math.round(bar.value);
+        return v > 0 ? v.toString() : '';
+      },
+      ...data.labels,
+    },
   };
 }
 

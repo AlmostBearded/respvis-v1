@@ -6,7 +6,7 @@ import {
   toolDownloadSVG,
   toolFilterNominal,
 } from '../chart-window';
-import { arrayIs, arrayIs2D } from '../core';
+import { arrayIs, arrayIs2D, Position } from '../core';
 import { chartBar, chartBarData, ChartBar } from './chart-bar';
 import { ChartBarGrouped } from './chart-bar-grouped';
 import { SeriesLabelBar } from './series-label-bar';
@@ -33,9 +33,17 @@ export function chartWindowBarData(data: Partial<ChartWindowBar>): ChartWindowBa
   };
 }
 
-export function chartWindowBar(selection: Selection<HTMLDivElement, ChartWindowBar>): void {
+export type ChartWindowBarSelection = Selection<HTMLDivElement, ChartWindowBar>;
+
+export function chartWindowBar(selection: ChartWindowBarSelection): void {
   selection
     .classed('chart-window-bar', true)
+    .on('resize.chartwindowbar', function (e, d) {
+      const { width, height } = e.detail.size;
+      select(this).dispatch('densitychange', {
+        detail: { density: { x: d.values.length / width, y: d.values.length / height } },
+      });
+    })
     .call((s) => chartWindow(s))
     .each((chartWindowD, i, g) => {
       const chartWindow = select<HTMLDivElement, ChartWindowBar>(g[i]),
@@ -58,7 +66,7 @@ export function chartWindowBar(selection: Selection<HTMLDivElement, ChartWindowB
       menuItems.append('li').call((s) => toolDownloadSVG(s));
 
       chartWindow.on('change.chartwindowbar', function () {
-        chartWindowBarApplyFilters(select<Element, ChartWindowBar>(this));
+        chartWindowBarApplyFilters(<ChartWindowBarSelection>select(this));
       });
 
       // chart
@@ -70,7 +78,7 @@ export function chartWindowBar(selection: Selection<HTMLDivElement, ChartWindowB
       chart.selectAll('.legend').attr('cursor', 'default');
 
       chartWindow.on('datachange.chartwindowbar', function (e, chartWindowD) {
-        const chartWindowS = select<Element, ChartWindowBar>(this),
+        const chartWindowS = <ChartWindowBarSelection>select(this),
           categoryFilterS = chartWindowS.selectAll<Element, ToolFilterNominal>(
             '.tool-filter-categories'
           ),
@@ -99,7 +107,7 @@ export function chartWindowBar(selection: Selection<HTMLDivElement, ChartWindowB
     });
 }
 
-export function chartWindowBarApplyFilters(selection: Selection<Element, ChartWindowBar>): void {
+export function chartWindowBarApplyFilters(selection: ChartWindowBarSelection): void {
   selection.each((chartWindowD, i, g) => {
     const {
         categories,

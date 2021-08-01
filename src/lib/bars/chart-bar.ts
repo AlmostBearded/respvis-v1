@@ -65,7 +65,6 @@ export function chartBarDataChange(
 
     const labelSeriesD = seriesLabelBarData({
       barContainer: barSeriesS,
-      labels: chartD.values.map((v) => v.toString()),
       ...chartD.labels,
     });
     chartS

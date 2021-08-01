@@ -11,6 +11,7 @@ export { v4 as uuid } from 'uuid';
 export * from './selection';
 export * from './layouter';
 export * from './render-queue';
+export * from './resize-event-dispatcher';
 
 export * from './scale';
 
