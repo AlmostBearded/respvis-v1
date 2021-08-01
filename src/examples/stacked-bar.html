@@ -61,7 +61,6 @@
           .call(respVis.chartWindowBarStacked)
           .on('densitychange', function (e, d) {
             const density = e.detail.density;
-            console.log('density', density);
             const flippedBars = density.x > 0.05;
             const labelsEnabled = density.x < 0.06;
             const yAxisSubtitle = density.x < 0.06 ? '[%]' : '';

@@ -43,10 +43,7 @@ export function chartBarStackedData(data: Partial<ChartBarStacked>): ChartBarSta
     legend: data.legend || {},
     labelsEnabled: data.labelsEnabled ?? true,
     labels: {
-      labels: (bar) => {
-        const v = Math.round(bar.value);
-        return v > 0 ? v.toString() : '';
-      },
+      labels: (bar) => (bar.height > 10 ? Math.round(bar.value).toString() : ''),
       ...data.labels,
     },
   };
