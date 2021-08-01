@@ -76,7 +76,7 @@ export function axisLeft(selection: AxisSelection): void {
     )
     .on('render.axisleft', function (e, d) {
       axisLeftTransition(
-        (<AxisSelection>select(this)).transition('axis').duration(0).ease(easeCubicOut)
+        (<AxisSelection>select(this)).transition('axis').duration(250).ease(easeCubicOut)
       );
     })
     .dispatch('render');
@@ -112,7 +112,7 @@ export function axisBottom(selection: AxisSelection): void {
     )
     .on('render.axisbottom', function (e, d) {
       axisBottomTransition(
-        (<AxisSelection>select(this)).transition('axis').duration(0).ease(easeCubicOut)
+        (<AxisSelection>select(this)).transition('axis').duration(250).ease(easeCubicOut)
       );
     })
     .dispatch('render');
