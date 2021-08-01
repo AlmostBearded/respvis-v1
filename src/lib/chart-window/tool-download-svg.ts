@@ -8,8 +8,7 @@ export function toolDownloadSVG(selection: Selection<HTMLLIElement>): void {
     .text('Download SVG')
     .call((s) => menuDropdownItem(s))
     .on('click', function () {
-      const chartS = select(this)
-        .closest('.chart-window')
+      select(this.closest('.chart-window'))
         .selectAll<SVGSVGElement, unknown>('.layouter > svg.chart')
         .call((s) => chartSaveSVG(s, 'chart.svg'));
     });

@@ -64,11 +64,7 @@ declare module 'd3-selection' {
     bounds(): Rect | null;
     bounds(bounds: Rect | null | ValueFn<GElement, Datum, Rect | null>): this;
 
-    properties(name: string): any[];
-
     dispatch(type: string, parameters?: Partial<CustomEventParameters>): this;
-
-    closest<PElement extends BaseType, PDatum>(selector: string): Selection<PElement, PDatum>;
   }
 }
 
@@ -194,24 +190,6 @@ selection.prototype.data = function <
 >(this: Selection<GElement, Datum, PElement, PDatum>, data?: any, key?: any): any {
   if (data === undefined) return originalData.call(this);
   return originalData.call(this, data, key).dispatch('datachange');
-};
-
-selection.prototype.properties = function (this: Selection<Element>, name: string): any[] {
-  const properties: any[] = new Array(this.size());
-  this.each((d, i, g) => (properties[i] = g[i][name]));
-  return properties;
-};
-
-selection.prototype.closest = function <PElement extends Element, PDatum>(
-  this: Selection<Element>,
-  selector: string
-): Selection<PElement, PDatum> {
-  const closests: PElement[] = [];
-  this.each(function () {
-    const closest = this.closest<PElement>(selector);
-    if (closest) closests.push(closest);
-  });
-  return selectAll<PElement, PDatum>(closests);
 };
 
 export function isTransition<GElement extends BaseType, Datum, PElement extends BaseType, PDatum>(

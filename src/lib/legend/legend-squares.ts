@@ -148,19 +148,22 @@ export function legendSquares(selection: Selection<Element, LegendSquares>): voi
     });
 }
 
-export function legendItemHighlight(item: Selection, highlight: boolean): void {
-  if (highlight) {
-    item
-      .selectAll('.symbol')
-      .attr(
-        'filter',
-        `url(#${item.closest('.legend').selectAll('.filter-brightness').attr('id')})`
-      );
-    item.selectAll('.label').attr('text-decoration', 'underline');
-  } else {
-    item.selectAll('.symbol').attr('filter', null);
-    item.selectAll('.label').attr('text-decoration', null);
-  }
+export function legendItemHighlight(items: Selection<Element>, highlight: boolean): void {
+  items.each((d, i, g) => {
+    const item = select(g[i]);
+    if (highlight) {
+      select(g[i])
+        .selectAll('.symbol')
+        .attr(
+          'filter',
+          `url(#${select(g[i].closest('.legend')).selectAll('.filter-brightness').attr('id')})`
+        );
+      item.selectAll('.label').attr('text-decoration', 'underline');
+    } else {
+      item.selectAll('.symbol').attr('filter', null);
+      item.selectAll('.label').attr('text-decoration', null);
+    }
+  });
 }
 
 export function legendItemFindByLabel(
