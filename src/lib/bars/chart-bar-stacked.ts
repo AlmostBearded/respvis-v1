@@ -1,13 +1,7 @@
+import { format } from 'd3-format';
 import { BaseType, select, Selection } from 'd3-selection';
 import { axisTickFindByIndex, axisTickHighlight } from '../axis';
-import {
-  arrayFlat,
-  arrayIs2D,
-  debug,
-  nodeToString,
-  siblingIndex,
-  siblingIndexSameClasses,
-} from '../core';
+import { arrayFlat, arrayIs2D, debug, nodeToString, siblingIndex } from '../core';
 import {
   chartCartesian,
   chartCartesianUpdateAxes,
@@ -108,7 +102,10 @@ export function chartBarStackedDataChange(selection: ChartBarStackedSelection): 
 
     const labelSeriesD = seriesLabelBarData({
       barContainer: barSeriesS,
-      labels: chartD.values.map((v) => v.toString()),
+      labels: arrayFlat(chartD.values).map((v) => {
+        v = Math.round(v);
+        return v > 0 ? v.toString() : '';
+      }),
       ...chartD.labels,
     });
     chartS
