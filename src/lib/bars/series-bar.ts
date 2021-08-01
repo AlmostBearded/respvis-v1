@@ -133,9 +133,11 @@ export function seriesBar(selection: Selection<Element, SeriesBar>): void {
       select(this).dispatch('render');
     })
     .on('render.seriesbar', function (e, d) {
-      debug(`render bar series on ${nodeToString(this)}`);
       const series = select<Element, SeriesBar>(this);
-      d.bounds = series.bounds()!;
+      const bounds = series.bounds();
+      if (!bounds) return;
+      debug(`render bar series on ${nodeToString(this)}`);
+      d.bounds = bounds;
       series
         .selectAll<SVGRectElement, Bar>('rect')
         .data(seriesBarCreateBars(d), (d) => d.key)

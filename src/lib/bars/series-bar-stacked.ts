@@ -139,9 +139,11 @@ export function seriesBarStacked(selection: Selection<Element, SeriesBarStacked>
       select(this).dispatch('render');
     })
     .on('render.seriesbargrouped', function (e, d) {
-      debug(`render grouped bar series on ${nodeToString(this)}`);
       const series = select<Element, SeriesBarGrouped>(this);
-      d.bounds = series.bounds()!;
+      const bounds = series.bounds();
+      if (!bounds) return;
+      debug(`render grouped bar series on ${nodeToString(this)}`);
+      d.bounds = bounds;
       series
         .selectAll<SVGRectElement, BarGrouped>('rect')
         .data(seriesBarStackedCreateBars(d), (d) => d.key)

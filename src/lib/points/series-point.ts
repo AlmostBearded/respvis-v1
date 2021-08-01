@@ -65,9 +65,11 @@ export function seriesPoint(selection: Selection<Element, SeriesPoint>): void {
       select(this).dispatch('render');
     })
     .on('render.seriespoint', function (e, d) {
-      debug(`render point series on ${nodeToString(this)}`);
       const series = select<Element, SeriesPoint>(this);
-      d.bounds = series.bounds()!;
+      const bounds = series.bounds();
+      if (!bounds) return;
+      debug(`render point series on ${nodeToString(this)}`);
+      d.bounds = bounds;
       series
         .selectAll<SVGCircleElement, Point>('circle')
         .data(seriesPointCreatePoints(d), (d) => d.key)
