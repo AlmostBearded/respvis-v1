@@ -1,25 +1,17 @@
-import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
-import { BaseType, select, Selection } from 'd3-selection';
-import {
-  arrayIs,
-  arrayIs2D,
-  COLORS_CATEGORICAL,
-  debug,
-  findByDataProperty,
-  nodeToString,
-  Rect,
-  rectFitStroke,
-} from '../core';
+import { ScaleBand, scaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
+import { select, Selection } from 'd3-selection';
+import { arrayIs, arrayIs2D, COLORS_CATEGORICAL, debug, nodeToString, Rect } from '../core';
 import { Size } from '../core/utils';
 import { filterBrightness } from '../filters';
-import { barHighlight, Bar, JoinEvent, seriesBar, seriesBarJoin } from './series-bar';
 import {
-  barGroupedFindBySubcategory,
-  BarGrouped,
-  SeriesBarGrouped,
-} from './series-bar-grouped';
+  SeriesConfigTooltips,
+  seriesConfigTooltipsData,
+  seriesConfigTooltipsHandleEvents,
+} from '../tooltip';
+import { barHighlight, seriesBarJoin } from './series-bar';
+import { barGroupedFindBySubcategory, BarGrouped, SeriesBarGrouped } from './series-bar-grouped';
 
-export interface SeriesBarStacked {
+export interface SeriesBarStacked extends SeriesConfigTooltips<SVGRectElement, BarGrouped> {
   categories: any[];
   categoryScale: ScaleBand<any>;
   values: number[][];
@@ -57,6 +49,12 @@ export function seriesBarStackedData(data: Partial<SeriesBarStacked>): SeriesBar
     flipped: data.flipped || false,
     keys: data.keys,
     bounds: data.bounds || { width: 600, height: 400 },
+    ...seriesConfigTooltipsData(data),
+    tooltipsEnabled: data.tooltipsEnabled || true,
+    tooltips:
+      data.tooltips ||
+      ((element, data) =>
+        `Category: ${data.category}<br/>Subcategory: ${data.subcategory}<br/>Value: ${data.value}`),
   };
 }
 
@@ -158,7 +156,8 @@ export function seriesBarStacked(selection: Selection<Element, SeriesBarStacked>
     })
     .on('mouseover.seriesbargroupedhighlight mouseout.seriesbargroupedhighlight', (e) =>
       barStackedHighlight(select(e.target), e.type.endsWith('over'))
-    );
+    )
+    .call((s) => seriesConfigTooltipsHandleEvents(s));
 }
 
 export const barStackedHighlight = barHighlight;

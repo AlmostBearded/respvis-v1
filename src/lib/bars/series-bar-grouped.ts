@@ -13,13 +13,18 @@ import {
 } from '../core';
 import { Size } from '../core/utils';
 import { filterBrightness } from '../filters';
-import { barHighlight, Bar, JoinEvent, seriesBar, seriesBarJoin } from './series-bar';
+import {
+  SeriesConfigTooltips,
+  seriesConfigTooltipsData,
+  seriesConfigTooltipsHandleEvents,
+} from '../tooltip';
+import { barHighlight, Bar, seriesBarJoin } from './series-bar';
 
 export interface BarGrouped extends Bar {
   subcategory: string;
 }
 
-export interface SeriesBarGrouped {
+export interface SeriesBarGrouped extends SeriesConfigTooltips<SVGRectElement, BarGrouped> {
   categories: any[];
   categoryScale: ScaleBand<any>;
   subcategories: string[];
@@ -56,6 +61,12 @@ export function seriesBarGroupedData(data: Partial<SeriesBarGrouped>): SeriesBar
     subcategoryPadding: data.subcategoryPadding || 0.1,
     keys: data.keys,
     bounds: data.bounds || { width: 600, height: 400 },
+    ...seriesConfigTooltipsData<SVGRectElement, BarGrouped>(data),
+    tooltipsEnabled: data.tooltipsEnabled || true,
+    tooltips:
+      data.tooltips ||
+      ((element, data) =>
+        `Category: ${data.category}<br/>Subcategory: ${data.subcategory}<br/>Value: ${data.value}`),
   };
 }
 
@@ -158,7 +169,8 @@ export function seriesBarGrouped(selection: Selection<Element, SeriesBarGrouped>
     })
     .on('mouseover.seriesbargroupedhighlight mouseout.seriesbargroupedhighlight', (e) =>
       barGroupedHighlight(select(e.target), e.type.endsWith('over'))
-    );
+    )
+    .call((s) => seriesConfigTooltipsHandleEvents(s));
 }
 
 export const barGroupedHighlight = barHighlight;

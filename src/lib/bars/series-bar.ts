@@ -1,5 +1,5 @@
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
-import { BaseType, pointer, select, Selection, ValueFn } from 'd3-selection';
+import { select, Selection } from 'd3-selection';
 import {
   arrayIs,
   COLORS_CATEGORICAL,
@@ -13,6 +13,11 @@ import { Transition } from 'd3-transition';
 import { easeCubicOut } from 'd3-ease';
 import { filterBrightness } from '../filters';
 import { Size } from '../core/utils';
+import {
+  SeriesConfigTooltips,
+  seriesConfigTooltipsData,
+  seriesConfigTooltipsHandleEvents,
+} from '../tooltip';
 
 export interface Bar extends Rect {
   category: string;
@@ -23,7 +28,7 @@ export interface Bar extends Rect {
   stroke: string;
 }
 
-export interface SeriesBar {
+export interface SeriesBar extends SeriesConfigTooltips<SVGRectElement, Bar> {
   categories: any[];
   categoryScale: ScaleBand<any>;
   values: number[];
@@ -53,6 +58,10 @@ export function seriesBarData(data: Partial<SeriesBar>): SeriesBar {
     strokes: data.strokes || '#000',
     flipped: data.flipped || false,
     keys: data.keys || categories,
+    ...seriesConfigTooltipsData<SVGRectElement, Bar>(data),
+    tooltipsEnabled: data.tooltipsEnabled || true,
+    tooltips:
+      data.tooltips || ((element, data) => `Category: ${data.category}<br/>Value: ${data.value}`),
   };
 }
 
@@ -141,7 +150,8 @@ export function seriesBar(selection: Selection<Element, SeriesBar>): void {
     })
     .on('mouseover.seriesbarhighlight mouseout.seriesbarhighlight', (e) =>
       barHighlight(select(e.target), e.type.endsWith('over'))
-    );
+    )
+    .call((s) => seriesConfigTooltipsHandleEvents(s));
 }
 
 export interface JoinEvent<GElement extends Element, Datum>

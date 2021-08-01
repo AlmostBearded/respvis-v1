@@ -51,6 +51,10 @@
               valueDomain: [0, 100],
               subcategoryEntity: 'Platforms',
               subcategories: platforms,
+              tooltips: (barElement, barData) =>
+                `Year: ${barData.category}<br/>Platform: ${
+                  barData.subcategory
+                }<br/>Market Share: ${d3.format('.2f')(barData.value)}%`,
               xAxis: {
                 title: 'Year',
               },

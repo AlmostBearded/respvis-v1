@@ -42,6 +42,8 @@
               categoryEntity: 'Cities',
               categories: cities,
               values: populations,
+              tooltips: (barElement, barData) =>
+                `City: ${barData.category}<br/>Population: ${d3.format(',')(barData.value * 1000)}`,
               xAxis: {
                 title: 'City',
               },

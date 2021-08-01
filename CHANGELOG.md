@@ -77,6 +77,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add stoke property to seriesBar, seriesBarGrouped & seriesBarStacked.
 - Add category, subcategory and value properties to DataBar & DataBarGrouped
 - Add labels property to chartBar, chartBarGrouped & chartBarStacked.
+- Add tooltip.
+- Add tooltipShow function.
+- Add tooltipContent function.
+- Add tooltipPosition function.
+- Add tooltipHide function.
+- Add tooltips to seriesBar, seriesBarGrouped & seriesBarStacked.
 
 ### Changed
 
