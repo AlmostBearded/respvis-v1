@@ -1,11 +1,13 @@
 import { BaseType, select, Selection } from 'd3-selection';
 import {
+  arrayIs,
   debug,
   nodeToString,
   Position,
   Rect,
   rectCenter,
   rectLeft,
+  rectPosition,
   rectRight,
   rectTop,
 } from '../core';
@@ -14,30 +16,77 @@ import { Label, seriesLabelAttrs, seriesLabelCreateLabels, seriesLabelJoin } fro
 
 export interface SeriesLabelBar {
   barContainer: Selection<Element>;
-  rectPositioner: (rect: Rect) => Position;
   labels: string[] | ((bar: Bar) => string);
+  positions: Position | Position[] | ((bar: Bar) => Position);
+  offsets: number | Position | Position[] | ((bar: Bar) => Position);
+  textAnchors?: string | string[] | ((bar: Bar) => string);
+  dominantBaselines?: string | string[] | ((bar: Bar) => string);
 }
 
 export function seriesLabelBarData(data: Partial<SeriesLabelBar>): SeriesLabelBar {
   return {
     barContainer: data.barContainer || select('.chart'),
     labels: data.labels || ((bar) => bar.value.toString()),
-    rectPositioner: rectCenter,
+    positions: data.positions || { x: 0.5, y: 0.5 },
+    offsets: data.offsets || 3,
   };
 }
 
 export function seriesLabelBarCreateLabels(seriesData: SeriesLabelBar): Label[] {
-  const { barContainer, rectPositioner, labels } = seriesData;
+  const { barContainer, labels, positions, offsets, textAnchors, dominantBaselines } = seriesData;
   return barContainer
     .selectAll<SVGRectElement, Bar>('.bar:not(.exiting)')
     .data()
-    .map(
-      (barData, i): Label => ({
-        ...rectPositioner(barData),
-        text: labels instanceof Function ? labels(barData) : labels[i],
-        key: barData.key,
-      })
-    );
+    .map((bar, i): Label => {
+      const position =
+        positions instanceof Function
+          ? positions(bar)
+          : arrayIs(positions)
+          ? positions[i]
+          : positions;
+      const offset =
+        typeof offsets === 'number'
+          ? {
+              x: (position.x < 0.5 ? -1 : position.x === 0.5 ? 0 : 1) * offsets,
+              y: (position.y < 0.5 ? -1 : position.y === 0.5 ? 0 : 1) * offsets,
+            }
+          : offsets instanceof Function
+          ? offsets(bar)
+          : arrayIs(offsets)
+          ? offsets[i]
+          : offsets;
+      const p = rectPosition(bar, position);
+      return {
+        x: p.x + offset.x,
+        y: p.y + offset.y,
+        text: labels instanceof Function ? labels(bar) : labels[i],
+        key: bar.key,
+        textAnchor:
+          textAnchors instanceof Function
+            ? textAnchors(bar)
+            : arrayIs(textAnchors)
+            ? textAnchors[i]
+            : textAnchors !== undefined
+            ? textAnchors
+            : position.x < 0.5
+            ? 'end'
+            : position.x === 0.5
+            ? 'middle'
+            : 'start',
+        dominantBaseline:
+          dominantBaselines instanceof Function
+            ? dominantBaselines(bar)
+            : arrayIs(dominantBaselines)
+            ? dominantBaselines[i]
+            : dominantBaselines !== undefined
+            ? dominantBaselines
+            : position.y < 0.5
+            ? 'auto'
+            : position.y === 0.5
+            ? 'middle'
+            : 'hanging',
+      };
+    });
 }
 
 export function seriesLabelBar(selection: Selection<Element, SeriesLabelBar>): void {
@@ -62,48 +111,5 @@ export function seriesLabelBar(selection: Selection<Element, SeriesLabelBar>): v
         .selectAll<SVGTextElement, Label>('text')
         .data(seriesLabelBarCreateLabels(d), (d) => d.key)
         .call((s) => seriesLabelJoin(series, s));
-    });
-}
-
-export function seriesLabelBarCenterConfig(selection: Selection<Element, SeriesLabelBar>): void {
-  selection
-    .attr('text-anchor', 'center')
-    .attr('dominant-baseline', 'middle')
-    .datum((d) => {
-      d.rectPositioner = rectCenter;
-      return d;
-    });
-}
-
-export function seriesLabelBarLeftConfig(selection: Selection<Element, SeriesLabelBar>): void {
-  selection
-    .attr('text-anchor', 'start')
-    .attr('dominant-baseline', 'middle')
-    .layout('margin', '0 0 0 0.25em')
-    .datum((d) => {
-      d.rectPositioner = rectLeft;
-      return d;
-    });
-}
-
-export function seriesLabelBarRightConfig(selection: Selection<Element, SeriesLabelBar>): void {
-  selection
-    .attr('text-anchor', 'start')
-    .attr('dominant-baseline', 'middle')
-    .layout('margin', '0 0 0 0.25em')
-    .datum((d) => {
-      d.rectPositioner = rectRight;
-      return d;
-    });
-}
-
-export function seriesLabelBarTopConfig(selection: Selection<Element, SeriesLabelBar>): void {
-  selection
-    .attr('text-anchor', 'middle')
-    .attr('dominant-baseline', 'auto')
-    .layout('margin', '-0.25em 0 0 0')
-    .datum((d) => {
-      d.rectPositioner = rectTop;
-      return d;
     });
 }

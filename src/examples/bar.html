@@ -54,8 +54,7 @@
             })
           )
           .call(respVis.chartWindowBar),
-        chart = chartWindow.selectAll('svg.chart'),
-        labelSeries = chart.selectAll('.series-label-bar');
+        chart = chartWindow.selectAll('svg.chart');
 
       window.addEventListener('resize', configure);
       configure();
@@ -65,12 +64,13 @@
       function configure() {
         const narrow = !window.matchMedia(wideMediaQuery).matches;
         const flippedBars = narrow;
-        const labelConfig = narrow
-          ? respVis.seriesLabelBarRightConfig
-          : respVis.seriesLabelBarTopConfig;
+        const labelPosition = narrow ? { x: 1, y: 0.5 } : { x: 0.5, y: 0 };
 
-        chartWindow.datum((d) => Object.assign(d, { flipped: flippedBars }));
-        labelSeries.call(labelConfig);
+        chartWindow.datum((d) => {
+          d.flipped = flippedBars;
+          d.labels.positions = labelPosition;
+          return d;
+        });
       }
     </script>
   </body>

@@ -1,6 +1,7 @@
 import { easeCubicOut } from 'd3-ease';
 import { BaseType, select, Selection, ValueFn } from 'd3-selection';
 import {
+  arrayIs,
   debug,
   findByFilter,
   findByIndex,
@@ -11,14 +12,17 @@ import {
 } from '../core';
 
 export interface Label extends Position {
+  textAnchor: string;
+  dominantBaseline: string;
   text: string;
-  // todo: add index property?
   key: string;
 }
 
 export interface SeriesLabel {
   texts: string[];
   positions: Position[];
+  textAnchors: string | string[];
+  dominantBaselines: string | string[];
   keys: string[];
 }
 
@@ -27,14 +31,18 @@ export function seriesLabelData(data: Partial<SeriesLabel>): SeriesLabel {
     texts: data.texts || [],
     positions: data.positions || [],
     keys: data.keys || data.texts || [],
+    textAnchors: data.textAnchors || 'middle',
+    dominantBaselines: data.dominantBaselines || 'middle',
   };
 }
 
 export function seriesLabelCreateLabels(seriesData: SeriesLabel): Label[] {
-  const { texts, keys, positions } = seriesData;
+  const { texts, keys, positions, textAnchors, dominantBaselines } = seriesData;
   return texts.map((text, i) => ({
     text: text,
     key: keys[i],
+    textAnchor: arrayIs(textAnchors) ? textAnchors[i] : textAnchors,
+    dominantBaseline: arrayIs(dominantBaselines) ? dominantBaselines[i] : dominantBaselines,
     ...positions[i],
   }));
 }
@@ -65,10 +73,7 @@ export function seriesLabel(selection: Selection<Element, SeriesLabel>): void {
 }
 
 export function seriesLabelAttrs(seriesSelection: Selection<Element>): void {
-  seriesSelection
-    .attr('text-anchor', 'middle')
-    .attr('dominant-baseline', 'middle')
-    .attr('font-size', '0.7em');
+  seriesSelection.attr('font-size', '0.7em');
 }
 
 export function seriesLabelJoin(
@@ -97,6 +102,8 @@ export function seriesLabelJoin(
           )
           .call((s) => seriesSelection.dispatch('exit', { detail: { selection: s } }))
     )
+    .attr('text-anchor', (d) => d.textAnchor)
+    .attr('dominant-baseline', (d) => d.dominantBaseline)
     .call((s) =>
       s
         .transition('position')

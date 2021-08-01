@@ -57,8 +57,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add rectPosition function.
 - Add ValueOrArray type.
 - Add NestedArray type.
-- Add automatic highlighting of bars on hover to seriesBar.
-- Add automatic highlighting of bars on hover to seriesBarGrouped.
+- Add automatic highlighting of bars on hover to SeriesBar.
+- Add automatic highlighting of bars on hover to SeriesBarGrouped.
 - Add automatic highlighting of legend items on hover to legend.
 - Add automatic highlighting of bars, labels and main axis ticks to chartBar.
 - Add automatic highlighting of bars, labels, main axis ticks and legend items to chartBarGrouped.
@@ -73,17 +73,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add seriesLabelBarRightConfig.
   - Configures seriesLabelBar labels to appear to the right of bars.
 - Add filterBrightness.
-- Add colors property to seriesBar, seriesBarGrouped & seriesBarStacked.
-- Add stokeWidths property to seriesBar, seriesBarGrouped & seriesBarStacked.
-- Add stoke property to seriesBar, seriesBarGrouped & seriesBarStacked.
-- Add category, subcategory and value properties to DataBar & DataBarGrouped
-- Add labels property to chartBar, chartBarGrouped & chartBarStacked.
+- Add colors property to SeriesBar, SeriesBarGrouped & SeriesBarStacked.
+- Add stokeWidths property to SeriesBar, SeriesBarGrouped & SeriesBarStacked.
+- Add stoke property to SeriesBar, SeriesBarGrouped & SeriesBarStacked.
+- Add category, subcategory and value properties to Bar & BarGrouped
+- Add labels property to ChartBar, ChartBarGrouped & ChartBarStacked.
+- Add textAnchor & dominantBaseline properties to Label.
+- Add textAnchors & dominantBaselines properties to SeriesLabel
 - Add tooltip.
 - Add tooltipShow function.
 - Add tooltipContent function.
 - Add tooltipPosition function.
 - Add tooltipHide function.
-- Add tooltips to seriesBar, seriesBarGrouped & seriesBarStacked.
+- Add tooltips to SeriesBar, SeriesBarGrouped & SeriesBarStacked.
 
 ### Changed
 
@@ -103,16 +105,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Highlight points in scatterplot example with a brightness filter.
 - Rename dataSeriesXCreation to just dataSeriesX.
 - Make partial inputs of dataX functions non-optional.
-- Rename dataSeriesLabelBar positionFromRect property to rectPositioner.
-- Allow passing ((DataBar) => string) function to labels property of DataLabelSeriesBar.
 - Require layouter data to be set before initializing layouter.
-- Rename dataSeriesBar properties:
+- Rename SeriesBar properties:
   - mainValues → categories
   - mainScale → categoryScale
   - crossValues → values
   - crossScale → valueScale
-- Rename dataSeriesBarGrouped property innerPadding → subcategoryPadding.
-- Rename dataSeriesPoint properties:
+- Rename SeriesBarGrouped property innerPadding → subcategoryPadding.
+- Rename SeriesPoint properties:
   - mainValues → xValues
   - mainScale → xScale
   - crossValues → yValues
@@ -120,6 +120,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Set viewBox attribute on chart root.
 - Remove width and height attributes from chart root.
 - Set namespace attribute on chart.
+- Refactor SeriesLabel.
+- Refactor SeriesLabelBar.
 
 ### Removed
 
@@ -138,6 +140,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove unused Selection.transformCall.
 - Remove index and groupIndex properties from DataBar & DataBarGrouped.
 - Remove DataBarStacked.
+- Remove seriesLabelBarCenterConfig, seriesLabelBarLeftConfig, seriesLabelBarRightConfig, seriesLabelBarTopConfig.
 
 ### Fixed
 

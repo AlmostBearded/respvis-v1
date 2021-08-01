@@ -16,6 +16,7 @@ import {
 } from './series-label-bar';
 
 export interface ChartBar extends SeriesBar, ChartCartesian {
+  labelsEnabled: boolean;
   labels: Partial<SeriesLabelBar>;
 }
 
@@ -23,6 +24,7 @@ export function chartBarData(data: Partial<ChartBar>): ChartBar {
   return {
     ...seriesBarData(data),
     ...chartCartesianData(data),
+    labelsEnabled: data.labelsEnabled || true,
     labels: data.labels || {},
   };
 }
@@ -63,24 +65,29 @@ export function chartBar(selection: ChartBarSelection): void {
 export function chartBarDataChange(
   selection: Selection<SVGSVGElement | SVGGElement, ChartBar>
 ): void {
-  selection.each(function (chartData, i, g) {
-    const s = <ChartBarSelection>select(g[i]),
-      labelSeries = s.selectAll<Element, SeriesLabelBar>('.series-label-bar');
+  selection.each(function (chartD, i, g) {
+    const chartS = <ChartBarSelection>select(g[i]);
+    const barSeriesS = chartS.selectAll<Element, SeriesBar>('.series-bar').datum((d) => d);
 
-    s.selectAll('.series-bar').dispatch('datachange');
+    const labelSeriesD = seriesLabelBarData({
+      barContainer: barSeriesS,
+      labels: chartD.values.map((v) => v.toString()),
+      ...chartD.labels,
+    });
+    chartS
+      .selectAll('.draw-area')
+      .selectAll<Element, SeriesLabelBar>('.series-label-bar')
+      .data(chartD.labelsEnabled ? [labelSeriesD] : [])
+      .join((enter) =>
+        enter
+          .append('g')
+          .layout('grid-area', '1 / 1')
+          .call((s) => seriesLabelBar(s))
+      );
 
-    labelSeries.datum((d) =>
-      Object.assign<SeriesLabelBar, Partial<SeriesLabelBar>, Partial<SeriesLabelBar>>(
-        d,
-        { labels: chartData.values.map((v) => v.toString()) },
-        chartData.labels
-      )
-    );
-
-    chartData.xAxis.scale = chartData.categoryScale;
-    chartData.yAxis.scale = chartData.valueScale;
-
-    chartCartesianUpdateAxes(s);
+    chartD.xAxis.scale = chartD.categoryScale;
+    chartD.yAxis.scale = chartD.valueScale;
+    chartCartesianUpdateAxes(chartS);
   });
 }
 

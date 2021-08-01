@@ -87,6 +87,11 @@
         const legendAlignSelf = narrow ? 'flex-end' : 'flex-start';
         const legendItemsFlexDirection = narrow ? 'row' : 'column';
 
+        chartWindow.datum((d) => {
+          d.flipped = flippedBars;
+          return d;
+        });
+
         chartWindow.datum((d) => Object.assign(d, { flipped: flippedBars }));
 
         chart.layout('flex-direction', chartFlexDirection);
