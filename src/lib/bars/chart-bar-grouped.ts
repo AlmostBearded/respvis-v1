@@ -51,20 +51,15 @@ export function chartBarGroupedData(data: Partial<ChartBarGrouped>): ChartBarGro
   };
 }
 
-export function chartBarGrouped<
-  GElement extends SVGSVGElement | SVGGElement,
-  Datum extends ChartBarGrouped,
-  PElement extends BaseType,
-  PDatum
->(
-  selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<GElement, Datum, PElement, PDatum> {
-  return selection
+export type ChartBarGroupedSelection = Selection<SVGSVGElement | SVGGElement, ChartBarGrouped>;
+
+export function chartBarGrouped(selection: ChartBarGroupedSelection): void {
+  selection
     .call((s) => chartCartesian(s, false))
     .classed('chart-bar-grouped', true)
     .layout('flex-direction', 'column-reverse')
     .each((chartData, i, g) => {
-      const chart = select<GElement, Datum>(g[i]);
+      const chart = <ChartBarGroupedSelection>select(g[i]);
       const drawArea = chart.selectAll('.draw-area');
 
       drawArea
@@ -95,20 +90,13 @@ export function chartBarGrouped<
       debug(`data change on ${nodeToString(this)}`);
     })
     .on('datachange.chartbargrouped', function (e, chartData) {
-      chartBarGroupedDataChange(select<GElement, Datum>(this));
+      chartBarGroupedDataChange(<ChartBarGroupedSelection>select(this));
     })
     .call((s) => chartBarGroupedDataChange(s));
 }
 
-export function chartBarGroupedDataChange<
-  GElement extends SVGSVGElement | SVGGElement,
-  Datum extends ChartBarGrouped,
-  PElement extends BaseType,
-  PDatum
->(
-  selection: Selection<GElement, Datum, PElement, PDatum>
-): Selection<GElement, Datum, PElement, PDatum> {
-  return selection.each(function (chartD, i, g) {
+export function chartBarGroupedDataChange(selection: ChartBarGroupedSelection): void {
+  selection.each(function (chartD, i, g) {
     const {
         colors,
         strokes,
@@ -119,7 +107,7 @@ export function chartBarGroupedDataChange<
         categoryScale,
         valueScale,
       } = chartD,
-      chartS = select<GElement, Datum>(g[i]),
+      chartS = <ChartBarGroupedSelection>select(g[i]),
       barSeriesS = chartS.selectAll<Element, SeriesBarGrouped>('.series-bar-grouped'),
       legendS = chartS.selectAll<Element, LegendSquares>('.legend');
 
