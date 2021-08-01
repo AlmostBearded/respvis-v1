@@ -54,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add arrayIs2D function.
 - Add arrayFlat function.
 - Add arrayPartition function.
+- Add rectPosition function.
 - Add ValueOrArray type.
 - Add NestedArray type.
 - Add automatic highlighting of bars on hover to seriesBar.

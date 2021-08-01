@@ -55,6 +55,10 @@ export function rectToString<T extends number | string>(rect: Rect<T>): string {
   return `${rect.x}, ${rect.y}, ${rect.width}, ${rect.height}`;
 }
 
+export function rectPosition(rect: Rect, percentage: Position): Position {
+  return { x: rect.x + rect.width * percentage.x, y: rect.y + rect.height * percentage.y };
+}
+
 export function rectCenter(rect: Rect): Position {
   return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
 }
