@@ -27,8 +27,8 @@ export function chartWindowBarData(data: Partial<ChartWindowBar>): ChartWindowBa
 
   return {
     ...chartData,
-    categoryEntity: data.categoryEntity || '',
-    valueEntity: data.valueEntity || '',
+    categoryEntity: data.categoryEntity || 'Categories',
+    valueEntity: data.valueEntity || 'Values',
     valueDomain: valueDomain,
   };
 }

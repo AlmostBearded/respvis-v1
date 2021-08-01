@@ -33,9 +33,9 @@ export function chartWindowBarStackedData(
 
   return {
     ...chartData,
-    categoryEntity: data.categoryEntity || '',
-    subcategoryEntity: data.subcategoryEntity || '',
-    valueEntity: data.valueEntity || '',
+    categoryEntity: data.categoryEntity || 'Categories',
+    subcategoryEntity: data.subcategoryEntity || 'Subcategories',
+    valueEntity: data.valueEntity || 'Values',
     valueDomain: valueDomain,
     valuesAsRatios: data.valuesAsRatios || false,
   };
