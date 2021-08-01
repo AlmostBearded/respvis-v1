@@ -93,17 +93,10 @@ export function seriesLabelBar(selection: Selection<Element, SeriesLabelBar>): v
   selection
     .classed('series-label-bar', true)
     .call((s) => seriesLabelAttrs(s))
-    .on(
-      'render.serieslabelbar-initial',
-      function () {
-        debug(`render on data change on ${nodeToString(this)}`);
-        select(this).on('datachange.serieslabelbar', function () {
-          debug(`data change on ${nodeToString(this)}`);
-          select(this).dispatch('render');
-        });
-      },
-      { once: true }
-    )
+    .on('datachange.serieslabelbar', function () {
+      debug(`data change on ${nodeToString(this)}`);
+      select(this).dispatch('render');
+    })
     .on('render.serieslabelbar', function (e, d) {
       debug(`render bar label series on ${nodeToString(this)}`);
       const series = select<Element, SeriesLabelBar>(this);

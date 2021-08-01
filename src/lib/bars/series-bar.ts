@@ -128,17 +128,10 @@ export function seriesBar(selection: Selection<Element, SeriesBar>): void {
         .append('filter')
         .call((s) => filterBrightness(s, 1.3))
     )
-    .on(
-      'render.seriesbar-initial',
-      function () {
-        debug(`render on data change on ${nodeToString(this)}`);
-        select(this).on('datachange.seriesbar', function () {
-          debug(`data change on ${nodeToString(this)}`);
-          select(this).dispatch('render');
-        });
-      },
-      { once: true }
-    )
+    .on('datachange.seriesbar', function () {
+      debug(`data change on ${nodeToString(this)}`);
+      select(this).dispatch('render');
+    })
     .on('render.seriesbar', function (e, d) {
       debug(`render bar series on ${nodeToString(this)}`);
       const series = select<Element, SeriesBar>(this);

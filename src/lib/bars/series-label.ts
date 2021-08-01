@@ -51,17 +51,10 @@ export function seriesLabel(selection: Selection<Element, SeriesLabel>): void {
   selection
     .classed('series-label', true)
     .call((s) => seriesLabelAttrs(s))
-    .on(
-      'render.serieslabel-initial',
-      function () {
-        debug(`render on data change on ${nodeToString(this)}`);
-        select(this).on('datachange.serieslabel', function () {
-          debug(`data change on ${nodeToString(this)}`);
-          select(this).dispatch('render');
-        });
-      },
-      { once: true }
-    )
+    .on('datachange.serieslabel', function () {
+      debug(`data change on ${nodeToString(this)}`);
+      select(this).dispatch('render');
+    })
     .on('render.serieslabel', function (e, d) {
       debug(`render label series on ${nodeToString(this)}`);
       const series = select<Element, SeriesLabel>(this);

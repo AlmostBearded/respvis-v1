@@ -134,17 +134,10 @@ function axis(selection: AxisSelection): void {
     .call((s) => s.append('g').classed('ticks-transform', true).append('g').classed('ticks', true))
     .call((s) => s.append('text').classed('title', true))
     .call((s) => s.append('text').classed('subtitle', true))
-    .on(
-      'render.axis-initial',
-      function () {
-        debug(`render on data change on ${nodeToString(this)}`);
-        select(this).on('datachange.axis', function () {
-          debug(`data change on ${nodeToString(this)}`);
-          select(this).dispatch('render');
-        });
-      },
-      { once: true }
-    );
+    .on('datachange.axis', function () {
+      debug(`data change on ${nodeToString(this)}`);
+      select(this).dispatch('render');
+    });
 }
 
 function axisTransition(

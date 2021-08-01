@@ -60,17 +60,10 @@ export function seriesPoint(selection: Selection<Element, SeriesPoint>): void {
   selection
     .classed('series-point', true)
     .attr('fill', COLORS_CATEGORICAL[0])
-    .on(
-      'render.seriespoint-initial',
-      function () {
-        debug(`render on data change on ${nodeToString(this)}`);
-        select(this).on('datachange.seriespoint', function () {
-          debug(`data change on ${nodeToString(this)}`);
-          select(this).dispatch('render');
-        });
-      },
-      { once: true }
-    )
+    .on('datachange.seriespoint', function () {
+      debug(`data change on ${nodeToString(this)}`);
+      select(this).dispatch('render');
+    })
     .on('render.seriespoint', function (e, d) {
       debug(`render point series on ${nodeToString(this)}`);
       const series = select<Element, SeriesPoint>(this);
