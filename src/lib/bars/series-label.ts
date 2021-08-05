@@ -11,18 +11,30 @@ import {
   positionToTransformAttr,
 } from '../core';
 
+export enum VerticalPosition {
+  Top = 'top',
+  Center = 'center-vertical',
+  Bottom = 'bottom',
+}
+
+export enum HorizontalPosition {
+  Left = 'left',
+  Center = 'center-horizontal',
+  Right = 'right',
+}
+
 export interface Label extends Position {
-  textAnchor: string;
-  dominantBaseline: string;
   text: string;
+  horizontalPosition: HorizontalPosition;
+  verticalPosition: VerticalPosition;
   key: string;
 }
 
 export interface SeriesLabel {
   texts: string[];
   positions: Position[];
-  textAnchors: string | string[];
-  dominantBaselines: string | string[];
+  horizontalPositions: HorizontalPosition | HorizontalPosition[];
+  verticalPositions: VerticalPosition | VerticalPosition[];
   keys: string[];
 }
 
@@ -30,19 +42,19 @@ export function seriesLabelData(data: Partial<SeriesLabel>): SeriesLabel {
   return {
     texts: data.texts || [],
     positions: data.positions || [],
+    horizontalPositions: data.horizontalPositions || HorizontalPosition.Center,
+    verticalPositions: data.verticalPositions || VerticalPosition.Center,
     keys: data.keys || data.texts || [],
-    textAnchors: data.textAnchors || 'middle',
-    dominantBaselines: data.dominantBaselines || 'middle',
   };
 }
 
 export function seriesLabelCreateLabels(seriesData: SeriesLabel): Label[] {
-  const { texts, keys, positions, textAnchors, dominantBaselines } = seriesData;
+  const { texts, keys, positions, horizontalPositions, verticalPositions } = seriesData;
   return texts.map((text, i) => ({
     text: text,
+    horizontalPosition: arrayIs(horizontalPositions) ? horizontalPositions[i] : horizontalPositions,
+    verticalPosition: arrayIs(verticalPositions) ? verticalPositions[i] : verticalPositions,
     key: keys[i],
-    textAnchor: arrayIs(textAnchors) ? textAnchors[i] : textAnchors,
-    dominantBaseline: arrayIs(dominantBaselines) ? dominantBaselines[i] : dominantBaselines,
     ...positions[i],
   }));
 }
@@ -50,7 +62,7 @@ export function seriesLabelCreateLabels(seriesData: SeriesLabel): Label[] {
 export function seriesLabel(selection: Selection<Element, SeriesLabel>): void {
   selection
     .classed('series-label', true)
-    .call((s) => seriesLabelAttrs(s))
+    .attr('ignore-layout-children', true)
     .on('datachange.serieslabel', function () {
       debug(`data change on ${nodeToString(this)}`);
       select(this).dispatch('render');
@@ -63,10 +75,6 @@ export function seriesLabel(selection: Selection<Element, SeriesLabel>): void {
         .data(seriesLabelCreateLabels(d), (d) => d.key)
         .call((s) => seriesLabelJoin(series, s));
     });
-}
-
-export function seriesLabelAttrs(seriesSelection: Selection<Element>): void {
-  seriesSelection.attr('font-size', '0.7em');
 }
 
 export function seriesLabelJoin(
@@ -95,8 +103,21 @@ export function seriesLabelJoin(
           )
           .call((s) => seriesSelection.dispatch('exit', { detail: { selection: s } }))
     )
-    .attr('text-anchor', (d) => d.textAnchor)
-    .attr('dominant-baseline', (d) => d.dominantBaseline)
+    .each((d, i, g) =>
+      Object.values(HorizontalPosition).forEach((v) =>
+        g[i].classList.toggle(v, v === d.horizontalPosition)
+      )
+    )
+    .each((d, i, g) =>
+      Object.values(VerticalPosition).forEach((v) =>
+        g[i].classList.toggle(v, v === d.verticalPosition)
+      )
+    )
+    .each((d, i, g) =>
+      Object.values(VerticalPosition).forEach((v) =>
+        g[i].classList.toggle('center', v === d.verticalPosition)
+      )
+    )
     .call((s) =>
       s
         .transition('position')

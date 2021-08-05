@@ -131,7 +131,14 @@ function axis(selection: AxisSelection): void {
   selection
     .classed('axis', true)
     .attr('font-size', '0.7em')
-    .call((s) => s.append('g').classed('ticks-transform', true).append('g').classed('ticks', true))
+    .call((s) =>
+      s
+        .append('g')
+        .classed('ticks-transform', true)
+        .append('g')
+        .classed('ticks', true)
+        .attr('ignore-layout-children', true)
+    )
     .call((s) => s.append('text').classed('title', true))
     .call((s) => s.append('text').classed('subtitle', true))
     .on('datachange.axis', function () {

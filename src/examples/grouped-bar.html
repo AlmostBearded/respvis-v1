@@ -4,6 +4,7 @@
     <title>RespVis - Grouped Bar Chart</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta charset="UTF-8" />
+    <link rel="stylesheet" href="../respvis.css" />
     <style>
       #chart {
         width: 100%;
@@ -13,6 +14,21 @@
 
       body {
         background-color: floralwhite;
+      }
+
+      .bar[subcategory-index='0'],
+      .legend-item[index='0'] .symbol {
+        fill: #4f8c9d;
+      }
+
+      .bar[subcategory-index='1'],
+      .legend-item[index='1'] .symbol {
+        fill: #e23209;
+      }
+
+      .bar[subcategory-index='2'],
+      .legend-item[index='2'] .symbol {
+        fill: #539322;
       }
     </style>
   </head>
@@ -66,8 +82,9 @@
             const yAxisSubtitle = density.x < 0.03 ? '[Million USD]' : '';
             const legendTitle = density.x < 0.03 ? 'Years' : '';
             const chartFlexDirection = flippedBars ? 'column-reverse' : 'row';
-            const legendAlignSelf = flippedBars ? 'flex-end' : 'flex-start';
-            const legendItemsFlexDirection = flippedBars ? 'row' : 'column';
+            const legendOrientation = flippedBars
+              ? respVis.Orientation.Horizontal
+              : respVis.Orientation.Vertical;
 
             chartWindow.datum((d) => {
               d.flipped = flippedBars;
@@ -75,15 +92,11 @@
               d.labels.positions = labelPosition;
               d.yAxis.subtitle = yAxisSubtitle;
               d.legend.title = legendTitle;
+              d.legend.orientation = legendOrientation;
               return d;
             });
 
             chart.layout('flex-direction', chartFlexDirection);
-
-            legend
-              .layout('align-self', legendAlignSelf)
-              .selectAll('.items')
-              .layout('flex-direction', legendItemsFlexDirection);
           }),
         chart = chartWindow.selectAll('svg.chart'),
         legend = chart.selectAll('.legend');

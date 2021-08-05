@@ -21,7 +21,6 @@ import { barFindByCategory } from './series-bar';
 import { BarGrouped } from './series-bar-grouped';
 import {
   barStackedFindBySubcategory,
-  barStackedHighlight,
   SeriesBarStacked,
   seriesBarStackedData,
   seriesBarStacked,
@@ -71,20 +70,20 @@ export function chartBarStacked(selection: ChartBarStackedSelection): void {
           chartBarStackedHoverBar(chart, select(e.target), e.type.endsWith('over'))
         );
 
-      chart
-        .append('g')
-        .classed('legend', true)
-        .datum(legendSquaresData(chartData.legend))
-        .call((s) => legendSquares(s))
-        .layout('margin', '0.5rem')
-        .layout('justify-content', 'flex-end')
-        .on('mouseover.chartbarstackedhighlight mouseout.chartbarstackedhighlight', (e) => {
-          chartBarStackedHoverLegendItem(
-            chart,
-            select(e.target.closest('.legend-item')),
-            e.type.endsWith('over')
-          );
-        });
+      // chart
+      //   .append('g')
+      //   .classed('legend', true)
+      //   .datum(legendSquaresData(chartData.legend))
+      //   .call((s) => legendSquares(s))
+      //   .layout('margin', '0.5rem')
+      //   .layout('justify-content', 'flex-end')
+      //   .on('mouseover.chartbarstackedhighlight mouseout.chartbarstackedhighlight', (e) => {
+      //     chartBarStackedHoverLegendItem(
+      //       chart,
+      //       select(e.target.closest('.legend-item')),
+      //       e.type.endsWith('over')
+      //     );
+      //   });
     })
     .on('datachange.debuglog', function () {
       debug(`data change on ${nodeToString(this)}`);
@@ -122,27 +121,27 @@ export function chartBarStackedDataChange(selection: ChartBarStackedSelection): 
           .call((s) => seriesLabelBar(s))
       );
 
-    legend.datum((d) =>
-      Object.assign<LegendSquares, Partial<LegendSquares>, Partial<LegendSquares>>(
-        d,
-        {
-          colors: arrayIs2D(chartD.colors) ? chartD.colors[0] : chartD.colors,
-          labels: chartD.subcategories,
-        },
-        chartD.legend
-      )
-    );
+    // legend.datum((d) =>
+    //   Object.assign<LegendSquares, Partial<LegendSquares>, Partial<LegendSquares>>(
+    //     d,
+    //     {
+    //       colors: arrayIs2D(chartD.colors) ? chartD.colors[0] : chartD.colors,
+    //       labels: chartD.subcategories,
+    //     },
+    //     chartD.legend
+    //   )
+    // );
 
     chartD.xAxis.scale = chartD.categoryScale;
     chartD.yAxis.scale = chartD.valueScale;
 
     chartCartesianUpdateAxes(chartS);
 
-    chartS
-      .selectAll(`.axis-x .tick`)
-      .on('mouseover.chartbarstackedhighlight mouseout.chartbarstackedhighlight', (e) =>
-        chartBarStackedHoverAxisTick(chartS, select(e.currentTarget), e.type.endsWith('over'))
-      );
+    // chartS
+    //   .selectAll(`.axis-x .tick`)
+    //   .on('mouseover.chartbarstackedhighlight mouseout.chartbarstackedhighlight', (e) =>
+    //     chartBarStackedHoverAxisTick(chartS, select(e.currentTarget), e.type.endsWith('over'))
+    //   );
   });
 }
 
@@ -161,46 +160,46 @@ export function chartBarStackedHoverBar(
 
     labelHighlight(labelS, hover);
     axisTickHighlight(tickS, hover);
-    legendItemHighlight(legendItemS, hover);
+    // legendItemHighlight(legendItemS, hover);
   });
 }
 
-export function chartBarStackedHoverLegendItem(
-  chart: Selection<Element, ChartBarStacked>,
-  legendItem: Selection<Element, LegendSquaresItem>,
-  hover: boolean
-): void {
-  const legendItemCount = chart.selectAll('.legend-item').size();
-  legendItem.each((_, i, g) => {
-    const legendItemI = siblingIndex(g[i], '.legend-item'),
-      subcategory = chart.datum().subcategories[legendItemI],
-      barS = barStackedFindBySubcategory(chart, subcategory),
-      labelS = labelFindByFilter(
-        chart.selectAll('.series-label-bar'),
-        (_, i) => i % legendItemCount === legendItemI
-      );
+// export function chartBarStackedHoverLegendItem(
+//   chart: Selection<Element, ChartBarStacked>,
+//   legendItem: Selection<Element, LegendSquaresItem>,
+//   hover: boolean
+// ): void {
+//   const legendItemCount = chart.selectAll('.legend-item').size();
+//   legendItem.each((_, i, g) => {
+//     const legendItemI = siblingIndex(g[i], '.legend-item'),
+//       subcategory = chart.datum().subcategories[legendItemI],
+//       barS = barStackedFindBySubcategory(chart, subcategory),
+//       labelS = labelFindByFilter(
+//         chart.selectAll('.series-label-bar'),
+//         (_, i) => i % legendItemCount === legendItemI
+//       );
 
-    barStackedHighlight(barS, hover);
-    labelHighlight(labelS, hover);
-  });
-}
+//     barStackedHighlight(barS, hover);
+//     labelHighlight(labelS, hover);
+//   });
+// }
 
-export function chartBarStackedHoverAxisTick(
-  chart: Selection<Element, ChartBarStacked>,
-  tick: Selection<Element>,
-  hover: boolean
-): void {
-  const legendItemCount = chart.selectAll('.legend-item').size();
-  tick.each((_, i, g) => {
-    const tickI = siblingIndex(g[i], '.tick'),
-      category = chart.datum().categories[tickI],
-      barS = barFindByCategory(chart, category),
-      labelS = labelFindByFilter(
-        chart.selectAll('.series-label-bar'),
-        (_, i) => Math.floor(i / legendItemCount) === tickI
-      );
-    barStackedHighlight(barS, hover);
-    labelHighlight(labelS, hover);
-  });
-  axisTickHighlight(tick, hover);
-}
+// export function chartBarStackedHoverAxisTick(
+//   chart: Selection<Element, ChartBarStacked>,
+//   tick: Selection<Element>,
+//   hover: boolean
+// ): void {
+//   const legendItemCount = chart.selectAll('.legend-item').size();
+//   tick.each((_, i, g) => {
+//     const tickI = siblingIndex(g[i], '.tick'),
+//       category = chart.datum().categories[tickI],
+//       barS = barFindByCategory(chart, category),
+//       labelS = labelFindByFilter(
+//         chart.selectAll('.series-label-bar'),
+//         (_, i) => Math.floor(i / legendItemCount) === tickI
+//       );
+//     barStackedHighlight(barS, hover);
+//     labelHighlight(labelS, hover);
+//   });
+//   axisTickHighlight(tick, hover);
+// }

@@ -17,9 +17,8 @@ export interface SeriesBarStacked extends SeriesConfigTooltips<SVGRectElement, B
   values: number[][];
   valueScale: ScaleContinuousNumeric<number, number>;
   subcategories: string[];
-  colors: string | string[] | string[][];
-  strokeWidths: number | number[] | number[][];
-  strokes: string | string[] | string[][];
+  categoryIndices?: number[];
+  subcategoryIndices?: number[];
   keys?: string[][];
   flipped: boolean;
   bounds: Size;
@@ -43,9 +42,6 @@ export function seriesBarStackedData(data: Partial<SeriesBarStacked>): SeriesBar
         ])
         .nice(),
     subcategories: data.subcategories || [],
-    colors: data.colors || COLORS_CATEGORICAL,
-    strokeWidths: data.strokeWidths || 1,
-    strokes: data.strokes || '#000',
     flipped: data.flipped || false,
     keys: data.keys,
     bounds: data.bounds || { width: 600, height: 400 },
@@ -66,9 +62,8 @@ export function seriesBarStackedCreateBars(seriesData: SeriesBarStacked): BarGro
     valueScale,
     subcategories,
     flipped,
-    colors,
-    strokes,
-    strokeWidths,
+    categoryIndices,
+    subcategoryIndices,
     keys,
     bounds,
   } = seriesData;
@@ -88,21 +83,16 @@ export function seriesBarStackedCreateBars(seriesData: SeriesBarStacked): BarGro
       const c = categories[i],
         sc = subcategories[j],
         v = subcategoryValues[j],
-        sw = arrayIs2D(strokeWidths)
-          ? strokeWidths[i][j]
-          : arrayIs(strokeWidths)
-          ? strokeWidths[j]
-          : strokeWidths,
         unflippedRect: Rect = {
           x: categoryScale(c)!,
           y: nextStart - Math.abs(valueScale(0)! - valueScale(v)!),
           width: categoryScale.bandwidth(),
-          height: Math.abs(valueScale(0)! - valueScale(v)!) + (j > 0 ? sw : 0),
+          height: Math.abs(valueScale(0)! - valueScale(v)!), //+ (j > 0 ? sw : 0),
         },
         flippedRect: Rect = {
           x: nextStart,
           y: categoryScale(c)!,
-          width: Math.abs(valueScale(0)! - valueScale(v)!) + (j > 0 ? sw : 0),
+          width: Math.abs(valueScale(0)! - valueScale(v)!), // + (j > 0 ? sw : 0),
           height: categoryScale.bandwidth(),
         },
         rect = flipped ? flippedRect : unflippedRect,
@@ -111,13 +101,12 @@ export function seriesBarStackedCreateBars(seriesData: SeriesBarStacked): BarGro
           subcategory: sc,
           value: v,
           key: keys?.[i][j] || `${c}/${sc}`,
-          color: arrayIs2D(colors) ? colors[i][j] : arrayIs(colors) ? colors[j] : colors,
-          strokeWidth: sw,
-          stroke: arrayIs2D(strokes) ? strokes[i][j] : arrayIs(strokes) ? strokes[j] : strokes,
+          categoryIndex: categoryIndices === undefined ? i : categoryIndices[i],
+          subcategoryIndex: subcategoryIndices === undefined ? j : subcategoryIndices[j],
           ...rect,
         };
 
-      nextStart = flipped ? rect.x + rect.width - sw : rect.y + sw;
+      nextStart = flipped ? rect.x + rect.width /* - sw*/ : rect.y /* + sw*/;
       data.push(bar);
     }
   }
@@ -128,12 +117,7 @@ export function seriesBarStacked(selection: Selection<Element, SeriesBarStacked>
   selection
     .classed('series-bar', true)
     .classed('series-bar-stacked', true)
-    .call((s) =>
-      s
-        .append('defs')
-        .append('filter')
-        .call((s) => filterBrightness(s, 1.3))
-    )
+    .attr('ignore-layout-children', true)
     .on('datachange.seriesbar', function () {
       debug(`data change on ${nodeToString(this)}`);
       select(this).dispatch('render');
@@ -147,14 +131,13 @@ export function seriesBarStacked(selection: Selection<Element, SeriesBarStacked>
       series
         .selectAll<SVGRectElement, BarGrouped>('rect')
         .data(seriesBarStackedCreateBars(d), (d) => d.key)
-        .call((s) => seriesBarJoin(series, s));
+        .call((s) => seriesBarJoin(series, s))
+        .attr('subcategory-index', (d) => d.subcategoryIndex);
     })
-    .on('mouseover.seriesbargroupedhighlight mouseout.seriesbargroupedhighlight', (e) =>
-      barStackedHighlight(select(e.target), e.type.endsWith('over'))
+    .on('mouseover.seriesbargroupedhighlight mouseout.seriesbargroupedhighlight', (e: MouseEvent) =>
+      (<Element>e.target).classList.toggle('highlight', e.type.endsWith('over'))
     )
     .call((s) => seriesConfigTooltipsHandleEvents(s));
 }
-
-export const barStackedHighlight = barHighlight;
 
 export const barStackedFindBySubcategory = barGroupedFindBySubcategory;

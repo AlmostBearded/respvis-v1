@@ -18,14 +18,13 @@ import {
   seriesConfigTooltipsData,
   seriesConfigTooltipsHandleEvents,
 } from '../tooltip';
+import toPX from 'to-px';
 
 export interface Bar extends Rect {
   category: string;
+  categoryIndex: number;
   value: number;
   key: string;
-  color: string;
-  strokeWidth: number;
-  stroke: string;
 }
 
 export interface SeriesBar extends SeriesConfigTooltips<SVGRectElement, Bar> {
@@ -34,9 +33,7 @@ export interface SeriesBar extends SeriesConfigTooltips<SVGRectElement, Bar> {
   values: number[];
   valueScale: ScaleContinuousNumeric<number, number>;
   keys: string[];
-  colors: string | string[];
-  strokeWidths: number | number[];
-  strokes: string | string[];
+  categoryIndices?: number[];
   flipped: boolean;
   bounds: Size;
 }
@@ -53,9 +50,6 @@ export function seriesBarData(data: Partial<SeriesBar>): SeriesBar {
       scaleLinear()
         .domain([0, Math.max(...(data.values || []))])
         .nice(),
-    colors: data.colors || COLORS_CATEGORICAL[0],
-    strokeWidths: data.strokeWidths || 1,
-    strokes: data.strokes || '#000',
     flipped: data.flipped || false,
     keys: data.keys || categories,
     ...seriesConfigTooltipsData<SVGRectElement, Bar>(data),
@@ -66,18 +60,8 @@ export function seriesBarData(data: Partial<SeriesBar>): SeriesBar {
 }
 
 export function seriesBarCreateBars(seriesData: SeriesBar): Bar[] {
-  const {
-    categories,
-    categoryScale,
-    values,
-    valueScale,
-    keys,
-    flipped,
-    colors,
-    strokeWidths,
-    strokes,
-    bounds,
-  } = seriesData;
+  const { categories, categoryScale, values, valueScale, keys, categoryIndices, flipped, bounds } =
+    seriesData;
 
   if (!flipped) {
     categoryScale.range([0, bounds.width]);
@@ -92,7 +76,6 @@ export function seriesBarCreateBars(seriesData: SeriesBar): Bar[] {
   for (let i = 0; i < values.length; ++i) {
     const c = categories[i],
       v = values[i],
-      sw = arrayIs(strokeWidths) ? strokeWidths[i] : strokeWidths,
       rect: Rect = {
         x: categoryScale(c)!,
         y: Math.min(valueScale(0)!, valueScale(v)!),
@@ -109,9 +92,7 @@ export function seriesBarCreateBars(seriesData: SeriesBar): Bar[] {
         category: c,
         value: v,
         key: keys?.[i] || i.toString(),
-        color: arrayIs(colors) ? colors[i] : colors,
-        strokeWidth: sw,
-        stroke: arrayIs(strokes) ? strokes[i] : strokes,
+        categoryIndex: categoryIndices === undefined ? i : categoryIndices[i],
         ...(flipped ? flippedRect : rect),
       };
     data.push(bar);
@@ -122,12 +103,7 @@ export function seriesBarCreateBars(seriesData: SeriesBar): Bar[] {
 export function seriesBar(selection: Selection<Element, SeriesBar>): void {
   selection
     .classed('series-bar', true)
-    .call((s) =>
-      s
-        .append('defs')
-        .append('filter')
-        .call((s) => filterBrightness(s, 1.3))
-    )
+    .attr('ignore-layout-children', true)
     .on('datachange.seriesbar', function () {
       debug(`data change on ${nodeToString(this)}`);
       select(this).dispatch('render');
@@ -143,8 +119,8 @@ export function seriesBar(selection: Selection<Element, SeriesBar>): void {
         .data(seriesBarCreateBars(d), (d) => d.key)
         .call((s) => seriesBarJoin(series, s));
     })
-    .on('mouseover.seriesbarhighlight mouseout.seriesbarhighlight', (e) =>
-      barHighlight(select(e.target), e.type.endsWith('over'))
+    .on('mouseover.seriesbarhighlight mouseout.seriesbarhighlight', (e: MouseEvent) =>
+      (<Element>e.target).classList.toggle('highlight', e.type.endsWith('over'))
     )
     .call((s) => seriesConfigTooltipsHandleEvents(s));
 }
@@ -185,23 +161,12 @@ export function seriesBarJoin(
         .transition('position')
         .duration(250)
         .ease(easeCubicOut)
-        .call((t) => rectToAttrs(t, (d) => rectFitStroke(d, d.strokeWidth)))
+        .call((t) =>
+          rectToAttrs(t, (d, i, g) => rectFitStroke(d, toPX(select(g[i]).style('stroke-width'))!))
+        )
     )
-    .attr('fill', (d, i, g) => d.color)
-    .attr('stroke-width', (d) => d.strokeWidth)
-    .attr('stroke', (d) => d.stroke)
+    .attr('category-index', (d) => d.categoryIndex)
     .call((s) => seriesSelection.dispatch('update', { detail: { selection: s } }));
-}
-
-export function barHighlight(bar: Selection<Element>, highlight: boolean): void {
-  bar.each((_, i, g) => {
-    if (highlight)
-      g[i].setAttribute(
-        'filter',
-        `url(#${select(g[i].closest('.series-bar')!).selectAll('.filter-brightness').attr('id')})`
-      );
-    else g[i].removeAttribute('filter');
-  });
 }
 
 export function barFind<Data extends Bar>(

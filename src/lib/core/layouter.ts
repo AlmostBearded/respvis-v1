@@ -21,18 +21,16 @@ export function layouterData(layouter: HTMLDivElement): Layouter {
       .call((s) => layoutNodeStyleAttr(s))
       .each((d, i, g) => layoutNodeBounds(select(g[i])) && renderQueueEnqueue(d));
 
-    select(layouter)
-      .selectChildren('[layout]')
-      .call((s) => {
-        const bounds = s.bounds()!;
-        s.style('left', bounds.x)
-          .style('top', bounds.y)
-          .attr('x', null)
-          .attr('y', null)
-          .attr('width', null)
-          .attr('height', null)
-          .attr('viewBox', rectToString({ ...bounds, x: 0, y: 0 }));
-      });
+    selectAll(layedOutChildren(layouter)).call((s) => {
+      const bounds = s.bounds()!;
+      s.style('left', bounds.x)
+        .style('top', bounds.y)
+        .attr('x', null)
+        .attr('y', null)
+        .attr('width', null)
+        .attr('height', null)
+        .attr('viewBox', rectToString({ ...bounds, x: 0, y: 0 }));
+    });
 
     renderQueueRender();
   });
@@ -86,21 +84,21 @@ function layoutNodeRoot(layouter: HTMLDivElement): Selection<HTMLDivElement, SVG
   return select(layouter)
     .selectChildren<HTMLDivElement, SVGElement>('.layout')
     .data(layedOutChildren(layouter))
-    .join('div')
-    .each((d) => select(d).layout('grid-area', 'chart / chart').style('position', 'absolute'));
+    .join('div');
 }
 
 function layoutNodeStyleAttr(selection: Selection<HTMLDivElement, SVGElement>): void {
   selection
-    .attr('style', (d) =>
-      d
-        .getAttribute('layout')!
+    .attr('style', (d, i, g) => {
+      const layout = d.getAttribute('layout');
+      if (layout)
         // replace width/height: 'fit' with bbox width/height
-        .replace(
+        return layout.replace(
           /(width|height): fit;/g,
           (_, captureGroup) => `${captureGroup}: ${d.getBoundingClientRect()[captureGroup]}px;`
-        )
-    )
+        );
+      return g[i].getAttribute('style');
+    })
     .style('pointer-events', 'none');
 }
 
@@ -158,22 +156,20 @@ function layoutNodeObserveResize(
 }
 
 function layedOutChildren(parent: Element): SVGElement[] {
-  return select(parent).selectChildren<SVGElement, unknown>('[layout]').nodes();
+  return select(parent)
+    .filter(':not([ignore-layout-children])')
+    .selectChildren<SVGElement, unknown>(':not([ignore-layout]):not(.layout)')
+    .nodes();
 }
 
 export function layouter(selection: Selection<HTMLDivElement, Layouter>): void {
-  selection
-    .classed('layouter', true)
-    .style('display', 'grid')
-    .style('grid-template', '[chart] 1fr / [chart] 1fr')
-    .style('position', 'relative')
-    .each((d, i, g) => {
-      d.layoutNodeResizeObserver.observe(g[i]);
-      d.layoutAttrMutationObserver.observe(g[i], {
-        attributes: true,
-        attributeFilter: ['layout', 'class'],
-        attributeOldValue: true,
-        subtree: true,
-      });
+  selection.classed('layouter', true).each((d, i, g) => {
+    d.layoutNodeResizeObserver.observe(g[i]);
+    d.layoutAttrMutationObserver.observe(g[i], {
+      attributes: true,
+      attributeFilter: ['layout', 'class'],
+      attributeOldValue: true,
+      subtree: true,
     });
+  });
 }

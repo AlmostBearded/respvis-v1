@@ -1,26 +1,15 @@
-import { BaseType, select, Selection } from 'd3-selection';
-import {
-  arrayIs,
-  debug,
-  nodeToString,
-  Position,
-  Rect,
-  rectCenter,
-  rectLeft,
-  rectPosition,
-  rectRight,
-  rectTop,
-} from '../core';
+import { select, Selection } from 'd3-selection';
+import { arrayIs, debug, nodeToString, Position, rectPosition } from '../core';
 import { Bar } from './series-bar';
-import { Label, seriesLabelAttrs, seriesLabelCreateLabels, seriesLabelJoin } from './series-label';
+import { HorizontalPosition, Label, seriesLabelJoin, VerticalPosition } from './series-label';
 
 export interface SeriesLabelBar {
   barContainer: Selection<Element>;
   labels: string[] | ((bar: Bar) => string);
   positions: Position | Position[] | ((bar: Bar) => Position);
   offsets: number | Position | Position[] | ((bar: Bar) => Position);
-  textAnchors?: string | string[] | ((bar: Bar) => string);
-  dominantBaselines?: string | string[] | ((bar: Bar) => string);
+  horizontalPositions?: HorizontalPosition | HorizontalPosition[];
+  verticalPositions?: VerticalPosition | VerticalPosition[];
 }
 
 export function seriesLabelBarData(data: Partial<SeriesLabelBar>): SeriesLabelBar {
@@ -33,7 +22,8 @@ export function seriesLabelBarData(data: Partial<SeriesLabelBar>): SeriesLabelBa
 }
 
 export function seriesLabelBarCreateLabels(seriesData: SeriesLabelBar): Label[] {
-  const { barContainer, labels, positions, offsets, textAnchors, dominantBaselines } = seriesData;
+  const { barContainer, labels, positions, offsets, horizontalPositions, verticalPositions } =
+    seriesData;
   return barContainer
     .selectAll<SVGRectElement, Bar>('.bar:not(.exiting)')
     .data()
@@ -61,38 +51,34 @@ export function seriesLabelBarCreateLabels(seriesData: SeriesLabelBar): Label[] 
         y: p.y + offset.y,
         text: labels instanceof Function ? labels(bar) : labels[i],
         key: bar.key,
-        textAnchor:
-          textAnchors instanceof Function
-            ? textAnchors(bar)
-            : arrayIs(textAnchors)
-            ? textAnchors[i]
-            : textAnchors !== undefined
-            ? textAnchors
-            : position.x < 0.5
-            ? 'end'
-            : position.x === 0.5
-            ? 'middle'
-            : 'start',
-        dominantBaseline:
-          dominantBaselines instanceof Function
-            ? dominantBaselines(bar)
-            : arrayIs(dominantBaselines)
-            ? dominantBaselines[i]
-            : dominantBaselines !== undefined
-            ? dominantBaselines
-            : position.y < 0.5
-            ? 'auto'
-            : position.y === 0.5
-            ? 'middle'
-            : 'hanging',
+        horizontalPosition: arrayIs(horizontalPositions)
+          ? horizontalPositions[i]
+          : horizontalPositions !== undefined
+          ? horizontalPositions
+          : position.x < 0.5
+          ? HorizontalPosition.Left
+          : position.x === 0.5
+          ? HorizontalPosition.Center
+          : HorizontalPosition.Right,
+
+        verticalPosition: arrayIs(verticalPositions)
+          ? verticalPositions[i]
+          : verticalPositions !== undefined
+          ? verticalPositions
+          : position.y < 0.5
+          ? VerticalPosition.Top
+          : position.y === 0.5
+          ? VerticalPosition.Center
+          : VerticalPosition.Bottom,
       };
     });
 }
 
 export function seriesLabelBar(selection: Selection<Element, SeriesLabelBar>): void {
   selection
+    .classed('series-label', true)
     .classed('series-label-bar', true)
-    .call((s) => seriesLabelAttrs(s))
+    .attr('ignore-layout-children', true)
     .on('datachange.serieslabelbar', function () {
       debug(`data change on ${nodeToString(this)}`);
       select(this).dispatch('render');

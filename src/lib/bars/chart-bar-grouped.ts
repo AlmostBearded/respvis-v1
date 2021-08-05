@@ -20,13 +20,11 @@ import {
   legendSquaresData,
   LegendSquaresItem,
   legendItemFindByIndex,
-  legendItemHighlight,
   legendSquares,
 } from '../legend';
 import { barFindByCategory } from './series-bar';
 import {
   barGroupedFindBySubcategory,
-  barGroupedHighlight,
   BarGrouped,
   SeriesBarGrouped,
   seriesBarGroupedData,
@@ -98,16 +96,7 @@ export function chartBarGrouped(selection: ChartBarGroupedSelection): void {
 
 export function chartBarGroupedDataChange(selection: ChartBarGroupedSelection): void {
   selection.each(function (chartD, i, g) {
-    const {
-        colors,
-        strokes,
-        strokeWidths,
-        subcategories,
-        xAxis,
-        yAxis,
-        categoryScale,
-        valueScale,
-      } = chartD,
+    const { subcategories, xAxis, yAxis, categoryScale, valueScale } = chartD,
       chartS = <ChartBarGroupedSelection>select(g[i]),
       barSeriesS = chartS.selectAll<Element, SeriesBarGrouped>('.series-bar-grouped'),
       legendS = chartS.selectAll<Element, LegendSquares>('.legend');
@@ -133,9 +122,6 @@ export function chartBarGroupedDataChange(selection: ChartBarGroupedSelection): 
       Object.assign<LegendSquares, Partial<LegendSquares>, Partial<LegendSquares>>(
         d,
         {
-          colors: arrayIs2D(colors) ? colors[0] : colors,
-          strokes: arrayIs2D(strokes) ? strokes[0] : strokes,
-          strokeWidths: arrayIs2D(strokeWidths) ? strokeWidths[0] : strokeWidths,
           labels: subcategories,
         },
         chartD.legend
@@ -146,11 +132,11 @@ export function chartBarGroupedDataChange(selection: ChartBarGroupedSelection): 
     yAxis.scale = valueScale;
     chartCartesianUpdateAxes(chartS);
 
-    chartS
-      .selectAll(`.axis-x .tick`)
-      .on('mouseover.chartbargroupedhighlight mouseout.chartbargroupedhighlight', (e) =>
-        chartBarGroupedHoverAxisTick(chartS, select(e.currentTarget), e.type.endsWith('over'))
-      );
+    // chartS
+    //   .selectAll(`.axis-x .tick`)
+    //   .on('mouseover.chartbargroupedhighlight mouseout.chartbargroupedhighlight', (e) =>
+    //     chartBarGroupedHoverAxisTick(chartS, select(e.currentTarget), e.type.endsWith('over'))
+    //   );
   });
 }
 
@@ -161,15 +147,14 @@ export function chartBarGroupedHoverBar(
 ): void {
   const chartD = chart.datum();
   bar.each((barD, i, g) => {
-    const categoryIndex = chartD.categories.indexOf(barD.category),
-      subcategoryIndex = chartD.subcategories.indexOf(barD.subcategory),
-      labelS = labelFind(chart, barD.key),
-      tickS = axisTickFindByIndex(chart.selectAll('.axis-x'), categoryIndex),
-      legendItemS = legendItemFindByIndex(chart, subcategoryIndex);
+    const categoryIndex = chartD.categories.indexOf(barD.category);
+    const subcategoryIndex = chartD.subcategories.indexOf(barD.subcategory);
+    const labelS = labelFind(chart, barD.key);
+    const tickS = axisTickFindByIndex(chart.selectAll('.axis-x'), categoryIndex);
+    legendItemFindByIndex(chart, subcategoryIndex).classed('highlight', hover);
 
     labelHighlight(labelS, hover);
     axisTickHighlight(tickS, hover);
-    legendItemHighlight(legendItemS, hover);
   });
 }
 
@@ -180,35 +165,33 @@ export function chartBarGroupedHoverLegendItem(
 ): void {
   const legendItemCount = chart.selectAll('.legend-item').size();
   legendItem.each((_, i, g) => {
-    const legendItemI = siblingIndex(g[i], '.legend-item'),
-      subcategory = chart.datum().subcategories[legendItemI],
-      barS = barGroupedFindBySubcategory(chart, subcategory),
-      labelS = labelFindByFilter(
-        chart.selectAll('.series-label-bar'),
-        (_, i) => i % legendItemCount === legendItemI
-      );
+    const legendItemI = siblingIndex(g[i], '.legend-item');
+    const subcategory = chart.datum().subcategories[legendItemI];
 
-    barGroupedHighlight(barS, hover);
-    labelHighlight(labelS, hover);
+    barGroupedFindBySubcategory(chart, subcategory).classed('highlight', hover);
+    labelFindByFilter(
+      chart.selectAll('.series-label-bar'),
+      (_, i) => i % legendItemCount === legendItemI
+    ).call((s) => labelHighlight(s, hover));
   });
 }
 
-export function chartBarGroupedHoverAxisTick(
-  chart: Selection<Element, ChartBarGrouped>,
-  tick: Selection<Element>,
-  hover: boolean
-): void {
-  const legendItemCount = chart.selectAll('.legend-item').size();
-  tick.each((_, i, g) => {
-    const tickI = siblingIndexSameClasses(g[i]),
-      category = chart.datum().categories[tickI],
-      barS = barFindByCategory(chart, category),
-      labelS = labelFindByFilter(
-        chart.selectAll('.series-label-bar'),
-        (_, i) => Math.floor(i / legendItemCount) === tickI
-      );
-    barGroupedHighlight(barS, hover);
-    labelHighlight(labelS, hover);
-  });
-  axisTickHighlight(tick, hover);
-}
+// export function chartBarGroupedHoverAxisTick(
+//   chart: Selection<Element, ChartBarGrouped>,
+//   tick: Selection<Element>,
+//   hover: boolean
+// ): void {
+//   const legendItemCount = chart.selectAll('.legend-item').size();
+//   tick.each((_, i, g) => {
+//     const tickI = siblingIndexSameClasses(g[i]),
+//       category = chart.datum().categories[tickI],
+//       barS = barFindByCategory(chart, category),
+//       labelS = labelFindByFilter(
+//         chart.selectAll('.series-label-bar'),
+//         (_, i) => Math.floor(i / legendItemCount) === tickI
+//       );
+//     barGroupedHighlight(barS, hover);
+//     labelHighlight(labelS, hover);
+//   });
+//   axisTickHighlight(tick, hover);
+// }

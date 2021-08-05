@@ -77,10 +77,12 @@ async function bundleJSLibMinZipped() {
   return bundleJSLibWithSettings(true, true);
 }
 
-// ## Copy HTML files
-
-function copyHTMLFiles() {
+function copyHtmlFiles() {
   return gulp.src('./src/**/*.html').pipe(gulp.dest('./dist'));
+}
+
+function copyCssFiles() {
+  return gulp.src('./src/**/*.css').pipe(gulp.dest('./dist'));
 }
 
 function copyExampleScripts() {
@@ -116,7 +118,8 @@ exports.build = gulp.series([
     bundleJSLib,
     // bundleJSLibMin,
     // bundleJSLibMinZipped,
-    copyHTMLFiles,
+    copyHtmlFiles,
+    copyCssFiles,
     copyExampleScripts,
   ]),
 ]);

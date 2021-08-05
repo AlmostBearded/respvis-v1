@@ -1,0 +1,237 @@
+:root {
+  --color-categorical-0: #78b4c6;
+  --color-categorical-1: #1c9820;
+  --color-categorical-2: #ff0087;
+  --color-categorical-3: #9bb64b;
+  --color-categorical-4: #628df2;
+  --color-categorical-5: #0db293;
+  --color-categorical-6: #f14330;
+  --color-categorical-7: #b8949e;
+  --color-categorical-8: #e49c4f;
+  --color-categorical-9: #a665e4;
+  --highlight-brightness: 130%;
+}
+
+.bar {
+  fill: var(--color-categorical-0);
+  stroke-width: 1px;
+  stroke: #000;
+}
+
+.highlight .bar,
+.highlight.bar {
+  filter: brightness(var(--highlight-brightness));
+  stroke-width: 2px;
+}
+
+.bar[subcategory-index='0'] {
+  fill: var(--color-categorical-0);
+}
+
+.bar[subcategory-index='1'] {
+  fill: var(--color-categorical-1);
+}
+
+.bar[subcategory-index='2'] {
+  fill: var(--color-categorical-2);
+}
+
+.bar[subcategory-index='3'] {
+  fill: var(--color-categorical-3);
+}
+
+.bar[subcategory-index='4'] {
+  fill: var(--color-categorical-4);
+}
+
+.bar[subcategory-index='5'] {
+  fill: var(--color-categorical-5);
+}
+
+.bar[subcategory-index='6'] {
+  fill: var(--color-categorical-6);
+}
+
+.bar[subcategory-index='7'] {
+  fill: var(--color-categorical-7);
+}
+
+.bar[subcategory-index='8'] {
+  fill: var(--color-categorical-8);
+}
+
+.bar[subcategory-index='9'] {
+  fill: var(--color-categorical-9);
+}
+
+.layout.legend {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.layout.legend .title {
+  margin: 0 0.5em;
+}
+
+.layout.legend .items {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.layout.legend-item {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin: 0.25em;
+}
+
+.layout.legend-item .symbol {
+  margin-right: 0.5em;
+}
+
+.layout.legend.vertical {
+  /* todo: this should probably be done in chart class */
+  align-self: flex-start;
+}
+
+.layout.legend.vertical .items {
+  flex-direction: column;
+}
+
+.layout.legend.horizontal {
+  /* todo: this should probably be done in chart class */
+  align-self: flex-end;
+}
+
+.layout.legend.horizontal .items {
+  flex-direction: row;
+}
+
+.legend {
+  font-size: 0.8em;
+}
+
+.legend-item .symbol {
+  stroke: #000;
+  stroke-width: 1px;
+  width: 10px;
+  height: 10px;
+}
+
+.highlight.legend-item .symbol {
+  filter: brightness(var(--highlight-brightness));
+}
+
+.highlight.legend-item .label {
+  font-weight: bold;
+}
+
+.legend-item[index='0'] .symbol {
+  fill: var(--color-categorical-0);
+}
+
+.legend-item[index='1'] .symbol {
+  fill: var(--color-categorical-1);
+}
+
+.legend-item[index='2'] .symbol {
+  fill: var(--color-categorical-2);
+}
+
+.legend-item[index='3'] .symbol {
+  fill: var(--color-categorical-3);
+}
+
+.legend-item[index='4'] .symbol {
+  fill: var(--color-categorical-4);
+}
+
+.legend-item[index='5'] .symbol {
+  fill: var(--color-categorical-5);
+}
+
+.legend-item[index='6'] .symbol {
+  fill: var(--color-categorical-6);
+}
+
+.legend-item[index='7'] .symbol {
+  fill: var(--color-categorical-7);
+}
+
+.legend-item[index='8'] .symbol {
+  fill: var(--color-categorical-8);
+}
+
+.legend-item[index='9'] .symbol {
+  fill: var(--color-categorical-9);
+}
+
+.layout.chart-cartesian {
+  display: grid;
+  grid-template: 1fr auto / auto 1fr;
+  grid-template-areas:
+    'axis-left draw-area'
+    '. axis-bottom';
+  padding: 1rem;
+}
+
+.layout.chart-cartesian .draw-area {
+  grid-area: draw-area;
+  overflow: visible;
+  display: grid;
+}
+
+.layout.chart-cartesian .draw-area > * {
+  grid-area: 1 / 1;
+}
+
+.layout.chart-cartesian .axis-left {
+  grid-area: axis-left;
+}
+
+.layout.chart-cartesian .axis-bottom {
+  grid-area: axis-bottom;
+}
+
+.layouter {
+  display: grid;
+  position: relative;
+}
+
+.layouter > * {
+  grid-area: 1 / 1;
+}
+
+.layouter > :not(.layout) {
+  position: absolute;
+}
+
+.series-label {
+  font-size: 0.7em;
+}
+
+text.center-horizontal {
+  text-anchor: middle;
+}
+
+text.center-vertical {
+  dominant-baseline: middle;
+}
+
+text.left {
+  text-anchor: end;
+}
+
+text.right {
+  text-anchor: start;
+}
+
+text.top {
+  dominant-baseline: auto;
+}
+
+text.bottom {
+  dominant-baseline: hanging;
+}
