@@ -1,12 +1,9 @@
 import { select, Selection, ValueFn } from 'd3-selection';
-import { layouter } from '../core';
-import { menuDropdownItem } from './menu-dropdown';
 
 export function toolDownloadSVG(selection: Selection<HTMLLIElement>): void {
   selection
     .classed('tool-save-svg', true)
     .text('Download SVG')
-    .call((s) => menuDropdownItem(s))
     .on('click', function () {
       select(this.closest('.chart-window'))
         .selectAll<SVGSVGElement, unknown>('.layouter > svg.chart')

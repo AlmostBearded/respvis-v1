@@ -1,31 +1,16 @@
-import { format } from 'd3-format';
-import { BaseType, select, Selection } from 'd3-selection';
-import { axisTickFindByIndex, axisTickHighlight } from '../axis';
-import { arrayFlat, arrayIs2D, debug, nodeToString, siblingIndex } from '../core';
+import { select, Selection } from 'd3-selection';
+import { axisTickFindByIndex } from '../axis';
+import { arrayFlat, debug, nodeToString } from '../core';
 import {
   chartCartesian,
   chartCartesianUpdateAxes,
   chartCartesianData,
   ChartCartesian,
 } from '../core/chart-cartesian';
-import {
-  LegendSquares,
-  legendSquaresData,
-  LegendSquaresItem,
-  legendItemFindByIndex,
-  legendItemFindByLabel,
-  legendItemHighlight,
-  legendSquares,
-} from '../legend';
-import { barFindByCategory } from './series-bar';
+import { LegendSquares, legendItemFindByIndex } from '../legend';
 import { BarGrouped } from './series-bar-grouped';
-import {
-  barStackedFindBySubcategory,
-  SeriesBarStacked,
-  seriesBarStackedData,
-  seriesBarStacked,
-} from './series-bar-stacked';
-import { labelFind, labelFindByFilter, labelHighlight, seriesLabel } from './series-label';
+import { SeriesBarStacked, seriesBarStackedData, seriesBarStacked } from './series-bar-stacked';
+import { labelFind } from './series-label';
 import { SeriesLabelBar, seriesLabelBarData, seriesLabelBar } from './series-label-bar';
 
 export interface ChartBarStacked extends SeriesBarStacked, ChartCartesian {
@@ -152,15 +137,11 @@ export function chartBarStackedHoverBar(
 ): void {
   const chartD = chart.datum();
   bar.each((barD, i, g) => {
-    const categoryIndex = chartD.categories.indexOf(barD.category),
-      subcategoryIndex = chartD.subcategories.indexOf(barD.subcategory),
-      labelS = labelFind(chart, barD.key),
-      tickS = axisTickFindByIndex(chart.selectAll('.axis-x'), categoryIndex),
-      legendItemS = legendItemFindByIndex(chart, subcategoryIndex);
-
-    labelHighlight(labelS, hover);
-    axisTickHighlight(tickS, hover);
-    // legendItemHighlight(legendItemS, hover);
+    const categoryIndex = chartD.categories.indexOf(barD.category);
+    const subcategoryIndex = chartD.subcategories.indexOf(barD.subcategory);
+    labelFind(chart, barD.key).classed('highlight', hover);
+    axisTickFindByIndex(chart.selectAll('.axis-x'), categoryIndex).classed('highlight', hover);
+    legendItemFindByIndex(chart, subcategoryIndex).classed('highlight', hover);
   });
 }
 

@@ -44,7 +44,6 @@
       const sites = data.sites,
         revenues = data.revenues,
         years = data.years,
-        colors = ['#4f8c9d', '#e23209', '#539322'],
         keys = revenues.map((yearlyRevs, i) => yearlyRevs.map((_, j) => sites[i] + years[j]));
 
       // respVis.enableDebugLog(true);
@@ -59,7 +58,6 @@
               subcategoryEntity: 'Years',
               subcategories: years,
               values: revenues,
-              colors: colors,
               keys: keys,
               tooltips: (barElement, barData) =>
                 `Site: ${barData.category}<br/>Year: ${
@@ -81,22 +79,21 @@
             const labelPosition = flippedBars ? { x: 1, y: 0.5 } : { x: 0.5, y: 0 };
             const yAxisSubtitle = density.x < 0.03 ? '[Million USD]' : '';
             const legendTitle = density.x < 0.03 ? 'Years' : '';
-            const chartFlexDirection = flippedBars ? 'column-reverse' : 'row';
-            const legendOrientation = flippedBars
-              ? respVis.Orientation.Horizontal
-              : respVis.Orientation.Vertical;
+            const legendPosition = flippedBars
+              ? respVis.LegendPosition.Top
+              : respVis.LegendPosition.Right;
 
             chartWindow.datum((d) => {
               d.flipped = flippedBars;
               d.labelsEnabled = labelsEnabled;
-              d.labels.positions = labelPosition;
+              d.labels.relativePositions = labelPosition;
               d.yAxis.subtitle = yAxisSubtitle;
+              d.legendPosition = legendPosition;
               d.legend.title = legendTitle;
-              d.legend.orientation = legendOrientation;
               return d;
             });
 
-            chart.layout('flex-direction', chartFlexDirection);
+            // chart.layout('flex-direction', chartFlexDirection);
           }),
         chart = chartWindow.selectAll('svg.chart'),
         legend = chart.selectAll('.legend');

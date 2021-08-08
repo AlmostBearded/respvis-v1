@@ -14,9 +14,9 @@ export function positionToXYAttrs<D>(
   if (position instanceof Function)
     selection.each((d, i, groups) => (positions[i] = position.call(this, d, i, groups)));
   else selection.each((d, i, groups) => (positions[i] = position));
-  // note: TS can't handle method chaining when working with SelectionOrTransition
-  selection.attr('x', (d, i) => positions[i].x);
-  selection.attr('y', (d, i) => positions[i].y);
+  const roundedPositions = positions.map((p) => positionRound(p));
+  selection.attr('x', (d, i) => roundedPositions[i].x);
+  selection.attr('y', (d, i) => roundedPositions[i].y);
 }
 
 export function positionFromXYAttrs<D>(selection: SelectionOrTransition<Element, D>): Position {
@@ -33,5 +33,21 @@ export function positionToTransformAttr<D>(
     selection.each((d, i, groups) => (positions[i] = position.call(this, d, i, groups)));
   else selection.each((d, i, groups) => (positions[i] = position));
 
-  selection.attr('transform', (d, i) => `translate(${positions[i].x}, ${positions[i].y})`);
+  selection.attr(
+    'transform',
+    (d, i) => `translate(${positionToString(positionRound(positions[i]))})`
+  );
+}
+
+export function positionRound(position: Position, decimals: number = 1): Position {
+  const e = Math.pow(10, decimals);
+  return {
+    x: Math.round(position.x * e) / e,
+    y: Math.round(position.y * e) / e,
+  };
+}
+
+export function positionToString(position: Position, decimals: number = 1): string {
+  position = positionRound(position, decimals);
+  return `${position.x}, ${position.y}`;
 }

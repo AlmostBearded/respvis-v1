@@ -2,11 +2,11 @@ import { select, Selection, ValueFn } from 'd3-selection';
 import { SelectionOrTransition } from '../selection';
 import { Position } from './position';
 
-export interface Rect<T extends number | string = number> {
-  x: T;
-  y: T;
-  width: T;
-  height: T;
+export interface Rect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
 export function rectFromString(str: string): Rect {
@@ -37,12 +37,12 @@ export function rectsFromAttrs(selection: Selection<Element>): Rect[] {
 
 export function rectToAttrs<D>(
   selection: SelectionOrTransition<Element, D>,
-  rect: Rect<string | number> | ValueFn<Element, D, Rect<string | number>>
+  rect: Rect | ValueFn<Element, D, Rect>
 ): void {
   // todo: comment this function
-  const rects: Rect<string | number>[] = new Array(selection.size());
+  const rects: Rect[] = new Array(selection.size());
   selection.each(function (d, i, groups) {
-    rects[i] = rect instanceof Function ? rect.call(this, d, i, groups) : rect;
+    rects[i] = rectRound(rect instanceof Function ? rect.call(this, d, i, groups) : rect);
   });
   // note: TS can't handle method chaining when working with SelectionOrTransition
   selection.attr('x', (d, i) => rects[i].x);
@@ -51,7 +51,8 @@ export function rectToAttrs<D>(
   selection.attr('height', (d, i) => rects[i].height);
 }
 
-export function rectToString<T extends number | string>(rect: Rect<T>): string {
+export function rectToString(rect: Rect, decimals: number = 1): string {
+  rect = rectRound(rect, decimals);
   return `${rect.x}, ${rect.y}, ${rect.width}, ${rect.height}`;
 }
 
@@ -83,6 +84,16 @@ export function rectMinimized(rect: Rect): Rect {
   return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2, width: 0, height: 0 };
 }
 
+export function rectRound(rect: Rect, decimals: number = 1): Rect {
+  const e = Math.pow(10, decimals);
+  return {
+    x: Math.round(rect.x * e) / e,
+    y: Math.round(rect.y * e) / e,
+    width: Math.round(rect.width * e) / e,
+    height: Math.round(rect.height * e) / e,
+  };
+}
+
 export function rectEquals(rectA: Rect, rectB: Rect, epsilon: number = 0.001): boolean {
   return (
     Math.abs(rectA.x - rectB.x) < epsilon &&
@@ -90,15 +101,6 @@ export function rectEquals(rectA: Rect, rectB: Rect, epsilon: number = 0.001): b
     Math.abs(rectA.width - rectB.width) < epsilon &&
     Math.abs(rectA.height - rectB.height) < epsilon
   );
-}
-
-export function rectWithUnits(rect: Rect<number | string>, units: string): Rect<string> {
-  return {
-    x: `${rect.x}${units}`,
-    y: `${rect.y}${units}`,
-    width: `${rect.width}${units}`,
-    height: `${rect.height}${units}`,
-  };
 }
 
 export function rectFitStroke(rect: Rect, stroke: number): Rect {

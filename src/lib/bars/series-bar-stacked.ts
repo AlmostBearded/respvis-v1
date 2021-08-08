@@ -1,5 +1,6 @@
 import { ScaleBand, scaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { select, Selection } from 'd3-selection';
+import { JoinEvent } from '.';
 import { arrayIs, arrayIs2D, COLORS_CATEGORICAL, debug, nodeToString, Rect } from '../core';
 import { Size } from '../core/utils';
 import { filterBrightness } from '../filters';
@@ -134,6 +135,9 @@ export function seriesBarStacked(selection: Selection<Element, SeriesBarStacked>
         .call((s) => seriesBarJoin(series, s))
         .attr('subcategory-index', (d) => d.subcategoryIndex);
     })
+    .on('update.subcategoryindex', (e: JoinEvent<Element, BarGrouped>) =>
+      e.detail.selection.attr('subcategory-index', (d) => d.subcategoryIndex)
+    )
     .on('mouseover.seriesbargroupedhighlight mouseout.seriesbargroupedhighlight', (e: MouseEvent) =>
       (<Element>e.target).classList.toggle('highlight', e.type.endsWith('over'))
     )

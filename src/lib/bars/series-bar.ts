@@ -166,6 +166,7 @@ export function seriesBarJoin(
         )
     )
     .attr('category-index', (d) => d.categoryIndex)
+    .attr('category', (d) => d.category)
     .call((s) => seriesSelection.dispatch('update', { detail: { selection: s } }));
 }
 

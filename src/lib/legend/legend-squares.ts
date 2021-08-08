@@ -6,10 +6,10 @@ import {
   findByIndex,
   nodeToString,
   textHorizontalAttrs,
-  textTitleAttrs,
+  textTitleAttrs,classOneOfEnum
 } from '../core';
 
-export enum Orientation {
+export enum LegendOrientation {
   Vertical = 'vertical',
   Horizontal = 'horizontal',
 }
@@ -23,14 +23,14 @@ export interface LegendSquares {
   title: string;
   labels: string[];
   indices?: number[];
-  orientation: Orientation;
+  orientation: LegendOrientation;
 }
 
 export function legendSquaresData(data: Partial<LegendSquares>): LegendSquares {
   return {
     title: data.title || '',
     labels: data.labels || [],
-    orientation: data.orientation || Orientation.Vertical,
+    orientation: data.orientation || LegendOrientation.Vertical,
   };
 }
 
@@ -47,11 +47,7 @@ export function legendSquaresCreateItems(legendData: LegendSquares): LegendSquar
 
 export function legendSquares(selection: Selection<Element, LegendSquares>): void {
   selection.classed('legend', true).classed('legend-squares', true);
-  selection
-    .append('text')
-    .classed('title', true)
-    .call((s) => textHorizontalAttrs(s))
-    .call((s) => textTitleAttrs(s));
+  selection.append('text').classed('title', true).classed('horizontal', true);
 
   selection.append('g').classed('items', true);
 
@@ -72,7 +68,7 @@ export function legendSquares(selection: Selection<Element, LegendSquares>): voi
       const legend = select<Element, LegendSquares>(this);
       const { orientation } = legend.datum();
 
-      Object.values(Orientation).forEach((o) => legend.classed(o, o === orientation));
+      classOneOfEnum(legend, LegendOrientation, orientation);
 
       legend.selectAll('.title').text(d.title);
 

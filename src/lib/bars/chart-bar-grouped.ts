@@ -1,14 +1,6 @@
-import { format } from 'd3-format';
-import { BaseType, select, Selection } from 'd3-selection';
-import { axisTickFindByIndex, axisTickHighlight } from '../axis';
-import {
-  arrayFlat,
-  arrayIs2D,
-  debug,
-  nodeToString,
-  siblingIndex,
-  siblingIndexSameClasses,
-} from '../core';
+import { select, Selection } from 'd3-selection';
+import { axisTickFindByIndex } from '../axis';
+import { debug, nodeToString, siblingIndex, classOneOfEnum } from '../core';
 import {
   chartCartesian,
   chartCartesianUpdateAxes,
@@ -16,13 +8,13 @@ import {
   ChartCartesian as ChartCartesian,
 } from '../core/chart-cartesian';
 import {
-  LegendSquares as LegendSquares,
+  LegendSquares,
   legendSquaresData,
   LegendSquaresItem,
   legendItemFindByIndex,
   legendSquares,
+  LegendOrientation,
 } from '../legend';
-import { barFindByCategory } from './series-bar';
 import {
   barGroupedFindBySubcategory,
   BarGrouped,
@@ -30,10 +22,22 @@ import {
   seriesBarGroupedData,
   seriesBarGrouped,
 } from './series-bar-grouped';
-import { labelFind, labelFindByFilter, labelHighlight, seriesLabel } from './series-label';
+import { labelFind, labelFindByFilter } from './series-label';
 import { SeriesLabelBar, seriesLabelBarData, seriesLabelBar } from './series-label-bar';
 
+export enum LegendPosition {
+  Top = 'with-legend-top',
+  Right = 'with-legend-right',
+  Bottom = 'with-legend-bottom',
+  Left = 'with-legend-left',
+}
+
+export function classLegendPosition(selection: Selection, position: LegendPosition): void {
+  Object.values(LegendPosition).forEach((p) => selection.classed(p, p === position));
+}
+
 export interface ChartBarGrouped extends SeriesBarGrouped, ChartCartesian {
+  legendPosition: LegendPosition;
   legend: Partial<LegendSquares>;
   labelsEnabled: boolean;
   labels: Partial<SeriesLabelBar>;
@@ -44,6 +48,7 @@ export function chartBarGroupedData(data: Partial<ChartBarGrouped>): ChartBarGro
   return {
     ...seriesData,
     ...chartCartesianData(data),
+    legendPosition: data.legendPosition || LegendPosition.Right,
     legend: data.legend || {},
     labelsEnabled: data.labelsEnabled ?? true,
     labels: data.labels || {},
@@ -56,14 +61,12 @@ export function chartBarGrouped(selection: ChartBarGroupedSelection): void {
   selection
     .call((s) => chartCartesian(s, false))
     .classed('chart-bar-grouped', true)
-    .layout('flex-direction', 'column-reverse')
     .each((chartData, i, g) => {
       const chart = <ChartBarGroupedSelection>select(g[i]);
       const drawArea = chart.selectAll('.draw-area');
 
       drawArea
         .append('g')
-        .layout('grid-area', '1 / 1')
         .datum(chartData)
         .call((s) => seriesBarGrouped(s))
         .on('mouseover.chartbargroupedhighlight mouseout.chartbargroupedhighlight', (e) =>
@@ -75,8 +78,6 @@ export function chartBarGrouped(selection: ChartBarGroupedSelection): void {
         .classed('legend', true)
         .datum(legendSquaresData(chartData.legend))
         .call((s) => legendSquares(s))
-        .layout('margin', '0.5rem')
-        .layout('justify-content', 'flex-end')
         .on('mouseover.chartbargroupedhighlight mouseout.chartbargroupedhighlight', (e) => {
           chartBarGroupedHoverLegendItem(
             chart,
@@ -96,10 +97,12 @@ export function chartBarGrouped(selection: ChartBarGroupedSelection): void {
 
 export function chartBarGroupedDataChange(selection: ChartBarGroupedSelection): void {
   selection.each(function (chartD, i, g) {
-    const { subcategories, xAxis, yAxis, categoryScale, valueScale } = chartD,
+    const { subcategories, xAxis, yAxis, categoryScale, valueScale, legendPosition } = chartD,
       chartS = <ChartBarGroupedSelection>select(g[i]),
       barSeriesS = chartS.selectAll<Element, SeriesBarGrouped>('.series-bar-grouped'),
       legendS = chartS.selectAll<Element, LegendSquares>('.legend');
+
+    classOneOfEnum(chartS, LegendPosition, legendPosition);
 
     barSeriesS.datum((d) => d);
 
@@ -111,18 +114,17 @@ export function chartBarGroupedDataChange(selection: ChartBarGroupedSelection): 
       .selectAll('.draw-area')
       .selectAll<Element, SeriesLabelBar>('.series-label-bar')
       .data(chartD.labelsEnabled ? [labelSeriesD] : [])
-      .join((enter) =>
-        enter
-          .append('g')
-          .layout('grid-area', '1 / 1')
-          .call((s) => seriesLabelBar(s))
-      );
+      .join((enter) => enter.append('g').call((s) => seriesLabelBar(s)));
 
     legendS.datum((d) =>
       Object.assign<LegendSquares, Partial<LegendSquares>, Partial<LegendSquares>>(
         d,
         {
           labels: subcategories,
+          orientation:
+            legendPosition === LegendPosition.Top || legendPosition === LegendPosition.Bottom
+              ? LegendOrientation.Horizontal
+              : LegendOrientation.Vertical,
         },
         chartD.legend
       )
@@ -149,12 +151,9 @@ export function chartBarGroupedHoverBar(
   bar.each((barD, i, g) => {
     const categoryIndex = chartD.categories.indexOf(barD.category);
     const subcategoryIndex = chartD.subcategories.indexOf(barD.subcategory);
-    const labelS = labelFind(chart, barD.key);
-    const tickS = axisTickFindByIndex(chart.selectAll('.axis-x'), categoryIndex);
+    labelFind(chart, barD.key).classed('highlight', hover);
+    axisTickFindByIndex(chart.selectAll('.axis-x'), categoryIndex).classed('highlight', hover);
     legendItemFindByIndex(chart, subcategoryIndex).classed('highlight', hover);
-
-    labelHighlight(labelS, hover);
-    axisTickHighlight(tickS, hover);
   });
 }
 
@@ -172,7 +171,7 @@ export function chartBarGroupedHoverLegendItem(
     labelFindByFilter(
       chart.selectAll('.series-label-bar'),
       (_, i) => i % legendItemCount === legendItemI
-    ).call((s) => labelHighlight(s, hover));
+    ).classed('highlight', hover);
   });
 }
 

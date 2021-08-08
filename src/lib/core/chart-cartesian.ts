@@ -33,7 +33,7 @@ export function chartCartesian(selection: ChartCartesianSelection, autoUpdateAxe
     .each((d, i, g) => {
       const s = <ChartCartesianSelection>select(g[i]);
 
-      s.append('svg').classed('draw-area', true).attr('overflow', 'visible');
+      s.append('svg').classed('draw-area', true);
 
       s.append('g')
         .datum(axisData(d.yAxis))

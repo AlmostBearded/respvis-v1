@@ -1,6 +1,7 @@
 import { range } from 'd3-array';
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { BaseType, select, Selection, ValueFn } from 'd3-selection';
+import { JoinEvent } from '.';
 import {
   arrayIs,
   arrayIs2D,
@@ -145,9 +146,11 @@ export function seriesBarGrouped(selection: Selection<Element, SeriesBarGrouped>
       series
         .selectAll<SVGRectElement, BarGrouped>('rect')
         .data(seriesBarGroupedCreateBars(d), (d) => d.key)
-        .call((s) => seriesBarJoin(series, s))
-        .attr('subcategory-index', (d) => d.subcategoryIndex);
+        .call((s) => seriesBarJoin(series, s));
     })
+    .on('update.subcategoryindex', (e: JoinEvent<Element, BarGrouped>) =>
+      e.detail.selection.attr('subcategory-index', (d) => d.subcategoryIndex)
+    )
     .on('mouseover.seriesbargroupedhighlight mouseout.seriesbargroupedhighlight', (e: MouseEvent) =>
       (<Element>e.target).classList.toggle('highlight', e.type.endsWith('over'))
     )

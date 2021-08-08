@@ -17,9 +17,13 @@ export function layouterData(layouter: HTMLDivElement): Layouter {
   const layoutNodeResizeObserver = new ResizeObserver((entries) => {
     select(layouter)
       .selectAll<HTMLDivElement, SVGElement>('.layout')
-      .call((s) => layoutNodeObserveResize(s, layoutNodeResizeObserver))
-      .call((s) => layoutNodeStyleAttr(s))
-      .each((d, i, g) => layoutNodeBounds(select(g[i])) && renderQueueEnqueue(d));
+      .each((d, i, g) => {
+        if (!d.isConnected) return;
+        const layoutS = select<HTMLDivElement, SVGElement>(g[i]);
+        layoutNodeObserveResize(layoutS, layoutNodeResizeObserver);
+        layoutNodeStyleAttr(layoutS);
+        layoutNodeBounds(layoutS) && renderQueueEnqueue(d);
+      });
 
     selectAll(layedOutChildren(layouter)).call((s) => {
       const bounds = s.bounds()!;
@@ -88,22 +92,44 @@ function layoutNodeRoot(layouter: HTMLDivElement): Selection<HTMLDivElement, SVG
 }
 
 function layoutNodeStyleAttr(selection: Selection<HTMLDivElement, SVGElement>): void {
-  selection
-    .attr('style', (d, i, g) => {
-      const layout = d.getAttribute('layout');
-      if (layout)
-        // replace width/height: 'fit' with bbox width/height
-        return layout.replace(
-          /(width|height): fit;/g,
-          (_, captureGroup) => `${captureGroup}: ${d.getBoundingClientRect()[captureGroup]}px;`
-        );
-      return g[i].getAttribute('style');
-    })
-    .style('pointer-events', 'none');
+  selection.each((d, i, g) => {
+    const svgS = select(d);
+    const propTrue = (p: string) => p.trim() === 'true';
+    const layoutFitWidth = propTrue(svgS.layout('--fit-width') || '');
+    const layoutFitHeight = propTrue(svgS.layout('--fit-height') || '');
+    const layoutWidth = svgS.layout('width');
+    const layoutHeight = svgS.layout('width');
+    const computedStyle = window.getComputedStyle(g[i]);
+    const fitWidth = propTrue(computedStyle.getPropertyValue('--fit-width')) || layoutFitWidth;
+    const fitHeight = propTrue(computedStyle.getPropertyValue('--fit-height')) || layoutFitHeight;
+    const layout = (d.getAttribute('layout') || '')
+      .replace(/(?<![-a-zA-Z])(width|height):.*?;/g, '')
+      .trim();
+
+    let style = '';
+    let width = layoutWidth;
+    let height = layoutHeight;
+    if ((!width && fitWidth) || (!height && fitHeight)) {
+      const bbox = d.getBoundingClientRect();
+      if (fitWidth) width = `${bbox.width}px`;
+      if (fitHeight) height = `${bbox.height}px`;
+    }
+    if (width) {
+      style += `width: ${width};`;
+    }
+    if (height) {
+      style += `height: ${height};`;
+    }
+    style += layout;
+    g[i].setAttribute('style', style);
+  });
 }
 
 function layoutNodeClassAttr(selection: Selection<HTMLDivElement, SVGElement>): void {
-  selection.attr('class', (d) => d.getAttribute('class')).classed('layout', true);
+  selection
+    .attr('class', (d) => d.getAttribute('class'))
+    .each((d, i, g) => select(g[i]).classed(d.tagName, true))
+    .classed('layout', true);
 }
 
 function layoutNodeBounds(selection: Selection<HTMLDivElement, SVGElement>): boolean {
@@ -170,6 +196,7 @@ export function layouter(selection: Selection<HTMLDivElement, Layouter>): void {
       attributeFilter: ['layout', 'class'],
       attributeOldValue: true,
       subtree: true,
+      childList: true,
     });
   });
 }

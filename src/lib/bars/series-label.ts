@@ -1,7 +1,6 @@
 import { easeCubicOut } from 'd3-ease';
-import { BaseType, select, Selection, ValueFn } from 'd3-selection';
+import { select, Selection, ValueFn } from 'd3-selection';
 import {
-  arrayIs,
   debug,
   findByFilter,
   findByIndex,
@@ -11,30 +10,14 @@ import {
   positionToTransformAttr,
 } from '../core';
 
-export enum VerticalPosition {
-  Top = 'top',
-  Center = 'center-vertical',
-  Bottom = 'bottom',
-}
-
-export enum HorizontalPosition {
-  Left = 'left',
-  Center = 'center-horizontal',
-  Right = 'right',
-}
-
 export interface Label extends Position {
   text: string;
-  horizontalPosition: HorizontalPosition;
-  verticalPosition: VerticalPosition;
   key: string;
 }
 
 export interface SeriesLabel {
   texts: string[];
   positions: Position[];
-  horizontalPositions: HorizontalPosition | HorizontalPosition[];
-  verticalPositions: VerticalPosition | VerticalPosition[];
   keys: string[];
 }
 
@@ -42,18 +25,14 @@ export function seriesLabelData(data: Partial<SeriesLabel>): SeriesLabel {
   return {
     texts: data.texts || [],
     positions: data.positions || [],
-    horizontalPositions: data.horizontalPositions || HorizontalPosition.Center,
-    verticalPositions: data.verticalPositions || VerticalPosition.Center,
     keys: data.keys || data.texts || [],
   };
 }
 
 export function seriesLabelCreateLabels(seriesData: SeriesLabel): Label[] {
-  const { texts, keys, positions, horizontalPositions, verticalPositions } = seriesData;
+  const { texts, keys, positions } = seriesData;
   return texts.map((text, i) => ({
     text: text,
-    horizontalPosition: arrayIs(horizontalPositions) ? horizontalPositions[i] : horizontalPositions,
-    verticalPosition: arrayIs(verticalPositions) ? verticalPositions[i] : verticalPositions,
     key: keys[i],
     ...positions[i],
   }));
@@ -103,21 +82,6 @@ export function seriesLabelJoin(
           )
           .call((s) => seriesSelection.dispatch('exit', { detail: { selection: s } }))
     )
-    .each((d, i, g) =>
-      Object.values(HorizontalPosition).forEach((v) =>
-        g[i].classList.toggle(v, v === d.horizontalPosition)
-      )
-    )
-    .each((d, i, g) =>
-      Object.values(VerticalPosition).forEach((v) =>
-        g[i].classList.toggle(v, v === d.verticalPosition)
-      )
-    )
-    .each((d, i, g) =>
-      Object.values(VerticalPosition).forEach((v) =>
-        g[i].classList.toggle('center', v === d.verticalPosition)
-      )
-    )
     .call((s) =>
       s
         .transition('position')
@@ -127,11 +91,6 @@ export function seriesLabelJoin(
     )
     .text((d) => d.text)
     .call((s) => seriesSelection.dispatch('update', { detail: { selection: s } }));
-}
-
-export function labelHighlight(label: Selection, highlight: boolean): void {
-  if (highlight) label.attr('font-size', '1.2em').attr('text-decoration', 'underline');
-  else label.attr('font-size', null).attr('text-decoration', null);
 }
 
 export function labelFind(container: Selection, key: string): Selection<SVGTextElement, Label> {
