@@ -20,6 +20,7 @@ import {
   legendItemFindByIndex,
   legendSquares,
   LegendOrientation,
+  LegendPosition,
 } from '../legend';
 import { barFindByCategory } from './series-bar';
 import {
@@ -55,6 +56,7 @@ export function chartBarGrouped(selection: ChartBarGroupedSelection): void {
   selection
     .call((s) => chartCartesian(s, false))
     .classed('chart-bar-grouped', true)
+    .classed(LegendPosition.Right, true)
     .each((chartData, i, g) => {
       const chart = <ChartBarGroupedSelection>select(g[i]);
       const drawArea = chart.selectAll('.draw-area');
@@ -91,7 +93,18 @@ export function chartBarGrouped(selection: ChartBarGroupedSelection): void {
 
 export function chartBarGroupedDataChange(selection: ChartBarGroupedSelection): void {
   selection.each(function (chartD, i, g) {
-    const { subcategories, xAxis, yAxis, categoryScale, valueScale, subcategoryIndices } = chartD,
+    const {
+        subcategories,
+        xAxis,
+        yAxis,
+        categoryScale,
+        valueScale,
+        subcategoryIndices,
+        labelsEnabled,
+        labels,
+        legend,
+        values,
+      } = chartD,
       chartS = <ChartBarGroupedSelection>select(g[i]),
       barSeriesS = chartS.selectAll<Element, SeriesBarGrouped>('.series-bar-grouped'),
       legendS = chartS.selectAll<Element, LegendSquares>('.legend');
@@ -100,12 +113,12 @@ export function chartBarGroupedDataChange(selection: ChartBarGroupedSelection): 
 
     const labelSeriesD = seriesLabelBarData({
       barContainer: barSeriesS,
-      ...chartD.labels,
+      ...labels,
     });
     chartS
       .selectAll('.draw-area')
       .selectAll<Element, SeriesLabelBar>('.series-label-bar')
-      .data(chartD.labelsEnabled ? [labelSeriesD] : [])
+      .data(labelsEnabled ? [labelSeriesD] : [])
       .join((enter) => enter.append('g').call((s) => seriesLabelBar(s)));
 
     legendS.datum((d) =>
@@ -115,7 +128,7 @@ export function chartBarGroupedDataChange(selection: ChartBarGroupedSelection): 
           labels: subcategories,
           indices: subcategoryIndices,
         },
-        chartD.legend
+        legend
       )
     );
 

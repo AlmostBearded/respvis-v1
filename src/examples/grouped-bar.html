@@ -83,23 +83,18 @@
               ? respVis.LegendPosition.Top
               : respVis.LegendPosition.Right;
 
-            const chart = chartWindow.selectAll('.chart');
-            respVis.classLegendPosition(chart, legendPosition);
+            chart.call(respVis.classLegendPosition, legendPosition);
 
             chartWindow.datum((d) => {
               d.flipped = flippedBars;
               d.labelsEnabled = labelsEnabled;
               d.labels.relativePositions = labelPosition;
               d.yAxis.subtitle = yAxisSubtitle;
-              // d.legendPosition = legendPosition;
               d.legend.title = legendTitle;
               return d;
             });
-
-            // chart.layout('flex-direction', chartFlexDirection);
           }),
-        chart = chartWindow.selectAll('svg.chart'),
-        legend = chart.selectAll('.legend');
+        chart = chartWindow.selectAll('svg.chart');
     </script>
   </body>
 </html>

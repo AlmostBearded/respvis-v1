@@ -43,6 +43,7 @@ export function seriesBarData(data: Partial<SeriesBar>): SeriesBar {
   return {
     bounds: data.bounds || { width: 600, height: 400 },
     categories: categories,
+    categoryIndices: data.categoryIndices,
     categoryScale: data.categoryScale || scaleBand().domain(categories).padding(0.1),
     values: data.values || [],
     valueScale:

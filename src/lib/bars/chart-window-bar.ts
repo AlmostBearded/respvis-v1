@@ -110,7 +110,6 @@ export function chartWindowBarApplyFilters(selection: ChartWindowBarSelection): 
         categories,
         values,
         keys,
-        colors,
         valueDomain,
         labels: { labels: labels },
       } = chartWindowD,
@@ -125,7 +124,6 @@ export function chartWindowBarApplyFilters(selection: ChartWindowBarSelection): 
     const filteredCats = categories.filter(filterCat),
       filteredValues = values.filter(filterCat),
       filteredKeys = keys?.filter(filterCat),
-      filteredColors = arrayIs(colors) ? colors.filter(filterCat) : colors,
       filteredLabels = arrayIs(labels) && labels.filter(filterCat),
       filteredValueDomain =
         valueDomain instanceof Function ? valueDomain(filteredValues) : valueDomain;
@@ -138,7 +136,6 @@ export function chartWindowBarApplyFilters(selection: ChartWindowBarSelection): 
           categories: filteredCats,
           values: filteredValues,
           keys: filteredKeys,
-          colors: filteredColors,
           labels: {
             ...chartWindowD.labels,
             ...(filteredLabels && { labels: filteredLabels }),

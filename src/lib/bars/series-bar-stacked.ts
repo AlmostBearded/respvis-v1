@@ -9,7 +9,7 @@ import {
   seriesConfigTooltipsData,
   seriesConfigTooltipsHandleEvents,
 } from '../tooltip';
-import { barHighlight, seriesBarJoin } from './series-bar';
+import { seriesBarJoin } from './series-bar';
 import { barGroupedFindBySubcategory, BarGrouped, SeriesBarGrouped } from './series-bar-grouped';
 
 export interface SeriesBarStacked extends SeriesConfigTooltips<SVGRectElement, BarGrouped> {
@@ -43,6 +43,8 @@ export function seriesBarStackedData(data: Partial<SeriesBarStacked>): SeriesBar
         ])
         .nice(),
     subcategories: data.subcategories || [],
+    categoryIndices: data.categoryIndices,
+    subcategoryIndices: data.subcategoryIndices,
     flipped: data.flipped || false,
     keys: data.keys,
     bounds: data.bounds || { width: 600, height: 400 },
@@ -135,8 +137,10 @@ export function seriesBarStacked(selection: Selection<Element, SeriesBarStacked>
         .call((s) => seriesBarJoin(series, s))
         .attr('subcategory-index', (d) => d.subcategoryIndex);
     })
-    .on('update.subcategoryindex', (e: JoinEvent<Element, BarGrouped>) =>
-      e.detail.selection.attr('subcategory-index', (d) => d.subcategoryIndex)
+    .on('update.subcategory', (e: JoinEvent<Element, BarGrouped>) =>
+      e.detail.selection
+        .attr('subcategory-index', (d) => d.subcategoryIndex)
+        .attr('subcategory', (d) => d.subcategory)
     )
     .on('mouseover.seriesbargroupedhighlight mouseout.seriesbargroupedhighlight', (e: MouseEvent) =>
       (<Element>e.target).classList.toggle('highlight', e.type.endsWith('over'))

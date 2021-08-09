@@ -57,6 +57,8 @@ export function seriesBarGroupedData(data: Partial<SeriesBarGrouped>): SeriesBar
     subcategories: data.subcategories || [],
     flipped: data.flipped || false,
     subcategoryPadding: data.subcategoryPadding || 0.1,
+    categoryIndices: data.categoryIndices,
+    subcategoryIndices: data.subcategoryIndices,
     keys: data.keys,
     bounds: data.bounds || { width: 600, height: 400 },
     ...seriesConfigTooltipsData<SVGRectElement, BarGrouped>(data),
@@ -148,8 +150,10 @@ export function seriesBarGrouped(selection: Selection<Element, SeriesBarGrouped>
         .data(seriesBarGroupedCreateBars(d), (d) => d.key)
         .call((s) => seriesBarJoin(series, s));
     })
-    .on('update.subcategoryindex', (e: JoinEvent<Element, BarGrouped>) =>
-      e.detail.selection.attr('subcategory-index', (d) => d.subcategoryIndex)
+    .on('update.subcategory', (e: JoinEvent<Element, BarGrouped>) =>
+      e.detail.selection
+        .attr('subcategory-index', (d) => d.subcategoryIndex)
+        .attr('subcategory', (d) => d.subcategory)
     )
     .on('mouseover.seriesbargroupedhighlight mouseout.seriesbargroupedhighlight', (e: MouseEvent) =>
       (<Element>e.target).classList.toggle('highlight', e.type.endsWith('over'))

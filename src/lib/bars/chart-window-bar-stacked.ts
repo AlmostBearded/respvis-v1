@@ -1,5 +1,4 @@
-import { max } from 'd3-array';
-import { select, Selection } from 'd3-selection';
+import { select, selectAll, Selection } from 'd3-selection';
 import {
   chartWindow,
   ToolFilterNominal,
@@ -9,7 +8,6 @@ import {
 } from '../chart-window';
 import { arrayFlat, arrayIs, arrayIs2D, arrayPartition } from '../core';
 import { chartBarStacked, chartBarStackedData, ChartBarStacked } from './chart-bar-stacked';
-import { SeriesLabelBar } from './series-label-bar';
 
 export interface ChartWindowBarStacked extends ChartBarStacked {
   categoryEntity: string;
@@ -48,9 +46,11 @@ export function chartWindowBarStacked(
     .classed('chart-window-bar-stacked', true)
     .call((s) => chartWindow(s))
     .on('resize.chartwindowbar', function (e, d) {
+      const s = select(this);
       const { width, height } = e.detail.size;
-      const dataCount = arrayFlat(d.values).length;
-      select(this).dispatch('densitychange', {
+      const { values } = s.selectAll<Element, ChartBarStacked>('.chart-bar-stacked').datum();
+      const dataCount = arrayFlat(values).length;
+      s.dispatch('densitychange', {
         detail: { density: { x: dataCount / width, y: dataCount / height } },
       });
     })
@@ -95,8 +95,6 @@ export function chartWindowBarStacked(
         .append('svg')
         .datum(chartBarStackedData(chartWindowD))
         .call((s) => chartBarStacked(s));
-
-      chart.selectAll('.legend').attr('cursor', 'default');
 
       chartWindow.on('datachange.chartwindowbarstacked', function (e, chartWindowD) {
         const chartWindowS = select<Element, ChartWindowBarStacked>(this),
@@ -153,10 +151,8 @@ export function chartWindowBarStackedApplyFilters(
         subcategories,
         values,
         keys,
-        colors,
         valueDomain,
         valuesAsRatios,
-        legend: { colors: legendColors },
         labels: { labels: labels },
       } = chartWindowD,
       chartWindowS = select<Element, ChartWindowBarStacked>(g[i]),
@@ -171,7 +167,9 @@ export function chartWindowBarStackedApplyFilters(
       filterSubcat = (_, i: number) => subcatFilterD.shown[i];
 
     const filteredCats = categories.filter(filterCat),
+      filteredCatIndices = categories.map((c, i) => i).filter(filterCat),
       filteredSubcats = subcategories.filter(filterSubcat),
+      filteredSubcatIndices = subcategories.map((c, i) => i).filter(filterSubcat),
       filteredValues = values
         .filter(filterCat)
         .map((catValues) => catValues.filter(filterSubcat))
@@ -181,14 +179,6 @@ export function chartWindowBarStackedApplyFilters(
           return catValues.map((v) => (v / sum) * 100 || 0);
         }),
       filteredKeys = keys?.filter(filterCat).map((v) => v.filter(filterSubcat)),
-      filteredColors = arrayIs2D(colors)
-        ? colors.filter(filterCat).map((v) => v.filter(filterSubcat))
-        : arrayIs(colors)
-        ? colors.filter(filterSubcat)
-        : colors,
-      filteredLegendColors = arrayIs(legendColors)
-        ? legendColors.filter(filterSubcat)
-        : legendColors,
       filteredLabels =
         arrayIs(labels) &&
         arrayFlat(
@@ -208,10 +198,10 @@ export function chartWindowBarStackedApplyFilters(
           subcategories: filteredSubcats,
           values: filteredValues,
           keys: filteredKeys,
-          colors: filteredColors,
+          categoryIndices: filteredCatIndices,
+          subcategoryIndices: filteredSubcatIndices,
           legend: {
             ...chartWindowD.legend,
-            ...(filteredLegendColors && { colors: filteredLegendColors }),
           },
           labels: {
             ...chartWindowD.labels,
