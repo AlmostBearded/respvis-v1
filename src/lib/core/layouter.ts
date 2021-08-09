@@ -138,7 +138,7 @@ function layoutNodeBounds(selection: Selection<HTMLDivElement, SVGElement>): boo
     const svg = select(d);
     const prevBounds = rectFromString(svg.attr('bounds') || '0, 0, 0, 0');
     const bounds = relativeBounds(g[i]);
-    const changed = !rectEquals(prevBounds, bounds);
+    const changed = !rectEquals(prevBounds, bounds, 0.1);
     anyChanged = anyChanged || changed;
     if (changed) {
       debug(
