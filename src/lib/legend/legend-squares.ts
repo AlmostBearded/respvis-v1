@@ -6,12 +6,28 @@ import {
   findByIndex,
   nodeToString,
   textHorizontalAttrs,
-  textTitleAttrs,classOneOfEnum
+  textTitleAttrs,
+  classOneOfEnum,
 } from '../core';
+
+export enum LegendPosition {
+  Top = 'with-legend-top',
+  Right = 'with-legend-right',
+  Bottom = 'with-legend-bottom',
+  Left = 'with-legend-left',
+}
+
+export function classLegendPosition(selection: Selection, position: LegendPosition): void {
+  classOneOfEnum(selection, LegendPosition, position);
+}
 
 export enum LegendOrientation {
   Vertical = 'vertical',
   Horizontal = 'horizontal',
+}
+
+export function classLegendOrientation(selection: Selection, orientation: LegendOrientation): void {
+  classOneOfEnum(selection, LegendOrientation, orientation);
 }
 
 export interface LegendSquaresItem {
@@ -23,14 +39,12 @@ export interface LegendSquares {
   title: string;
   labels: string[];
   indices?: number[];
-  orientation: LegendOrientation;
 }
 
 export function legendSquaresData(data: Partial<LegendSquares>): LegendSquares {
   return {
     title: data.title || '',
     labels: data.labels || [],
-    orientation: data.orientation || LegendOrientation.Vertical,
   };
 }
 
@@ -66,9 +80,6 @@ export function legendSquares(selection: Selection<Element, LegendSquares>): voi
     .on('render.legend', function (e, d) {
       debug(`render squares legend on ${nodeToString(this)}`);
       const legend = select<Element, LegendSquares>(this);
-      const { orientation } = legend.datum();
-
-      classOneOfEnum(legend, LegendOrientation, orientation);
 
       legend.selectAll('.title').text(d.title);
 

@@ -97,10 +97,14 @@
   margin-right: 0.5em;
 }
 
+.layout.with-legend-left .legend .items,
+.layout.with-legend-right .legend .items,
 .layout.legend.vertical .items {
   flex-direction: column;
 }
 
+.layout.with-legend-top .legend .items,
+.layout.with-legend-bottom .legend .items,
 .layout.legend.horizontal .items {
   flex-direction: row;
 }

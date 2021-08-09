@@ -25,19 +25,7 @@ import {
 import { labelFind, labelFindByFilter } from './series-label';
 import { SeriesLabelBar, seriesLabelBarData, seriesLabelBar } from './series-label-bar';
 
-export enum LegendPosition {
-  Top = 'with-legend-top',
-  Right = 'with-legend-right',
-  Bottom = 'with-legend-bottom',
-  Left = 'with-legend-left',
-}
-
-export function classLegendPosition(selection: Selection, position: LegendPosition): void {
-  Object.values(LegendPosition).forEach((p) => selection.classed(p, p === position));
-}
-
 export interface ChartBarGrouped extends SeriesBarGrouped, ChartCartesian {
-  legendPosition: LegendPosition;
   legend: Partial<LegendSquares>;
   labelsEnabled: boolean;
   labels: Partial<SeriesLabelBar>;
@@ -48,7 +36,6 @@ export function chartBarGroupedData(data: Partial<ChartBarGrouped>): ChartBarGro
   return {
     ...seriesData,
     ...chartCartesianData(data),
-    legendPosition: data.legendPosition || LegendPosition.Right,
     legend: data.legend || {},
     labelsEnabled: data.labelsEnabled ?? true,
     labels: data.labels || {},
@@ -97,12 +84,10 @@ export function chartBarGrouped(selection: ChartBarGroupedSelection): void {
 
 export function chartBarGroupedDataChange(selection: ChartBarGroupedSelection): void {
   selection.each(function (chartD, i, g) {
-    const { subcategories, xAxis, yAxis, categoryScale, valueScale, legendPosition } = chartD,
+    const { subcategories, xAxis, yAxis, categoryScale, valueScale } = chartD,
       chartS = <ChartBarGroupedSelection>select(g[i]),
       barSeriesS = chartS.selectAll<Element, SeriesBarGrouped>('.series-bar-grouped'),
       legendS = chartS.selectAll<Element, LegendSquares>('.legend');
-
-    classOneOfEnum(chartS, LegendPosition, legendPosition);
 
     barSeriesS.datum((d) => d);
 
@@ -121,10 +106,6 @@ export function chartBarGroupedDataChange(selection: ChartBarGroupedSelection): 
         d,
         {
           labels: subcategories,
-          orientation:
-            legendPosition === LegendPosition.Top || legendPosition === LegendPosition.Bottom
-              ? LegendOrientation.Horizontal
-              : LegendOrientation.Vertical,
         },
         chartD.legend
       )
