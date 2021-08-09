@@ -2,18 +2,8 @@ import { range } from 'd3-array';
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { BaseType, select, Selection, ValueFn } from 'd3-selection';
 import { JoinEvent } from '.';
-import {
-  arrayIs,
-  arrayIs2D,
-  COLORS_CATEGORICAL,
-  debug,
-  findByDataProperty,
-  nodeToString,
-  Rect,
-  rectFitStroke,
-} from '../core';
+import { debug, findByDataProperty, nodeToString, Rect } from '../core';
 import { Size } from '../core/utils';
-import { filterBrightness } from '../filters';
 import {
   SeriesConfigTooltips,
   seriesConfigTooltipsData,

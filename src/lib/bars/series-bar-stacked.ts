@@ -1,9 +1,8 @@
 import { ScaleBand, scaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { select, Selection } from 'd3-selection';
 import { JoinEvent } from '.';
-import { arrayIs, arrayIs2D, COLORS_CATEGORICAL, debug, nodeToString, Rect } from '../core';
+import { debug, nodeToString, Rect } from '../core';
 import { Size } from '../core/utils';
-import { filterBrightness } from '../filters';
 import {
   SeriesConfigTooltips,
   seriesConfigTooltipsData,

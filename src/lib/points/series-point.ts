@@ -5,6 +5,8 @@ import { COLORS_CATEGORICAL, debug, nodeToString, Position, ScaleAny } from '../
 import { Size } from '../core/utils';
 
 export interface Point extends Position {
+  xValue: any;
+  yValue: any;
   radius: number;
   index: number;
   key: string;
@@ -16,6 +18,7 @@ export interface SeriesPoint {
   yValues: any[];
   yScale: ScaleAny<any, number, number>;
   radiuses: number[] | number;
+  indices?: number[];
   keys?: string[];
   bounds: Size;
 }
@@ -27,13 +30,14 @@ export function seriesPointData(data: Partial<SeriesPoint>): SeriesPoint {
     yValues: data.yValues || [],
     yScale: data.yScale || scaleLinear().domain([0, 1]),
     radiuses: data.radiuses || 5,
+    indices: data.indices,
     keys: data.keys,
     bounds: data.bounds || { width: 600, height: 400 },
   };
 }
 
 export function seriesPointCreatePoints(seriesData: SeriesPoint): Point[] {
-  const { xScale, yScale, xValues, yValues, radiuses, bounds, keys } = seriesData;
+  const { xScale, yScale, xValues, yValues, radiuses, bounds, keys, indices } = seriesData;
 
   xScale.range([0, bounds.width]);
   yScale.range([bounds.height, 0]);
@@ -45,10 +49,12 @@ export function seriesPointCreatePoints(seriesData: SeriesPoint): Point[] {
       y = yValues[i],
       r = Array.isArray(radiuses) ? radiuses[i] : radiuses;
     data.push({
-      index: i,
+      index: indices === undefined ? i : indices[i],
       key: keys?.[i] || i.toString(),
       x: xScale(x)!,
       y: yScale(y)!,
+      xValue: x,
+      yValue: y,
       radius: r,
     });
   }
@@ -59,7 +65,7 @@ export function seriesPointCreatePoints(seriesData: SeriesPoint): Point[] {
 export function seriesPoint(selection: Selection<Element, SeriesPoint>): void {
   selection
     .classed('series-point', true)
-    .attr('fill', COLORS_CATEGORICAL[0])
+    .attr('ignore-layout-children', true)
     .on('datachange.seriespoint', function () {
       debug(`data change on ${nodeToString(this)}`);
       select(this).dispatch('render');
@@ -74,7 +80,10 @@ export function seriesPoint(selection: Selection<Element, SeriesPoint>): void {
         .selectAll<SVGCircleElement, Point>('circle')
         .data(seriesPointCreatePoints(d), (d) => d.key)
         .call((s) => seriesPointJoin(series, s));
-    });
+    })
+    .on('mouseover.seriespointhighlight mouseout.seriespointhighlight', (e: MouseEvent) =>
+      (<Element>e.target).classList.toggle('highlight', e.type.endsWith('over'))
+    );
 }
 
 export function seriesPointJoin(
@@ -115,5 +124,6 @@ export function seriesPointJoin(
         .attr('cy', (d) => d.y)
         .attr('r', (d) => d.radius)
     )
+    .attr('index', (d) => d.index)
     .call((s) => seriesSelection.dispatch('update', { detail: { selection: s } }));
 }

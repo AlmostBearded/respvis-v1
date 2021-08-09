@@ -24,17 +24,12 @@ export function chartPoint(selection: ChartPointSelection): void {
     .call((s) => chartCartesian(s, false))
     .classed('chart-point', true)
     .each((d, i, g) => {
-      const drawArea = select(g[i]).selectAll('.draw-area').attr('overflow', 'hidden');
+      const drawArea = select(g[i]).selectAll('.draw-area');
+
+      drawArea.append('rect').classed('background', true);
 
       drawArea
-        .append('rect')
-        .classed('background', true)
-        .layout('grid-area', '1 / 1')
-        .attr('opacity', 0);
-
-      drawArea
-        .append('g')
-        .layout('grid-area', '1 / 1')
+        .append('svg')
         .datum(d)
         .call((s) => seriesPoint(s));
     })

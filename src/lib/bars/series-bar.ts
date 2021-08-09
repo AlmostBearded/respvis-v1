@@ -1,17 +1,9 @@
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { select, Selection } from 'd3-selection';
-import {
-  arrayIs,
-  COLORS_CATEGORICAL,
-  debug,
-  findByDataProperty,
-  findByKey,
-  nodeToString,
-} from '../core';
+import { debug, findByDataProperty, findByKey, nodeToString } from '../core';
 import { Rect, rectFitStroke, rectMinimized, rectToAttrs } from '../core/utility/rect';
 import { Transition } from 'd3-transition';
 import { easeCubicOut } from 'd3-ease';
-import { filterBrightness } from '../filters';
 import { Size } from '../core/utils';
 import {
   SeriesConfigTooltips,

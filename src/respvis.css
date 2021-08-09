@@ -24,7 +24,9 @@
 }
 
 .highlight .bar,
-.highlight.bar {
+.highlight.bar,
+.highlight .point,
+.highlight.point {
   filter: brightness(var(--highlight-brightness));
   stroke-width: 2px;
 }
@@ -183,6 +185,10 @@
   overflow: visible;
 }
 
+.draw-area .background {
+  opacity: 0;
+}
+
 .layout.chart-cartesian .draw-area > * {
   grid-area: 1 / 1;
 }
@@ -237,6 +243,7 @@
 
 .series-label {
   font-size: 0.7em;
+  pointer-events: none;
 }
 
 .label.highlight {
@@ -438,4 +445,28 @@ text.highlight {
 .menu-tools > .items {
   right: 0;
   top: 100%;
+}
+
+.tooltip {
+  opacity: 0;
+  background-color: #fff;
+  border: #000 solid 1px;
+  border-radius: 5px;
+  padding: 0.5em;
+  position: fixed;
+  pointer-events: none;
+}
+
+.tooltip.show {
+  opacity: 1;
+}
+
+.series-point {
+  overflow: hidden;
+}
+
+.point {
+  fill: var(--color-categorical-0);
+  stroke: #000;
+  stroke-width: 1px;
 }
