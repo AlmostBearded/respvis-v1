@@ -5,7 +5,6 @@ import {
   axisBottom as d3AxisBottom,
   AxisScale,
 } from 'd3-axis';
-import { easeCubicOut } from 'd3-ease';
 import { scaleLinear } from 'd3-scale';
 import { BaseType, select, Selection } from 'd3-selection';
 import { SelectionOrTransition, Transition } from 'd3-transition';
@@ -16,6 +15,10 @@ import {
   textHorizontalAttrs,
   textTitleAttrs,
   textVerticalAttrs,
+  textData,
+  text,
+  WritingMode,
+  classOneOfEnum,
 } from '../core';
 
 export interface ConfigureAxisFn {
@@ -44,94 +47,68 @@ export type AxisTransition = Transition<SVGSVGElement | SVGGElement, Axis>;
 export function axisLeft(selection: AxisSelection): void {
   axis(selection);
 
+  selection.classed('axis-left', true);
+
+  selection.selectAll<SVGTextElement, unknown>('.subtitle').classed(WritingMode.Vertical, true);
+
   selection
-    .classed('axis-left', true)
-    .layout('display', 'flex')
-    .layout('flex-direction', 'row')
-    .layout('justify-content', 'flex-start')
-    .call(
-      (s) =>
-        s.selectAll<SVGTextElement, unknown>('.subtitle').call((title) => textVerticalAttrs(title)) //.layout('grid-area', '2 / 1'))
-    )
-    .call((s) =>
-      s
-        .selectAll<SVGTextElement, unknown>('.title')
-        .layout('margin-right', '0.5em')
-        // .layout('grid-area', '1 / 1')
-        .call((title) => textVerticalAttrs(title))
-        .call((title) => textTitleAttrs(title))
-        .raise()
-    )
-    .call((s) =>
-      s
-        .selectAll('.ticks-transform')
-        // .layout('grid-area', '1 / 2 / 3')
-        .layout('width', 'fit')
-        .layout('height', '100%')
-        .raise()
-        .selectAll('.ticks')
-        .layout('width', '100%')
-        .layout('height', '100%')
-        .layout('margin-left', '100%')
-    )
+    .selectAll<SVGTextElement, unknown>('.title')
+    .classed(WritingMode.Vertical, true)
+    .raise();
+
+  selection.selectAll('.ticks-transform').raise();
+
+  selection
     .on('render.axisleft', function (e, d) {
-      axisLeftTransition(
-        (<AxisSelection>select(this)).transition('axis').duration(250).ease(easeCubicOut)
-      );
+      axisLeftRender(<AxisSelection>select(this));
     })
     .dispatch('render');
 }
 
-export function axisLeftTransition(transition: AxisTransition): void {
-  transition.each((d, i, g) => {
-    debug(`transition left axis on ${nodeToString(g[i])}`);
+export function axisLeftRender(selection: AxisSelection): void {
+  selection.each((d, i, g) => {
+    debug(`render left axis on ${nodeToString(g[i])}`);
     const s = <AxisSelection>select(g[i]);
-    const t = s.transition(transition);
-    axisTransition(t, d3Axis(d3AxisLeft, d), d.title, d.subtitle);
-    s.selectAll('.tick text').attr('dy', null).attr('dominant-baseline', 'middle');
+    axisRender(s, d3Axis(d3AxisLeft, d), d.title, d.subtitle);
+    s.selectAll('.tick text').attr('dy', null).classed('center-vertical', true);
   });
 }
 
 export function axisBottom(selection: AxisSelection): void {
   axis(selection);
+  selection.classed('axis-bottom', true);
+
+  selection.selectAll<SVGTextElement, unknown>('.subtitle').classed(WritingMode.Horizontal, true);
+
+  selection.selectAll<SVGTextElement, unknown>('.title').classed(WritingMode.Horizontal, true);
+
   selection
-    .classed('axis-bottom', true)
-    .layout('display', 'flex')
-    .layout('flex-direction', 'column')
-    .layout('align-items', 'flex-end')
-    .call((s) => s.selectAll('.ticks-transform').layout('height', 'fit').layout('width', '100%'))
-    .call((s) =>
-      s
-        .selectAll<SVGTextElement, unknown>('.title')
-        .layout('margin-top', '0.5em')
-        .call((title) => textHorizontalAttrs(title))
-        .call((title) => textTitleAttrs(title))
-    )
-    .call((s) =>
-      s.selectAll<SVGTextElement, unknown>('.subtitle').call((title) => textHorizontalAttrs(title))
-    )
     .on('render.axisbottom', function (e, d) {
-      axisBottomTransition(
-        (<AxisSelection>select(this)).transition('axis').duration(250).ease(easeCubicOut)
-      );
+      axisBottomRender(<AxisSelection>select(this));
     })
     .dispatch('render');
 }
 
-export function axisBottomTransition(transition: AxisTransition): void {
-  transition.each((d, i, g) => {
-    debug(`transition bottom axis on ${nodeToString(g[i])}`);
+export function axisBottomRender(selection: AxisSelection): void {
+  selection.each((d, i, g) => {
+    debug(`render bottom axis on ${nodeToString(g[i])}`);
     const s = <AxisSelection>select(g[i]);
-    axisTransition(s.transition(transition), d3Axis(d3AxisBottom, d), d.title, d.subtitle);
-    s.selectAll('.tick text').attr('dy', null).attr('dominant-baseline', 'hanging');
+    axisRender(s, d3Axis(d3AxisBottom, d), d.title, d.subtitle);
+    s.selectAll('.tick text').attr('dy', null).classed('bottom', true);
   });
 }
 
 function axis(selection: AxisSelection): void {
   selection
     .classed('axis', true)
-    .attr('font-size', '0.7em')
-    .call((s) => s.append('g').classed('ticks-transform', true).append('g').classed('ticks', true))
+    .call((s) =>
+      s
+        .append('g')
+        .classed('ticks-transform', true)
+        .append('g')
+        .classed('ticks', true)
+        .attr('ignore-layout-children', true)
+    )
     .call((s) => s.append('text').classed('title', true))
     .call((s) => s.append('text').classed('subtitle', true))
     .on('datachange.axis', function () {
@@ -140,15 +117,15 @@ function axis(selection: AxisSelection): void {
     });
 }
 
-function axisTransition(
-  transition: AxisTransition,
+function axisRender(
+  selection: AxisSelection,
   axis: D3Axis<AxisDomain>,
   title: string,
   subtitle: string
 ): void {
-  transition
-    .call((t) =>
-      t
+  selection
+    .call((s) =>
+      s
         .selectAll<SVGGElement, unknown>('.ticks')
         .call((ticks) => axis(ticks))
         .call((ticks) =>
@@ -156,12 +133,14 @@ function axisTransition(
             .attr('fill', null)
             .attr('font-family', null)
             .attr('font-size', null)
+            .attr('text-anchor', null)
+            .call((t) => t.selectAll<SVGTextElement, unknown>('.tick line').attr('stroke', null))
             .call((t) => t.selectAll<SVGTextElement, unknown>('.tick text').attr('fill', null))
-            .call((t) => t.selectAll('.domain').attr('fill', 'none'))
+            .call((t) => t.selectAll('.domain').attr('stroke', null).attr('fill', null))
         )
     )
-    .call((t) => t.selectAll<SVGGElement, unknown>('.title').text(title))
-    .call((t) => t.selectAll<SVGGElement, unknown>('.subtitle').text(subtitle));
+    .call((s) => s.selectAll<SVGGElement, unknown>('.title').text(title))
+    .call((s) => s.selectAll<SVGGElement, unknown>('.subtitle').text(subtitle));
 }
 
 function d3Axis(
@@ -186,9 +165,4 @@ export function xyAttrsToTransformAttr(
 
 export function axisTickFindByIndex(container: Selection, index: number): Selection<SVGGElement> {
   return findByIndex<SVGGElement>(container, '.tick', index);
-}
-
-export function axisTickHighlight(tick: Selection, highlight: boolean): void {
-  if (highlight) tick.attr('text-decoration', 'underline');
-  else tick.attr('text-decoration', null);
 }

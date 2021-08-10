@@ -1,5 +1,5 @@
 import { create, select, Selection } from 'd3-selection';
-import { menuDropdown, menuDropdownItem } from './menu-dropdown';
+import { menuDropdown } from './menu-dropdown';
 import { SeriesCheckbox, seriesCheckboxData, seriesCheckbox } from './series-checkbox';
 
 export interface FilterNominalOption {
@@ -26,19 +26,14 @@ export function toolFilterNominalData(data: Partial<ToolFilterNominal>): ToolFil
   };
 }
 
-export function toolFilterNominal(
-  selection: Selection<HTMLLIElement, ToolFilterNominal>
-): void {
+export function toolFilterNominal(selection: Selection<HTMLLIElement, ToolFilterNominal>): void {
   selection.classed('tool-filter-nominal', true).call((s) => menuDropdown(s));
 
   const items = selection
     .selectAll<HTMLUListElement, SeriesCheckbox>('.items')
     .datum(
       seriesCheckboxData({
-        container: () =>
-          create('li')
-            .call((s) => menuDropdownItem(s))
-            .node()!,
+        container: () => create('li').node()!,
       })
     )
     .call((s) => seriesCheckbox(s));

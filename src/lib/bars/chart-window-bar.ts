@@ -39,10 +39,7 @@ export function chartWindowBar(selection: ChartWindowBarSelection): void {
   selection
     .classed('chart-window-bar', true)
     .on('resize.chartwindowbar', function (e, d) {
-      const { width, height } = e.detail.size;
-      select(this).dispatch('densitychange', {
-        detail: { density: { x: d.values.length / width, y: d.values.length / height } },
-      });
+      chartWindowBarDispatchDensityChange(select(this));
     })
     .call((s) => chartWindow(s))
     .each((chartWindowD, i, g) => {
@@ -113,11 +110,10 @@ export function chartWindowBarApplyFilters(selection: ChartWindowBarSelection): 
         categories,
         values,
         keys,
-        colors,
         valueDomain,
         labels: { labels: labels },
       } = chartWindowD,
-      chartWindowS = select<Element, ChartWindowBar>(g[i]),
+      chartWindowS = <ChartWindowBarSelection>select(g[i]),
       chartS = chartWindowS.selectAll<Element, ChartBarGrouped>('svg.chart-bar'),
       labelSeriesS = chartS.selectAll<Element, SeriesLabelBar>('.series-label-bar'),
       catFilterD = chartWindowS
@@ -128,7 +124,6 @@ export function chartWindowBarApplyFilters(selection: ChartWindowBarSelection): 
     const filteredCats = categories.filter(filterCat),
       filteredValues = values.filter(filterCat),
       filteredKeys = keys?.filter(filterCat),
-      filteredColors = arrayIs(colors) ? colors.filter(filterCat) : colors,
       filteredLabels = arrayIs(labels) && labels.filter(filterCat),
       filteredValueDomain =
         valueDomain instanceof Function ? valueDomain(filteredValues) : valueDomain;
@@ -141,7 +136,6 @@ export function chartWindowBarApplyFilters(selection: ChartWindowBarSelection): 
           categories: filteredCats,
           values: filteredValues,
           keys: filteredKeys,
-          colors: filteredColors,
           labels: {
             ...chartWindowD.labels,
             ...(filteredLabels && { labels: filteredLabels }),
@@ -149,5 +143,17 @@ export function chartWindowBarApplyFilters(selection: ChartWindowBarSelection): 
         })
       )
     );
+
+    // chartWindowBarDispatchDensityChange(chartWindowS);
+  });
+}
+
+export function chartWindowBarDispatchDensityChange(selection: ChartWindowBarSelection): void {
+  selection.each((d, i, g) => {
+    const { width, height } = g[i].getBoundingClientRect();
+    const { values } = select(g[i]).selectAll<Element, ChartBar>('.chart-bar').datum();
+    select(g[i]).dispatch('densitychange', {
+      detail: { density: { x: values.length / width, y: values.length / height } },
+    });
   });
 }

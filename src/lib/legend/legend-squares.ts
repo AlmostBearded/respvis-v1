@@ -1,5 +1,4 @@
 import { select, Selection } from 'd3-selection';
-import { JoinEvent } from '../bars';
 import {
   arrayIs,
   debug,
@@ -8,94 +7,68 @@ import {
   nodeToString,
   textHorizontalAttrs,
   textTitleAttrs,
+  classOneOfEnum,
 } from '../core';
-import { filterBrightness } from '../filters';
+
+export enum LegendPosition {
+  Top = 'with-legend-top',
+  Right = 'with-legend-right',
+  Bottom = 'with-legend-bottom',
+  Left = 'with-legend-left',
+}
+
+export function classLegendPosition(selection: Selection, position: LegendPosition): void {
+  classOneOfEnum(selection, LegendPosition, position);
+}
+
+export enum LegendOrientation {
+  Vertical = 'vertical',
+  Horizontal = 'horizontal',
+}
+
+export function classLegendOrientation(selection: Selection, orientation: LegendOrientation): void {
+  classOneOfEnum(selection, LegendOrientation, orientation);
+}
 
 export interface LegendSquaresItem {
   label: string;
-  color: string;
-  size: string;
-  stroke: string;
-  strokeWidth: number;
+  index: number;
 }
 
 export interface LegendSquares {
   title: string;
   labels: string[];
-  colors: string | string[] | ((label: string) => string);
-  sizes: string | string[] | ((label: string) => string);
-  strokes: string | string[] | ((label: string) => string);
-  strokeWidths: number | number[] | ((label: string) => number);
+  indices?: number[];
 }
 
 export function legendSquaresData(data: Partial<LegendSquares>): LegendSquares {
   return {
-    labels: data.labels || [],
-    colors: data.colors || '#000000',
-    sizes: data.sizes || '0.7em',
-    strokes: data.strokes || '#000',
-    strokeWidths: data.strokeWidths || 1,
     title: data.title || '',
+    labels: data.labels || [],
   };
 }
 
 export function legendSquaresCreateItems(legendData: LegendSquares): LegendSquaresItem[] {
-  const { labels, colors, sizes, strokes, strokeWidths } = legendData;
+  const { labels, indices } = legendData;
 
   return labels.map((l, i) => {
-    const color = typeof colors === 'string' ? colors : arrayIs(colors) ? colors[i] : colors(l);
-    const size = typeof sizes === 'string' ? sizes : arrayIs(sizes) ? sizes[i] : sizes(l);
-    const stroke =
-      typeof strokes === 'string' ? strokes : arrayIs(strokes) ? strokes[i] : strokes(l);
-    const strokeWidth =
-      typeof strokeWidths === 'number'
-        ? strokeWidths
-        : arrayIs(strokeWidths)
-        ? strokeWidths[i]
-        : strokeWidths(l);
     return {
       label: l,
-      color: color,
-      size: size,
-      stroke: stroke,
-      strokeWidth: strokeWidth,
+      index: indices === undefined ? i : indices[i],
     };
   });
 }
 
 export function legendSquares(selection: Selection<Element, LegendSquares>): void {
-  selection
-    .classed('legend', true)
-    .classed('legend-squares', true)
-    .layout('display', 'flex')
-    .layout('flex-direction', 'column')
-    .layout('align-items', 'center')
-    .attr('font-size', '0.8em'); // todo: font size incosistent with 0.7em used mostly everywhere else
+  selection.classed('legend', true).classed('legend-squares', true);
+  selection.append('text').classed('title', true).classed('horizontal', true);
 
-  selection
-    .append('text')
-    .classed('title', true)
-    .layout('margin', '0 0.5em')
-    .call((s) => textHorizontalAttrs(s))
-    .call((s) => textTitleAttrs(s));
+  selection.append('g').classed('items', true);
 
-  selection
-    .append('g')
-    .classed('items', true)
-    .layout('display', 'flex')
-    .layout('flex-direction', 'row')
-    .layout('justify-content', 'center')
-    .layout('align-items', 'flex-start');
-
-  selection
-    .append('defs')
-    .append('filter')
-    .call((s) => filterBrightness(s, 1.3));
-
-  selection.on('mouseover.legend mouseout.legend', (e) => {
+  selection.on('mouseover.legend mouseout.legend', (e: MouseEvent) => {
     const item = (<Element>e.target).closest('.legend-item');
     if (item) {
-      legendItemHighlight(select(item), e.type.endsWith('over'));
+      item.classList.toggle('highlight', e.type.endsWith('over'));
     }
   });
 
@@ -119,11 +92,7 @@ export function legendSquares(selection: Selection<Element, LegendSquares>): voi
             enter
               .append('g')
               .classed('legend-item', true)
-              .layout('display', 'flex')
-              .layout('flex-direction', 'row')
-              .layout('justify-content', 'center')
-              .layout('margin', '0.25em')
-              .call((s) => s.append('rect').classed('symbol', true).layout('margin-right', '0.5em'))
+              .call((s) => s.append('rect').classed('symbol', true))
               .call((s) =>
                 s
                   .append('text')
@@ -134,36 +103,12 @@ export function legendSquares(selection: Selection<Element, LegendSquares>): voi
           undefined,
           (exit) => exit.remove().call((s) => legend.dispatch('exit', { detail: { selection: s } }))
         )
+        .attr('index', (d) => d.index)
         .each((d, i, g) => {
-          const s = select(g[i]);
-          s.selectAll('.symbol')
-            .layout('width', d.size)
-            .layout('height', d.size)
-            .attr('fill', d.color)
-            .attr('stroke', d.stroke)
-            .attr('stroke-width', d.strokeWidth);
-          s.selectAll('.label').text(d.label.toString());
+          select(g[i]).selectAll('.label').text(d.label.toString());
         })
         .call((s) => legend.dispatch('update', { detail: { selection: s } }));
     });
-}
-
-export function legendItemHighlight(items: Selection<Element>, highlight: boolean): void {
-  items.each((d, i, g) => {
-    const item = select(g[i]);
-    if (highlight) {
-      select(g[i])
-        .selectAll('.symbol')
-        .attr(
-          'filter',
-          `url(#${select(g[i].closest('.legend')).selectAll('.filter-brightness').attr('id')})`
-        );
-      item.selectAll('.label').attr('text-decoration', 'underline');
-    } else {
-      item.selectAll('.symbol').attr('filter', null);
-      item.selectAll('.label').attr('text-decoration', null);
-    }
-  });
 }
 
 export function legendItemFindByLabel(

@@ -4,6 +4,7 @@
     <title>RespVis - Bar Chart</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta charset="UTF-8" />
+    <link rel="stylesheet" href="../respvis.css" />
     <style>
       #chart {
         width: 100%;
@@ -14,10 +15,6 @@
       body {
         background-color: floralwhite;
       }
-
-      /* .layout {
-        box-shadow: inset 0px 0px 0px 0.5px #000;
-      } */
     </style>
   </head>
   <body>
@@ -25,6 +22,7 @@
     <div id="chart"></div>
     <script src="./vendor/d3.v6.js"></script>
     <script src="../respvis.js"></script>
+
     <script type="module">
       import data from './data/austrian-cities.js';
 
@@ -61,7 +59,7 @@
 
             chartWindow.datum((d) => {
               d.flipped = flippedBars;
-              d.labels.positions = labelPosition;
+              d.labels.relativePositions = labelPosition;
               return d;
             });
           });

@@ -1,27 +1,19 @@
 import { range } from 'd3-array';
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { BaseType, select, Selection, ValueFn } from 'd3-selection';
-import {
-  arrayIs,
-  arrayIs2D,
-  COLORS_CATEGORICAL,
-  debug,
-  findByDataProperty,
-  nodeToString,
-  Rect,
-  rectFitStroke,
-} from '../core';
+import { JoinEvent } from '.';
+import { debug, findByDataProperty, nodeToString, Rect } from '../core';
 import { Size } from '../core/utils';
-import { filterBrightness } from '../filters';
 import {
   SeriesConfigTooltips,
   seriesConfigTooltipsData,
   seriesConfigTooltipsHandleEvents,
 } from '../tooltip';
-import { barHighlight, Bar, seriesBarJoin } from './series-bar';
+import { Bar, seriesBarJoin } from './series-bar';
 
 export interface BarGrouped extends Bar {
   subcategory: string;
+  subcategoryIndex: number;
 }
 
 export interface SeriesBarGrouped extends SeriesConfigTooltips<SVGRectElement, BarGrouped> {
@@ -31,9 +23,8 @@ export interface SeriesBarGrouped extends SeriesConfigTooltips<SVGRectElement, B
   subcategoryPadding: number;
   values: number[][];
   valueScale: ScaleContinuousNumeric<number, number>;
-  colors: string | string[] | string[][];
-  strokeWidths: number | number[] | number[][];
-  strokes: string | string[] | string[][];
+  categoryIndices?: number[];
+  subcategoryIndices?: number[];
   keys?: string[][];
   flipped: boolean;
   bounds: Size;
@@ -54,11 +45,10 @@ export function seriesBarGroupedData(data: Partial<SeriesBarGrouped>): SeriesBar
         .domain([0, Math.max(...(data.values?.map((values) => Math.max(...values)) || []))])
         .nice(),
     subcategories: data.subcategories || [],
-    colors: data.colors || COLORS_CATEGORICAL,
-    strokeWidths: data.strokeWidths || 1,
-    strokes: data.strokes || '#000',
     flipped: data.flipped || false,
     subcategoryPadding: data.subcategoryPadding || 0.1,
+    categoryIndices: data.categoryIndices,
+    subcategoryIndices: data.subcategoryIndices,
     keys: data.keys,
     bounds: data.bounds || { width: 600, height: 400 },
     ...seriesConfigTooltipsData<SVGRectElement, BarGrouped>(data),
@@ -78,11 +68,10 @@ export function seriesBarGroupedCreateBars(seriesData: SeriesBarGrouped): BarGro
     valueScale,
     subcategories,
     flipped,
-    colors,
     subcategoryPadding,
+    categoryIndices,
+    subcategoryIndices,
     keys,
-    strokeWidths,
-    strokes,
     bounds,
   } = seriesData;
   if (!flipped) {
@@ -104,11 +93,6 @@ export function seriesBarGroupedCreateBars(seriesData: SeriesBarGrouped): BarGro
     for (let j = 0; j < subcategoryValues.length; ++j) {
       const c = categories[i],
         v = subcategoryValues[j],
-        sw = arrayIs2D(strokeWidths)
-          ? strokeWidths[i][j]
-          : arrayIs(strokeWidths)
-          ? strokeWidths[j]
-          : strokeWidths,
         rect: Rect = {
           x: categoryScale(c)! + innerScale(j)!,
           y: Math.min(valueScale(0)!, valueScale(v)!),
@@ -125,10 +109,9 @@ export function seriesBarGroupedCreateBars(seriesData: SeriesBarGrouped): BarGro
           category: c,
           subcategory: subcategories[j],
           value: v,
+          categoryIndex: categoryIndices === undefined ? i : categoryIndices[i],
+          subcategoryIndex: subcategoryIndices === undefined ? j : subcategoryIndices[j],
           key: keys?.[i][j] || `${i}/${j}`,
-          color: arrayIs2D(colors) ? colors[i][j] : arrayIs(colors) ? colors[j] : colors,
-          strokeWidth: sw,
-          stroke: arrayIs2D(strokes) ? strokes[i][j] : arrayIs(strokes) ? strokes[j] : strokes,
           ...(flipped ? flippedRect : rect),
         };
       data.push(bar);
@@ -141,12 +124,7 @@ export function seriesBarGrouped(selection: Selection<Element, SeriesBarGrouped>
   selection
     .classed('series-bar', true)
     .classed('series-bar-grouped', true)
-    .call((s) =>
-      s
-        .append('defs')
-        .append('filter')
-        .call((s) => filterBrightness(s, 1.3))
-    )
+    .attr('ignore-layout-children', true)
     .on('datachange.seriesbar', function () {
       debug(`data change on ${nodeToString(this)}`);
       select(this).dispatch('render');
@@ -162,13 +140,16 @@ export function seriesBarGrouped(selection: Selection<Element, SeriesBarGrouped>
         .data(seriesBarGroupedCreateBars(d), (d) => d.key)
         .call((s) => seriesBarJoin(series, s));
     })
-    .on('mouseover.seriesbargroupedhighlight mouseout.seriesbargroupedhighlight', (e) =>
-      barGroupedHighlight(select(e.target), e.type.endsWith('over'))
+    .on('update.subcategory', (e: JoinEvent<Element, BarGrouped>) =>
+      e.detail.selection
+        .attr('subcategory-index', (d) => d.subcategoryIndex)
+        .attr('subcategory', (d) => d.subcategory)
+    )
+    .on('mouseover.seriesbargroupedhighlight mouseout.seriesbargroupedhighlight', (e: MouseEvent) =>
+      (<Element>e.target).classList.toggle('highlight', e.type.endsWith('over'))
     )
     .call((s) => seriesConfigTooltipsHandleEvents(s));
 }
-
-export const barGroupedHighlight = barHighlight;
 
 export function barGroupedFindBySubcategory(
   container: Selection,

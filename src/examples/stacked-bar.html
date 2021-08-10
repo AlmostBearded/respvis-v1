@@ -4,6 +4,7 @@
     <title>RespVis - Stacked Bar Chart</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta charset="UTF-8" />
+    <link rel="stylesheet" href="../respvis.css" />
     <style>
       #chart {
         width: 100%;
@@ -65,9 +66,11 @@
             const labelsEnabled = density.x < 0.06;
             const yAxisSubtitle = density.x < 0.06 ? '[%]' : '';
             const legendTitle = density.x < 0.06 ? 'Platforms' : '';
-            const chartFlexDirection = flippedBars ? 'column-reverse' : 'row';
-            const legendAlignSelf = flippedBars ? 'flex-end' : 'flex-start';
-            const legendItemsFlexDirection = flippedBars ? 'row' : 'column';
+            const legendPosition = flippedBars
+              ? respVis.LegendPosition.Top
+              : respVis.LegendPosition.Right;
+
+            chart.call(respVis.classLegendPosition, legendPosition);
 
             chartWindow.datum((d) => {
               d.flipped = flippedBars;
@@ -76,16 +79,8 @@
               d.legend.title = legendTitle;
               return d;
             });
-
-            chart.layout('flex-direction', chartFlexDirection);
-
-            legend
-              .layout('align-self', legendAlignSelf)
-              .selectAll('.items')
-              .layout('flex-direction', legendItemsFlexDirection);
           }),
-        chart = chartWindow.selectAll('svg.chart'),
-        legend = chart.selectAll('.legend');
+        chart = chartWindow.selectAll('svg.chart');
     </script>
   </body>
 </html>

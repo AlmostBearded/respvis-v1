@@ -3,16 +3,7 @@ import { Position } from '../core/utility/position';
 import { Size } from '../core/utils';
 
 export function tooltip(selection: Selection<HTMLDivElement>): void {
-  selection
-    .classed('tooltip', true)
-    .style('opacity', 0)
-    .style('background-color', '#fff')
-    .style('border', 'solid')
-    .style('border-width', '1px')
-    .style('border-radius', '5px')
-    .style('padding', '0.5em')
-    .style('position', 'fixed')
-    .style('pointer-events', 'none');
+  selection.classed('tooltip', true);
 }
 
 export function tooltipSelectOrCreate(): Selection<HTMLDivElement> {
@@ -26,12 +17,12 @@ export function tooltipSelectOrCreate(): Selection<HTMLDivElement> {
 
 export function tooltipShow(tooltipSelection: Selection<HTMLDivElement> | null) {
   tooltipSelection = tooltipSelection || tooltipSelectOrCreate();
-  tooltipSelection.style('opacity', 1);
+  tooltipSelection.classed('show', true);
 }
 
 export function tooltipHide(tooltipSelection: Selection<HTMLDivElement> | null) {
   tooltipSelection = tooltipSelection || tooltipSelectOrCreate();
-  tooltipSelection.style('opacity', 0);
+  tooltipSelection.classed('show', false);
 }
 
 export function tooltipContent(

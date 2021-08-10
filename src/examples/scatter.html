@@ -4,6 +4,7 @@
     <title>RespVis - Scatterplot</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta charset="UTF-8" />
+    <link rel="stylesheet" href="../respvis.css" />
     <style>
       #chart {
         width: 100%;
@@ -72,8 +73,6 @@
           },
         }),
         chart = layouter.append('svg').datum(chartDatum).call(respVis.chartPoint),
-        defs = chart.append('defs'),
-        highlightFilter = defs.append('filter').call(respVis.filterBrightness, 1.3),
         zoom = d3
           .zoom()
           .scaleExtent([1, 20])
@@ -93,10 +92,7 @@
               ];
             zoom.extent(extent).translateExtent(extent);
           }),
-        pointSeries = chart
-          .selectAll('.series-point')
-          .on('mouseover', (e) => hoverPoint(e.target, true))
-          .on('mouseout', (e) => hoverPoint(e.target, false));
+        pointSeries = chart.selectAll('.series-point');
 
       window.addEventListener('resize', configure);
       configure();
@@ -106,12 +102,6 @@
       function configure() {
         if (window.matchMedia(wideMediaQuery).matches) {
         }
-      }
-
-      function hoverPoint(element, hover) {
-        const selection = d3.select(element);
-        const datum = selection.datum();
-        selection.attr('filter', hover ? `url(#${highlightFilter.attr('id')})` : null).raise();
       }
     </script>
   </body>

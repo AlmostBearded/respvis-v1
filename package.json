@@ -39,6 +39,7 @@
     "@types/d3-selection": "^2.0.0",
     "@types/d3-transition": "^2.0.0",
     "@types/d3-zoom": "^2.0.0",
+    "@types/to-px": "^1.1.2",
     "@types/uuid": "^8.3.0",
     "browser-sync": "^2.26.14",
     "del": "^6.0.0",
@@ -62,6 +63,7 @@
     "d3-transition": "^2.0.0",
     "d3-zoom": "^2.0.0",
     "debounce": "^1.2.1",
+    "to-px": "^1.1.0",
     "uuid": "^8.3.2"
   }
 }

@@ -1,7 +1,6 @@
 import { easeCubicOut } from 'd3-ease';
-import { BaseType, select, Selection, ValueFn } from 'd3-selection';
+import { select, Selection, ValueFn } from 'd3-selection';
 import {
-  arrayIs,
   debug,
   findByFilter,
   findByIndex,
@@ -12,8 +11,6 @@ import {
 } from '../core';
 
 export interface Label extends Position {
-  textAnchor: string;
-  dominantBaseline: string;
   text: string;
   key: string;
 }
@@ -21,8 +18,6 @@ export interface Label extends Position {
 export interface SeriesLabel {
   texts: string[];
   positions: Position[];
-  textAnchors: string | string[];
-  dominantBaselines: string | string[];
   keys: string[];
 }
 
@@ -31,18 +26,14 @@ export function seriesLabelData(data: Partial<SeriesLabel>): SeriesLabel {
     texts: data.texts || [],
     positions: data.positions || [],
     keys: data.keys || data.texts || [],
-    textAnchors: data.textAnchors || 'middle',
-    dominantBaselines: data.dominantBaselines || 'middle',
   };
 }
 
 export function seriesLabelCreateLabels(seriesData: SeriesLabel): Label[] {
-  const { texts, keys, positions, textAnchors, dominantBaselines } = seriesData;
+  const { texts, keys, positions } = seriesData;
   return texts.map((text, i) => ({
     text: text,
     key: keys[i],
-    textAnchor: arrayIs(textAnchors) ? textAnchors[i] : textAnchors,
-    dominantBaseline: arrayIs(dominantBaselines) ? dominantBaselines[i] : dominantBaselines,
     ...positions[i],
   }));
 }
@@ -50,7 +41,7 @@ export function seriesLabelCreateLabels(seriesData: SeriesLabel): Label[] {
 export function seriesLabel(selection: Selection<Element, SeriesLabel>): void {
   selection
     .classed('series-label', true)
-    .call((s) => seriesLabelAttrs(s))
+    .attr('ignore-layout-children', true)
     .on('datachange.serieslabel', function () {
       debug(`data change on ${nodeToString(this)}`);
       select(this).dispatch('render');
@@ -63,10 +54,6 @@ export function seriesLabel(selection: Selection<Element, SeriesLabel>): void {
         .data(seriesLabelCreateLabels(d), (d) => d.key)
         .call((s) => seriesLabelJoin(series, s));
     });
-}
-
-export function seriesLabelAttrs(seriesSelection: Selection<Element>): void {
-  seriesSelection.attr('font-size', '0.7em');
 }
 
 export function seriesLabelJoin(
@@ -95,8 +82,6 @@ export function seriesLabelJoin(
           )
           .call((s) => seriesSelection.dispatch('exit', { detail: { selection: s } }))
     )
-    .attr('text-anchor', (d) => d.textAnchor)
-    .attr('dominant-baseline', (d) => d.dominantBaseline)
     .call((s) =>
       s
         .transition('position')
@@ -106,11 +91,6 @@ export function seriesLabelJoin(
     )
     .text((d) => d.text)
     .call((s) => seriesSelection.dispatch('update', { detail: { selection: s } }));
-}
-
-export function labelHighlight(label: Selection, highlight: boolean): void {
-  if (highlight) label.attr('font-size', '1.2em').attr('text-decoration', 'underline');
-  else label.attr('font-size', null).attr('text-decoration', null);
 }
 
 export function labelFind(container: Selection, key: string): Selection<SVGTextElement, Label> {

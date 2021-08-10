@@ -31,35 +31,17 @@ export function chartCartesian(selection: ChartCartesianSelection, autoUpdateAxe
     .call((s) => chart(s))
     .classed('chart-cartesian', true)
     .each((d, i, g) => {
-      const s = <ChartCartesianSelection>(
-        select(g[i]).layout('display', 'flex').layout('padding', '20px')
-      );
+      const s = <ChartCartesianSelection>select(g[i]);
 
-      const container = s
-        .append('g')
-        .classed('chart-container', true)
-        .layout('flex', 1)
-        .layout('display', 'grid')
-        .layout('grid-template', '1fr auto / auto 1fr');
+      s.append('svg').classed('draw-area', true);
 
-      container
-        .append('svg')
-        .classed('draw-area', true)
-        .attr('overflow', 'visible')
-        .layout('grid-area', '1 / 2')
-        .layout('display', 'grid');
-
-      container
-        .append('g')
+      s.append('g')
         .datum(axisData(d.yAxis))
-        .call((s) => axisLeft(s))
-        .layout('grid-area', '1 / 1');
+        .call((s) => axisLeft(s));
 
-      container
-        .append('g')
+      s.append('g')
         .datum(axisData(d.xAxis))
-        .call((s) => axisBottom(s))
-        .layout('grid-area', '2 / 2');
+        .call((s) => axisBottom(s));
     })
     .call(
       (s) =>

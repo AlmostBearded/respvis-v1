@@ -4,6 +4,7 @@
     <title>RespVis - Grouped Bar Chart</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta charset="UTF-8" />
+    <link rel="stylesheet" href="../respvis.css" />
     <style>
       #chart {
         width: 100%;
@@ -13,6 +14,21 @@
 
       body {
         background-color: floralwhite;
+      }
+
+      .bar[subcategory-index='0'],
+      .legend-item[index='0'] .symbol {
+        fill: #4f8c9d;
+      }
+
+      .bar[subcategory-index='1'],
+      .legend-item[index='1'] .symbol {
+        fill: #e23209;
+      }
+
+      .bar[subcategory-index='2'],
+      .legend-item[index='2'] .symbol {
+        fill: #539322;
       }
     </style>
   </head>
@@ -28,7 +44,6 @@
       const sites = data.sites,
         revenues = data.revenues,
         years = data.years,
-        colors = ['#4f8c9d', '#e23209', '#539322'],
         keys = revenues.map((yearlyRevs, i) => yearlyRevs.map((_, j) => sites[i] + years[j]));
 
       // respVis.enableDebugLog(true);
@@ -43,7 +58,6 @@
               subcategoryEntity: 'Years',
               subcategories: years,
               values: revenues,
-              colors: colors,
               keys: keys,
               tooltips: (barElement, barData) =>
                 `Site: ${barData.category}<br/>Year: ${
@@ -65,28 +79,22 @@
             const labelPosition = flippedBars ? { x: 1, y: 0.5 } : { x: 0.5, y: 0 };
             const yAxisSubtitle = density.x < 0.03 ? '[Million USD]' : '';
             const legendTitle = density.x < 0.03 ? 'Years' : '';
-            const chartFlexDirection = flippedBars ? 'column-reverse' : 'row';
-            const legendAlignSelf = flippedBars ? 'flex-end' : 'flex-start';
-            const legendItemsFlexDirection = flippedBars ? 'row' : 'column';
+            const legendPosition = flippedBars
+              ? respVis.LegendPosition.Top
+              : respVis.LegendPosition.Right;
+
+            chart.call(respVis.classLegendPosition, legendPosition);
 
             chartWindow.datum((d) => {
               d.flipped = flippedBars;
               d.labelsEnabled = labelsEnabled;
-              d.labels.positions = labelPosition;
+              d.labels.relativePositions = labelPosition;
               d.yAxis.subtitle = yAxisSubtitle;
               d.legend.title = legendTitle;
               return d;
             });
-
-            chart.layout('flex-direction', chartFlexDirection);
-
-            legend
-              .layout('align-self', legendAlignSelf)
-              .selectAll('.items')
-              .layout('flex-direction', legendItemsFlexDirection);
           }),
-        chart = chartWindow.selectAll('svg.chart'),
-        legend = chart.selectAll('.legend');
+        chart = chartWindow.selectAll('svg.chart');
     </script>
   </body>
 </html>

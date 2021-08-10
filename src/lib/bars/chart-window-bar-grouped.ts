@@ -46,9 +46,11 @@ export function chartWindowBarGrouped(
     .classed('chart-window-bar-grouped', true)
     .call((s) => chartWindow(s))
     .on('resize.chartwindowbar', function (e, d) {
+      const s = select(this);
       const { width, height } = e.detail.size;
-      const dataCount = arrayFlat(d.values).length;
-      select(this).dispatch('densitychange', {
+      const { values } = s.selectAll<Element, ChartBarGrouped>('.chart-bar-grouped').datum();
+      const dataCount = arrayFlat(values).length;
+      s.dispatch('densitychange', {
         detail: { density: { x: dataCount / width, y: dataCount / height } },
       });
     })
@@ -93,8 +95,6 @@ export function chartWindowBarGrouped(
         .append('svg')
         .datum(chartBarGroupedData(chartWindowD))
         .call((s) => chartBarGrouped(s));
-
-      chart.selectAll('.legend').attr('cursor', 'default');
 
       chartWindow.on('datachange.chartwindowbargrouped', function (e, chartWindowD) {
         const chartWindowS = select<Element, ChartWindowBarGrouped>(this),
@@ -151,14 +151,11 @@ export function chartWindowBarGroupedApplyFilters(
         subcategories,
         values,
         keys,
-        colors,
         valueDomain,
-        legend: { colors: legendColors },
         labels: { labels: labels },
       } = chartWindowD,
       chartWindowS = select<Element, ChartWindowBarGrouped>(g[i]),
       chartS = chartWindowS.selectAll<Element, ChartBarGrouped>('svg.chart-bar-grouped'),
-      labelSeriesS = chartS.selectAll<Element, SeriesLabelBar>('.series-label-bar'),
       catFilterD = chartWindowS
         .selectAll<Element, ToolFilterNominal>('.tool-filter-categories')
         .datum(),
@@ -169,17 +166,11 @@ export function chartWindowBarGroupedApplyFilters(
       filterSubcat = (_, i: number) => subcatFilterD.shown[i];
 
     const filteredCats = categories.filter(filterCat),
+      filteredCatIndices = categories.map((c, i) => i).filter(filterCat),
       filteredSubcats = subcategories.filter(filterSubcat),
+      filteredSubcatIndices = subcategories.map((c, i) => i).filter(filterSubcat),
       filteredValues = values.filter(filterCat).map((v) => v.filter(filterSubcat)),
       filteredKeys = keys?.filter(filterCat).map((v) => v.filter(filterSubcat)),
-      filteredColors = arrayIs2D(colors)
-        ? colors.filter(filterCat).map((v) => v.filter(filterSubcat))
-        : arrayIs(colors)
-        ? colors.filter(filterSubcat)
-        : colors,
-      filteredLegendColors = arrayIs(legendColors)
-        ? legendColors.filter(filterSubcat)
-        : legendColors,
       filteredLabels =
         arrayIs(labels) &&
         arrayFlat(
@@ -194,21 +185,25 @@ export function chartWindowBarGroupedApplyFilters(
       (d) => (
         d.categoryScale.domain(filteredCats),
         d.valueScale.domain(filteredValueDomain).nice(),
-        Object.assign(d, chartBarGroupedData(chartWindowD), {
-          categories: filteredCats,
-          subcategories: filteredSubcats,
-          values: filteredValues,
-          keys: filteredKeys,
-          colors: filteredColors,
-          legend: {
-            ...chartWindowD.legend,
-            ...(filteredLegendColors && { colors: filteredLegendColors }),
-          },
-          labels: {
-            ...chartWindowD.labels,
-            ...(filteredLabels && { labels: filteredLabels }),
-          },
-        })
+        Object.assign<ChartBarGrouped, ChartBarGrouped, Partial<ChartBarGrouped>>(
+          d,
+          chartBarGroupedData(chartWindowD),
+          {
+            categories: filteredCats,
+            subcategories: filteredSubcats,
+            values: filteredValues,
+            keys: filteredKeys,
+            categoryIndices: filteredCatIndices,
+            subcategoryIndices: filteredSubcatIndices,
+            legend: {
+              ...chartWindowD.legend,
+            },
+            labels: {
+              ...chartWindowD.labels,
+              ...(filteredLabels && { labels: filteredLabels }),
+            },
+          }
+        )
       )
     );
   });

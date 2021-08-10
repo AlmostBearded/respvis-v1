@@ -1,12 +1,10 @@
 import { select, Selection, ValueFn } from 'd3-selection';
-import { layouter } from '../core';
-import { menuDropdownItem } from './menu-dropdown';
+import { computedStyleWithoutDefaults, nodeToString, presentationAttributes } from '../core';
 
 export function toolDownloadSVG(selection: Selection<HTMLLIElement>): void {
   selection
     .classed('tool-save-svg', true)
     .text('Download SVG')
-    .call((s) => menuDropdownItem(s))
     .on('click', function () {
       select(this.closest('.chart-window'))
         .selectAll<SVGSVGElement, unknown>('.layouter > svg.chart')
@@ -19,23 +17,37 @@ export function chartSaveSVG<Datum>(
   fileName: string | ValueFn<SVGSVGElement, Datum, string>
 ): void {
   chartSelection.each((d, i, g) => {
-    const chartS = select(g[i]),
-      parentS = select(g[i].parentElement!),
-      parentInnerHTML = parentS.html(),
-      chartOuterHTML = parentInnerHTML
-        .match(/<svg.*class=.*chart.*<\/svg>/)![0]
-        .replace(/ (style|layout|bounds)=".*?"/g, ''),
-      chartBlob = new Blob([chartOuterHTML], {
-        type: 'image/svg+xml;charset=utf-8',
-      }),
-      chartURL = URL.createObjectURL(chartBlob),
-      anchor = document.createElement('a'),
-      anchorDownloadAttr = fileName instanceof Function ? fileName.call(g[i], d, i, g) : fileName;
+    const clonedChart = <Element>g[i].cloneNode(true);
+    attrsFromComputedStyle(clonedChart, g[i]);
 
-    anchor.href = chartURL;
-    anchor.download = anchorDownloadAttr;
+    const cloneContainer = document.createElement('div');
+    cloneContainer.append(clonedChart);
+
+    const cloneHTML = cloneContainer.innerHTML.replace(
+      / (style|layout|bounds|ignore-layout|ignore-layout-children)=".*?"/g,
+      ''
+    );
+
+    const blobType = 'image/svg+xml;charset=utf-8';
+    const blob = new Blob([cloneHTML], { type: blobType });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    fileName = fileName instanceof Function ? fileName.call(g[i], d, i, g) : fileName;
+
+    anchor.href = url;
+    anchor.download = fileName;
     document.body.appendChild(anchor);
     anchor.click();
     document.body.removeChild(anchor);
   });
+}
+
+function attrsFromComputedStyle(target: Element, source: Element): void {
+  const style = computedStyleWithoutDefaults(source, presentationAttributes);
+  for (let prop in style) {
+    target.setAttribute(prop, style[prop]);
+  }
+  for (let i = 0; i < source.children.length; ++i) {
+    attrsFromComputedStyle(target.children[i], source.children[i]);
+  }
 }

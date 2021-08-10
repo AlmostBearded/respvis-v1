@@ -1,6 +1,6 @@
 import { BaseType, select, Selection } from 'd3-selection';
-import { axisTickFindByIndex, axisTickHighlight } from '../axis';
-import { debug, nodeToString, siblingIndexSameClasses } from '../core';
+import { axisTickFindByIndex } from '../axis';
+import { debug, nodeToString, siblingIndex, siblingIndexSameClasses } from '../core';
 import {
   chartCartesian,
   chartCartesianUpdateAxes,
@@ -8,7 +8,7 @@ import {
   ChartCartesian as ChartCartesian,
 } from '../core/chart-cartesian';
 import { seriesBar, seriesBarData, SeriesBar, Bar, barFind } from './series-bar';
-import { labelHighlight, labelFind } from './series-label';
+import { labelFind } from './series-label';
 import {
   SeriesLabelBar as SeriesLabelBar,
   seriesLabelBarData as seriesLabelBarData,
@@ -41,7 +41,6 @@ export function chartBar(selection: ChartBarSelection): void {
 
       drawArea
         .append('g')
-        .layout('grid-area', '1 / 1')
         .datum<SeriesBar>(chartData)
         .call((s) => seriesBar(s))
         .on('mouseover.chartbarhighlight', (e) => chartBarHoverBar(chart, select(e.target), true))
@@ -71,12 +70,7 @@ export function chartBarDataChange(
       .selectAll('.draw-area')
       .selectAll<Element, SeriesLabelBar>('.series-label-bar')
       .data(chartD.labelsEnabled ? [labelSeriesD] : [])
-      .join((enter) =>
-        enter
-          .append('g')
-          .layout('grid-area', '1 / 1')
-          .call((s) => seriesLabelBar(s))
-      );
+      .join((enter) => enter.append('g').call((s) => seriesLabelBar(s)));
 
     chartD.xAxis.scale = chartD.categoryScale;
     chartD.yAxis.scale = chartD.valueScale;
@@ -86,11 +80,9 @@ export function chartBarDataChange(
 
 export function chartBarHoverBar(chart: Selection, bar: Selection<Element, Bar>, hover: boolean) {
   bar.each((barD, i, g) => {
-    const categoryIndex = siblingIndexSameClasses(g[i]),
-      labelS = labelFind(chart, barD.key),
-      tickS = axisTickFindByIndex(chart.selectAll('.axis-x'), categoryIndex);
+    const barIndex = siblingIndex(g[i], '.bar');
 
-    labelHighlight(labelS, hover);
-    axisTickHighlight(tickS, hover);
+    labelFind(chart, barD.key).classed('highlight', hover);
+    axisTickFindByIndex(chart.selectAll('.axis-x'), barIndex).classed('highlight', hover);
   });
 }
