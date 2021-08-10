@@ -1,3 +1,4 @@
+export { v4 as uuid } from 'uuid';
 export * from './colors';
 export * as utils from './utils';
 export * from './utility/position';
@@ -6,8 +7,7 @@ export * from './utility/bounds';
 export * from './utility/find';
 export * from './utility/index';
 export * from './utility/class';
-
-export { v4 as uuid } from 'uuid';
+export * from './utility/style';
 
 export * from './selection';
 export * from './layouter';
