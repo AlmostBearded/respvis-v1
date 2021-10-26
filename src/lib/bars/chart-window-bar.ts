@@ -72,8 +72,6 @@ export function chartWindowBar(selection: ChartWindowBarSelection): void {
         .datum(chartBarData(chartWindowD))
         .call((s) => chartBar(s));
 
-      chart.selectAll('.legend').attr('cursor', 'default');
-
       chartWindow.on('datachange.chartwindowbar', function (e, chartWindowD) {
         const chartWindowS = <ChartWindowBarSelection>select(this),
           categoryFilterS = chartWindowS.selectAll<Element, ToolFilterNominal>(
