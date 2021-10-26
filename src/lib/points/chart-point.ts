@@ -26,8 +26,6 @@ export function chartPoint(selection: ChartPointSelection): void {
     .each((d, i, g) => {
       const drawArea = select(g[i]).selectAll('.draw-area');
 
-      drawArea.append('rect').classed('background', true);
-
       drawArea
         .append('svg')
         .datum(d)
