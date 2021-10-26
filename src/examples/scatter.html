@@ -50,38 +50,37 @@
       // todo: only render points visible in current zoom frame
 
       const root = d3.select('#chart'),
-        layouter = root
+        chartWindow = root
           .append('div')
-          .datum((_, i, g) => respVis.layouterData(g[i]))
-          .call(respVis.layouter)
-          .style('height', '100%'),
-        chartDatum = respVis.chartPointData({
-          xValues: areas,
-          xScale: areaScale,
-          yValues: prices,
-          yScale: priceScale,
-          radiuses: 5,
-          keys: areas.map((a, i) => i),
-          xAxis: {
-            title: 'Area',
-            subtitle: '[ft²]',
-            configureAxis: (a) => a.ticks(window.matchMedia(wideMediaQuery).matches ? 10 : 5),
-          },
-          yAxis: {
-            title: 'Price',
-            subtitle: '[1000 USD]',
-          },
-        }),
-        chart = layouter.append('svg').datum(chartDatum).call(respVis.chartPoint),
+          .datum(
+            respVis.chartWindowPointData({
+              xValues: areas,
+              xScale: areaScale,
+              yValues: prices,
+              yScale: priceScale,
+              radiuses: 5,
+              keys: areas.map((a, i) => i),
+              xAxis: {
+                title: 'Area',
+                subtitle: '[ft²]',
+                configureAxis: (a) => a.ticks(window.matchMedia(wideMediaQuery).matches ? 10 : 5),
+              },
+              yAxis: {
+                title: 'Price',
+                subtitle: '[1000 USD]',
+              },
+            })
+          )
+          .call(respVis.chartWindowPoint),
         zoom = d3
           .zoom()
           .scaleExtent([1, 20])
           .on('zoom', function (e, d) {
             areaScale.domain(e.transform.rescaleX(areaScale.domain(areaDomain)).domain());
             priceScale.domain(e.transform.rescaleY(priceScale.domain(priceDomain)).domain());
-            chart.dispatch('datachange');
+            chartWindow.datum(d => d);
           }),
-        drawArea = chart
+        drawArea = chartWindow
           .selectAll('.draw-area')
           .call(zoom)
           .on('render.zoom', (e) => {
@@ -91,18 +90,7 @@
                 [width, height],
               ];
             zoom.extent(extent).translateExtent(extent);
-          }),
-        pointSeries = chart.selectAll('.series-point');
-
-      window.addEventListener('resize', configure);
-      configure();
-
-      // respVis.enableDebugLog(true);
-
-      function configure() {
-        if (window.matchMedia(wideMediaQuery).matches) {
-        }
-      }
+          });
     </script>
   </body>
 </html>
