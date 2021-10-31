@@ -1,14 +1,33 @@
 import { Selection } from 'd3-selection';
-import { layouterData, layouter, resizeEventListener } from '../core';
+import { toolDownloadSVG } from '.';
+import { layouter, resizeEventListener, Layouter } from '../core';
 import { toolbar } from './toolbar';
 
-export function chartWindow(selection: Selection<HTMLDivElement>): void {
+export type ChartWindowSelection<Data> = Selection<HTMLDivElement, Partial<Data>>;
+
+export function chartWindow<Data>(selection: ChartWindowSelection<Data>): void {
   selection.classed('chart-window', true);
-  selection.append('div').call((s) => toolbar(s));
+
   selection
-    .append('div')
-    .datum((_, i, g) => layouterData(g[i]))
+    .selectAll<HTMLDivElement, null>('.toolbar')
+    .data([null])
+    .join('div')
+    .call((s) => toolbar(s));
+
+  selection
+    .selectAll<HTMLDivElement, Layouter>('.layouter')
+    .data([null])
+    .join('div')
     .call((s) => layouter(s));
 
   resizeEventListener(selection);
+}
+
+export function chartWindowAddDownloadSVGTool(selection: ChartWindowSelection<unknown>): void {
+  selection
+    .selectAll('.menu-tools > .items')
+    .selectAll<HTMLLIElement, unknown>('.tool-save-svg')
+    .data([null])
+    .join('li')
+    .call((s) => toolDownloadSVG(s));
 }

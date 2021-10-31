@@ -1,6 +1,8 @@
 import { create, select, Selection } from 'd3-selection';
+import { SeriesCheckboxCheckedEvent } from '.';
+import { DataHydrateFn } from '../core/utility/data';
 import { menuDropdown } from './menu-dropdown';
-import { SeriesCheckbox, seriesCheckboxData, seriesCheckbox } from './series-checkbox';
+import { SeriesCheckbox, seriesCheckboxDataHydrate, seriesCheckbox } from './series-checkbox';
 
 export interface FilterNominalOption {
   name: string;
@@ -10,48 +12,63 @@ export interface FilterNominalOption {
 export interface ToolFilterNominal {
   text: string;
   options: string[];
-  shown: boolean[];
-  minShown: number;
-  maxShown: number;
+  active: boolean[];
+  minActive: number;
+  maxActive: number;
 }
 
-export function toolFilterNominalData(data: Partial<ToolFilterNominal>): ToolFilterNominal {
+export function toolFilterNominalDataHydrate(data: Partial<ToolFilterNominal>): ToolFilterNominal {
   const options = data.options || [];
   return {
     text: data.text || 'Filter',
     options: options,
-    shown: data.shown || options.map(() => true),
-    minShown: data.minShown || 1,
-    maxShown: data.maxShown || Infinity,
+    active: data.active || options.map(() => true),
+    minActive: data.minActive || 1,
+    maxActive: data.maxActive || Infinity,
   };
 }
 
-export function toolFilterNominal(selection: Selection<HTMLLIElement, ToolFilterNominal>): void {
-  selection.classed('tool-filter-nominal', true).call((s) => menuDropdown(s));
+export type ToolFilterNominalActiveEvent = CustomEvent<{
+  active: boolean[];
+  changedIndex: number;
+  changedValue: boolean;
+}>;
 
-  const items = selection
-    .selectAll<HTMLUListElement, SeriesCheckbox>('.items')
-    .datum(
-      seriesCheckboxData({
-        container: () => create('li').node()!,
-      })
-    )
-    .call((s) => seriesCheckbox(s));
-
+export function toolFilterNominal(
+  selection: Selection<HTMLLIElement, Partial<ToolFilterNominal>>,
+  dataHydrate: DataHydrateFn<ToolFilterNominal> = toolFilterNominalDataHydrate
+): void {
   selection
-    .on('change.toolfilternominal', (e, d) => {
-      d.shown = [...items.datum().checked];
-    })
-    .on('datachange.toolfilternominal', function (e, toolD) {
-      const s = select(this);
-      s.selectAll('.text').text(`${toolD.text}`);
-      s.selectAll<HTMLUListElement, SeriesCheckbox>('.items').datum((d) => {
-        d.labels = toolD.options;
-        d.checked = toolD.shown;
-        d.minChecked = toolD.minShown;
-        d.maxChecked = toolD.maxShown;
-        return d;
-      });
-    })
-    .dispatch('datachange');
+    .classed('tool-filter-nominal', true)
+    .call((s) => menuDropdown(s))
+    .each(function (d) {
+      const toolS = select(this);
+      const toolD = dataHydrate(d);
+      toolS.selectAll('.text').text(`${toolD.text}`);
+      toolS
+        .selectAll<HTMLUListElement, SeriesCheckbox>('.items')
+        .datum({
+          container: 'li',
+          labels: toolD.options,
+          checked: toolD.active,
+          minChecked: toolD.minActive,
+          maxChecked: toolD.maxActive,
+        })
+        .call((s) => seriesCheckbox(s))
+        .on(
+          'checked.toolfilternominal',
+          function ({
+            detail: { checked, changedIndex, changedValue },
+          }: SeriesCheckboxCheckedEvent) {
+            toolS.dispatch('active', {
+              detail: { active: checked, changedIndex, changedValue },
+            });
+          }
+        );
+    });
+
+  // selection
+  //   .on('change.toolfilternominal', (e, d) => {
+  //     d.shown = [...items.datum().checked];
+  // });
 }

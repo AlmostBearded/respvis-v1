@@ -6,7 +6,7 @@ import { debug, findByDataProperty, nodeToString, Rect } from '../core';
 import { Size } from '../core/utils';
 import {
   SeriesConfigTooltips,
-  seriesConfigTooltipsData,
+  seriesConfigTooltipsDataHydrate,
   seriesConfigTooltipsHandleEvents,
 } from '../tooltip';
 import { Bar, seriesBarJoin } from './series-bar';
@@ -51,7 +51,7 @@ export function seriesBarGroupedData(data: Partial<SeriesBarGrouped>): SeriesBar
     subcategoryIndices: data.subcategoryIndices,
     keys: data.keys,
     bounds: data.bounds || { width: 600, height: 400 },
-    ...seriesConfigTooltipsData<SVGRectElement, BarGrouped>(data),
+    ...seriesConfigTooltipsDataHydrate<SVGRectElement, BarGrouped>(data),
     tooltipsEnabled: data.tooltipsEnabled || true,
     tooltips:
       data.tooltips ||

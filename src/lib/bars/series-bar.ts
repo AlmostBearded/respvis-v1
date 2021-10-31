@@ -1,16 +1,27 @@
-import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
+import { ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { select, Selection } from 'd3-selection';
-import { debug, findByDataProperty, findByKey, nodeToString } from '../core';
+import { debug, findByDataProperty, nodeToString } from '../core';
 import { Rect, rectFitStroke, rectMinimized, rectToAttrs } from '../core/utility/rect';
 import { Transition } from 'd3-transition';
 import { easeCubicOut } from 'd3-ease';
 import { Size } from '../core/utils';
 import {
-  SeriesConfigTooltips,
-  seriesConfigTooltipsData,
-  seriesConfigTooltipsHandleEvents,
+  ScaleBandConfig,
+  ScaleContinuousConfig,
+  ScaleContinuousType,
+  d3ScaleBand,
+  d3ScaleContinuous,
+} from '../core/scale';
+import {
+  TooltipPositionConfig,
+  tooltipContent,
+  tooltipShow,
+  tooltipHide,
+  tooltipPosition,
 } from '../tooltip';
 import toPX from 'to-px';
+import { DataHydrateFn } from '../core/utility/data';
+import { scaleBand } from 'd3-scale';
 
 export interface Bar extends Rect {
   category: string;
@@ -19,41 +30,54 @@ export interface Bar extends Rect {
   key: string;
 }
 
-export interface SeriesBar extends SeriesConfigTooltips<SVGRectElement, Bar> {
-  categories: any[];
-  categoryScale: ScaleBand<any>;
+export interface SeriesBar {
+  categories: string[];
   values: number[];
+  categoryScale: ScaleBand<string>;
   valueScale: ScaleContinuousNumeric<number, number>;
-  keys: string[];
-  categoryIndices?: number[];
+  categoryIndices: number[];
   flipped: boolean;
+  tooltipsEnabled: boolean;
+  tooltips: (item: SVGRectElement, data: Bar) => string | Element;
+  tooltipPosition: (
+    item: SVGRectElement,
+    data: Bar,
+    mouseEvent: MouseEvent
+  ) => TooltipPositionConfig;
+
   bounds: Size;
 }
 
-export function seriesBarData(data: Partial<SeriesBar>): SeriesBar {
+export function seriesBarDataHydrate(data: Partial<SeriesBar>): SeriesBar {
   const categories = data.categories || [];
+  const values = data.values || [];
+  const categoryScale = data.categoryScale || scaleBand().domain(categories).padding(0.1);
+  const valueScale =
+    data.valueScale ||
+    scaleLinear()
+      .domain([0, Math.max(...values)])
+      .nice();
+  const flipped = data.flipped ?? false;
+  const bounds = data.bounds || { width: 600, height: 400 };
+
   return {
-    bounds: data.bounds || { width: 600, height: 400 },
-    categories: categories,
-    categoryIndices: data.categoryIndices,
-    categoryScale: data.categoryScale || scaleBand().domain(categories).padding(0.1),
-    values: data.values || [],
-    valueScale:
-      data.valueScale ||
-      scaleLinear()
-        .domain([0, Math.max(...(data.values || []))])
-        .nice(),
-    flipped: data.flipped || false,
-    keys: data.keys || categories,
-    ...seriesConfigTooltipsData<SVGRectElement, Bar>(data),
-    tooltipsEnabled: data.tooltipsEnabled || true,
-    tooltips:
-      data.tooltips || ((element, data) => `Category: ${data.category}<br/>Value: ${data.value}`),
+    bounds: bounds,
+    categories,
+    categoryIndices: data.categoryIndices || categories.map((_, i) => i),
+    categoryScale: categoryScale,
+    values,
+    valueScale: valueScale,
+    flipped: flipped,
+    tooltipsEnabled: data.tooltipsEnabled ?? true,
+    tooltips: data.tooltips || ((e, d) => `Category: ${d.category}<br/>Value: ${d.value}`),
+    tooltipPosition:
+      data.tooltipPosition ||
+      ((e, d, mouseEvent) => ({ position: { x: mouseEvent.clientX, y: mouseEvent.clientY } })),
   };
 }
 
 export function seriesBarCreateBars(seriesData: SeriesBar): Bar[] {
-  const { categories, categoryScale, values, valueScale, keys, categoryIndices, flipped, bounds } =
+  const { categories, categoryScale, values, valueScale, categoryIndices, flipped, bounds } =
     seriesData;
 
   if (!flipped) {
@@ -84,8 +108,8 @@ export function seriesBarCreateBars(seriesData: SeriesBar): Bar[] {
       bar: Bar = {
         category: c,
         value: v,
-        key: keys?.[i] || i.toString(),
-        categoryIndex: categoryIndices === undefined ? i : categoryIndices[i],
+        categoryIndex: categoryIndices[i],
+        key: c,
         ...(flipped ? flippedRect : rect),
       };
     data.push(bar);
@@ -93,29 +117,47 @@ export function seriesBarCreateBars(seriesData: SeriesBar): Bar[] {
   return data;
 }
 
-export function seriesBar(selection: Selection<Element, SeriesBar>): void {
+export function seriesBar(
+  selection: Selection<Element, Partial<SeriesBar>>,
+  dataHydrate: DataHydrateFn<SeriesBar> = seriesBarDataHydrate
+): void {
   selection
     .classed('series-bar', true)
     .attr('ignore-layout-children', true)
-    .on('datachange.seriesbar', function () {
-      debug(`data change on ${nodeToString(this)}`);
-      select(this).dispatch('render');
-    })
-    .on('render.seriesbar', function (e, d) {
-      const series = select<Element, SeriesBar>(this);
-      const bounds = series.bounds();
-      if (!bounds) return;
+    .each(function (d) {
       debug(`render bar series on ${nodeToString(this)}`);
-      d.bounds = bounds;
-      series
+      const seriesD = dataHydrate(d);
+      const seriesS = select(this);
+      const bounds = seriesS.bounds();
+      if (!bounds) return;
+      seriesD.bounds = bounds;
+      seriesS
         .selectAll<SVGRectElement, Bar>('rect')
-        .data(seriesBarCreateBars(d), (d) => d.key)
-        .call((s) => seriesBarJoin(series, s));
+        .data(seriesBarCreateBars(seriesD), (d) => d.category)
+        .call((s) => seriesBarJoin(seriesS, s));
     })
-    .on('mouseover.seriesbarhighlight mouseout.seriesbarhighlight', (e: MouseEvent) =>
+    .on('mouseover.highlight mouseout.highlight', (e: MouseEvent) =>
       (<Element>e.target).classList.toggle('highlight', e.type.endsWith('over'))
     )
-    .call((s) => seriesConfigTooltipsHandleEvents(s));
+    .on('mouseover.tooltip', (e, d) => {
+      const { tooltips, tooltipsEnabled } = dataHydrate(d);
+      const item = <SVGRectElement>e.target;
+      if (!tooltipsEnabled || !item) return;
+      const data = select<SVGRectElement, Bar>(item).datum();
+      tooltipShow(null);
+      tooltipContent(null, tooltips(item, data));
+    })
+    .on('mousemove.tooltip', (e: MouseEvent, d) => {
+      const { tooltipsEnabled, tooltipPosition: position } = dataHydrate(d);
+      const item = <SVGRectElement>e.target;
+      if (!tooltipsEnabled || !item) return;
+      const data = select<SVGRectElement, Bar>(item).datum();
+      tooltipPosition(null, position(item, data, e));
+    })
+    .on('mouseout.tooltip', (e: MouseEvent, d) => {
+      const { tooltipsEnabled } = dataHydrate(d);
+      if (tooltipsEnabled) tooltipHide(null);
+    });
 }
 
 export interface JoinEvent<GElement extends Element, Datum>
@@ -164,13 +206,6 @@ export function seriesBarJoin(
 }
 
 export function barFind<Data extends Bar>(
-  container: Selection,
-  key: string
-): Selection<SVGRectElement, Data> {
-  return findByKey<SVGRectElement, Data>(container, '.bar', key);
-}
-
-export function barFindByCategory<Data extends Bar>(
   container: Selection,
   category: string
 ): Selection<SVGRectElement, Data> {

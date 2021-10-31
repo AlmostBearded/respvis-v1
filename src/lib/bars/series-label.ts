@@ -9,6 +9,7 @@ import {
   Position,
   positionToTransformAttr,
 } from '../core';
+import { DataHydrateFn } from '../core/utility/data';
 
 export interface Label extends Position {
   text: string;
@@ -21,7 +22,7 @@ export interface SeriesLabel {
   keys: string[];
 }
 
-export function seriesLabelData(data: Partial<SeriesLabel>): SeriesLabel {
+export function seriesLabelDataHydrate(data: Partial<SeriesLabel>): SeriesLabel {
   return {
     texts: data.texts || [],
     positions: data.positions || [],
@@ -38,21 +39,20 @@ export function seriesLabelCreateLabels(seriesData: SeriesLabel): Label[] {
   }));
 }
 
-export function seriesLabel(selection: Selection<Element, SeriesLabel>): void {
+export function seriesLabel(
+  selection: Selection<Element, Partial<SeriesLabel>>,
+  dataHydrate: DataHydrateFn<SeriesLabel> = seriesLabelDataHydrate
+): void {
   selection
     .classed('series-label', true)
     .attr('ignore-layout-children', true)
-    .on('datachange.serieslabel', function () {
-      debug(`data change on ${nodeToString(this)}`);
-      select(this).dispatch('render');
-    })
-    .on('render.serieslabel', function (e, d) {
-      debug(`render label series on ${nodeToString(this)}`);
-      const series = select<Element, SeriesLabel>(this);
-      series
+    .each(function (d) {
+      const seriesS = select(this);
+      const seriesD = dataHydrate(d);
+      seriesS
         .selectAll<SVGTextElement, Label>('text')
-        .data(seriesLabelCreateLabels(d), (d) => d.key)
-        .call((s) => seriesLabelJoin(series, s));
+        .data(seriesLabelCreateLabels(seriesD), (d) => d.key)
+        .call((s) => seriesLabelJoin(seriesS, s));
     });
 }
 

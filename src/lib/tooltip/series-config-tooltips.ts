@@ -1,4 +1,5 @@
 import { select, Selection } from 'd3-selection';
+import { DataHydrateFn } from '../core/utility/data';
 import {
   tooltipContent,
   tooltipHide,
@@ -7,7 +8,7 @@ import {
   tooltipShow,
 } from './tooltip';
 
-export interface SeriesConfigTooltips<ItemElement extends Element, ItemDatum> {
+export interface SeriesConfigTooltipsHydrated<ItemElement extends Element, ItemDatum> {
   tooltipsEnabled: boolean;
   tooltips: (item: ItemElement, data: ItemDatum) => string | Element;
   tooltipPosition: (
@@ -17,9 +18,13 @@ export interface SeriesConfigTooltips<ItemElement extends Element, ItemDatum> {
   ) => TooltipPositionConfig;
 }
 
-export function seriesConfigTooltipsData<ItemElement extends Element, ItemDatum>(
-  data: Partial<SeriesConfigTooltips<ItemElement, ItemDatum>>
-): SeriesConfigTooltips<Element, any> {
+export type SeriesConfigTooltips<ItemElement extends Element, ItemDatum> = Partial<
+  SeriesConfigTooltipsHydrated<ItemElement, ItemDatum>
+>;
+
+export function seriesConfigTooltipsDataHydrate<ItemElement extends Element, ItemDatum>(
+  data: SeriesConfigTooltips<ItemElement, ItemDatum>
+): SeriesConfigTooltipsHydrated<Element, any> {
   return {
     tooltipsEnabled: data.tooltipsEnabled ?? true,
     tooltips: data.tooltips || ((data) => 'Tooltip'),
@@ -32,12 +37,16 @@ export function seriesConfigTooltipsData<ItemElement extends Element, ItemDatum>
 }
 
 export function seriesConfigTooltipsHandleEvents<ItemElement extends Element, ItemDatum>(
-  seriesSelection: Selection<Element, SeriesConfigTooltips<ItemElement, ItemDatum>>,
+  seriesSelection: Selection<Element, Partial<SeriesConfigTooltips<ItemElement, ItemDatum>>>,
+  dataHydrate: DataHydrateFn<
+    SeriesConfigTooltips<ItemElement, ItemDatum>,
+    SeriesConfigTooltipsHydrated<ItemElement, ItemDatum>
+  > = seriesConfigTooltipsDataHydrate,
   seriesItemFinder?: (eventTarget: Element) => ItemElement | null
 ): void {
   seriesSelection
     .on('mouseover.tooltip', (e, d) => {
-      const { tooltips, tooltipsEnabled } = d;
+      const { tooltips, tooltipsEnabled } = dataHydrate(d);
       const item = seriesItemFinder ? seriesItemFinder(<Element>e.target) : <ItemElement>e.target;
       if (!tooltipsEnabled || !item) return;
       const data = select<ItemElement, ItemDatum>(item).datum();
@@ -45,14 +54,14 @@ export function seriesConfigTooltipsHandleEvents<ItemElement extends Element, It
       tooltipContent(null, tooltips(item, data));
     })
     .on('mousemove.tooltip', (e: MouseEvent, d) => {
-      const { tooltipsEnabled, tooltipPosition: position } = d;
+      const { tooltipsEnabled, tooltipPosition: position } = dataHydrate(d);
       const item = seriesItemFinder ? seriesItemFinder(<Element>e.target) : <ItemElement>e.target;
       if (!tooltipsEnabled || !item) return;
       const data = select<ItemElement, ItemDatum>(item).datum();
       tooltipPosition(null, position(item, data, e));
     })
     .on('mouseout.tooltip', (e: MouseEvent, d) => {
-      const { tooltipsEnabled } = d;
+      const { tooltipsEnabled } = dataHydrate(d);
       if (tooltipsEnabled) tooltipHide(null);
     });
 }

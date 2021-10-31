@@ -3,5 +3,9 @@ import { menuTools } from './menu-tools';
 
 export function toolbar(selection: Selection<HTMLDivElement>): void {
   selection.classed('toolbar', true);
-  menuTools(selection.append('div'));
+  selection
+    .selectAll<HTMLDivElement, null>('.menu-tools')
+    .data([null])
+    .join('div')
+    .call((s) => menuTools(s));
 }

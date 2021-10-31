@@ -1,5 +1,6 @@
 import { create, EnterElement, select, Selection, ValueFn } from 'd3-selection';
 import { siblingIndexSameClasses, uuid } from '../core';
+import { DataHydrateFn } from '../core/utility/data';
 
 export interface Checkbox {
   container: string | ValueFn<EnterElement, Checkbox, HTMLElement>;
@@ -17,7 +18,7 @@ export interface SeriesCheckbox {
   maxChecked: number;
 }
 
-export function seriesCheckboxData(data: Partial<SeriesCheckbox>): SeriesCheckbox {
+export function seriesCheckboxDataHydrate(data: Partial<SeriesCheckbox>): SeriesCheckbox {
   return {
     container: data.container || 'div',
     labels: data.labels || [],
@@ -44,29 +45,39 @@ export function seriesCheckboxCreateCheckboxes(seriesData: SeriesCheckbox): Chec
   });
 }
 
-export function seriesCheckbox(selection: Selection<HTMLElement, SeriesCheckbox>): void {
+export type SeriesCheckboxCheckedEvent = CustomEvent<{
+  checked: boolean[];
+  changedIndex: number;
+  changedValue: boolean;
+}>;
+
+export function seriesCheckbox(
+  selection: Selection<HTMLElement, Partial<SeriesCheckbox>>,
+  dataHydrate: DataHydrateFn<SeriesCheckbox> = seriesCheckboxDataHydrate
+): void {
   selection
     .classed('series-checkbox', true)
-    .on('change.seriescheckbox', function (e, d) {
-      const checkbox = <HTMLInputElement>e.target;
-      const index = siblingIndexSameClasses(checkbox.closest('.checkbox')!);
-      select<Element, SeriesCheckbox>(this).datum((d) => {
-        d.checked[index] = checkbox.checked;
-        return d;
+    .each(function (d) {
+      const seriesS = select(this);
+      const seriesD = dataHydrate(d);
+      seriesS
+        .selectAll<Element, Checkbox>('.checkbox')
+        .data(seriesCheckboxCreateCheckboxes(seriesD), (d) => d.label)
+        .call((s) => seriesCheckboxJoin(seriesS, s));
+
+      seriesS.on('change.seriescheckbox', function (e, d) {
+        const { checked } = seriesD;
+        const checkbox = <HTMLInputElement>e.target;
+        const changedIndex = siblingIndexSameClasses(checkbox.closest('.checkbox')!);
+        const changedValue = checkbox.checked;
+        checked[changedIndex] = changedValue;
+        seriesS.dispatch('checked', { detail: { checked, changedIndex, changedValue } });
       });
     })
     .on(
       'click.seriescheckbox',
       (e) => e.target.classList.contains('checkbox') && e.target.querySelector('input').click()
-    )
-    .on('datachange.seriescheckbox', function (e, d) {
-      const series = select<HTMLElement, SeriesCheckbox>(this);
-      series
-        .selectAll<Element, Checkbox>('.checkbox')
-        .data(seriesCheckboxCreateCheckboxes(d), (d) => d.label)
-        .call((s) => seriesCheckboxJoin(series, s));
-    })
-    .dispatch('datachange');
+    );
 }
 
 export function seriesCheckboxJoin(

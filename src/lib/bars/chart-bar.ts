@@ -1,17 +1,18 @@
-import { BaseType, select, Selection } from 'd3-selection';
+import { select, Selection } from 'd3-selection';
 import { axisTickFindByIndex } from '../axis';
-import { debug, nodeToString, siblingIndex, siblingIndexSameClasses } from '../core';
+import { siblingIndex } from '../core';
 import {
   chartCartesian,
-  chartCartesianUpdateAxes,
-  chartCartesianData,
-  ChartCartesian as ChartCartesian,
+  chartCartesianDataHydrate,
+  ChartCartesian,
+  chartCartesianAxes,
 } from '../core/chart-cartesian';
-import { seriesBar, seriesBarData, SeriesBar, Bar, barFind } from './series-bar';
+import { DataHydrateFn } from '../core/utility/data';
+import { seriesBar, seriesBarDataHydrate, SeriesBar, Bar } from './series-bar';
 import { labelFind } from './series-label';
 import {
   SeriesLabelBar as SeriesLabelBar,
-  seriesLabelBarData as seriesLabelBarData,
+  seriesLabelBarDataHydrate as seriesLabelBarDataHydrate,
   seriesLabelBar,
 } from './series-label-bar';
 
@@ -20,61 +21,57 @@ export interface ChartBar extends SeriesBar, ChartCartesian {
   labels: Partial<SeriesLabelBar>;
 }
 
-export function chartBarData(data: Partial<ChartBar>): ChartBar {
+export function chartBarDataHydrate(data: Partial<ChartBar>): ChartBar {
+  const seriesD = seriesBarDataHydrate(data);
+  const chartCartesianD = chartCartesianDataHydrate(data);
+  chartCartesianD.xAxis.scale = seriesD.categoryScale;
+  chartCartesianD.yAxis.scale = seriesD.valueScale;
   return {
-    ...seriesBarData(data),
-    ...chartCartesianData(data),
+    ...seriesD,
+    ...chartCartesianD,
     labelsEnabled: data.labelsEnabled ?? true,
     labels: data.labels || {},
   };
 }
 
-export type ChartBarSelection = Selection<SVGSVGElement | SVGGElement, ChartBar>;
+export type ChartBarSelection = Selection<SVGSVGElement | SVGGElement, Partial<ChartBar>>;
 
-export function chartBar(selection: ChartBarSelection): void {
-  selection
-    .call((s) => chartCartesian(s, false))
-    .classed('chart-bar', true)
-    .each((chartData, i, g) => {
-      const chart = <ChartBarSelection>select(g[i]);
-      const drawArea = chart.selectAll('.draw-area');
-
-      drawArea
-        .append('g')
-        .datum<SeriesBar>(chartData)
-        .call((s) => seriesBar(s))
-        .on('mouseover.chartbarhighlight', (e) => chartBarHoverBar(chart, select(e.target), true))
-        .on('mouseout.chartbarhighlight', (e) => chartBarHoverBar(chart, select(e.target), false));
-    })
-    .on('datachange.debuglog', function () {
-      debug(`data change on ${nodeToString(this)}`);
-    })
-    .on('datachange.chartbar', function (e, chartData) {
-      chartBarDataChange(<ChartBarSelection>select(this));
-    })
-    .call((s) => chartBarDataChange(s));
-}
-
-export function chartBarDataChange(
-  selection: Selection<SVGSVGElement | SVGGElement, ChartBar>
+export function chartBar(
+  selection: ChartBarSelection,
+  dataHydrate: DataHydrateFn<ChartBar> = chartBarDataHydrate
 ): void {
-  selection.each(function (chartD, i, g) {
-    const chartS = <ChartBarSelection>select(g[i]);
-    const barSeriesS = chartS.selectAll<Element, SeriesBar>('.series-bar').datum((d) => d);
+  selection.classed('chart-bar', true).each(function (d) {
+    const chartS = <ChartBarSelection>select(this);
+    const chartD = dataHydrate(d);
 
-    const labelSeriesD = seriesLabelBarData({
-      barContainer: barSeriesS,
-      ...chartD.labels,
-    });
-    chartS
-      .selectAll('.draw-area')
+    chartCartesian(chartS);
+
+    const drawAreaS = chartS.selectAll('.draw-area');
+
+    const barSeriesS = drawAreaS
+      .selectAll<SVGGElement, SeriesBar>('.series-bar')
+      .data([chartD])
+      .join('g')
+      .call((s) => seriesBar(s))
+      .on('mouseover.highlight', (e) => chartBarHoverBar(chartS, select(e.target), true))
+      .on('mouseout.highlight', (e) => chartBarHoverBar(chartS, select(e.target), false));
+
+    drawAreaS
       .selectAll<Element, SeriesLabelBar>('.series-label-bar')
-      .data(chartD.labelsEnabled ? [labelSeriesD] : [])
-      .join((enter) => enter.append('g').call((s) => seriesLabelBar(s)));
+      .data(
+        chartD.labelsEnabled
+          ? [
+              {
+                barContainer: barSeriesS,
+                ...chartD.labels,
+              },
+            ]
+          : []
+      )
+      .join('g')
+      .call((s) => seriesLabelBar(s));
 
-    chartD.xAxis.scale = chartD.categoryScale;
-    chartD.yAxis.scale = chartD.valueScale;
-    chartCartesianUpdateAxes(chartS);
+    chartCartesianAxes(chartS, chartBarDataHydrate);
   });
 }
 
@@ -82,6 +79,7 @@ export function chartBarHoverBar(chart: Selection, bar: Selection<Element, Bar>,
   bar.each((barD, i, g) => {
     const barIndex = siblingIndex(g[i], '.bar');
 
+    bar.classed('highlight', hover);
     labelFind(chart, barD.key).classed('highlight', hover);
     axisTickFindByIndex(chart.selectAll('.axis-x'), barIndex).classed('highlight', hover);
   });

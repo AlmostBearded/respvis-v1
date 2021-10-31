@@ -1,80 +1,69 @@
-import { scaleLinear } from 'd3-scale';
-import { BaseType, select, Selection } from 'd3-selection';
-import { axisBottom, axisLeft, ConfigureAxisFn, Axis, axisData } from '../axis';
+import { select, Selection } from 'd3-selection';
+import { axisBottom, axisLeft, Axis } from '../axis';
 import { chart } from './chart';
 import { debug, nodeToString } from './log';
-import { ScaleAny } from './scale';
+import { DataHydrateFn } from './utility/data';
 
 export interface ChartCartesian {
-  xAxis: Axis;
-  yAxis: Axis;
+  xAxis: Partial<Axis>;
+  yAxis: Partial<Axis>;
   flipped: boolean;
 }
 
-export function chartCartesianData(
-  data: Omit<Partial<ChartCartesian>, 'xAxis' | 'yAxis'> & {
-    xAxis?: Partial<Axis>;
-    yAxis?: Partial<Axis>;
-  }
-): ChartCartesian {
+export function chartCartesianDataHydrate(data: Partial<ChartCartesian>): ChartCartesian {
   return {
-    xAxis: axisData(data.xAxis || {}),
-    yAxis: axisData(data.yAxis || axisData({})),
+    xAxis: data.xAxis || {},
+    yAxis: data.yAxis || {},
     flipped: data.flipped || false,
   };
 }
 
-export type ChartCartesianSelection = Selection<SVGSVGElement | SVGGElement, ChartCartesian>;
+export type ChartSelection<Data> = Selection<SVGSVGElement | SVGGElement, Partial<Data>>;
+export type ChartCartesianSelection = ChartSelection<ChartCartesian>;
 
-export function chartCartesian(selection: ChartCartesianSelection, autoUpdateAxes: boolean): void {
+export function chartCartesian(selection: ChartSelection<ChartCartesian>): void {
   selection
     .call((s) => chart(s))
     .classed('chart-cartesian', true)
-    .each((d, i, g) => {
-      const s = <ChartCartesianSelection>select(g[i]);
+    .each(function (d) {
+      debug(`render cartesian chart on ${nodeToString(this)}`);
+      const chartS = <ChartCartesianSelection>select(this);
 
-      const drawAreaS = s.append('svg').classed('draw-area', true);
-
-      drawAreaS.append('rect').classed('background', true);
-
-      s.append('g')
-        .datum(axisData(d.yAxis))
-        .call((s) => axisLeft(s));
-
-      s.append('g')
-        .datum(axisData(d.xAxis))
-        .call((s) => axisBottom(s));
-    })
-    .call(
-      (s) =>
-        autoUpdateAxes &&
-        s
-          .on('datachange.debuglog', function () {
-            debug(`data change on ${nodeToString(this)}`);
-          })
-          .on('datachange.updateaxes', function (e, chartData) {
-            chartCartesianUpdateAxes(<ChartCartesianSelection>select(this));
-          })
-    )
-    .call((s) => chartCartesianUpdateAxes(s));
+      chartS
+        .selectAll('.draw-area')
+        .data([null])
+        .join('svg')
+        .classed('draw-area', true)
+        .selectAll('.background')
+        .data([null])
+        .join('rect')
+        .classed('background', true);
+    });
 }
 
-export function chartCartesianUpdateAxes(selection: ChartCartesianSelection): void {
-  selection.each(function (chartData, i, g) {
-    const s = <ChartCartesianSelection>select(g[i]);
+export function chartCartesianAxes(
+  selection: ChartCartesianSelection,
+  dataHydrate: DataHydrateFn<ChartCartesian> = chartCartesianDataHydrate
+): void {
+  selection.each(function (d) {
+    debug(`render cartesian chart axes on ${nodeToString(this)}`);
+    const chartS = <ChartCartesianSelection>select(this);
+    const { xAxis, yAxis, flipped } = dataHydrate(d);
 
-    const axisConfig = (selection: Selection<Element, Axis>, x: boolean) =>
-      selection
-        .datum((d) => Object.assign(d, x ? chartData.xAxis : chartData.yAxis))
-        .classed('axis-x', x)
-        .classed('axis-y', !x);
+    chartS
+      .selectAll<SVGGElement, Axis>('.axis-bottom')
+      .data([!flipped ? xAxis : yAxis])
+      .join('g')
+      .classed('axis-x', !flipped)
+      .classed('axis-y', flipped)
+      .call((s) => axisBottom(s));
 
-    if (chartData.flipped) {
-      s.selectAll<SVGGElement, Axis>('.axis-left').call((s) => axisConfig(s, true));
-      s.selectAll<SVGGElement, Axis>('.axis-bottom').call((s) => axisConfig(s, false));
-    } else {
-      s.selectAll<SVGGElement, Axis>('.axis-left').call((s) => axisConfig(s, false));
-      s.selectAll<SVGGElement, Axis>('.axis-bottom').call((s) => axisConfig(s, true));
-    }
+    chartS
+      .selectAll<SVGGElement, Axis>('.axis-left')
+      .data([!flipped ? yAxis : xAxis])
+      .join('g')
+      .classed('axis-x', flipped)
+      .classed('axis-y', !flipped)
+      .call((s) => axisLeft(s));
   });
 }

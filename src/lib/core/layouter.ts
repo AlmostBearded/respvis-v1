@@ -7,83 +7,6 @@ import { relativeBounds } from './utility/bounds';
 import { positionToTransformAttr } from './utility/position';
 import { rectEquals, rectFromString, rectToAttrs, rectToString } from './utility/rect';
 
-export interface Layouter {
-  layoutNodeResizeObserver: ResizeObserver;
-  svgNodeResizeObserver: ResizeObserver;
-  layoutAttrMutationObserver: MutationObserver;
-}
-
-export function layouterData(layouter: HTMLDivElement): Layouter {
-  const layoutNodeResizeObserver = new ResizeObserver((entries) => {
-    select(layouter)
-      .selectAll<HTMLDivElement, SVGElement>('.layout')
-      .each((d, i, g) => {
-        if (!d.isConnected) return;
-        const layoutS = select<HTMLDivElement, SVGElement>(g[i]);
-        layoutNodeObserveResize(layoutS, layoutNodeResizeObserver);
-        layoutNodeStyleAttr(layoutS);
-        layoutNodeBounds(layoutS) && renderQueueEnqueue(d);
-      });
-
-    selectAll(layedOutChildren(layouter)).call((s) => {
-      const bounds = s.bounds()!;
-      s.style('left', bounds.x)
-        .style('top', bounds.y)
-        .attr('x', null)
-        .attr('y', null)
-        .attr('width', null)
-        .attr('height', null)
-        .attr('viewBox', rectToString({ ...bounds, x: 0, y: 0 }));
-    });
-
-    renderQueueRender();
-  });
-
-  const svgNodeResizeObserver = new ResizeObserver((entries) => {
-    select(layouter)
-      .selectAll<HTMLDivElement, SVGElement>('.layout')
-      .call((s) => layoutNodeStyleAttr(s));
-  });
-
-  const layoutAttrMutationObserver = new MutationObserver((mutations) => {
-    let attrChanged = false;
-
-    const uniqueMutationsByTargetAttribute = mutations.filter(
-      (v, i, array) =>
-        array.findIndex((v2) => v2.target === v.target && v2.attributeName === v.attributeName) ===
-        i
-    );
-
-    for (let mutation of uniqueMutationsByTargetAttribute) {
-      const target = mutation.target as Element;
-      const value = target.getAttribute(mutation.attributeName!);
-      if (mutation.oldValue !== value) {
-        const fitRegex = /(width|height): fit;/;
-        const oldFit = mutation.oldValue?.match(fitRegex) || false;
-        const fit = target.getAttribute(mutation.attributeName!)?.match(fitRegex) || false;
-        if (!oldFit && fit) svgNodeResizeObserver.observe(target);
-        else if (oldFit && !fit) svgNodeResizeObserver.unobserve(target);
-        attrChanged = true;
-      }
-    }
-
-    if (attrChanged) {
-      let layoutNodes = layoutNodeRoot(layouter);
-      while (!layoutNodes.empty()) {
-        layoutNodes = layoutNodeChildren(
-          layoutNodes.call((s) => layoutNodeStyleAttr(s)).call((s) => layoutNodeClassAttr(s))
-        );
-      }
-    }
-  });
-
-  return {
-    layoutNodeResizeObserver: layoutNodeResizeObserver,
-    svgNodeResizeObserver: svgNodeResizeObserver,
-    layoutAttrMutationObserver: layoutAttrMutationObserver,
-  };
-}
-
 function layoutNodeRoot(layouter: HTMLDivElement): Selection<HTMLDivElement, SVGElement> {
   return select(layouter)
     .selectChildren<HTMLDivElement, SVGElement>('.layout')
@@ -98,10 +21,11 @@ function layoutNodeStyleAttr(selection: Selection<HTMLDivElement, SVGElement>): 
     const layoutFitWidth = propTrue(svgS.layout('--fit-width') || '');
     const layoutFitHeight = propTrue(svgS.layout('--fit-height') || '');
     const layoutWidth = svgS.layout('width');
-    const layoutHeight = svgS.layout('width');
+    const layoutHeight = svgS.layout('height');
     const computedStyle = window.getComputedStyle(g[i]);
     const fitWidth = propTrue(computedStyle.getPropertyValue('--fit-width')) || layoutFitWidth;
     const fitHeight = propTrue(computedStyle.getPropertyValue('--fit-height')) || layoutFitHeight;
+    // get layout string without width and height properties
     const layout = (d.getAttribute('layout') || '')
       .replace(/(?<![-a-zA-Z])(width|height):.*?;/g, '')
       .trim();
@@ -134,31 +58,26 @@ function layoutNodeClassAttr(selection: Selection<HTMLDivElement, SVGElement>): 
 
 function layoutNodeBounds(selection: Selection<HTMLDivElement, SVGElement>): boolean {
   let anyChanged = false;
-  selection.each((d, i, g) => {
-    const svg = select(d);
-    const prevBounds = rectFromString(svg.attr('bounds') || '0, 0, 0, 0');
-    const bounds = relativeBounds(g[i]);
+  selection.each(function (svgE) {
+    const svgS = select(svgE);
+    const prevBounds = rectFromString(svgS.attr('bounds') || '0, 0, 0, 0');
+    const bounds = relativeBounds(this);
     const changed = !rectEquals(prevBounds, bounds, 0.1);
     anyChanged = anyChanged || changed;
     if (changed) {
       debug(
-        `bounds change on ${nodeToString(svg.node()!)} from (${rectToString(
+        `bounds change on ${nodeToString(svgE)} from (${rectToString(
           prevBounds
         )}) to (${rectToString(bounds)})`
       );
-      svg.attr('bounds', rectToString(bounds));
-      // const svgTransition = svg.transition('layout').duration(250).ease(easeCubicOut);
-      switch (d.tagName) {
+      svgS.attr('bounds', rectToString(bounds));
+      switch (svgE.tagName) {
         case 'svg':
         case 'rect':
-          svg.call((s) => rectToAttrs(s, bounds));
-          // if (!svg.attr('x')) svg.call((s) => rectToAttrs(s, bounds));
-          // else svgTransition.call((t) => rectToAttrs(t, bounds));
+          svgS.call((s) => rectToAttrs(s, bounds));
           break;
         default:
-          svg.call((s) => positionToTransformAttr(s, bounds));
-        // if (!svg.attr('transform')) svg.call((s) => positionToTransformAttr(s, bounds));
-        // else svgTransition.call((t) => positionToTransformAttr(t, bounds));
+          svgS.call((s) => positionToTransformAttr(s, bounds));
       }
     }
   });
@@ -174,13 +93,6 @@ function layoutNodeChildren(
     .join('div');
 }
 
-function layoutNodeObserveResize(
-  selection: Selection<HTMLDivElement, SVGElement>,
-  observer: ResizeObserver
-): void {
-  selection.each((d, i, g) => observer.observe(g[i]));
-}
-
 function layedOutChildren(parent: Element): SVGElement[] {
   return select(parent)
     .filter(':not([ignore-layout-children])')
@@ -188,15 +100,41 @@ function layedOutChildren(parent: Element): SVGElement[] {
     .nodes();
 }
 
-export function layouter(selection: Selection<HTMLDivElement, Layouter>): void {
-  selection.classed('layouter', true).each((d, i, g) => {
-    d.layoutNodeResizeObserver.observe(g[i]);
-    d.layoutAttrMutationObserver.observe(g[i], {
-      attributes: true,
-      attributeFilter: ['layout', 'class'],
-      attributeOldValue: true,
-      subtree: true,
-      childList: true,
+export function layouter(selection: Selection<HTMLDivElement>): void {
+  selection.classed('layouter', true);
+}
+
+export function layouterCompute(selection: Selection<HTMLDivElement>): void {
+  selection.each(function () {
+    const layouterS = select(this);
+    const layoutRootS = layoutNodeRoot(this);
+
+    let layoutS = layoutRootS;
+    while (!layoutS.empty()) {
+      layoutNodeClassAttr(layoutS);
+      layoutNodeStyleAttr(layoutS);
+      layoutS = layoutNodeChildren(layoutS);
+    }
+
+    let anyBoundsChanged = false;
+    layouterS.selectAll<HTMLDivElement, SVGElement>('.layout').each(function () {
+      const layoutS = select<HTMLDivElement, SVGElement>(this);
+      const boundsChanged = layoutNodeBounds(layoutS);
+      anyBoundsChanged = anyBoundsChanged || boundsChanged;
     });
+
+    if (anyBoundsChanged) {
+      const bounds = select(layoutRootS.datum()).bounds()!;
+      layoutRootS
+        .style('left', bounds.x)
+        .style('top', bounds.y)
+        .attr('x', null)
+        .attr('y', null)
+        .attr('width', null)
+        .attr('height', null)
+        .attr('viewBox', rectToString({ ...bounds, x: 0, y: 0 }));
+
+      layouterS.dispatch('boundschange');
+    }
   });
 }

@@ -4,9 +4,9 @@ export function menuDropdown(selection: Selection<HTMLElement>): void {
   selection.classed('menu', true);
 
   // chevron & text
-  selection.append('span').text('❮').classed('chevron', true);
-  selection.append('span').classed('text', true);
+  selection.selectAll('.chevron').data([null]).join('span').text('❮').classed('chevron', true);
+  selection.selectAll('.text').data([null]).join('span').classed('text', true);
 
   // items
-  selection.append('ul').classed('items', true);
+  selection.selectAll('.items').data([null]).join('ul').classed('items', true);
 }

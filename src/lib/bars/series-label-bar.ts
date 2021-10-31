@@ -10,6 +10,7 @@ import {
   HorizontalPosition,
   VerticalPosition,
 } from '../core';
+import { DataHydrateFn } from '../core/utility/data';
 import { Bar } from './series-bar';
 import { Label, seriesLabelJoin } from './series-label';
 
@@ -26,7 +27,7 @@ export interface SeriesLabelBar {
   offsets: number | Position | Position[] | ((bar: Bar) => Position);
 }
 
-export function seriesLabelBarData(data: Partial<SeriesLabelBar>): SeriesLabelBar {
+export function seriesLabelBarDataHydrate(data: Partial<SeriesLabelBar>): SeriesLabelBar {
   return {
     barContainer: data.barContainer || select('.chart'),
     labels: data.labels || ((bar) => bar.value.toString()),
@@ -74,33 +75,33 @@ export function seriesLabelBarCreateLabels(seriesData: SeriesLabelBar): LabelBar
     });
 }
 
-export function seriesLabelBar(selection: Selection<Element, SeriesLabelBar>): void {
+export function seriesLabelBar(
+  selection: Selection<Element, Partial<SeriesLabelBar>>,
+  dataHydrate: DataHydrateFn<SeriesLabelBar> = seriesLabelBarDataHydrate
+): void {
   selection
     .classed('series-label', true)
     .classed('series-label-bar', true)
     .attr('ignore-layout-children', true)
-    .on('datachange.serieslabelbar', function () {
-      debug(`data change on ${nodeToString(this)}`);
-      select(this).dispatch('render');
-    })
-    .on('render.serieslabelbar', function (e, d) {
+    .each(function (d) {
       debug(`render bar label series on ${nodeToString(this)}`);
-      const series = select<Element, SeriesLabelBar>(this);
-      series
+      const seriesS = select(this);
+      const seriesD = dataHydrate(d);
+      seriesS
         .on('update.serieslabelbar', function (e: JoinEvent<Element, LabelBar>) {
-          e.detail.selection.each((d, i, g) => {
-            const s = select(g[i]);
+          e.detail.selection.each(function (d) {
+            const labelS = select(this);
             const { relativePosition: relPos } = d;
             const HP = HorizontalPosition;
             const VP = VerticalPosition;
             const hPos = relPos.x < 0.5 ? HP.Left : relPos.x === 0.5 ? HP.Center : HP.Right;
             const vPos = relPos.y < 0.5 ? VP.Top : relPos.y === 0.5 ? VP.Center : VP.Bottom;
-            classOneOfEnum(s, HP, hPos);
-            classOneOfEnum(s, VP, vPos);
+            classOneOfEnum(labelS, HP, hPos);
+            classOneOfEnum(labelS, VP, vPos);
           });
         })
         .selectAll<SVGTextElement, Label>('text')
-        .data(seriesLabelBarCreateLabels(d), (d) => d.key)
-        .call((s) => seriesLabelJoin(series, s));
+        .data(seriesLabelBarCreateLabels(seriesD), (d) => d.key)
+        .call((s) => seriesLabelJoin(seriesS, s));
     });
 }

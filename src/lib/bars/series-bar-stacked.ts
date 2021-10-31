@@ -5,7 +5,7 @@ import { debug, nodeToString, Rect } from '../core';
 import { Size } from '../core/utils';
 import {
   SeriesConfigTooltips,
-  seriesConfigTooltipsData,
+  seriesConfigTooltipsDataHydrate,
   seriesConfigTooltipsHandleEvents,
 } from '../tooltip';
 import { seriesBarJoin } from './series-bar';
@@ -47,7 +47,7 @@ export function seriesBarStackedData(data: Partial<SeriesBarStacked>): SeriesBar
     flipped: data.flipped || false,
     keys: data.keys,
     bounds: data.bounds || { width: 600, height: 400 },
-    ...seriesConfigTooltipsData(data),
+    ...seriesConfigTooltipsDataHydrate(data),
     tooltipsEnabled: data.tooltipsEnabled || true,
     tooltips:
       data.tooltips ||
