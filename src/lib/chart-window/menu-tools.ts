@@ -1,8 +1,8 @@
 import { Selection } from 'd3-selection';
-import { menuDropdown } from './menu-dropdown';
+import { menuDropdownRender } from './menu-dropdown';
 
-export function menuTools(selection: Selection<HTMLDivElement>): void {
-  selection.call((s) => menuDropdown(s)).classed('menu-tools', true);
+export function menuToolsRender(selection: Selection<HTMLDivElement>): void {
+  selection.call((s) => menuDropdownRender(s)).classed('menu-tools', true);
 
   selection.selectAll('.chevron').remove();
   selection.selectAll('.text').text('☰');

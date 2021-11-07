@@ -18,18 +18,25 @@ export interface SeriesCheckbox {
   maxChecked: number;
 }
 
-export function seriesCheckboxDataHydrate(data: Partial<SeriesCheckbox>): SeriesCheckbox {
+export function seriesCheckboxData(data: Partial<SeriesCheckbox>): SeriesCheckbox {
+  const container = data.container ?? 'div';
+  const labels = data.labels ?? [];
+  const checked = data.checked ?? labels.map((l) => true);
+  const disabled = data.disabled;
+  const minChecked = data.minChecked || 0;
+  const maxChecked = data.maxChecked || Infinity;
+
   return {
-    container: data.container || 'div',
-    labels: data.labels || [],
-    checked: data.checked || [],
-    disabled: data.disabled,
-    minChecked: data.minChecked || 0,
-    maxChecked: data.maxChecked || Infinity,
+    container,
+    labels,
+    checked,
+    disabled,
+    minChecked,
+    maxChecked,
   };
 }
 
-export function seriesCheckboxCreateCheckboxes(seriesData: SeriesCheckbox): Checkbox[] {
+function checkboxes(seriesData: SeriesCheckbox): Checkbox[] {
   const { labels, checked, disabled, minChecked, maxChecked, container } = seriesData;
   const checkedCount = checked.reduce((count, checked) => count + (checked ? 1 : 0), 0);
   return labels.map((l, i) => {
@@ -51,33 +58,29 @@ export type SeriesCheckboxCheckedEvent = CustomEvent<{
   changedValue: boolean;
 }>;
 
-export function seriesCheckbox(
-  selection: Selection<HTMLElement, Partial<SeriesCheckbox>>,
-  dataHydrate: DataHydrateFn<SeriesCheckbox> = seriesCheckboxDataHydrate
-): void {
+export function seriesCheckboxRender(selection: Selection<HTMLElement, SeriesCheckbox>): void {
   selection
     .classed('series-checkbox', true)
     .each(function (d) {
-      const seriesS = select(this);
-      const seriesD = dataHydrate(d);
+      const seriesS = select<HTMLElement, SeriesCheckbox>(this);
       seriesS
         .selectAll<Element, Checkbox>('.checkbox')
-        .data(seriesCheckboxCreateCheckboxes(seriesD), (d) => d.label)
+        .data(checkboxes(d), (d) => d.label)
         .call((s) => seriesCheckboxJoin(seriesS, s));
 
-      seriesS.on('change.seriescheckbox', function (e, d) {
-        const { checked } = seriesD;
-        const checkbox = <HTMLInputElement>e.target;
-        const changedIndex = siblingIndexSameClasses(checkbox.closest('.checkbox')!);
-        const changedValue = checkbox.checked;
-        checked[changedIndex] = changedValue;
-        seriesS.dispatch('checked', { detail: { checked, changedIndex, changedValue } });
-      });
+      seriesS;
     })
-    .on(
-      'click.seriescheckbox',
-      (e) => e.target.classList.contains('checkbox') && e.target.querySelector('input').click()
-    );
+    .on('change.seriescheckbox', function (e, d) {
+      const { checked } = d;
+      const checkbox = <HTMLInputElement>e.target;
+      const changedIndex = siblingIndexSameClasses(checkbox.closest('.checkbox')!);
+      const changedValue = checkbox.checked;
+      checked[changedIndex] = changedValue;
+      select(this).dispatch('checked', { detail: { checked, changedIndex, changedValue } });
+    })
+    .on('click.seriescheckbox', function (e) {
+      if (e.target.classList.contains('checkbox')) e.target.querySelector('input').click();
+    });
 }
 
 export function seriesCheckboxJoin(

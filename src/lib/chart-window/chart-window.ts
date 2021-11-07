@@ -1,21 +1,21 @@
 import { Selection } from 'd3-selection';
 import { toolDownloadSVG } from '.';
-import { layouter, resizeEventListener, Layouter } from '../core';
-import { toolbar } from './toolbar';
+import { layouter, resizeEventListener } from '../core';
+import { toolbarRender } from './toolbar';
 
-export type ChartWindowSelection<Data> = Selection<HTMLDivElement, Partial<Data>>;
+export type ChartWindowSelection<Data> = Selection<HTMLDivElement, Data>;
 
-export function chartWindow<Data>(selection: ChartWindowSelection<Data>): void {
+export function chartWindowRender<Data>(selection: ChartWindowSelection<Data>): void {
   selection.classed('chart-window', true);
 
   selection
     .selectAll<HTMLDivElement, null>('.toolbar')
     .data([null])
     .join('div')
-    .call((s) => toolbar(s));
+    .call((s) => toolbarRender(s));
 
   selection
-    .selectAll<HTMLDivElement, Layouter>('.layouter')
+    .selectAll<HTMLDivElement, unknown>('.layouter')
     .data([null])
     .join('div')
     .call((s) => layouter(s));

@@ -26,38 +26,88 @@
     <script type="module">
       import data from './data/austrian-cities.js';
 
-      const cities = data.cities,
-        populations = data.populations.map((p) => Math.round(p / 1000));
+      const cities = data.cities;
+      const populations = data.populations.map((p) => Math.round(p / 1000));
+      const dataSet = cities.map((c, i) => {
+        city: c;
+        population: populations[i];
+      });
 
       // respVis.enableDebugLog(true);
 
-      const root = d3.select('#chart'),
-        chartWindow = root
-          .append('div')
-          .datum({
-            categoryEntity: 'Cities',
-            categories: cities,
-            values: populations,
-            tooltips: (barElement, barData) =>
-              `City: ${barData.category}<br/>Population: ${d3.format(',')(barData.value * 1000)}`,
-            xAxis: {
-              title: 'City',
-            },
-            yAxis: {
-              title: 'Population',
-              subtitle: '[1000 People]',
-            },
-          })
-          .call(respVis.chartWindowBar)
-          .on('categoryfilter', function (e) {
-            chartWindow
-              .datum((d) => ({ ...d, activeCategories: e.detail.activeCategories }))
-              .call(respVis.chartWindowBar);
-          })
-          .on('resize', function () {
-            
-            chartWindow.call(respVis.chartWindowBar);
-          });
+      const cityScale = {
+        scale: d3.scaleBand(),
+        update: (scale, data, bounds) => scale.domain(data.map(d => d.category)).range([0, bounds.width]).padding(0.1)
+      }
+
+      const populationScale =  {
+        scale: d3.scaleLinear(),
+        update: (scale, data, bounds) => scale.domain([0, Math.max(...data.map(d => d.population))]).range([bounds.height, 0]).nice()
+      }
+
+      const scales = {
+        city: cityScale,
+        population: populationScale,
+        update: function () {
+          
+        }
+      }
+
+      const bars = {
+        data: (data, scales) =>
+          seriesBarData({
+            categories: data.map((d) => d.category),
+            values: data.map((d) => d.population),
+            categoryScale: scales,
+            valueScale: populationScale,
+          }),
+        join: respVis.seriesBarJoin,
+        joinDecorator: {},
+      };
+
+      const root = d3.select('#chart');
+      const chart = joinChart(root, [
+        chart({
+          data: dataSet,
+          scales: {
+            city: {
+              scale: d3.scaleBand(),
+              update:
+              range: width,
+            }
+          }
+          series: {
+            bars,
+          },
+        }),
+      ]);
+
+      // const chartWindow = root
+      //     .append('div')
+      //     .datum({
+      //       categoryEntity: 'Cities',
+      //       categories: cities,
+      //       values: populations,
+      //       tooltips: (barElement, barData) =>
+      //         `City: ${barData.category}<br/>Population: ${d3.format(',')(barData.value * 1000)}`,
+      //       xAxis: {
+      //         title: 'City',
+      //       },
+      //       yAxis: {
+      //         title: 'Population',
+      //         subtitle: '[1000 People]',
+      //       },
+      //     })
+      //     .call(respVis.chartWindowBar)
+      //     .on('categoryfilter', function (e) {
+      //       chartWindow
+      //         .datum((d) => ({ ...d, activeCategories: e.detail.activeCategories }))
+      //         .call(respVis.chartWindowBar);
+      //     })
+      //     .on('resize', function () {
+
+      //       chartWindow.call(respVis.chartWindowBar);
+      //     });
       // .on('densitychange', function (e, d) {
       //   const density = e.detail.density;
       //   const flippedBars = density.x > 0.0135;

@@ -9,9 +9,9 @@ import {
   seriesConfigTooltipsDataHydrate,
   seriesConfigTooltipsHandleEvents,
 } from '../tooltip';
-import { Bar, seriesBarJoin } from './series-bar';
+import { BarData, barJoin } from './series-bar';
 
-export interface BarGrouped extends Bar {
+export interface BarGrouped extends BarData {
   subcategory: string;
   subcategoryIndex: number;
 }
@@ -138,7 +138,7 @@ export function seriesBarGrouped(selection: Selection<Element, SeriesBarGrouped>
       series
         .selectAll<SVGRectElement, BarGrouped>('rect')
         .data(seriesBarGroupedCreateBars(d), (d) => d.key)
-        .call((s) => seriesBarJoin(series, s));
+        .call((s) => barJoin(series, s));
     })
     .on('update.subcategory', (e: JoinEvent<Element, BarGrouped>) =>
       e.detail.selection

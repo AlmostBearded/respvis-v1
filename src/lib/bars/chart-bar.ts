@@ -2,28 +2,29 @@ import { select, Selection } from 'd3-selection';
 import { axisTickFindByIndex } from '../axis';
 import { siblingIndex } from '../core';
 import {
-  chartCartesian,
-  chartCartesianDataHydrate,
+  chartCartesianRender,
+  chartCartesianData,
   ChartCartesian,
-  chartCartesianAxes,
+  chartCartesianAxesRender,
+  ChartSelection,
 } from '../core/chart-cartesian';
 import { DataHydrateFn } from '../core/utility/data';
-import { seriesBar, seriesBarDataHydrate, SeriesBar, Bar } from './series-bar';
+import { seriesBarRender, seriesBarData, SeriesBarData, BarData } from './series-bar';
 import { labelFind } from './series-label';
 import {
-  SeriesLabelBar as SeriesLabelBar,
-  seriesLabelBarDataHydrate as seriesLabelBarDataHydrate,
-  seriesLabelBar,
+  SeriesLabelBarData as SeriesLabelBarData,
+  seriesLabelBarData as seriesLabelBarData,
+  seriesLabelBarJoin,
 } from './series-label-bar';
 
-export interface ChartBar extends SeriesBar, ChartCartesian {
+export interface ChartBar extends SeriesBarData, ChartCartesian {
   labelsEnabled: boolean;
-  labels: Partial<SeriesLabelBar>;
+  labels: Partial<SeriesLabelBarData>;
 }
 
-export function chartBarDataHydrate(data: Partial<ChartBar>): ChartBar {
-  const seriesD = seriesBarDataHydrate(data);
-  const chartCartesianD = chartCartesianDataHydrate(data);
+export function chartBarData(data: Partial<ChartBar>): ChartBar {
+  const seriesD = seriesBarData(data);
+  const chartCartesianD = chartCartesianData(data);
   chartCartesianD.xAxis.scale = seriesD.categoryScale;
   chartCartesianD.yAxis.scale = seriesD.valueScale;
   return {
@@ -34,30 +35,30 @@ export function chartBarDataHydrate(data: Partial<ChartBar>): ChartBar {
   };
 }
 
-export type ChartBarSelection = Selection<SVGSVGElement | SVGGElement, Partial<ChartBar>>;
+export type ChartBarSelection = ChartSelection<ChartBar>;
 
 export function chartBar(
   selection: ChartBarSelection,
-  dataHydrate: DataHydrateFn<ChartBar> = chartBarDataHydrate
+  dataHydrate: DataHydrateFn<ChartBar> = chartBarData
 ): void {
   selection.classed('chart-bar', true).each(function (d) {
     const chartS = <ChartBarSelection>select(this);
     const chartD = dataHydrate(d);
 
-    chartCartesian(chartS);
+    chartCartesianRender(chartS);
 
     const drawAreaS = chartS.selectAll('.draw-area');
 
     const barSeriesS = drawAreaS
-      .selectAll<SVGGElement, SeriesBar>('.series-bar')
+      .selectAll<SVGGElement, SeriesBarData>('.series-bar')
       .data([chartD])
       .join('g')
-      .call((s) => seriesBar(s))
+      .call((s) => seriesBarRender(s))
       .on('mouseover.highlight', (e) => chartBarHoverBar(chartS, select(e.target), true))
       .on('mouseout.highlight', (e) => chartBarHoverBar(chartS, select(e.target), false));
 
     drawAreaS
-      .selectAll<Element, SeriesLabelBar>('.series-label-bar')
+      .selectAll<Element, SeriesLabelBarData>('.series-label-bar')
       .data(
         chartD.labelsEnabled
           ? [
@@ -69,13 +70,13 @@ export function chartBar(
           : []
       )
       .join('g')
-      .call((s) => seriesLabelBar(s));
+      .call((s) => seriesLabelBarJoin(s));
 
-    chartCartesianAxes(chartS, chartBarDataHydrate);
+    chartCartesianAxesRender(chartS, chartBarData);
   });
 }
 
-export function chartBarHoverBar(chart: Selection, bar: Selection<Element, Bar>, hover: boolean) {
+export function chartBarHoverBar(chart: Selection, bar: Selection<Element, BarData>, hover: boolean) {
   bar.each((barD, i, g) => {
     const barIndex = siblingIndex(g[i], '.bar');
 

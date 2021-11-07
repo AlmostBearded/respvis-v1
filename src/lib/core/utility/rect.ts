@@ -1,4 +1,7 @@
-import { select, Selection, ValueFn } from 'd3-selection';
+import { easeCubicOut } from 'd3-ease';
+import { select, selectAll, Selection, ValueFn } from 'd3-selection';
+import toPX from 'to-px';
+import { JoinDecorator } from '../..';
 import { SelectionOrTransition } from '../selection';
 import { Position } from './position';
 
@@ -110,4 +113,46 @@ export function rectFitStroke(rect: Rect, stroke: number): Rect {
     width: Math.max(0, rect.width - stroke),
     height: Math.max(0, rect.height - stroke),
   };
+}
+
+export type RectSelection = Selection<SVGRectElement, Rect>;
+
+export interface RectData extends Rect {
+  key: string;
+}
+
+export function rectJoin<Data extends RectData>(
+  selection: Selection<SVGRectElement, Data>,
+  decorator?: JoinDecorator<SVGRectElement, Data>
+): void {
+  const enterAndUpdate = (s: RectSelection) =>
+    s.each(function (d) {
+      const s = select(this);
+      s.transition('position')
+        .duration(250)
+        .ease(easeCubicOut)
+        .call((t) => rectToAttrs(t, rectFitStroke(d, toPX(s.style('stroke-width'))!)));
+    });
+  selection
+    .join(
+      (enter) =>
+        enter
+          .append('rect')
+          .call((s) => rectToAttrs(s, (d) => rectMinimized(d)))
+          .call((s) => enterAndUpdate(s))
+          .call((s) => decorator?.enter?.(s)),
+      (update) => update.call((s) => enterAndUpdate(s)).call((s) => decorator?.update?.(s)),
+      (exit) =>
+        exit
+          .classed('exiting', true)
+          .call((s) =>
+            s
+              .transition('minimize')
+              .duration(250)
+              .call((t) => rectToAttrs(t, (d) => rectMinimized(d)))
+              .remove()
+          )
+          .call((s) => decorator?.exit?.(s))
+    )
+    .call((s) => decorator?.merge?.(s));
 }

@@ -1,5 +1,5 @@
 import { select, Selection } from 'd3-selection';
-import { JoinEvent } from '.';
+import { JoinDecorator, JoinEvent } from '.';
 import {
   arrayIs,
   debug,
@@ -10,39 +10,44 @@ import {
   HorizontalPosition,
   VerticalPosition,
 } from '../core';
-import { DataHydrateFn } from '../core/utility/data';
-import { Bar } from './series-bar';
-import { Label, seriesLabelJoin } from './series-label';
+import { BarData } from './series-bar';
+import { LabelData, labelJoin } from './series-label';
 
-export interface LabelBar extends Label {
-  bar: Selection<SVGRectElement, Bar>;
+export interface LabelBarData extends LabelData {
+  bar: Selection<SVGRectElement, BarData>;
   relativePosition: Position;
   offset: Position;
 }
 
-export interface SeriesLabelBar {
+export interface SeriesLabelBarData {
   barContainer: Selection<Element>;
-  labels: string[] | ((bar: Bar) => string);
-  relativePositions: Position | Position[] | ((bar: Bar) => Position);
-  offsets: number | Position | Position[] | ((bar: Bar) => Position);
+  labels: string[] | ((bar: BarData) => string);
+  relativePositions: Position | Position[] | ((bar: BarData) => Position);
+  offsets: number | Position | Position[] | ((bar: BarData) => Position);
+  joinDecorator: JoinDecorator<Element, LabelBarData>;
 }
 
-export function seriesLabelBarDataHydrate(data: Partial<SeriesLabelBar>): SeriesLabelBar {
+export function seriesLabelBarData(data: Partial<SeriesLabelBarData>): SeriesLabelBarData {
   return {
     barContainer: data.barContainer || select('.chart'),
     labels: data.labels || ((bar) => bar.value.toString()),
     relativePositions: data.relativePositions || { x: 0.5, y: 0.5 },
     offsets: data.offsets || 3,
+    joinDecorator: data.joinDecorator ?? {},
   };
 }
 
-export function seriesLabelBarCreateLabels(seriesData: SeriesLabelBar): LabelBar[] {
-  const { barContainer, labels, relativePositions, offsets } = seriesData;
+function seriesLabelBarToLabels({
+  barContainer,
+  labels,
+  relativePositions,
+  offsets,
+}: SeriesLabelBarData): LabelBarData[] {
   return barContainer
-    .selectAll<SVGRectElement, Bar>('.bar:not(.exiting)')
+    .selectAll<SVGRectElement, BarData>('.bar:not(.exiting)')
     .nodes()
-    .map((barNode, i): LabelBar => {
-      const barS = select<SVGRectElement, Bar>(barNode);
+    .map((barNode, i): LabelBarData => {
+      const barS = select<SVGRectElement, BarData>(barNode);
       const barD = barS.datum();
       const relativePosition =
         relativePositions instanceof Function
@@ -75,33 +80,48 @@ export function seriesLabelBarCreateLabels(seriesData: SeriesLabelBar): LabelBar
     });
 }
 
-export function seriesLabelBar(
-  selection: Selection<Element, Partial<SeriesLabelBar>>,
-  dataHydrate: DataHydrateFn<SeriesLabelBar> = seriesLabelBarDataHydrate
+export function seriesLabelBarJoin(
+  selection: Selection<Element, SeriesLabelBarData>,
+  joinDecorator?: JoinDecorator<Element, SeriesLabelBarData>
 ): void {
-  selection
-    .classed('series-label', true)
-    .classed('series-label-bar', true)
-    .attr('ignore-layout-children', true)
-    .each(function (d) {
+  const enterAndUpdate = (selection: Selection<Element, SeriesLabelBarData>) =>
+    selection.each(function (d) {
       debug(`render bar label series on ${nodeToString(this)}`);
       const seriesS = select(this);
-      const seriesD = dataHydrate(d);
       seriesS
-        .on('update.serieslabelbar', function (e: JoinEvent<Element, LabelBar>) {
-          e.detail.selection.each(function (d) {
-            const labelS = select(this);
-            const { relativePosition: relPos } = d;
-            const HP = HorizontalPosition;
-            const VP = VerticalPosition;
-            const hPos = relPos.x < 0.5 ? HP.Left : relPos.x === 0.5 ? HP.Center : HP.Right;
-            const vPos = relPos.y < 0.5 ? VP.Top : relPos.y === 0.5 ? VP.Center : VP.Bottom;
-            classOneOfEnum(labelS, HP, hPos);
-            classOneOfEnum(labelS, VP, vPos);
-          });
+        .on('update.serieslabelbar', function (e: JoinEvent<Element, LabelBarData>) {
+          e.detail.selection;
         })
-        .selectAll<SVGTextElement, Label>('text')
-        .data(seriesLabelBarCreateLabels(seriesD), (d) => d.key)
-        .call((s) => seriesLabelJoin(seriesS, s));
+        .selectAll<SVGTextElement, LabelBarData>('text')
+        .data(seriesLabelBarToLabels(d), (d) => d.key)
+        .call((s) =>
+          labelJoin(s, {
+            enter: (s) => d.joinDecorator.enter?.(s),
+            update: (s) =>
+              s
+                .each(function (d) {
+                  const labelS = select(this);
+                  const { relativePosition: relPos } = d;
+                  const HP = HorizontalPosition;
+                  const VP = VerticalPosition;
+                  const hPos = relPos.x < 0.5 ? HP.Left : relPos.x === 0.5 ? HP.Center : HP.Right;
+                  const vPos = relPos.y < 0.5 ? VP.Top : relPos.y === 0.5 ? VP.Center : VP.Bottom;
+                  classOneOfEnum(labelS, HP, hPos);
+                  classOneOfEnum(labelS, VP, vPos);
+                })
+                .call((s) => d.joinDecorator.update?.(s)),
+                exit: s => 
+          })
+        );
     });
+  // selection.join((enter) =>
+  //   enter
+  //     .append('g')
+  //     .classed('series-label', true)
+  //     .classed('series-label-bar', true)
+  //     .attr('ignore-layout-children', true),
+  //     update =>
+  // );
+
+  // selection;
 }

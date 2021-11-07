@@ -1,8 +1,8 @@
 import { create, select, Selection } from 'd3-selection';
 import { SeriesCheckboxCheckedEvent } from '.';
 import { DataHydrateFn } from '../core/utility/data';
-import { menuDropdown } from './menu-dropdown';
-import { SeriesCheckbox, seriesCheckboxDataHydrate, seriesCheckbox } from './series-checkbox';
+import { menuDropdownRender } from './menu-dropdown';
+import { SeriesCheckbox, seriesCheckboxData, seriesCheckboxRender } from './series-checkbox';
 
 export interface FilterNominalOption {
   name: string;
@@ -17,15 +17,13 @@ export interface ToolFilterNominal {
   maxActive: number;
 }
 
-export function toolFilterNominalDataHydrate(data: Partial<ToolFilterNominal>): ToolFilterNominal {
+export function toolFilterNominalData(data: Partial<ToolFilterNominal>): ToolFilterNominal {
   const options = data.options || [];
-  return {
-    text: data.text || 'Filter',
-    options: options,
-    active: data.active || options.map(() => true),
-    minActive: data.minActive || 1,
-    maxActive: data.maxActive || Infinity,
-  };
+  const text = data.text || 'Filter';
+  const active = data.active || options.map(() => true);
+  const minActive = data.minActive || 1;
+  const maxActive = data.maxActive || Infinity;
+  return { text, options, active, minActive, maxActive };
 }
 
 export type ToolFilterNominalActiveEvent = CustomEvent<{
@@ -34,13 +32,13 @@ export type ToolFilterNominalActiveEvent = CustomEvent<{
   changedValue: boolean;
 }>;
 
-export function toolFilterNominal(
+export function toolFilterNominalRender(
   selection: Selection<HTMLLIElement, Partial<ToolFilterNominal>>,
-  dataHydrate: DataHydrateFn<ToolFilterNominal> = toolFilterNominalDataHydrate
+  dataHydrate: DataHydrateFn<ToolFilterNominal> = toolFilterNominalData
 ): void {
   selection
     .classed('tool-filter-nominal', true)
-    .call((s) => menuDropdown(s))
+    .call((s) => menuDropdownRender(s))
     .each(function (d) {
       const toolS = select(this);
       const toolD = dataHydrate(d);
@@ -54,7 +52,7 @@ export function toolFilterNominal(
           minChecked: toolD.minActive,
           maxChecked: toolD.maxActive,
         })
-        .call((s) => seriesCheckbox(s))
+        .call((s) => seriesCheckboxRender(s))
         .on(
           'checked.toolfilternominal',
           function ({

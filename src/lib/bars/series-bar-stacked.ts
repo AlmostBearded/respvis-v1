@@ -8,7 +8,7 @@ import {
   seriesConfigTooltipsDataHydrate,
   seriesConfigTooltipsHandleEvents,
 } from '../tooltip';
-import { seriesBarJoin } from './series-bar';
+import { barJoin } from './series-bar';
 import { barGroupedFindBySubcategory, BarGrouped, SeriesBarGrouped } from './series-bar-grouped';
 
 export interface SeriesBarStacked extends SeriesConfigTooltips<SVGRectElement, BarGrouped> {
@@ -133,7 +133,7 @@ export function seriesBarStacked(selection: Selection<Element, SeriesBarStacked>
       series
         .selectAll<SVGRectElement, BarGrouped>('rect')
         .data(seriesBarStackedCreateBars(d), (d) => d.key)
-        .call((s) => seriesBarJoin(series, s))
+        .call((s) => barJoin(series, s))
         .attr('subcategory-index', (d) => d.subcategoryIndex);
     })
     .on('update.subcategory', (e: JoinEvent<Element, BarGrouped>) =>

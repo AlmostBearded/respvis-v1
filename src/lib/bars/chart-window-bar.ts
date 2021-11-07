@@ -1,16 +1,16 @@
 import { select, Selection } from 'd3-selection';
 import {
-  chartWindow,
+  chartWindowRender,
   ToolFilterNominal,
   ToolFilterNominalActiveEvent,
-  toolFilterNominalDataHydrate,
+  toolFilterNominalData,
   toolDownloadSVG,
   chartWindowAddDownloadSVGTool,
-  toolFilterNominal,
+  toolFilterNominalRender,
 } from '../chart-window';
 import { arrayIs, layouterCompute, resizeEventListener } from '../core';
 import { DataHydrateFn } from '../core/utility/data';
-import { chartBar, chartBarDataHydrate, ChartBar } from './chart-bar';
+import { chartBar, chartBarData, ChartBar } from './chart-bar';
 
 export interface ChartWindowBar extends ChartBar {
   categoryEntity: string;
@@ -19,7 +19,7 @@ export interface ChartWindowBar extends ChartBar {
 }
 
 export function chartWindowBarDataHydrate(data: Partial<ChartWindowBar>): ChartWindowBar {
-  const chartData = chartBarDataHydrate(data);
+  const chartData = chartBarData(data);
   return {
     ...chartData,
     activeCategories: data.activeCategories || chartData.categories.map((c) => true),
@@ -36,7 +36,7 @@ export function chartWindowBar(
 ): void {
   selection
     .classed('chart-window-bar', true)
-    .call((s) => chartWindow(s))
+    .call((s) => chartWindowRender(s))
     .each(function (chartWindowD) {
       const { categories, values, labels, activeCategories, categoryEntity } =
         dataHydrate(chartWindowD);
@@ -56,7 +56,7 @@ export function chartWindowBar(
         ])
         .join('li')
         .classed('tool-filter-categories', true)
-        .call((s) => toolFilterNominal(s))
+        .call((s) => toolFilterNominalRender(s))
         .on(
           'active.chartwindowbar',
           function ({

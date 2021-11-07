@@ -1,5 +1,5 @@
 import { select, Selection } from 'd3-selection';
-import { axisBottom, axisLeft, Axis } from '../axis';
+import { axisBottomRender, axisLeftRender, Axis } from '../axis';
 import { chart } from './chart';
 import { debug, nodeToString } from './log';
 import { DataHydrateFn } from './utility/data';
@@ -10,7 +10,7 @@ export interface ChartCartesian {
   flipped: boolean;
 }
 
-export function chartCartesianDataHydrate(data: Partial<ChartCartesian>): ChartCartesian {
+export function chartCartesianData(data: Partial<ChartCartesian>): ChartCartesian {
   return {
     xAxis: data.xAxis || {},
     yAxis: data.yAxis || {},
@@ -18,10 +18,10 @@ export function chartCartesianDataHydrate(data: Partial<ChartCartesian>): ChartC
   };
 }
 
-export type ChartSelection<Data> = Selection<SVGSVGElement | SVGGElement, Partial<Data>>;
+export type ChartSelection<Data> = Selection<SVGSVGElement | SVGGElement, Data>;
 export type ChartCartesianSelection = ChartSelection<ChartCartesian>;
 
-export function chartCartesian(selection: ChartSelection<ChartCartesian>): void {
+export function chartCartesianRender(selection: ChartSelection<ChartCartesian>): void {
   selection
     .call((s) => chart(s))
     .classed('chart-cartesian', true)
@@ -41,14 +41,11 @@ export function chartCartesian(selection: ChartSelection<ChartCartesian>): void 
     });
 }
 
-export function chartCartesianAxes(
-  selection: ChartCartesianSelection,
-  dataHydrate: DataHydrateFn<ChartCartesian> = chartCartesianDataHydrate
-): void {
+export function chartCartesianAxesRender(selection: ChartCartesianSelection): void {
   selection.each(function (d) {
     debug(`render cartesian chart axes on ${nodeToString(this)}`);
     const chartS = <ChartCartesianSelection>select(this);
-    const { xAxis, yAxis, flipped } = dataHydrate(d);
+    const { xAxis, yAxis, flipped } = d;
 
     chartS
       .selectAll<SVGGElement, Axis>('.axis-bottom')
@@ -56,7 +53,7 @@ export function chartCartesianAxes(
       .join('g')
       .classed('axis-x', !flipped)
       .classed('axis-y', flipped)
-      .call((s) => axisBottom(s));
+      .call((s) => axisBottomRender(s));
 
     chartS
       .selectAll<SVGGElement, Axis>('.axis-left')
@@ -64,6 +61,6 @@ export function chartCartesianAxes(
       .join('g')
       .classed('axis-x', flipped)
       .classed('axis-y', !flipped)
-      .call((s) => axisLeft(s));
+      .call((s) => axisLeftRender(s));
   });
 }

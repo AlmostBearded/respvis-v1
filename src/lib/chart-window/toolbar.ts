@@ -1,11 +1,11 @@
 import { Selection } from 'd3-selection';
-import { menuTools } from './menu-tools';
+import { menuToolsRender } from './menu-tools';
 
-export function toolbar(selection: Selection<HTMLDivElement>): void {
+export function toolbarRender(selection: Selection<HTMLDivElement>): void {
   selection.classed('toolbar', true);
   selection
     .selectAll<HTMLDivElement, null>('.menu-tools')
     .data([null])
     .join('div')
-    .call((s) => menuTools(s));
+    .call((s) => menuToolsRender(s));
 }

@@ -22,7 +22,7 @@ export interface Axis {
   configureAxis: ConfigureAxisFn;
 }
 
-export function axisDataHydrate(data: Partial<Axis>): Axis {
+export function axisData(data: Partial<Axis>): Axis {
   return {
     scale: data.scale || scaleLinear().domain([0, 1]).range([0, 600]),
     title: data.title || '',
@@ -31,17 +31,13 @@ export function axisDataHydrate(data: Partial<Axis>): Axis {
   };
 }
 
-export type AxisSelection = Selection<SVGSVGElement | SVGGElement, Partial<Axis>>;
+export type AxisSelection = Selection<SVGSVGElement | SVGGElement, Axis>;
 
-export function axisLeft(
-  selection: AxisSelection,
-  dataHydrate: DataHydrateFn<Axis> = axisDataHydrate
-): void {
-  selection.classed('axis-left', true).each(function (d) {
+export function axisLeftRender(selection: AxisSelection): void {
+  selection.classed('axis-left', true).each(function (axisD) {
     debug(`render left axis on ${nodeToString(this)}`);
-    const axisD = dataHydrate(d);
     (<AxisSelection>select(this))
-      .call((s) => axis(s, d3Axis(d3AxisLeft, axisD), axisD.title, axisD.subtitle))
+      .call((s) => axisRender(s, d3Axis(d3AxisLeft, axisD), axisD.title, axisD.subtitle))
       .selectAll('.tick text')
       .attr('dy', null)
       .classed('center-vertical', true);
@@ -52,15 +48,11 @@ export function axisLeft(
   selection.selectAll('.ticks-transform').raise();
 }
 
-export function axisBottom(
-  selection: AxisSelection,
-  dataHydrate: DataHydrateFn<Axis> = axisDataHydrate
-): void {
-  selection.classed('axis-bottom', true).each(function (d) {
+export function axisBottomRender(selection: AxisSelection): void {
+  selection.classed('axis-bottom', true).each(function (axisD) {
     debug(`render bottom axis on ${nodeToString(this)}`);
-    const axisD = dataHydrate(d);
     (<AxisSelection>select(this))
-      .call((s) => axis(s, d3Axis(d3AxisBottom, axisD), axisD.title, axisD.subtitle))
+      .call((s) => axisRender(s, d3Axis(d3AxisBottom, axisD), axisD.title, axisD.subtitle))
       .selectAll('.tick text')
       .attr('dy', null)
       .classed('bottom', true);
@@ -70,7 +62,7 @@ export function axisBottom(
   selection.selectAll('.title').classed(WritingMode.Horizontal, true);
 }
 
-function axis(
+function axisRender(
   selection: AxisSelection,
   axis: D3Axis<AxisDomain>,
   title: string,
