@@ -116,8 +116,8 @@ exports.build = gulp.series([
   exports.clean,
   gulp.parallel([
     bundleJSLib,
-    // bundleJSLibMin,
-    // bundleJSLibMinZipped,
+    bundleJSLibMin,
+    bundleJSLibMinZipped,
     copyHtmlFiles,
     copyCssFiles,
     copyExampleScripts,
