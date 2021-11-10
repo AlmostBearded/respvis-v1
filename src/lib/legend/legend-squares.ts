@@ -5,8 +5,6 @@ import {
   findByDataProperty,
   findByIndex,
   nodeToString,
-  textHorizontalAttrs,
-  textTitleAttrs,
   classOneOfEnum,
 } from '../core';
 
@@ -93,12 +91,7 @@ export function legendSquares(selection: Selection<Element, LegendSquares>): voi
               .append('g')
               .classed('legend-item', true)
               .call((s) => s.append('rect').classed('symbol', true))
-              .call((s) =>
-                s
-                  .append('text')
-                  .classed('label', true)
-                  .call((s) => textHorizontalAttrs(s))
-              )
+              .call((s) => s.append('text').classed('label', true))
               .call((s) => legend.dispatch('enter', { detail: { selection: s } })),
           undefined,
           (exit) => exit.remove().call((s) => legend.dispatch('exit', { detail: { selection: s } }))

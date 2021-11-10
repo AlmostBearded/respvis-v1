@@ -279,6 +279,7 @@ text.bottom {
   dominant-baseline: hanging;
 }
 
+text,
 text.horizontal {
   dominant-baseline: hanging;
   text-anchor: start;
