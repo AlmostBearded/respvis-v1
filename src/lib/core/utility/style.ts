@@ -67,15 +67,12 @@ export function computedStyleWithoutDefaults(
   element: Element,
   properties: string[]
 ): Record<string, string> {
-  // creating an empty dummy object to compare with
   const dummy = document.createElement(dummyTag);
   element.parentElement!.appendChild(dummy);
 
-  // getting computed styles for both elements
   const defaultStyle = window.getComputedStyle(dummy);
   const style = window.getComputedStyle(element);
 
-  // calculating the difference
   const diff = {};
   properties.forEach((p) => {
     const defaultValue = defaultStyle.getPropertyValue(p);
@@ -85,7 +82,6 @@ export function computedStyleWithoutDefaults(
     }
   });
 
-  // clear dom
   dummy.remove();
 
   return diff;

@@ -1,7 +1,5 @@
-import { easeCubicOut } from 'd3-ease';
-import { BaseType, select, selectAll, Selection } from 'd3-selection';
-import { eventBroadcast } from './event';
-import { debug, log, nodeToString } from './log';
+import { select, selectAll, Selection } from 'd3-selection';
+import { debug, nodeToString } from './log';
 import { renderQueueEnqueue, renderQueueRender } from './render-queue';
 import { relativeBounds } from './utility/bounds';
 import { positionToTransformAttr } from './utility/position';

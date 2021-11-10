@@ -1,7 +1,7 @@
 import { easeCubicOut } from 'd3-ease';
 import { scaleLinear } from 'd3-scale';
-import { BaseType, select, Selection } from 'd3-selection';
-import { COLORS_CATEGORICAL, debug, nodeToString, Position, ScaleAny } from '../core';
+import { select, Selection } from 'd3-selection';
+import { debug, nodeToString, Position, ScaleAny } from '../core';
 import { Size } from '../core/utility/size';
 
 export interface Point extends Position {
