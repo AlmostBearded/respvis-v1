@@ -4,7 +4,7 @@ import { debug, findByDataProperty, findByKey, nodeToString } from '../core';
 import { Rect, rectFitStroke, rectMinimized, rectToAttrs } from '../core/utility/rect';
 import { Transition } from 'd3-transition';
 import { easeCubicOut } from 'd3-ease';
-import { Size } from '../core/utils';
+import { Size } from '../core/utility/size';
 import {
   SeriesConfigTooltips,
   seriesConfigTooltipsData,

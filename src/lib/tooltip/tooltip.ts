@@ -1,6 +1,6 @@
 import { select, Selection } from 'd3-selection';
 import { Position } from '../core/utility/position';
-import { Size } from '../core/utils';
+import { Size } from '../core/utility/size';
 
 export function tooltip(selection: Selection<HTMLDivElement>): void {
   selection.classed('tooltip', true);
