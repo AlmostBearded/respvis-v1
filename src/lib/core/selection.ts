@@ -27,28 +27,6 @@ declare module 'd3-selection' {
     PElement extends BaseType = BaseType,
     PDatum = unknown
   > {
-    // transformAttr(
-    //   name: string,
-    //   transform: (
-    //     this: GElement,
-    //     currentValue: string | number | boolean | null,
-    //     index: number,
-    //     groups: GElement[]
-    //   ) => string | number | boolean | null
-    // ): this;
-
-    // transformData<TransformedDatum>(
-    //   transform: (
-    //     this: GElement,
-    //     currentData: Datum,
-    //     index: number,
-    //     groups: GElement[]
-    //   ) => TransformedDatum
-    // ): Selection<GElement, TransformedDatum, PElement, PDatum>;
-
-    // transformCall<GElement extends BaseType, Datum, PElement extends BaseType, PDatum, Result>(
-    //   transform: (selection: Selection<GElement, Datum, PElement, PDatum>) => Result
-    // ): Result;
 
     layout(name: string): string | null;
     layout(
@@ -67,59 +45,6 @@ declare module 'd3-selection' {
     dispatch(type: string, parameters?: Partial<CustomEventParameters>): this;
   }
 }
-
-// selection.prototype.transformAttr = function <
-//   GElement extends BaseType,
-//   Datum,
-//   PElement extends BaseType,
-//   PDatum
-// >(
-//   this: Selection<GElement, Datum, PElement, PDatum>,
-//   name: string,
-//   transform: (
-//     this: GElement,
-//     currentValue: string | number | boolean | null,
-//     index: number,
-//     groups: GElement[]
-//   ) => string | number | boolean | null
-// ): Selection<GElement, Datum, PElement, PDatum> {
-//   return this.attr(name, function (d, i, g) {
-//     return transform.call(this, select(this).attr(name), i, g);
-//   });
-// };
-
-// selection.prototype.transformData = function <
-//   GElement extends BaseType,
-//   Datum,
-//   PElement extends BaseType,
-//   PDatum,
-//   TransformedDatum
-// >(
-//   this: Selection<GElement, Datum, PElement, PDatum>,
-//   transform: (
-//     this: GElement,
-//     currentDatum: Datum,
-//     index: number,
-//     groups: GElement[]
-//   ) => TransformedDatum
-// ): Selection<GElement, TransformedDatum, PElement, PDatum> {
-//   return this.data<TransformedDatum>(
-//     this.data().map((d, i) => transform.call(this.nodes()[i], d, i, this.nodes()))
-//   );
-// };
-
-// selection.prototype.transformCall = function <
-//   GElement extends BaseType,
-//   Datum,
-//   PElement extends BaseType,
-//   PDatum,
-//   Result
-// >(
-//   this: Selection<GElement, Datum, PElement, PDatum>,
-//   transform: (selection: Selection<GElement, Datum, PElement, PDatum>) => Result
-// ): Result {
-//   return transform(this);
-// };
 
 selection.prototype.layout = function <
   GElement extends BaseType,
