@@ -1,7 +1,7 @@
 {
   "name": "respvis",
   "version": "0.2.0",
-  "description": "A framework to build responsive visualizations ",
+  "description": "A library to build responsive SVG-based visualizations.",
   "main": "index.js",
   "scripts": {
     "build": "npx gulp build",
@@ -13,12 +13,11 @@
   },
   "keywords": [
     "d3",
-    "faberjs",
-    "layout-engine",
+    "responsive",
     "svg",
     "information-visualization",
     "visualization",
-    "charts"
+    "chart"
   ],
   "author": "Peter Oberrauner",
   "license": "MIT",
