@@ -25,15 +25,7 @@ const path = require('path');
 
 // ## Bundle JS
 
-async function bundleJSLibWithSettings(minify, zip) {
-  const outputPlugins = [];
-  if (minify) {
-    outputPlugins.push(rollupTerser());
-    if (zip) {
-      outputPlugins.push(rollupGzip());
-    }
-  }
-
+async function bundleJSLib() {
   const bundle = await rollup.rollup({
     input: 'src/lib/index.ts',
     external: [
@@ -47,34 +39,33 @@ async function bundleJSLibWithSettings(minify, zip) {
     ],
     plugins: [rollupNodeResolve({ browser: true }), rollupCommonJs(), rollupTypescript()],
   });
-  return bundle.write({
-    file: `dist/respvis${minify ? '.min' : ''}.js`,
-    format: 'iife',
-    name: 'respVis',
-    globals: {
-      'd3-selection': 'd3',
-      'd3-array': 'd3',
-      'd3-axis': 'd3',
-      'd3-brush': 'd3',
-      'd3-scale': 'd3',
-      'd3-transition': 'd3',
-      'd3-zoom': 'd3',
-    },
-    plugins: outputPlugins,
-    sourcemap: true,
-  });
-}
 
-async function bundleJSLib() {
-  return bundleJSLibWithSettings(false, false);
-}
+  const writeConfigurations = [
+    { file: 'respvis.js', plugins: [] },
+    { file: 'respvis.min.js', plugins: [rollupTerser()] },
+    { file: 'respvis.min.js', plugins: [rollupTerser(), rollupGzip()] },
+  ];
 
-async function bundleJSLibMin() {
-  return bundleJSLibWithSettings(true, false);
-}
-
-async function bundleJSLibMinZipped() {
-  return bundleJSLibWithSettings(true, true);
+  return Promise.all(
+    writeConfigurations.map((c) =>
+      bundle.write({
+        file: `dist/${c.file}`,
+        format: 'iife',
+        name: 'respVis',
+        globals: {
+          'd3-selection': 'd3',
+          'd3-array': 'd3',
+          'd3-axis': 'd3',
+          'd3-brush': 'd3',
+          'd3-scale': 'd3',
+          'd3-transition': 'd3',
+          'd3-zoom': 'd3',
+        },
+        plugins: c.plugins,
+        sourcemap: true,
+      })
+    )
+  );
 }
 
 function copyHtmlFiles() {
@@ -116,8 +107,6 @@ exports.build = gulp.series([
   exports.clean,
   gulp.parallel([
     bundleJSLib,
-    bundleJSLibMin,
-    bundleJSLibMinZipped,
     copyHtmlFiles,
     copyCssFiles,
     copyExampleScripts,
