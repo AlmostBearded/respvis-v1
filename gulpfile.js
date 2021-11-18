@@ -40,17 +40,22 @@ async function bundleJSLib() {
     plugins: [rollupNodeResolve({ browser: true }), rollupCommonJs(), rollupTypescript()],
   });
 
+  const minPlugins = [rollupTerser()];
+  const gzPlugins = [rollupTerser(), rollupGzip()];
   const writeConfigurations = [
-    { file: 'respvis.js', plugins: [] },
-    { file: 'respvis.min.js', plugins: [rollupTerser()] },
-    { file: 'respvis.min.js', plugins: [rollupTerser(), rollupGzip()] },
+    { extension: 'js', format: 'iife', plugins: [] },
+    { extension: 'min.js', format: 'iife', plugins: minPlugins },
+    { extension: 'min.js', format: 'iife', plugins: gzPlugins },
+    { extension: 'mjs', format: 'es', plugins: [] },
+    { extension: 'min.mjs', format: 'es', plugins: minPlugins },
+    { extension: 'min.mjs', format: 'es', plugins: gzPlugins },
   ];
 
   return Promise.all(
     writeConfigurations.map((c) =>
       bundle.write({
-        file: `dist/${c.file}`,
-        format: 'iife',
+        file: `dist/respvis.${c.extension}`,
+        format: c.format,
         name: 'respVis',
         globals: {
           'd3-selection': 'd3',
@@ -105,12 +110,7 @@ exports.cleanAll = gulp.series([cleanDist, cleanNodeModules]);
 
 exports.build = gulp.series([
   exports.clean,
-  gulp.parallel([
-    bundleJSLib,
-    copyHtmlFiles,
-    copyCssFiles,
-    copyExampleScripts,
-  ]),
+  gulp.parallel([bundleJSLib, copyHtmlFiles, copyCssFiles, copyExampleScripts]),
 ]);
 
 exports.serve = function serve() {
