@@ -25,7 +25,7 @@ const path = require('path');
 
 // ## Bundle JS
 
-async function bundleJSLib() {
+async function bundleJS() {
   const bundle = await rollup.rollup({
     input: 'src/lib/index.ts',
     external: [
@@ -73,16 +73,12 @@ async function bundleJSLib() {
   );
 }
 
-function copyHtmlFiles() {
-  return gulp.src('./src/**/*.html').pipe(gulp.dest('./dist'));
+function bundleCSS() {
+  return gulp.src('./src/respvis.css').pipe(gulp.dest('./dist'));
 }
 
-function copyCssFiles() {
-  return gulp.src('./src/**/*.css').pipe(gulp.dest('./dist'));
-}
-
-function copyExampleScripts() {
-  return gulp.src('./src/examples/**/*.js').pipe(gulp.dest('./dist/examples'));
+function copyExamples() {
+  return gulp.src('./src/examples/**/*').pipe(gulp.dest('./dist/examples'));
 }
 
 // ## Reload browser
@@ -95,11 +91,11 @@ function reloadBrowser(cb) {
 // ## Clean
 
 function cleanDist() {
-  return del('dist/**', { force: true });
+  return del('dist', { force: true });
 }
 
 function cleanNodeModules() {
-  return del('node_modules/**', { force: true });
+  return del('node_modules', { force: true });
 }
 
 // # Public tasks
@@ -108,18 +104,18 @@ exports.clean = cleanDist;
 
 exports.cleanAll = gulp.series([cleanDist, cleanNodeModules]);
 
-exports.build = gulp.series([
-  exports.clean,
-  gulp.parallel([bundleJSLib, copyHtmlFiles, copyCssFiles, copyExampleScripts]),
-]);
+exports.build = gulp.series([exports.clean, gulp.parallel([bundleJS, bundleCSS, copyExamples])]);
 
 exports.serve = function serve() {
   browserSync.init({
     server: './dist',
-    startPath: '/',
+    startPath: '/examples',
   });
 
-  gulp.watch('./src/**/*', { ignoreInitial: false }, gulp.series(exports.build, reloadBrowser));
+  const watchOptions = { ignoreInitial: false };
+  gulp.watch('./src/**/*.ts', watchOptions, gulp.series(bundleJS, reloadBrowser));
+  gulp.watch('./src/respvis.css', watchOptions, gulp.series(bundleCSS, reloadBrowser));
+  gulp.watch('./src/examples/**/*', watchOptions, gulp.series(copyExamples, reloadBrowser));
 };
 
 exports.default = exports.serve;
