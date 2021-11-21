@@ -1,5 +1,6 @@
 import { create, EnterElement, select, Selection, ValueFn } from 'd3-selection';
-import { siblingIndexSameClasses, uuid } from '../core';
+import { siblingIndexSameClasses } from './utility';
+import { v4 as uuid } from 'uuid';
 
 export interface Checkbox {
   container: string | ValueFn<EnterElement, Checkbox, HTMLElement>;

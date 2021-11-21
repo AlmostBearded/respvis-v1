@@ -1,5 +1,5 @@
 import { select, Selection, ValueFn } from 'd3-selection';
-import { computedStyleWithoutDefaults, nodeToString, presentationAttributes } from '../core';
+import { computedStyleWithoutDefaults, presentationAttributes } from '../utility/style';
 
 export function toolDownloadSVG(selection: Selection<HTMLLIElement>): void {
   selection

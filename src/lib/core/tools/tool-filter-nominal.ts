@@ -1,6 +1,6 @@
 import { create, select, Selection } from 'd3-selection';
-import { menuDropdown } from './menu-dropdown';
-import { SeriesCheckbox, seriesCheckboxData, seriesCheckbox } from './series-checkbox';
+import { menuDropdown } from '../menu-dropdown';
+import { SeriesCheckbox, seriesCheckboxData, seriesCheckbox } from '../series-checkbox';
 
 export interface FilterNominalOption {
   name: string;

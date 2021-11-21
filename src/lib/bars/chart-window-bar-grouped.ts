@@ -6,7 +6,7 @@ import {
   toolFilterNominalData,
   toolDownloadSVG,
   toolFilterNominal,
-} from '../chart-window';
+} from '../core';
 import { arrayFlat, arrayIs, arrayIs2D, arrayPartition } from '../core';
 import { chartBarGrouped, chartBarGroupedData, ChartBarGrouped } from './chart-bar-grouped';
 import { SeriesLabelBar } from './series-label-bar';

@@ -1,6 +1,6 @@
 import { scaleLinear } from 'd3-scale';
 import { BaseType, select, Selection } from 'd3-selection';
-import { axisBottom, axisLeft, ConfigureAxisFn, Axis, axisData } from '../axis';
+import { axisBottom, axisLeft, ConfigureAxisFn, Axis, axisData } from './axis';
 import { chart } from './chart';
 import { debug, nodeToString } from './log';
 import { ScaleAny } from './scale';

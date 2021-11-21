@@ -5,7 +5,7 @@ import {
   toolFilterNominalData,
   toolDownloadSVG,
   toolFilterNominal,
-} from '../chart-window';
+} from '../core';
 import { arrayIs } from '../core';
 import { chartPoint, ChartPoint, chartPointData } from './chart-point';
 

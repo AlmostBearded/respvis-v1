@@ -5,7 +5,7 @@ import {
   toolFilterNominalData,
   toolDownloadSVG,
   toolFilterNominal,
-} from '../chart-window';
+} from '../core';
 import { arrayFlat, arrayIs, arrayIs2D, arrayPartition } from '../core';
 import { chartBarStacked, chartBarStackedData, ChartBarStacked } from './chart-bar-stacked';
 

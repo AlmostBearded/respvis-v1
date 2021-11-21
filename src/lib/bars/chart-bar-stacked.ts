@@ -1,5 +1,5 @@
 import { select, Selection } from 'd3-selection';
-import { axisTickFindByIndex } from '../axis';
+import { axisTickFindByIndex } from '../core';
 import { arrayFlat, debug, nodeToString, rectRound, siblingIndex } from '../core';
 import {
   chartCartesian,

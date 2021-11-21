@@ -8,7 +8,9 @@ import {
 import { scaleLinear } from 'd3-scale';
 import { BaseType, select, Selection } from 'd3-selection';
 import { SelectionOrTransition, Transition } from 'd3-transition';
-import { debug, findByIndex, nodeToString, WritingMode } from '../core';
+import { debug, nodeToString } from './log';
+import { WritingMode } from './text';
+import { findByIndex } from './utility/find';
 
 export interface ConfigureAxisFn {
   (axis: D3Axis<AxisDomain>): void;

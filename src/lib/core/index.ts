@@ -16,10 +16,19 @@ export * from './resize-event-dispatcher';
 
 export * from './scale';
 
+export * from './axis';
 export * from './chart';
-export * from './text';
+export * from './chart-cartesian';
+export * from './chart-window';
 
+export * from './text';
 export * from './log';
+
+export * from './series-checkbox';
+export * from './menu-dropdown';
+
+export * from './tools/tool-download-svg';
+export * from './tools/tool-filter-nominal';
 
 // todo: is this still needed?
 import 'd3-transition';
