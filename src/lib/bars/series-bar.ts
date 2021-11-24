@@ -1,6 +1,6 @@
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { select, Selection } from 'd3-selection';
-import { debug, findByDataProperty, findByKey, nodeToString } from '../core';
+import { debug, nodeToString } from '../core';
 import { Rect, rectFitStroke, rectMinimized, rectToAttrs } from '../core/utility/rect';
 import { Transition } from 'd3-transition';
 import { easeCubicOut } from 'd3-ease';
@@ -160,19 +160,6 @@ export function seriesBarJoin(
     )
     .attr('category-index', (d) => d.categoryIndex)
     .attr('category', (d) => d.category)
+    .attr('data-key', (d) => d.key)
     .call((s) => seriesSelection.dispatch('update', { detail: { selection: s } }));
-}
-
-export function barFind<Data extends Bar>(
-  container: Selection,
-  key: string
-): Selection<SVGRectElement, Data> {
-  return findByKey<SVGRectElement, Data>(container, '.bar', key);
-}
-
-export function barFindByCategory<Data extends Bar>(
-  container: Selection,
-  category: string
-): Selection<SVGRectElement, Data> {
-  return findByDataProperty<SVGRectElement, Data>(container, '.bar', 'category', category);
 }

@@ -1,14 +1,12 @@
-import { BaseType, select, Selection } from 'd3-selection';
-import { axisTickFindByIndex } from '../core';
-import { debug, nodeToString, siblingIndex, siblingIndexSameClasses } from '../core';
+import { BaseType, select, selectAll, Selection } from 'd3-selection';
+import { debug, nodeToString } from '../core';
 import {
   chartCartesian,
   chartCartesianUpdateAxes,
   chartCartesianData,
   ChartCartesian as ChartCartesian,
 } from '../core/chart-cartesian';
-import { seriesBar, seriesBarData, SeriesBar, Bar, barFind } from './series-bar';
-import { labelFind } from './series-label';
+import { seriesBar, seriesBarData, SeriesBar, Bar } from './series-bar';
 import {
   SeriesLabelBar as SeriesLabelBar,
   seriesLabelBarData as seriesLabelBarData,
@@ -79,10 +77,8 @@ export function chartBarDataChange(
 }
 
 export function chartBarHoverBar(chart: Selection, bar: Selection<Element, Bar>, hover: boolean) {
-  bar.each((barD, i, g) => {
-    const barIndex = siblingIndex(g[i], '.bar');
-
-    labelFind(chart, barD.key).classed('highlight', hover);
-    axisTickFindByIndex(chart.selectAll('.axis-x'), barIndex).classed('highlight', hover);
+  bar.each((barD) => {
+    chart.selectAll(`.label[data-key="${barD.key}"]`).classed('highlight', hover);
+    chart.selectAll(`.axis-x .tick[data-key="${barD.category}"]`).classed('highlight', hover);
   });
 }

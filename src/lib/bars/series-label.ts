@@ -1,14 +1,6 @@
 import { easeCubicOut } from 'd3-ease';
 import { select, Selection, ValueFn } from 'd3-selection';
-import {
-  debug,
-  findByFilter,
-  findByIndex,
-  findByKey,
-  nodeToString,
-  Position,
-  positionToTransformAttr,
-} from '../core';
+import { debug, nodeToString, Position, positionToTransformAttr } from '../core';
 
 export interface Label extends Position {
   text: string;
@@ -18,14 +10,14 @@ export interface Label extends Position {
 export interface SeriesLabel {
   texts: string[];
   positions: Position[];
-  keys: string[];
+  keys?: string[];
 }
 
 export function seriesLabelData(data: Partial<SeriesLabel>): SeriesLabel {
   return {
     texts: data.texts || [],
     positions: data.positions || [],
-    keys: data.keys || data.texts || [],
+    keys: data.keys,
   };
 }
 
@@ -33,7 +25,7 @@ export function seriesLabelCreateLabels(seriesData: SeriesLabel): Label[] {
   const { texts, keys, positions } = seriesData;
   return texts.map((text, i) => ({
     text: text,
-    key: keys[i],
+    key: keys?.[i] || text,
     ...positions[i],
   }));
 }
@@ -90,23 +82,6 @@ export function seriesLabelJoin(
         .call((t) => positionToTransformAttr(t, (d) => d))
     )
     .text((d) => d.text)
+    .attr('data-key', (d) => d.key)
     .call((s) => seriesSelection.dispatch('update', { detail: { selection: s } }));
-}
-
-export function labelFind(container: Selection, key: string): Selection<SVGTextElement, Label> {
-  return findByKey<SVGTextElement, Label>(container, '.label', key);
-}
-
-export function labelFindByIndex(
-  container: Selection,
-  index: number
-): Selection<SVGTextElement, Label> {
-  return findByIndex<SVGTextElement, Label>(container, '.label', index);
-}
-
-export function labelFindByFilter(
-  container: Selection,
-  filter: ValueFn<SVGTextElement, Label, boolean>
-): Selection<SVGTextElement, Label> {
-  return findByFilter<SVGTextElement, Label>(container, '.label', filter);
 }

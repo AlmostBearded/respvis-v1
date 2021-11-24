@@ -9,7 +9,7 @@ import {
   seriesConfigTooltipsHandleEvents,
 } from '../tooltip';
 import { seriesBarJoin } from './series-bar';
-import { barGroupedFindBySubcategory, BarGrouped, SeriesBarGrouped } from './series-bar-grouped';
+import { BarGrouped, SeriesBarGrouped } from './series-bar-grouped';
 
 export interface SeriesBarStacked extends SeriesConfigTooltips<SVGRectElement, BarGrouped> {
   categories: any[];
@@ -146,5 +146,3 @@ export function seriesBarStacked(selection: Selection<Element, SeriesBarStacked>
     )
     .call((s) => seriesConfigTooltipsHandleEvents(s));
 }
-
-export const barStackedFindBySubcategory = barGroupedFindBySubcategory;

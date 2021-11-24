@@ -5,6 +5,7 @@ import {
   toolFilterNominalData,
   toolDownloadSVG,
   toolFilterNominal,
+  Checkbox,
 } from '../core';
 import { arrayIs, arrayIs2D, Position } from '../core';
 import { chartBar, chartBarData, ChartBar } from './chart-bar';
@@ -55,6 +56,7 @@ export function chartWindowBar(selection: ChartWindowBarSelection): void {
           toolFilterNominalData({
             text: chartWindowD.categoryEntity,
             options: chartWindowD.categories,
+            keys: chartWindowD.categories,
           })
         )
         .call(toolFilterNominal);
@@ -73,29 +75,13 @@ export function chartWindowBar(selection: ChartWindowBarSelection): void {
         .call((s) => chartBar(s));
 
       chartWindow.on('datachange.chartwindowbar', function (e, chartWindowD) {
-        const chartWindowS = <ChartWindowBarSelection>select(this),
-          categoryFilterS = chartWindowS.selectAll<Element, ToolFilterNominal>(
-            '.tool-filter-categories'
-          ),
-          categoryFilterD = categoryFilterS.datum(),
-          filterOptionMap = (data: ToolFilterNominal) =>
-            data.options.reduce<Record<string, boolean>>(
-              (obj, option, i) => Object.assign(obj, { [`${option}`]: data.shown[i] }),
-              {}
-            ),
-          categoryOptionMap = filterOptionMap(categoryFilterD),
-          filterDatum = (text: string, options: string[], optionMap: Record<string, boolean>) => ({
-            text: text,
-            options: options,
-            shown: options.map((o) => (optionMap[o] === undefined ? true : optionMap[o])),
-          });
+        const chartWindowS = <ChartWindowBarSelection>select(this);
 
-        categoryFilterS.datum((d) =>
-          Object.assign(
-            d,
-            filterDatum(chartWindowD.categoryEntity, chartWindowD.categories, categoryOptionMap)
-          )
-        );
+        chartWindowS.selectAll<Element, ToolFilterNominal>('.tool-filter-categories').datum({
+          text: chartWindowD.categoryEntity,
+          options: chartWindowD.categories,
+          keys: chartWindowD.categories,
+        });
 
         chartWindowBarApplyFilters(chartWindowS);
       });
@@ -105,26 +91,24 @@ export function chartWindowBar(selection: ChartWindowBarSelection): void {
 export function chartWindowBarApplyFilters(selection: ChartWindowBarSelection): void {
   selection.each((chartWindowD, i, g) => {
     const {
-        categories,
-        values,
-        keys,
-        valueDomain,
-        labels: { labels: labels },
-      } = chartWindowD,
-      chartWindowS = <ChartWindowBarSelection>select(g[i]),
-      chartS = chartWindowS.selectAll<Element, ChartBarGrouped>('svg.chart-bar'),
-      labelSeriesS = chartS.selectAll<Element, SeriesLabelBar>('.series-label-bar'),
-      catFilterD = chartWindowS
-        .selectAll<Element, ToolFilterNominal>('.tool-filter-categories')
-        .datum(),
-      filterCat = (_, i: number) => catFilterD.shown[i];
+      categories,
+      values,
+      keys,
+      valueDomain,
+      labels: { labels: labels },
+    } = chartWindowD;
+    const chartWindowS = <ChartWindowBarSelection>select(g[i]);
+    const chartS = chartWindowS.selectAll<Element, ChartBarGrouped>('svg.chart-bar');
+    const catFilterS = chartWindowS.selectAll('.tool-filter-categories');
+    const filterCat = (v: any, i: number) =>
+      catFilterS.selectAll(`.checkbox[data-key="${categories[i]}"] input`).property('checked');
 
-    const filteredCats = categories.filter(filterCat),
-      filteredValues = values.filter(filterCat),
-      filteredKeys = keys?.filter(filterCat),
-      filteredLabels = arrayIs(labels) && labels.filter(filterCat),
-      filteredValueDomain =
-        valueDomain instanceof Function ? valueDomain(filteredValues) : valueDomain;
+    const filteredCats = categories.filter(filterCat);
+    const filteredValues = values.filter(filterCat);
+    const filteredKeys = keys?.filter(filterCat);
+    const filteredLabels = arrayIs(labels) && labels.filter(filterCat);
+    const filteredValueDomain =
+      valueDomain instanceof Function ? valueDomain(filteredValues) : valueDomain;
 
     chartS.datum(
       (d) => (
@@ -141,8 +125,6 @@ export function chartWindowBarApplyFilters(selection: ChartWindowBarSelection): 
         })
       )
     );
-
-    // chartWindowBarDispatchDensityChange(chartWindowS);
   });
 }
 

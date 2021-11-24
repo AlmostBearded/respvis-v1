@@ -2,7 +2,7 @@ import { range } from 'd3-array';
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { BaseType, select, Selection, ValueFn } from 'd3-selection';
 import { JoinEvent } from '.';
-import { debug, findByDataProperty, nodeToString, Rect } from '../core';
+import { debug, nodeToString, Rect } from '../core';
 import { Size } from '../core/utility/size';
 import {
   SeriesConfigTooltips,
@@ -149,16 +149,4 @@ export function seriesBarGrouped(selection: Selection<Element, SeriesBarGrouped>
       (<Element>e.target).classList.toggle('highlight', e.type.endsWith('over'))
     )
     .call((s) => seriesConfigTooltipsHandleEvents(s));
-}
-
-export function barGroupedFindBySubcategory(
-  container: Selection,
-  subcategory: string
-): Selection<SVGRectElement, BarGrouped> {
-  return findByDataProperty<SVGRectElement, BarGrouped>(
-    container,
-    '.bar',
-    'subcategory',
-    subcategory
-  );
 }

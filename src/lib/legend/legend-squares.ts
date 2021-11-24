@@ -1,12 +1,5 @@
 import { select, Selection } from 'd3-selection';
-import {
-  arrayIs,
-  debug,
-  findByDataProperty,
-  findByIndex,
-  nodeToString,
-  classOneOfEnum,
-} from '../core';
+import { arrayIs, debug, nodeToString, classOneOfEnum } from '../core';
 
 export enum LegendPosition {
   Top = 'with-legend-top',
@@ -31,28 +24,33 @@ export function classLegendOrientation(selection: Selection, orientation: Legend
 export interface LegendSquaresItem {
   label: string;
   index: number;
+  key: string;
 }
 
 export interface LegendSquares {
   title: string;
   labels: string[];
   indices?: number[];
+  keys?: string[];
 }
 
 export function legendSquaresData(data: Partial<LegendSquares>): LegendSquares {
+  const labels = data.labels || [];
   return {
     title: data.title || '',
-    labels: data.labels || [],
+    labels,
+    keys: data.keys,
   };
 }
 
 export function legendSquaresCreateItems(legendData: LegendSquares): LegendSquaresItem[] {
-  const { labels, indices } = legendData;
+  const { labels, indices, keys } = legendData;
 
   return labels.map((l, i) => {
     return {
       label: l,
       index: indices === undefined ? i : indices[i],
+      key: keys === undefined ? l : keys[i],
     };
   });
 }
@@ -97,28 +95,10 @@ export function legendSquares(selection: Selection<Element, LegendSquares>): voi
           (exit) => exit.remove().call((s) => legend.dispatch('exit', { detail: { selection: s } }))
         )
         .attr('index', (d) => d.index)
+        .attr('data-key', (d) => d.key)
         .each((d, i, g) => {
-          select(g[i]).selectAll('.label').text(d.label.toString());
+          select(g[i]).selectAll('.label').text(d.label);
         })
         .call((s) => legend.dispatch('update', { detail: { selection: s } }));
     });
-}
-
-export function legendItemFindByLabel(
-  container: Selection,
-  label: string
-): Selection<SVGGElement, LegendSquaresItem> {
-  return findByDataProperty<SVGGElement, LegendSquaresItem>(
-    container,
-    '.legend-item',
-    'label',
-    label
-  );
-}
-
-export function legendItemFindByIndex(
-  container: Selection,
-  index: number
-): Selection<SVGGElement, LegendSquaresItem> {
-  return findByIndex<SVGGElement, LegendSquaresItem>(container, '.legend-item', index);
 }

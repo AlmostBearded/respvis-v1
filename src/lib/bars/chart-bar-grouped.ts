@@ -1,12 +1,5 @@
 import { select, Selection } from 'd3-selection';
-import { axisTickFindByIndex } from '../core';
-import {
-  debug,
-  nodeToString,
-  siblingIndex,
-  classOneOfEnum,
-  siblingIndexSameClasses,
-} from '../core';
+import { debug, nodeToString } from '../core';
 import {
   chartCartesian,
   chartCartesianUpdateAxes,
@@ -17,20 +10,21 @@ import {
   LegendSquares,
   legendSquaresData,
   LegendSquaresItem,
-  legendItemFindByIndex,
   legendSquares,
   LegendOrientation,
   LegendPosition,
 } from '../legend';
-import { barFindByCategory } from './series-bar';
 import {
-  barGroupedFindBySubcategory,
+  chartBarStackedHoverAxisTick,
+  chartBarStackedHoverBar,
+  chartBarStackedHoverLegendItem,
+} from './chart-bar-stacked';
+import {
   BarGrouped,
   SeriesBarGrouped,
   seriesBarGroupedData,
   seriesBarGrouped,
 } from './series-bar-grouped';
-import { labelFind, labelFindByFilter } from './series-label';
 import { SeriesLabelBar, seriesLabelBarData, seriesLabelBar } from './series-label-bar';
 
 export interface ChartBarGrouped extends SeriesBarGrouped, ChartCartesian {
@@ -122,13 +116,14 @@ export function chartBarGroupedDataChange(selection: ChartBarGroupedSelection): 
       .join((enter) => enter.append('g').call((s) => seriesLabelBar(s)));
 
     legendS.datum((d) =>
-      Object.assign<LegendSquares, Partial<LegendSquares>, Partial<LegendSquares>>(
+      Object.assign(
         d,
         {
           labels: subcategories,
           indices: subcategoryIndices,
         },
-        legend
+        legend,
+        { keys: subcategories }
       )
     );
 
@@ -144,53 +139,8 @@ export function chartBarGroupedDataChange(selection: ChartBarGroupedSelection): 
   });
 }
 
-export function chartBarGroupedHoverBar(
-  chart: Selection<Element, ChartBarGrouped>,
-  bar: Selection<SVGRectElement, BarGrouped>,
-  hover: boolean
-): void {
-  const chartD = chart.datum();
-  bar.each((barD, i, g) => {
-    const categoryIndex = chartD.categories.indexOf(barD.category);
-    const subcategoryIndex = chartD.subcategories.indexOf(barD.subcategory);
-    labelFind(chart, barD.key).classed('highlight', hover);
-    axisTickFindByIndex(chart.selectAll('.axis-x'), categoryIndex).classed('highlight', hover);
-    legendItemFindByIndex(chart, subcategoryIndex).classed('highlight', hover);
-  });
-}
+export const chartBarGroupedHoverBar = chartBarStackedHoverBar;
 
-export function chartBarGroupedHoverLegendItem(
-  chart: Selection<Element, ChartBarGrouped>,
-  legendItem: Selection<Element, LegendSquaresItem>,
-  hover: boolean
-): void {
-  const legendItemCount = chart.selectAll('.legend-item').size();
-  legendItem.each((_, i, g) => {
-    const legendItemI = siblingIndex(g[i], '.legend-item');
-    const subcategory = chart.datum().subcategories[legendItemI];
+export const chartBarGroupedHoverLegendItem = chartBarStackedHoverLegendItem;
 
-    barGroupedFindBySubcategory(chart, subcategory).classed('highlight', hover);
-    labelFindByFilter(
-      chart.selectAll('.series-label-bar'),
-      (_, i) => i % legendItemCount === legendItemI
-    ).classed('highlight', hover);
-  });
-}
-
-export function chartBarGroupedHoverAxisTick(
-  chart: Selection<Element, ChartBarGrouped>,
-  tick: Selection<Element>,
-  hover: boolean
-): void {
-  const legendItemCount = chart.selectAll('.legend-item').size();
-  tick.each((_, i, g) => {
-    const tickI = siblingIndex(g[i], '.tick');
-    const category = chart.datum().categories[tickI];
-    barFindByCategory(chart, category).classed('highlight', hover);
-    labelFindByFilter(
-      chart.selectAll('.series-label-bar'),
-      (_, i) => Math.floor(i / legendItemCount) === tickI
-    ).classed('highlight', hover);
-  });
-  tick.classed('highlight', hover);
-}
+export const chartBarGroupedHoverAxisTick = chartBarStackedHoverAxisTick;

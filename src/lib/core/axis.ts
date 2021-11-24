@@ -10,7 +10,6 @@ import { BaseType, select, Selection } from 'd3-selection';
 import { SelectionOrTransition, Transition } from 'd3-transition';
 import { debug, nodeToString } from './log';
 import { WritingMode } from './text';
-import { findByIndex } from './utility/find';
 
 export interface ConfigureAxisFn {
   (axis: D3Axis<AxisDomain>): void;
@@ -125,8 +124,9 @@ function axisRender(
             .attr('font-family', null)
             .attr('font-size', null)
             .attr('text-anchor', null)
-            .call((t) => t.selectAll<SVGTextElement, unknown>('.tick line').attr('stroke', null))
-            .call((t) => t.selectAll<SVGTextElement, unknown>('.tick text').attr('fill', null))
+            .call((t) => t.selectAll<SVGGElement, string>('.tick').attr('data-key', (d) => d))
+            .call((t) => t.selectAll('.tick line').attr('stroke', null))
+            .call((t) => t.selectAll('.tick text').attr('fill', null))
             .call((t) => t.selectAll('.domain').attr('stroke', null).attr('fill', null))
         )
     )
@@ -152,8 +152,4 @@ export function xyAttrsToTransformAttr(
     })
     .attr('x', null)
     .attr('y', null);
-}
-
-export function axisTickFindByIndex(container: Selection, index: number): Selection<SVGGElement> {
-  return findByIndex<SVGGElement>(container, '.tick', index);
 }

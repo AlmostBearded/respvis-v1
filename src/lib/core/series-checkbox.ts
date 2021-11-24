@@ -1,46 +1,34 @@
 import { create, EnterElement, select, Selection, ValueFn } from 'd3-selection';
-import { siblingIndexSameClasses } from './utility';
 import { v4 as uuid } from 'uuid';
 
 export interface Checkbox {
   container: string | ValueFn<EnterElement, Checkbox, HTMLElement>;
   label: string;
-  checked: boolean;
-  disabled: boolean;
+  key: string;
 }
 
 export interface SeriesCheckbox {
   container: string | ValueFn<EnterElement, Checkbox, HTMLElement>;
   labels: string[];
-  checked: boolean[];
-  disabled?: boolean[];
-  minChecked: number;
-  maxChecked: number;
+  keys: string[];
 }
 
 export function seriesCheckboxData(data: Partial<SeriesCheckbox>): SeriesCheckbox {
+  const labels = data.labels || [];
   return {
     container: data.container || 'div',
-    labels: data.labels || [],
-    checked: data.checked || [],
-    disabled: data.disabled,
-    minChecked: data.minChecked || 0,
-    maxChecked: data.maxChecked || Infinity,
+    labels,
+    keys: data.keys || labels,
   };
 }
 
 export function seriesCheckboxCreateCheckboxes(seriesData: SeriesCheckbox): Checkbox[] {
-  const { labels, checked, disabled, minChecked, maxChecked, container } = seriesData;
-  const checkedCount = checked.reduce((count, checked) => count + (checked ? 1 : 0), 0);
+  const { labels, container, keys } = seriesData;
   return labels.map((l, i) => {
     return {
       container: container,
       label: l,
-      checked: checked[i],
-      disabled:
-        disabled?.[i] ||
-        (checked[i] && checkedCount <= minChecked) ||
-        (!checked[i] && checkedCount >= maxChecked),
+      key: keys[i],
     };
   });
 }
@@ -48,13 +36,9 @@ export function seriesCheckboxCreateCheckboxes(seriesData: SeriesCheckbox): Chec
 export function seriesCheckbox(selection: Selection<HTMLElement, SeriesCheckbox>): void {
   selection
     .classed('series-checkbox', true)
-    .on('change.seriescheckbox', function (e, d) {
-      const checkbox = <HTMLInputElement>e.target;
-      const index = siblingIndexSameClasses(checkbox.closest('.checkbox')!);
-      select<Element, SeriesCheckbox>(this).datum((d) => {
-        d.checked[index] = checkbox.checked;
-        return d;
-      });
+    .on('change.seriescheckbox', (e) => {
+      const input = <HTMLInputElement>e.target;
+      input.setAttribute('checked', input.checked.toString());
     })
     .on(
       'click.seriescheckbox',
@@ -87,7 +71,7 @@ export function seriesCheckboxJoin(
           .each((d, i, g) => {
             const s = select(g[i]),
               id = uuid();
-            s.append('input').attr('type', 'checkbox').attr('id', id);
+            s.append('input').attr('type', 'checkbox').attr('id', id).attr('checked', true);
             s.append('label').attr('for', id);
           })
           .call((s) => seriesSelection.dispatch('enter', { detail: { selection: s } })),
@@ -96,10 +80,7 @@ export function seriesCheckboxJoin(
         exit.remove().call((s) => seriesSelection.dispatch('exit', { detail: { selection: s } }))
     )
     .each((d, i, g) => {
-      const s = select(g[i]);
-      s.selectChildren('input')
-        .attr('checked', <any>d.checked || null)
-        .attr('disabled', <any>d.disabled || null);
+      const s = select(g[i]).attr('data-key', d.key);
       s.selectChildren('label').text(d.label);
     })
     .call((s) => seriesSelection.dispatch('update', { detail: { selection: s } }));

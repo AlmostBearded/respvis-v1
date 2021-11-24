@@ -1,6 +1,5 @@
-import { select, Selection } from 'd3-selection';
-import { axisTickFindByIndex } from '../core';
-import { arrayFlat, debug, nodeToString, rectRound, siblingIndex } from '../core';
+import { BaseType, select, Selection } from 'd3-selection';
+import { arrayFlat, debug, nodeToString, rectRound } from '../core';
 import {
   chartCartesian,
   chartCartesianUpdateAxes,
@@ -9,21 +8,14 @@ import {
 } from '../core/chart-cartesian';
 import {
   LegendSquares,
-  legendItemFindByIndex,
   legendSquaresData,
   legendSquares,
   LegendPosition,
   LegendSquaresItem,
 } from '../legend';
-import { barFindByCategory } from './series-bar';
+import { Bar } from './series-bar';
 import { BarGrouped } from './series-bar-grouped';
-import {
-  SeriesBarStacked,
-  seriesBarStackedData,
-  seriesBarStacked,
-  barStackedFindBySubcategory,
-} from './series-bar-stacked';
-import { labelFind, labelFindByFilter } from './series-label';
+import { SeriesBarStacked, seriesBarStackedData, seriesBarStacked } from './series-bar-stacked';
 import { SeriesLabelBar, seriesLabelBarData, seriesLabelBar } from './series-label-bar';
 
 export interface ChartBarStacked extends SeriesBarStacked, ChartCartesian {
@@ -119,13 +111,14 @@ export function chartBarStackedDataChange(selection: ChartBarStackedSelection): 
       .join((enter) => enter.append('g').call((s) => seriesLabelBar(s)));
 
     legendS.datum((d) =>
-      Object.assign<LegendSquares, Partial<LegendSquares>, Partial<LegendSquares>>(
+      Object.assign(
         d,
         {
           labels: subcategories,
           indices: subcategoryIndices,
         },
-        legend
+        legend,
+        { keys: subcategories }
       )
     );
 
@@ -146,13 +139,10 @@ export function chartBarStackedHoverBar(
   bar: Selection<SVGRectElement, BarGrouped>,
   hover: boolean
 ): void {
-  const chartD = chart.datum();
   bar.each((barD, i, g) => {
-    const categoryIndex = chartD.categories.indexOf(barD.category);
-    const subcategoryIndex = chartD.subcategories.indexOf(barD.subcategory);
-    labelFind(chart, barD.key).classed('highlight', hover);
-    axisTickFindByIndex(chart.selectAll('.axis-x'), categoryIndex).classed('highlight', hover);
-    legendItemFindByIndex(chart, subcategoryIndex).classed('highlight', hover);
+    chart.selectAll(`.label[data-key="${barD.key}"]`).classed('highlight', hover);
+    chart.selectAll(`.axis-x .tick[data-key="${barD.category}"]`).classed('highlight', hover);
+    chart.selectAll(`.legend-item[data-key="${barD.subcategory}"]`).classed('highlight', hover);
   });
 }
 
@@ -161,15 +151,12 @@ export function chartBarStackedHoverLegendItem(
   legendItem: Selection<Element, LegendSquaresItem>,
   hover: boolean
 ): void {
-  const legendItemCount = chart.selectAll('.legend-item').size();
   legendItem.each((_, i, g) => {
-    const legendItemI = siblingIndex(g[i], '.legend-item');
-    const subcategory = chart.datum().subcategories[legendItemI];
-    barStackedFindBySubcategory(chart, subcategory).classed('highlight', hover);
-    labelFindByFilter(
-      chart.selectAll('.series-label-bar'),
-      (_, i) => i % legendItemCount === legendItemI
-    ).classed('highlight', hover);
+    const subcategory = g[i].getAttribute('data-key')!;
+    chart
+      .selectAll<any, Bar>(`.bar[subcategory="${subcategory}"]`)
+      .classed('highlight', hover)
+      .each((d) => chart.selectAll(`.label[data-key="${d.key}"]`).classed('highlight', hover));
   });
 }
 
@@ -178,14 +165,11 @@ export function chartBarStackedHoverAxisTick(
   tick: Selection<Element>,
   hover: boolean
 ): void {
-  const legendItemCount = chart.selectAll('.legend-item').size();
   tick.classed('highlight', hover).each((_, i, g) => {
-    const tickI = siblingIndex(g[i], '.tick');
-    const category = chart.datum().categories[tickI];
-    barFindByCategory(chart, category).classed('highlight', hover);
-    labelFindByFilter(
-      chart.selectAll('.series-label-bar'),
-      (_, i) => Math.floor(i / legendItemCount) === tickI
-    ).classed('highlight', hover);
+    const category = g[i].getAttribute('data-key')!;
+    chart
+      .selectAll<any, Bar>(`.bar[category="${category}"]`)
+      .classed('highlight', hover)
+      .each((d) => chart.selectAll(`.label[data-key="${d.key}"]`).classed('highlight', hover));
   });
 }
