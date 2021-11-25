@@ -1,5 +1,5 @@
 import { select, selectAll, Selection } from 'd3-selection';
-import { debug, nodeToString } from './log';
+import { debug, nodeToString } from './utility/log';
 import { renderQueueEnqueue, renderQueueRender } from './render-queue';
 import { relativeBounds } from './utility/bounds';
 import { positionToTransformAttr } from './utility/position';
@@ -145,18 +145,13 @@ function layoutNodeBounds(selection: Selection<HTMLDivElement, SVGElement>): boo
         )}) to (${rectToString(bounds)})`
       );
       svg.attr('bounds', rectToString(bounds));
-      // const svgTransition = svg.transition('layout').duration(250).ease(easeCubicOut);
       switch (d.tagName) {
         case 'svg':
         case 'rect':
           svg.call((s) => rectToAttrs(s, bounds));
-          // if (!svg.attr('x')) svg.call((s) => rectToAttrs(s, bounds));
-          // else svgTransition.call((t) => rectToAttrs(t, bounds));
           break;
         default:
           svg.call((s) => positionToTransformAttr(s, bounds));
-        // if (!svg.attr('transform')) svg.call((s) => positionToTransformAttr(s, bounds));
-        // else svgTransition.call((t) => positionToTransformAttr(t, bounds));
       }
     }
   });

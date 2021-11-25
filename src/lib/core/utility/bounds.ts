@@ -1,10 +1,9 @@
 import { Rect, rectRound } from './rect';
 
-export function relativeBounds(element: Element, parent?: Element): Rect {
-  console.assert(element.parentElement, 'Element needs to be attached to the DOM.');
-  if (parent === undefined) parent = element.parentElement!;
+export function relativeBounds(element: Element): Rect {
+  console.assert(element.isConnected, 'Element needs to be attached to the DOM.');
   const bounds = element.getBoundingClientRect();
-  const parentBounds = parent.getBoundingClientRect();
+  const parentBounds = element.parentElement!.getBoundingClientRect();
   return rectRound(
     {
       x: bounds.x - parentBounds.x,

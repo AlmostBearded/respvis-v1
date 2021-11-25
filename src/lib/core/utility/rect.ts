@@ -14,41 +14,12 @@ export function rectFromString(str: string): Rect {
   return { x: parts[0], y: parts[1], width: parts[2], height: parts[3] };
 }
 
-export function rectFromAttrs(selection: Selection<Element>): Rect {
-  return {
-    x: parseFloat(selection.attr('x') || '0'),
-    y: parseFloat(selection.attr('y') || '0'),
-    width: parseFloat(selection.attr('width') || '0'),
-    height: parseFloat(selection.attr('height') || '0'),
-  };
-}
-
-export function rectsFromAttrs(selection: Selection<Element>): Rect[] {
-  const rects: Rect[] = [];
-  selection.each((d, i, g) => ({
-    x: parseFloat(g[i].getAttribute('x') || '0'),
-    y: parseFloat(g[i].getAttribute('y') || '0'),
-    width: parseFloat(g[i].getAttribute('width') || '0'),
-    height: parseFloat(g[i].getAttribute('height') || '0'),
-  }));
-
-  return rects;
-}
-
-export function rectToAttrs<D>(
-  selection: SelectionOrTransition<Element, D>,
-  rect: Rect | ValueFn<Element, D, Rect>
-): void {
-  // todo: comment this function
-  const rects: Rect[] = new Array(selection.size());
-  selection.each(function (d, i, groups) {
-    rects[i] = rectRound(rect instanceof Function ? rect.call(this, d, i, groups) : rect);
-  });
-  // note: TS can't handle method chaining when working with SelectionOrTransition
-  selection.attr('x', (d, i) => rects[i].x);
-  selection.attr('y', (d, i) => rects[i].y);
-  selection.attr('width', (d, i) => rects[i].width);
-  selection.attr('height', (d, i) => rects[i].height);
+export function rectToAttrs(selectionOrTransition: SelectionOrTransition, rect: Rect): void {
+  selectionOrTransition
+    .attr('x', rect.x)
+    .attr('y', rect.y)
+    .attr('width', rect.width)
+    .attr('height', rect.height);
 }
 
 export function rectToString(rect: Rect, decimals: number = 1): string {

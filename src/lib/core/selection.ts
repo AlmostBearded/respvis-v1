@@ -1,7 +1,7 @@
 import { BaseType, select, selectAll, Selection, selection, ValueFn } from 'd3-selection';
 import 'd3-transition';
 import { Transition } from 'd3-transition';
-import { debug, nodeToString } from './log';
+import { debug, nodeToString } from './utility/log';
 import { Rect, rectFromString, rectToString } from './utility/rect';
 
 declare module 'd3-transition' {
@@ -105,7 +105,6 @@ selection.prototype.datum = function <
   return originalDatum.call(this, datum).dispatch('datachange');
 };
 
-// todo: this should be tested. particularly regarding data joins.
 const originalData = selection.prototype.data;
 selection.prototype.data = function <
   GElement extends BaseType,

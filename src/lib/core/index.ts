@@ -12,15 +12,15 @@ export * from './layouter';
 export * from './render-queue';
 export * from './resize-event-dispatcher';
 
-export * from './scale';
+export * from './utility/scale';
 
 export * from './axis';
 export * from './chart';
 export * from './chart-cartesian';
 export * from './chart-window';
 
-export * from './text';
-export * from './log';
+export * from './utility/text';
+export * from './utility/log';
 
 export * from './series-checkbox';
 export * from './menu-dropdown';

@@ -58,7 +58,7 @@ export function seriesLabelJoin(
         enter
           .append('text')
           .classed('label', true)
-          .call((s) => positionToTransformAttr(s, (d) => d))
+          .each((d, i, g) => positionToTransformAttr(select(g[i]), d))
           .attr('font-size', '0em')
           .attr('opacity', 0)
           .call((s) =>
@@ -74,12 +74,12 @@ export function seriesLabelJoin(
           )
           .call((s) => seriesSelection.dispatch('exit', { detail: { selection: s } }))
     )
-    .call((s) =>
-      s
+    .each((d, i, g) =>
+      select(g[i])
         .transition('position')
         .duration(250)
         .ease(easeCubicOut)
-        .call((t) => positionToTransformAttr(t, (d) => d))
+        .call((t) => positionToTransformAttr(t, d))
     )
     .text((d) => d.text)
     .attr('data-key', (d) => d.key)

@@ -134,29 +134,27 @@ export function seriesBarJoin(
         enter
           .append('rect')
           .classed('bar', true)
-          .call((s) => rectToAttrs(s, (d) => rectMinimized(d)))
+          .each((d, i, g) => rectToAttrs(select(g[i]), rectMinimized(d)))
           .call((s) => seriesSelection.dispatch('enter', { detail: { selection: s } })),
       undefined,
       (exit) =>
         exit
           .classed('exiting', true)
-          .call((s) =>
-            s
+          .each((d, i, g) =>
+            select(g[i])
               .transition('minimize')
               .duration(250)
-              .call((t) => rectToAttrs(t, (d) => rectMinimized(d)))
+              .call((t) => rectToAttrs(t, rectMinimized(d)))
               .remove()
           )
           .call((s) => seriesSelection.dispatch('exit', { detail: { selection: s } }))
     )
-    .call((s) =>
-      s
+    .each((d, i, g) =>
+      select(g[i])
         .transition('position')
         .duration(250)
         .ease(easeCubicOut)
-        .call((t) =>
-          rectToAttrs(t, (d, i, g) => rectFitStroke(d, toPX(select(g[i]).style('stroke-width'))!))
-        )
+        .call((t) => rectToAttrs(t, rectFitStroke(d, toPX(select(g[i]).style('stroke-width'))!)))
     )
     .attr('category-index', (d) => d.categoryIndex)
     .attr('category', (d) => d.category)

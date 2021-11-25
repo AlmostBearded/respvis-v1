@@ -8,8 +8,8 @@ import {
 import { scaleLinear } from 'd3-scale';
 import { BaseType, select, Selection } from 'd3-selection';
 import { SelectionOrTransition, Transition } from 'd3-transition';
-import { debug, nodeToString } from './log';
-import { WritingMode } from './text';
+import { debug, nodeToString } from './utility/log';
+import { WritingMode } from './utility/text';
 
 export interface ConfigureAxisFn {
   (axis: D3Axis<AxisDomain>): void;
@@ -39,12 +39,15 @@ export function axisLeft(selection: AxisSelection): void {
 
   selection.classed('axis-left', true);
 
-  selection.selectAll<SVGTextElement, unknown>('.subtitle').classed(WritingMode.Vertical, true);
+  selection
+    .selectAll<SVGTextElement, unknown>('.subtitle text')
+    .classed(WritingMode.Vertical, true);
 
   selection
     .selectAll<SVGTextElement, unknown>('.title')
-    .classed(WritingMode.Vertical, true)
-    .raise();
+    .raise()
+    .selectAll('text')
+    .classed(WritingMode.Vertical, true);
 
   selection.selectAll('.ticks-transform').raise();
 
@@ -68,9 +71,11 @@ export function axisBottom(selection: AxisSelection): void {
   axis(selection);
   selection.classed('axis-bottom', true);
 
-  selection.selectAll<SVGTextElement, unknown>('.subtitle').classed(WritingMode.Horizontal, true);
+  selection
+    .selectAll<SVGTextElement, unknown>('.subtitle text')
+    .classed(WritingMode.Horizontal, true);
 
-  selection.selectAll<SVGTextElement, unknown>('.title').classed(WritingMode.Horizontal, true);
+  selection.selectAll<SVGTextElement, unknown>('.title text').classed(WritingMode.Horizontal, true);
 
   selection
     .on('render.axisbottom', function (e, d) {
@@ -99,8 +104,12 @@ function axis(selection: AxisSelection): void {
         .classed('ticks', true)
         .attr('ignore-layout-children', true)
     )
-    .call((s) => s.append('text').classed('title', true))
-    .call((s) => s.append('text').classed('subtitle', true))
+    .call((s) =>
+      s.append('g').classed('title', true).attr('ignore-layout-children', true).append('text')
+    )
+    .call((s) =>
+      s.append('g').classed('subtitle', true).attr('ignore-layout-children', true).append('text')
+    )
     .on('datachange.axis', function () {
       debug(`data change on ${nodeToString(this)}`);
       select(this).dispatch('render');
@@ -130,8 +139,8 @@ function axisRender(
             .call((t) => t.selectAll('.domain').attr('stroke', null).attr('fill', null))
         )
     )
-    .call((s) => s.selectAll<SVGGElement, unknown>('.title').text(title))
-    .call((s) => s.selectAll<SVGGElement, unknown>('.subtitle').text(subtitle));
+    .call((s) => s.selectAll<SVGGElement, unknown>('.title text').text(title))
+    .call((s) => s.selectAll<SVGGElement, unknown>('.subtitle text').text(subtitle));
 }
 
 function d3Axis(

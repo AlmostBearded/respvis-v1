@@ -1,5 +1,5 @@
 import { selectAll, Selection } from 'd3-selection';
-import { debug } from './log';
+import { debug } from './utility/log';
 
 const renderQueueNodes: Set<Element> = new Set();
 let animationFrameRequestId = NaN;

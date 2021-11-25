@@ -2,8 +2,7 @@ import { scaleLinear } from 'd3-scale';
 import { BaseType, select, Selection } from 'd3-selection';
 import { axisBottom, axisLeft, ConfigureAxisFn, Axis, axisData } from './axis';
 import { chart } from './chart';
-import { debug, nodeToString } from './log';
-import { ScaleAny } from './scale';
+import { debug, nodeToString } from './utility/log';
 
 export interface ChartCartesian {
   xAxis: Axis;
@@ -60,21 +59,17 @@ export function chartCartesian(selection: ChartCartesianSelection, autoUpdateAxe
 }
 
 export function chartCartesianUpdateAxes(selection: ChartCartesianSelection): void {
-  selection.each(function (chartData, i, g) {
+  selection.each(function ({ flipped, xAxis, yAxis }, i, g) {
     const s = <ChartCartesianSelection>select(g[i]);
 
-    const axisConfig = (selection: Selection<Element, Axis>, x: boolean) =>
-      selection
-        .datum((d) => Object.assign(d, x ? chartData.xAxis : chartData.yAxis))
-        .classed('axis-x', x)
-        .classed('axis-y', !x);
+    s.selectAll<SVGGElement, Axis>('.axis-left')
+      .datum((d) => Object.assign(d, flipped ? xAxis : yAxis))
+      .classed('axis-x', flipped)
+      .classed('axis-y', !flipped);
 
-    if (chartData.flipped) {
-      s.selectAll<SVGGElement, Axis>('.axis-left').call((s) => axisConfig(s, true));
-      s.selectAll<SVGGElement, Axis>('.axis-bottom').call((s) => axisConfig(s, false));
-    } else {
-      s.selectAll<SVGGElement, Axis>('.axis-left').call((s) => axisConfig(s, false));
-      s.selectAll<SVGGElement, Axis>('.axis-bottom').call((s) => axisConfig(s, true));
-    }
+    s.selectAll<SVGGElement, Axis>('.axis-bottom')
+      .datum((d) => Object.assign(d, flipped ? yAxis : xAxis))
+      .classed('axis-x', !flipped)
+      .classed('axis-y', flipped);
   });
 }

@@ -1,3 +1,4 @@
+// extracted from the SVG specification
 export const presentationAttributes = [
   'fill',
   'alignment-baseline',
@@ -59,6 +60,7 @@ export const presentationAttributes = [
   'word-spacing',
   'writing-mode',
 ];
+
 
 const dummyTag = 'style-dummy-tag';
 
