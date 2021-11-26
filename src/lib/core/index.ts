@@ -3,7 +3,6 @@ export * from './utility/size';
 export * from './utility/position';
 export * from './utility/array';
 export * from './utility/bounds';
-export * from './utility/class';
 export * from './utility/style';
 export * from './utility/rect';
 export * from './utility/circle';

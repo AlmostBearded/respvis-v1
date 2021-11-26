@@ -33,7 +33,7 @@ export function seriesLabelCreateLabels(seriesData: SeriesLabel): Label[] {
 export function seriesLabel(selection: Selection<Element, SeriesLabel>): void {
   selection
     .classed('series-label', true)
-    .attr('ignore-layout-children', true)
+    .attr('data-ignore-layout-children', true)
     .on('datachange.serieslabel', function () {
       debug(`data change on ${nodeToString(this)}`);
       select(this).dispatch('render');

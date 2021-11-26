@@ -125,6 +125,7 @@ export function chartWindowBarGroupedApplyFilters(
     const {
       categories,
       subcategories,
+      styleClasses,
       values,
       keys,
       valueDomain,
@@ -142,18 +143,17 @@ export function chartWindowBarGroupedApplyFilters(
         .property('checked');
 
     const filteredCats = categories.filter(filterCat),
-      filteredCatIndices = categories.map((c, i) => i).filter(filterCat),
       filteredSubcats = subcategories.filter(filterSubcat),
-      filteredSubcatIndices = subcategories.map((c, i) => i).filter(filterSubcat),
+      filteredStyleClasses = styleClasses.filter(filterSubcat),
       filteredValues = values.filter(filterCat).map((v) => v.filter(filterSubcat)),
       filteredKeys = keys?.filter(filterCat).map((v) => v.filter(filterSubcat)),
-      filteredLabels =
-        arrayIs(labels) &&
-        arrayFlat(
-          arrayPartition(labels, subcategories.length)
-            .filter(filterCat)
-            .map((v) => v.filter(filterSubcat))
-        ),
+      filteredLabels = arrayIs(labels)
+        ? arrayFlat(
+            arrayPartition(labels, subcategories.length)
+              .filter(filterCat)
+              .map((v) => v.filter(filterSubcat))
+          )
+        : labels,
       filteredValueDomain =
         valueDomain instanceof Function ? valueDomain(filteredValues) : valueDomain;
 
@@ -169,14 +169,13 @@ export function chartWindowBarGroupedApplyFilters(
             subcategories: filteredSubcats,
             values: filteredValues,
             keys: filteredKeys,
-            categoryIndices: filteredCatIndices,
-            subcategoryIndices: filteredSubcatIndices,
+            styleClasses: filteredStyleClasses,
             legend: {
               ...chartWindowD.legend,
             },
             labels: {
               ...chartWindowD.labels,
-              ...(filteredLabels && { labels: filteredLabels }),
+              labels: filteredLabels,
             },
           }
         )

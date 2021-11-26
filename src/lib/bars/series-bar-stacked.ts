@@ -1,7 +1,7 @@
 import { ScaleBand, scaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { select, Selection } from 'd3-selection';
 import { JoinEvent } from '.';
-import { debug, nodeToString, Rect } from '../core';
+import { arrayIs, arrayIs2D, debug, nodeToString, Rect } from '../core';
 import { Size } from '../core/utility/size';
 import {
   SeriesConfigTooltips,
@@ -17,16 +17,17 @@ export interface SeriesBarStacked extends SeriesConfigTooltips<SVGRectElement, B
   values: number[][];
   valueScale: ScaleContinuousNumeric<number, number>;
   subcategories: string[];
-  categoryIndices?: number[];
-  subcategoryIndices?: number[];
+  styleClasses: string | string[] | string[][];
   keys?: string[][];
   flipped: boolean;
   bounds: Size;
 }
 
 export function seriesBarStackedData(data: Partial<SeriesBarStacked>): SeriesBarStacked {
+  const categories = data.categories || [];
+  const subcategories = data.subcategories || [];
   return {
-    categories: data.categories || [],
+    categories,
     categoryScale:
       data.categoryScale ||
       scaleBand()
@@ -41,9 +42,8 @@ export function seriesBarStackedData(data: Partial<SeriesBarStacked>): SeriesBar
           Math.max(...(data.values?.map((values) => values.reduce((a, b) => a + b)) || [])),
         ])
         .nice(),
-    subcategories: data.subcategories || [],
-    categoryIndices: data.categoryIndices,
-    subcategoryIndices: data.subcategoryIndices,
+    subcategories,
+    styleClasses: data.styleClasses || subcategories.map((c, i) => `categorical-${i}`),
     flipped: data.flipped || false,
     keys: data.keys,
     bounds: data.bounds || { width: 600, height: 400 },
@@ -64,8 +64,7 @@ export function seriesBarStackedCreateBars(seriesData: SeriesBarStacked): BarGro
     valueScale,
     subcategories,
     flipped,
-    categoryIndices,
-    subcategoryIndices,
+    styleClasses,
     keys,
     bounds,
   } = seriesData;
@@ -103,8 +102,11 @@ export function seriesBarStackedCreateBars(seriesData: SeriesBarStacked): BarGro
           subcategory: sc,
           value: v,
           key: keys?.[i][j] || `${c}/${sc}`,
-          categoryIndex: categoryIndices === undefined ? i : categoryIndices[i],
-          subcategoryIndex: subcategoryIndices === undefined ? j : subcategoryIndices[j],
+          styleClass: arrayIs2D(styleClasses)
+            ? styleClasses[i][j]
+            : arrayIs(styleClasses)
+            ? styleClasses[j]
+            : styleClasses,
           ...rect,
         };
 
@@ -119,7 +121,7 @@ export function seriesBarStacked(selection: Selection<Element, SeriesBarStacked>
   selection
     .classed('series-bar', true)
     .classed('series-bar-stacked', true)
-    .attr('ignore-layout-children', true)
+    .attr('data-ignore-layout-children', true)
     .on('datachange.seriesbar', function () {
       debug(`data change on ${nodeToString(this)}`);
       select(this).dispatch('render');
@@ -133,13 +135,10 @@ export function seriesBarStacked(selection: Selection<Element, SeriesBarStacked>
       series
         .selectAll<SVGRectElement, BarGrouped>('rect')
         .data(seriesBarStackedCreateBars(d), (d) => d.key)
-        .call((s) => seriesBarJoin(series, s))
-        .attr('subcategory-index', (d) => d.subcategoryIndex);
+        .call((s) => seriesBarJoin(series, s));
     })
     .on('update.subcategory', (e: JoinEvent<Element, BarGrouped>) =>
-      e.detail.selection
-        .attr('subcategory-index', (d) => d.subcategoryIndex)
-        .attr('subcategory', (d) => d.subcategory)
+      e.detail.selection.attr('data-subcategory', (d) => d.subcategory)
     )
     .on('mouseover.seriesbargroupedhighlight mouseout.seriesbargroupedhighlight', (e: MouseEvent) =>
       (<Element>e.target).classList.toggle('highlight', e.type.endsWith('over'))

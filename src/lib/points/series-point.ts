@@ -1,13 +1,21 @@
 import { easeCubicOut } from 'd3-ease';
 import { scaleLinear } from 'd3-scale';
 import { select, Selection } from 'd3-selection';
-import { Circle, circleMinimized, circleToAttrs, debug, nodeToString, ScaleAny } from '../core';
+import {
+  arrayIs,
+  Circle,
+  circleMinimized,
+  circleToAttrs,
+  debug,
+  nodeToString,
+  ScaleAny,
+} from '../core';
 import { Size } from '../core/utility/size';
 
 export interface Point extends Circle {
   xValue: any;
   yValue: any;
-  index: number;
+  styleClass: string;
   key: string;
 }
 
@@ -17,7 +25,7 @@ export interface SeriesPoint {
   yValues: any[];
   yScale: ScaleAny<any, number, number>;
   radiuses: number[] | number;
-  indices?: number[];
+  styleClasses: string | string[];
   keys?: string[];
   bounds: Size;
 }
@@ -29,14 +37,14 @@ export function seriesPointData(data: Partial<SeriesPoint>): SeriesPoint {
     yValues: data.yValues || [],
     yScale: data.yScale || scaleLinear().domain([0, 1]),
     radiuses: data.radiuses || 5,
-    indices: data.indices,
+    styleClasses: data.styleClasses || 'categorical-0',
     keys: data.keys,
     bounds: data.bounds || { width: 600, height: 400 },
   };
 }
 
 export function seriesPointCreatePoints(seriesData: SeriesPoint): Point[] {
-  const { xScale, yScale, xValues, yValues, radiuses, bounds, keys, indices } = seriesData;
+  const { xScale, yScale, xValues, yValues, radiuses, bounds, keys, styleClasses } = seriesData;
 
   xScale.range([0, bounds.width]);
   yScale.range([bounds.height, 0]);
@@ -48,7 +56,7 @@ export function seriesPointCreatePoints(seriesData: SeriesPoint): Point[] {
       y = yValues[i],
       r = Array.isArray(radiuses) ? radiuses[i] : radiuses;
     data.push({
-      index: indices === undefined ? i : indices[i],
+      styleClass: arrayIs(styleClasses) ? styleClasses[i] : styleClasses,
       key: keys?.[i] || i.toString(),
       center: {
         x: xScale(x)!,
@@ -66,7 +74,7 @@ export function seriesPointCreatePoints(seriesData: SeriesPoint): Point[] {
 export function seriesPoint(selection: Selection<Element, SeriesPoint>): void {
   selection
     .classed('series-point', true)
-    .attr('ignore-layout-children', true)
+    .attr('data-ignore-layout-children', true)
     .on('datachange.seriespoint', function () {
       debug(`data change on ${nodeToString(this)}`);
       select(this).dispatch('render');
@@ -119,6 +127,6 @@ export function seriesPointJoin(
         .ease(easeCubicOut)
         .each((d, i, g) => circleToAttrs(select(g[i]), d))
     )
-    .attr('index', (d) => d.index)
+    .attr('data-style', (d) => d.styleClass)
     .call((s) => seriesSelection.dispatch('update', { detail: { selection: s } }));
 }

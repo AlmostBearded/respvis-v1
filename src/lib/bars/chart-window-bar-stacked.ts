@@ -127,6 +127,7 @@ export function chartWindowBarStackedApplyFilters(
       subcategories,
       values,
       keys,
+      styleClasses,
       valueDomain,
       valuesAsRatios,
       labels: { labels: labels },
@@ -147,9 +148,8 @@ export function chartWindowBarStackedApplyFilters(
         .property('checked');
 
     const filteredCats = categories.filter(filterCat);
-    const filteredCatIndices = categories.map((c, i) => i).filter(filterCat);
     const filteredSubcats = subcategories.filter(filterSubcat);
-    const filteredSubcatIndices = subcategories.map((c, i) => i).filter(filterSubcat);
+    const filteredStyleClasses = styleClasses.filter(filterSubcat);
     const filteredValues = values
       .filter(filterCat)
       .map((catValues) => catValues.filter(filterSubcat))
@@ -159,13 +159,13 @@ export function chartWindowBarStackedApplyFilters(
         return catValues.map((v) => (v / sum) * 100 || 0);
       });
     const filteredKeys = keys?.filter(filterCat).map((v) => v.filter(filterSubcat));
-    const filteredLabels =
-      arrayIs(labels) &&
-      arrayFlat(
-        arrayPartition(labels, subcategories.length)
-          .filter(filterCat)
-          .map((v) => v.filter(filterSubcat))
-      );
+    const filteredLabels = arrayIs(labels)
+      ? arrayFlat(
+          arrayPartition(labels, subcategories.length)
+            .filter(filterCat)
+            .map((v) => v.filter(filterSubcat))
+        )
+      : labels;
     const filteredValueDomain =
       valueDomain instanceof Function ? valueDomain(filteredValues) : valueDomain;
 
@@ -178,14 +178,13 @@ export function chartWindowBarStackedApplyFilters(
           subcategories: filteredSubcats,
           values: filteredValues,
           keys: filteredKeys,
-          categoryIndices: filteredCatIndices,
-          subcategoryIndices: filteredSubcatIndices,
+          styleClasses: filteredStyleClasses,
           legend: {
             ...chartWindowD.legend,
           },
           labels: {
             ...chartWindowD.labels,
-            ...(filteredLabels && { labels: filteredLabels }),
+            labels: filteredLabels,
           },
         })
       )

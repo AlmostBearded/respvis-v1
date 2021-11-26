@@ -78,7 +78,10 @@ export function layouterData(layouter: HTMLDivElement): Layouter {
       let layoutNodes = layoutNodeRoot(layouter);
       while (!layoutNodes.empty()) {
         layoutNodes = layoutNodeChildren(
-          layoutNodes.call((s) => layoutNodeStyleAttr(s)).call((s) => layoutNodeClassAttr(s))
+          layoutNodes
+            .call((s) => layoutNodeStyleAttr(s))
+            .call((s) => layoutNodeClassAttr(s))
+            .call((s) => layoutNodeDataAttrs(s))
         );
       }
     }
@@ -129,6 +132,28 @@ function layoutNodeStyleAttr(selection: Selection<HTMLDivElement, SVGElement>): 
     }
     style += layout;
     g[i].setAttribute('style', style);
+  });
+}
+
+function layoutNodeDataAttrs(selection: Selection<HTMLDivElement, SVGElement>): void {
+  selection.each((svgE, i, g) => {
+    const layoutE = g[i];
+
+    const dataAttrsToObj = (attrs: NamedNodeMap) =>
+      Array.from(attrs)
+        .filter((a) => a.name.startsWith('data-'))
+        .reduce((obj, a) => Object.assign(obj, { [`${a.name}`]: a.value }), {});
+
+    const layoutAttrs = dataAttrsToObj(layoutE.attributes);
+    const svgAttrs = dataAttrsToObj(svgE.attributes);
+
+    // remove layoutE data attrs that don't exist on svgE
+    Object.keys(layoutAttrs)
+      .filter((attr) => svgAttrs[attr] !== undefined)
+      .forEach((attr) => layoutE.removeAttribute(attr));
+
+    // set svgE data attrs on layoutE
+    Object.keys(svgAttrs).forEach((attr) => layoutE.setAttribute(attr, svgAttrs[attr]));
   });
 }
 
@@ -197,8 +222,8 @@ function layoutNodeObserveResize(
 
 function layedOutChildren(parent: Element): SVGElement[] {
   return select(parent)
-    .filter(':not([ignore-layout-children])')
-    .selectChildren<SVGElement, unknown>(':not([ignore-layout]):not(.layout)')
+    .filter(':not([data-ignore-layout-children])')
+    .selectChildren<SVGElement, unknown>(':not([data-ignore-layout]):not(.layout)')
     .nodes();
 }
 

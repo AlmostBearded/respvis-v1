@@ -5,12 +5,12 @@ export enum WritingMode {
 
 export enum VerticalPosition {
   Top = 'top',
-  Center = 'center-vertical',
+  Center = 'center',
   Bottom = 'bottom',
 }
 
 export enum HorizontalPosition {
   Left = 'left',
-  Center = 'center-horizontal',
+  Center = 'center',
   Right = 'right',
 }

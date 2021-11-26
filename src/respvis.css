@@ -17,8 +17,47 @@
   --fit-height: false;
 }
 
-.bar {
+[data-style='categorical-0'] {
   fill: var(--color-categorical-0);
+}
+
+[data-style='categorical-1'] {
+  fill: var(--color-categorical-1);
+}
+
+[data-style='categorical-2'] {
+  fill: var(--color-categorical-2);
+}
+
+[data-style='categorical-3'] {
+  fill: var(--color-categorical-3);
+}
+
+[data-style='categorical-4'] {
+  fill: var(--color-categorical-4);
+}
+
+[data-style='categorical-5'] {
+  fill: var(--color-categorical-5);
+}
+
+[data-style='categorical-6'] {
+  fill: var(--color-categorical-6);
+}
+
+[data-style='categorical-7'] {
+  fill: var(--color-categorical-7);
+}
+
+[data-style='categorical-8'] {
+  fill: var(--color-categorical-8);
+}
+
+[data-style='categorical-9'] {
+  fill: var(--color-categorical-9);
+}
+
+.bar {
   stroke-width: 1px;
   stroke: #000;
 }
@@ -29,46 +68,6 @@
 .highlight.point {
   filter: brightness(var(--highlight-brightness));
   stroke-width: 2px;
-}
-
-.bar[subcategory-index='0'] {
-  fill: var(--color-categorical-0);
-}
-
-.bar[subcategory-index='1'] {
-  fill: var(--color-categorical-1);
-}
-
-.bar[subcategory-index='2'] {
-  fill: var(--color-categorical-2);
-}
-
-.bar[subcategory-index='3'] {
-  fill: var(--color-categorical-3);
-}
-
-.bar[subcategory-index='4'] {
-  fill: var(--color-categorical-4);
-}
-
-.bar[subcategory-index='5'] {
-  fill: var(--color-categorical-5);
-}
-
-.bar[subcategory-index='6'] {
-  fill: var(--color-categorical-6);
-}
-
-.bar[subcategory-index='7'] {
-  fill: var(--color-categorical-7);
-}
-
-.bar[subcategory-index='8'] {
-  fill: var(--color-categorical-8);
-}
-
-.bar[subcategory-index='9'] {
-  fill: var(--color-categorical-9);
 }
 
 .layout.legend {
@@ -99,14 +98,14 @@
   margin-right: 0.5em;
 }
 
-.layout.with-legend-left .legend .items,
-.layout.with-legend-right .legend .items,
+.layout[data-legend-position='left'] .legend .items,
+.layout[data-legend-position='right'] .legend .items,
 .layout.legend.vertical .items {
   flex-direction: column;
 }
 
-.layout.with-legend-top .legend .items,
-.layout.with-legend-bottom .legend .items,
+.layout[data-legend-position='top'] .legend .items,
+.layout[data-legend-position='bottom'] .legend .items,
 .layout.legend.horizontal .items {
   flex-direction: row;
 }
@@ -125,46 +124,6 @@
 
 .highlight.legend-item .symbol {
   filter: brightness(var(--highlight-brightness));
-}
-
-.legend-item[index='0'] .symbol {
-  fill: var(--color-categorical-0);
-}
-
-.legend-item[index='1'] .symbol {
-  fill: var(--color-categorical-1);
-}
-
-.legend-item[index='2'] .symbol {
-  fill: var(--color-categorical-2);
-}
-
-.legend-item[index='3'] .symbol {
-  fill: var(--color-categorical-3);
-}
-
-.legend-item[index='4'] .symbol {
-  fill: var(--color-categorical-4);
-}
-
-.legend-item[index='5'] .symbol {
-  fill: var(--color-categorical-5);
-}
-
-.legend-item[index='6'] .symbol {
-  fill: var(--color-categorical-6);
-}
-
-.legend-item[index='7'] .symbol {
-  fill: var(--color-categorical-7);
-}
-
-.legend-item[index='8'] .symbol {
-  fill: var(--color-categorical-8);
-}
-
-.legend-item[index='9'] .symbol {
-  fill: var(--color-categorical-9);
 }
 
 .layout.chart-cartesian {
@@ -201,14 +160,14 @@
   grid-area: axis-bottom;
 }
 
-.layout.chart-cartesian.with-legend-right {
+.layout.chart-cartesian[data-legend-position='right'] {
   grid-template: 1fr auto / auto 1fr auto;
   grid-template-areas:
     'axis-left draw-area legend'
     '. axis-bottom .';
 }
 
-.layout.chart-cartesian.with-legend-top {
+.layout.chart-cartesian[data-legend-position='top'] {
   grid-template: auto 1fr auto / auto 1fr;
   grid-template-areas:
     '. legend'
@@ -220,11 +179,11 @@
   margin: 0.5rem;
 }
 
-.layout.with-legend-right .legend {
+.layout[data-legend-position='right'] .legend {
   align-self: start;
 }
 
-.layout.with-legend-top .legend {
+.layout[data-legend-position='top'] .legend {
   justify-self: end;
 }
 
@@ -255,37 +214,37 @@
   --fit-height: true;
 }
 
-text.center-horizontal {
+text[data-align-h='center'] {
   text-anchor: middle;
 }
 
-text.center-vertical {
+text[data-align-v='center'] {
   dominant-baseline: middle;
 }
 
-text.left {
+text[data-align-h='left'] {
   text-anchor: end;
 }
 
-text.right {
+text[data-align-h='right'] {
   text-anchor: start;
 }
 
-text.top {
+text[data-align-v='top'] {
   dominant-baseline: auto;
 }
 
-text.bottom {
+text[data-align-v='bottom'] {
   dominant-baseline: hanging;
 }
 
 text,
-text.horizontal {
+text[data-orientation='horizontal'] {
   dominant-baseline: hanging;
   text-anchor: start;
 }
 
-text.vertical {
+text[data-orientation='vertical'] {
   transform: rotate(-90deg);
   text-anchor: end;
   dominant-baseline: hanging;

@@ -6,7 +6,6 @@ import {
   nodeToString,
   Position,
   rectPosition,
-  classOneOfEnum,
   HorizontalPosition,
   VerticalPosition,
 } from '../core';
@@ -78,7 +77,7 @@ export function seriesLabelBar(selection: Selection<Element, SeriesLabelBar>): v
   selection
     .classed('series-label', true)
     .classed('series-label-bar', true)
-    .attr('ignore-layout-children', true)
+    .attr('data-ignore-layout-children', true)
     .on('datachange.serieslabelbar', function () {
       debug(`data change on ${nodeToString(this)}`);
       select(this).dispatch('render');
@@ -95,8 +94,7 @@ export function seriesLabelBar(selection: Selection<Element, SeriesLabelBar>): v
             const VP = VerticalPosition;
             const hPos = relPos.x < 0.5 ? HP.Left : relPos.x === 0.5 ? HP.Center : HP.Right;
             const vPos = relPos.y < 0.5 ? VP.Top : relPos.y === 0.5 ? VP.Center : VP.Bottom;
-            classOneOfEnum(s, HP, hPos);
-            classOneOfEnum(s, VP, vPos);
+            s.attr('data-align-h', hPos).attr('data-align-v', vPos);
           });
         })
         .selectAll<SVGTextElement, Label>('text')

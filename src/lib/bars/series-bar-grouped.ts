@@ -2,7 +2,7 @@ import { range } from 'd3-array';
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { BaseType, select, Selection, ValueFn } from 'd3-selection';
 import { JoinEvent } from '.';
-import { debug, nodeToString, Rect } from '../core';
+import { arrayIs, arrayIs2D, debug, nodeToString, Rect } from '../core';
 import { Size } from '../core/utility/size';
 import {
   SeriesConfigTooltips,
@@ -13,7 +13,6 @@ import { Bar, seriesBarJoin } from './series-bar';
 
 export interface BarGrouped extends Bar {
   subcategory: string;
-  subcategoryIndex: number;
 }
 
 export interface SeriesBarGrouped extends SeriesConfigTooltips<SVGRectElement, BarGrouped> {
@@ -23,16 +22,17 @@ export interface SeriesBarGrouped extends SeriesConfigTooltips<SVGRectElement, B
   subcategoryPadding: number;
   values: number[][];
   valueScale: ScaleContinuousNumeric<number, number>;
-  categoryIndices?: number[];
-  subcategoryIndices?: number[];
+  styleClasses: string | string[] | string[];
   keys?: string[][];
   flipped: boolean;
   bounds: Size;
 }
 
 export function seriesBarGroupedData(data: Partial<SeriesBarGrouped>): SeriesBarGrouped {
+  const categories = data.categories || [];
+  const subcategories = data.subcategories || [];
   return {
-    categories: data.categories || [],
+    categories,
     categoryScale:
       data.categoryScale ||
       scaleBand()
@@ -44,11 +44,10 @@ export function seriesBarGroupedData(data: Partial<SeriesBarGrouped>): SeriesBar
       scaleLinear()
         .domain([0, Math.max(...(data.values?.map((values) => Math.max(...values)) || []))])
         .nice(),
-    subcategories: data.subcategories || [],
+    subcategories,
     flipped: data.flipped || false,
     subcategoryPadding: data.subcategoryPadding || 0.1,
-    categoryIndices: data.categoryIndices,
-    subcategoryIndices: data.subcategoryIndices,
+    styleClasses: data.styleClasses || subcategories.map((c, i) => `categorical-${i}`),
     keys: data.keys,
     bounds: data.bounds || { width: 600, height: 400 },
     ...seriesConfigTooltipsData<SVGRectElement, BarGrouped>(data),
@@ -69,8 +68,7 @@ export function seriesBarGroupedCreateBars(seriesData: SeriesBarGrouped): BarGro
     subcategories,
     flipped,
     subcategoryPadding,
-    categoryIndices,
-    subcategoryIndices,
+    styleClasses,
     keys,
     bounds,
   } = seriesData;
@@ -109,8 +107,11 @@ export function seriesBarGroupedCreateBars(seriesData: SeriesBarGrouped): BarGro
           category: c,
           subcategory: subcategories[j],
           value: v,
-          categoryIndex: categoryIndices === undefined ? i : categoryIndices[i],
-          subcategoryIndex: subcategoryIndices === undefined ? j : subcategoryIndices[j],
+          styleClass: arrayIs2D(styleClasses)
+            ? styleClasses[i][j]
+            : arrayIs(styleClasses)
+            ? styleClasses[j]
+            : styleClasses,
           key: keys?.[i][j] || `${i}/${j}`,
           ...(flipped ? flippedRect : rect),
         };
@@ -124,7 +125,7 @@ export function seriesBarGrouped(selection: Selection<Element, SeriesBarGrouped>
   selection
     .classed('series-bar', true)
     .classed('series-bar-grouped', true)
-    .attr('ignore-layout-children', true)
+    .attr('data-ignore-layout-children', true)
     .on('datachange.seriesbar', function () {
       debug(`data change on ${nodeToString(this)}`);
       select(this).dispatch('render');
@@ -141,9 +142,7 @@ export function seriesBarGrouped(selection: Selection<Element, SeriesBarGrouped>
         .call((s) => seriesBarJoin(series, s));
     })
     .on('update.subcategory', (e: JoinEvent<Element, BarGrouped>) =>
-      e.detail.selection
-        .attr('subcategory-index', (d) => d.subcategoryIndex)
-        .attr('subcategory', (d) => d.subcategory)
+      e.detail.selection.attr('data-subcategory', (d) => d.subcategory)
     )
     .on('mouseover.seriesbargroupedhighlight mouseout.seriesbargroupedhighlight', (e: MouseEvent) =>
       (<Element>e.target).classList.toggle('highlight', e.type.endsWith('over'))

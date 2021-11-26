@@ -15,6 +15,7 @@ export function rectFromString(str: string): Rect {
 }
 
 export function rectToAttrs(selectionOrTransition: SelectionOrTransition, rect: Rect): void {
+  rect = rectRound(rect);
   selectionOrTransition
     .attr('x', rect.x)
     .attr('y', rect.y)
@@ -22,7 +23,7 @@ export function rectToAttrs(selectionOrTransition: SelectionOrTransition, rect: 
     .attr('height', rect.height);
 }
 
-export function rectToString(rect: Rect, decimals: number = 1): string {
+export function rectToString(rect: Rect, decimals: number = 0): string {
   rect = rectRound(rect, decimals);
   return `${rect.x}, ${rect.y}, ${rect.width}, ${rect.height}`;
 }

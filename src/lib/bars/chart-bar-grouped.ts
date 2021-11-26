@@ -27,7 +27,8 @@ import {
 } from './series-bar-grouped';
 import { SeriesLabelBar, seriesLabelBarData, seriesLabelBar } from './series-label-bar';
 
-export interface ChartBarGrouped extends SeriesBarGrouped, ChartCartesian {
+export interface ChartBarGrouped extends Omit<SeriesBarGrouped, 'styleClasses'>, ChartCartesian {
+  styleClasses: string[];
   legend: Partial<Legend>;
   labelsEnabled: boolean;
   labels: Partial<SeriesLabelBar>;
@@ -38,6 +39,7 @@ export function chartBarGroupedData(data: Partial<ChartBarGrouped>): ChartBarGro
   return {
     ...seriesData,
     ...chartCartesianData(data),
+    styleClasses: data.styleClasses || seriesData.subcategories.map((c, i) => `categorical-${i}`),
     legend: data.legend || {},
     labelsEnabled: data.labelsEnabled ?? true,
     labels: data.labels || {},
@@ -50,7 +52,7 @@ export function chartBarGrouped(selection: ChartBarGroupedSelection): void {
   selection
     .call((s) => chartCartesian(s, false))
     .classed('chart-bar-grouped', true)
-    .classed(LegendPosition.Right, true)
+    .attr('data-legend-position', LegendPosition.Right)
     .each((chartData, i, g) => {
       const chart = <ChartBarGroupedSelection>select(g[i]);
       const drawArea = chart.selectAll('.draw-area');
@@ -93,7 +95,7 @@ export function chartBarGroupedDataChange(selection: ChartBarGroupedSelection): 
         yAxis,
         categoryScale,
         valueScale,
-        subcategoryIndices,
+        styleClasses,
         labelsEnabled,
         labels,
         legend,
@@ -120,7 +122,7 @@ export function chartBarGroupedDataChange(selection: ChartBarGroupedSelection): 
         d,
         {
           labels: subcategories,
-          indices: subcategoryIndices,
+          styleClasses: styleClasses,
         },
         legend,
         { keys: subcategories }

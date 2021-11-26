@@ -31,7 +31,7 @@ export function positionToTransformAttr(
   );
 }
 
-export function positionRound(position: Position, decimals: number = 1): Position {
+export function positionRound(position: Position, decimals: number = 0): Position {
   const e = Math.pow(10, decimals);
   return {
     x: Math.round(position.x * e) / e,

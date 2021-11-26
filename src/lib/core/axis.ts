@@ -9,7 +9,7 @@ import { scaleLinear } from 'd3-scale';
 import { BaseType, select, Selection } from 'd3-selection';
 import { SelectionOrTransition, Transition } from 'd3-transition';
 import { debug, nodeToString } from './utility/log';
-import { WritingMode } from './utility/text';
+import { VerticalPosition, WritingMode } from './utility/text';
 
 export interface ConfigureAxisFn {
   (axis: D3Axis<AxisDomain>): void;
@@ -41,13 +41,13 @@ export function axisLeft(selection: AxisSelection): void {
 
   selection
     .selectAll<SVGTextElement, unknown>('.subtitle text')
-    .classed(WritingMode.Vertical, true);
+    .attr('data-orientation', WritingMode.Vertical);
 
   selection
     .selectAll<SVGTextElement, unknown>('.title')
     .raise()
     .selectAll('text')
-    .classed(WritingMode.Vertical, true);
+    .attr('data-orientation', WritingMode.Vertical);
 
   selection.selectAll('.ticks-transform').raise();
 
@@ -63,7 +63,7 @@ export function axisLeftRender(selection: AxisSelection): void {
     debug(`render left axis on ${nodeToString(g[i])}`);
     const s = <AxisSelection>select(g[i]);
     axisRender(s, d3Axis(d3AxisLeft, d), d.title, d.subtitle);
-    s.selectAll('.tick text').attr('dy', null).classed('center-vertical', true);
+    s.selectAll('.tick text').attr('dy', null).attr('data-align-v', VerticalPosition.Center);
   });
 }
 
@@ -102,13 +102,13 @@ function axis(selection: AxisSelection): void {
         .classed('ticks-transform', true)
         .append('g')
         .classed('ticks', true)
-        .attr('ignore-layout-children', true)
+        .attr('data-ignore-layout-children', true)
     )
     .call((s) =>
-      s.append('g').classed('title', true).attr('ignore-layout-children', true).append('text')
+      s.append('g').classed('title', true).attr('data-ignore-layout-children', true).append('text')
     )
     .call((s) =>
-      s.append('g').classed('subtitle', true).attr('ignore-layout-children', true).append('text')
+      s.append('g').classed('subtitle', true).attr('data-ignore-layout-children', true).append('text')
     )
     .on('datachange.axis', function () {
       debug(`data change on ${nodeToString(this)}`);

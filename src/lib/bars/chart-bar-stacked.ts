@@ -6,19 +6,14 @@ import {
   chartCartesianData,
   ChartCartesian,
 } from '../core/chart-cartesian';
-import {
-  Legend,
-  legendData,
-  legend,
-  LegendPosition,
-  LegendItem,
-} from '../legend';
+import { Legend, legendData, legend, LegendPosition, LegendItem } from '../legend';
 import { Bar } from './series-bar';
 import { BarGrouped } from './series-bar-grouped';
 import { SeriesBarStacked, seriesBarStackedData, seriesBarStacked } from './series-bar-stacked';
 import { SeriesLabelBar, seriesLabelBarData, seriesLabelBar } from './series-label-bar';
 
-export interface ChartBarStacked extends SeriesBarStacked, ChartCartesian {
+export interface ChartBarStacked extends Omit<SeriesBarStacked, 'styleClasses'>, ChartCartesian {
+  styleClasses: string[];
   legend: Partial<Legend>;
   labelsEnabled: boolean;
   labels: Partial<SeriesLabelBar>;
@@ -29,6 +24,7 @@ export function chartBarStackedData(data: Partial<ChartBarStacked>): ChartBarSta
   return {
     ...seriesData,
     ...chartCartesianData(data),
+    styleClasses: data.styleClasses || seriesData.subcategories.map((c, i) => `categorical-${i}`),
     legend: data.legend || {},
     labelsEnabled: data.labelsEnabled ?? true,
     labels: {
@@ -46,7 +42,7 @@ export function chartBarStacked(selection: ChartBarStackedSelection): void {
   selection
     .call((s) => chartCartesian(s, false))
     .classed('chart-bar-stacked', true)
-    .classed(LegendPosition.Right, true)
+    .attr('data-legend-position', LegendPosition.Right)
     .each((chartData, i, g) => {
       const chart = <ChartBarStackedSelection>select(g[i]);
       const drawArea = chart.selectAll('.draw-area');
@@ -85,7 +81,7 @@ export function chartBarStackedDataChange(selection: ChartBarStackedSelection): 
   selection.each(function (chartD, i, g) {
     const {
         subcategories,
-        subcategoryIndices,
+        styleClasses,
         xAxis,
         yAxis,
         categoryScale,
@@ -115,7 +111,7 @@ export function chartBarStackedDataChange(selection: ChartBarStackedSelection): 
         d,
         {
           labels: subcategories,
-          indices: subcategoryIndices,
+          styleClasses: styleClasses,
         },
         legend,
         { keys: subcategories }
@@ -154,7 +150,7 @@ export function chartBarStackedHoverLegendItem(
   legendItem.each((_, i, g) => {
     const subcategory = g[i].getAttribute('data-key')!;
     chart
-      .selectAll<any, Bar>(`.bar[subcategory="${subcategory}"]`)
+      .selectAll<any, Bar>(`.bar[data-subcategory="${subcategory}"]`)
       .classed('highlight', hover)
       .each((d) => chart.selectAll(`.label[data-key="${d.key}"]`).classed('highlight', hover));
   });
@@ -168,7 +164,7 @@ export function chartBarStackedHoverAxisTick(
   tick.classed('highlight', hover).each((_, i, g) => {
     const category = g[i].getAttribute('data-key')!;
     chart
-      .selectAll<any, Bar>(`.bar[category="${category}"]`)
+      .selectAll<any, Bar>(`.bar[data-category="${category}"]`)
       .classed('highlight', hover)
       .each((d) => chart.selectAll(`.label[data-key="${d.key}"]`).classed('highlight', hover));
   });

@@ -93,6 +93,7 @@ export function chartWindowBarApplyFilters(selection: ChartWindowBarSelection): 
     const {
       categories,
       values,
+      styleClasses,
       keys,
       valueDomain,
       labels: { labels: labels },
@@ -105,8 +106,11 @@ export function chartWindowBarApplyFilters(selection: ChartWindowBarSelection): 
 
     const filteredCats = categories.filter(filterCat);
     const filteredValues = values.filter(filterCat);
+    const filteredStyleClasses = arrayIs(styleClasses)
+      ? styleClasses.filter(filterCat)
+      : styleClasses;
     const filteredKeys = keys?.filter(filterCat);
-    const filteredLabels = arrayIs(labels) && labels.filter(filterCat);
+    const filteredLabels = arrayIs(labels) ? labels.filter(filterCat) : labels;
     const filteredValueDomain =
       valueDomain instanceof Function ? valueDomain(filteredValues) : valueDomain;
 
@@ -120,7 +124,7 @@ export function chartWindowBarApplyFilters(selection: ChartWindowBarSelection): 
           keys: filteredKeys,
           labels: {
             ...chartWindowD.labels,
-            ...(filteredLabels && { labels: filteredLabels }),
+            labels: filteredLabels,
           },
         })
       )

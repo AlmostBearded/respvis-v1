@@ -26,7 +26,7 @@ export function chartSaveSVG<Datum>(
     cloneContainer.append(clonedChart);
 
     const cloneHTML = cloneContainer.innerHTML.replace(
-      / (style|layout|bounds|ignore-layout|ignore-layout-children)=".*?"/g,
+      / (style|layout|bounds|data-ignore-layout|data-ignore-layout-children)=".*?"/g,
       ''
     );
 

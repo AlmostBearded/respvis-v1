@@ -70,7 +70,7 @@
               ? respVis.LegendPosition.Top
               : respVis.LegendPosition.Right;
 
-            chart.call(respVis.classLegendPosition, legendPosition);
+            chart.attr('data-legend-position', legendPosition);
 
             chartWindow.datum((d) => {
               d.flipped = flippedBars;

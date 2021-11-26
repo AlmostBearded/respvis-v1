@@ -14,21 +14,9 @@
 
       body {
         background-color: floralwhite;
-      }
-
-      .bar[subcategory-index='0'],
-      .legend-item[index='0'] .symbol {
-        fill: #4f8c9d;
-      }
-
-      .bar[subcategory-index='1'],
-      .legend-item[index='1'] .symbol {
-        fill: #e23209;
-      }
-
-      .bar[subcategory-index='2'],
-      .legend-item[index='2'] .symbol {
-        fill: #539322;
+        --color-categorical-0: #4f8c9d;
+        --color-categorical-1: #e23209;
+        --color-categorical-2: #539322;
       }
     </style>
   </head>
@@ -83,7 +71,7 @@
               ? respVis.LegendPosition.Top
               : respVis.LegendPosition.Right;
 
-            chart.call(respVis.classLegendPosition, legendPosition);
+            chart.attr('data-legend-position', legendPosition);
 
             chartWindow.datum((d) => {
               d.flipped = flippedBars;

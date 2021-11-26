@@ -1,6 +1,6 @@
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
-import { select, Selection } from 'd3-selection';
-import { debug, nodeToString } from '../core';
+import { select, Selection, style } from 'd3-selection';
+import { arrayIs, debug, nodeToString } from '../core';
 import { Rect, rectFitStroke, rectMinimized, rectToAttrs } from '../core/utility/rect';
 import { Transition } from 'd3-transition';
 import { easeCubicOut } from 'd3-ease';
@@ -14,7 +14,7 @@ import toPX from 'to-px';
 
 export interface Bar extends Rect {
   category: string;
-  categoryIndex: number;
+  styleClass: string;
   value: number;
   key: string;
 }
@@ -25,7 +25,7 @@ export interface SeriesBar extends SeriesConfigTooltips<SVGRectElement, Bar> {
   values: number[];
   valueScale: ScaleContinuousNumeric<number, number>;
   keys: string[];
-  categoryIndices?: number[];
+  styleClasses: string | string[];
   flipped: boolean;
   bounds: Size;
 }
@@ -35,7 +35,7 @@ export function seriesBarData(data: Partial<SeriesBar>): SeriesBar {
   return {
     bounds: data.bounds || { width: 600, height: 400 },
     categories: categories,
-    categoryIndices: data.categoryIndices,
+    styleClasses: data.styleClasses || 'categorical-0',
     categoryScale: data.categoryScale || scaleBand().domain(categories).padding(0.1),
     values: data.values || [],
     valueScale:
@@ -53,7 +53,7 @@ export function seriesBarData(data: Partial<SeriesBar>): SeriesBar {
 }
 
 export function seriesBarCreateBars(seriesData: SeriesBar): Bar[] {
-  const { categories, categoryScale, values, valueScale, keys, categoryIndices, flipped, bounds } =
+  const { categories, categoryScale, values, valueScale, keys, styleClasses, flipped, bounds } =
     seriesData;
 
   if (!flipped) {
@@ -85,7 +85,7 @@ export function seriesBarCreateBars(seriesData: SeriesBar): Bar[] {
         category: c,
         value: v,
         key: keys?.[i] || i.toString(),
-        categoryIndex: categoryIndices === undefined ? i : categoryIndices[i],
+        styleClass: arrayIs(styleClasses) ? styleClasses[i] : styleClasses,
         ...(flipped ? flippedRect : rect),
       };
     data.push(bar);
@@ -96,7 +96,7 @@ export function seriesBarCreateBars(seriesData: SeriesBar): Bar[] {
 export function seriesBar(selection: Selection<Element, SeriesBar>): void {
   selection
     .classed('series-bar', true)
-    .attr('ignore-layout-children', true)
+    .attr('data-ignore-layout-children', true)
     .on('datachange.seriesbar', function () {
       debug(`data change on ${nodeToString(this)}`);
       select(this).dispatch('render');
@@ -156,8 +156,8 @@ export function seriesBarJoin(
         .ease(easeCubicOut)
         .call((t) => rectToAttrs(t, rectFitStroke(d, toPX(select(g[i]).style('stroke-width'))!)))
     )
-    .attr('category-index', (d) => d.categoryIndex)
-    .attr('category', (d) => d.category)
+    .attr('data-style', (d) => d.styleClass)
+    .attr('data-category', (d) => d.category)
     .attr('data-key', (d) => d.key)
     .call((s) => seriesSelection.dispatch('update', { detail: { selection: s } }));
 }

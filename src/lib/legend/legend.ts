@@ -1,16 +1,12 @@
 import { select, Selection } from 'd3-selection';
-import { arrayIs, debug, nodeToString, classOneOfEnum, Rect, rectFromString } from '../core';
+import { arrayIs, debug, nodeToString, Rect, rectFromString, WritingMode } from '../core';
 import { pathRect } from '../core/utility/path';
 
 export enum LegendPosition {
-  Top = 'with-legend-top',
-  Right = 'with-legend-right',
-  Bottom = 'with-legend-bottom',
-  Left = 'with-legend-left',
-}
-
-export function classLegendPosition(selection: Selection, position: LegendPosition): void {
-  classOneOfEnum(selection, LegendPosition, position);
+  Top = 'top',
+  Right = 'right',
+  Bottom = 'bottom',
+  Left = 'left',
 }
 
 export enum LegendOrientation {
@@ -18,13 +14,9 @@ export enum LegendOrientation {
   Horizontal = 'horizontal',
 }
 
-export function classLegendOrientation(selection: Selection, orientation: LegendOrientation): void {
-  classOneOfEnum(selection, LegendOrientation, orientation);
-}
-
 export interface LegendItem {
   label: string;
-  index: number;
+  styleClass: string;
   symbol: (pathElement: SVGPathElement, bounds: Rect) => void;
   key: string;
 }
@@ -35,7 +27,7 @@ export interface Legend {
   symbols:
     | ((symbol: SVGPathElement, bounds: Rect) => void)
     | ((symbol: SVGPathElement, bounds: Rect) => void)[];
-  indices?: number[];
+  styleClasses: string | string[];
   keys?: string[];
 }
 
@@ -44,18 +36,19 @@ export function legendData(data: Partial<Legend>): Legend {
   return {
     title: data.title || '',
     labels,
+    styleClasses: data.styleClasses || labels.map((l, i) => `categorical-${i}`),
     symbols: data.symbols || ((e, b) => pathRect(select(e), b)),
     keys: data.keys,
   };
 }
 
 export function legendCreateItems(legendData: Legend): LegendItem[] {
-  const { labels, indices, symbols, keys } = legendData;
+  const { labels, styleClasses, symbols, keys } = legendData;
 
   return labels.map((l, i) => {
     return {
       label: l,
-      index: indices === undefined ? i : indices[i],
+      styleClass: arrayIs(styleClasses) ? styleClasses[i] : styleClasses,
       symbol: arrayIs(symbols) ? symbols[i] : symbols,
       key: keys === undefined ? l : keys[i],
     };
@@ -64,7 +57,7 @@ export function legendCreateItems(legendData: Legend): LegendItem[] {
 
 export function legend(selection: Selection<Element, Legend>): void {
   selection.classed('legend', true);
-  selection.append('text').classed('title', true).classed('horizontal', true);
+  selection.append('text').classed('title', true).attr('data-orientation', WritingMode.Horizontal);
 
   selection.append('g').classed('items', true);
 
@@ -109,7 +102,7 @@ export function legend(selection: Selection<Element, Legend>): void {
           (exit) => exit.remove().call((s) => legend.dispatch('exit', { detail: { selection: s } }))
         )
         .each((d, i, g) => select(g[i]).selectAll('.label').text(d.label))
-        .attr('index', (d) => d.index)
+        .attr('data-style', (d) => d.styleClass)
         .attr('data-key', (d) => d.key)
         .call((s) => legend.dispatch('update', { detail: { selection: s } }));
     });
