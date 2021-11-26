@@ -59,8 +59,8 @@ export const presentationAttributes = [
   'white-space',
   'word-spacing',
   'writing-mode',
+  'transform',
 ];
-
 
 const dummyTag = 'style-dummy-tag';
 
