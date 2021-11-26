@@ -7,10 +7,10 @@ import {
   ChartCartesian as ChartCartesian,
 } from '../core/chart-cartesian';
 import {
-  LegendSquares,
-  legendSquaresData,
-  LegendSquaresItem,
-  legendSquares,
+  Legend,
+  legendData,
+  LegendItem,
+  legend,
   LegendOrientation,
   LegendPosition,
 } from '../legend';
@@ -28,7 +28,7 @@ import {
 import { SeriesLabelBar, seriesLabelBarData, seriesLabelBar } from './series-label-bar';
 
 export interface ChartBarGrouped extends SeriesBarGrouped, ChartCartesian {
-  legend: Partial<LegendSquares>;
+  legend: Partial<Legend>;
   labelsEnabled: boolean;
   labels: Partial<SeriesLabelBar>;
 }
@@ -66,8 +66,8 @@ export function chartBarGrouped(selection: ChartBarGroupedSelection): void {
       chart
         .append('g')
         .classed('legend', true)
-        .datum(legendSquaresData(chartData.legend))
-        .call((s) => legendSquares(s))
+        .datum(legendData(chartData.legend))
+        .call((s) => legend(s))
         .on('mouseover.chartbargroupedhighlight mouseout.chartbargroupedhighlight', (e) => {
           chartBarGroupedHoverLegendItem(
             chart,
@@ -101,7 +101,7 @@ export function chartBarGroupedDataChange(selection: ChartBarGroupedSelection): 
       } = chartD,
       chartS = <ChartBarGroupedSelection>select(g[i]),
       barSeriesS = chartS.selectAll<Element, SeriesBarGrouped>('.series-bar-grouped'),
-      legendS = chartS.selectAll<Element, LegendSquares>('.legend');
+      legendS = chartS.selectAll<Element, Legend>('.legend');
 
     barSeriesS.datum((d) => d);
 

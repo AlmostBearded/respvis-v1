@@ -1,1 +1,1 @@
-export * from './legend-squares';
+export * from './legend';

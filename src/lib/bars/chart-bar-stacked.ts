@@ -7,11 +7,11 @@ import {
   ChartCartesian,
 } from '../core/chart-cartesian';
 import {
-  LegendSquares,
-  legendSquaresData,
-  legendSquares,
+  Legend,
+  legendData,
+  legend,
   LegendPosition,
-  LegendSquaresItem,
+  LegendItem,
 } from '../legend';
 import { Bar } from './series-bar';
 import { BarGrouped } from './series-bar-grouped';
@@ -19,7 +19,7 @@ import { SeriesBarStacked, seriesBarStackedData, seriesBarStacked } from './seri
 import { SeriesLabelBar, seriesLabelBarData, seriesLabelBar } from './series-label-bar';
 
 export interface ChartBarStacked extends SeriesBarStacked, ChartCartesian {
-  legend: Partial<LegendSquares>;
+  legend: Partial<Legend>;
   labelsEnabled: boolean;
   labels: Partial<SeriesLabelBar>;
 }
@@ -62,8 +62,8 @@ export function chartBarStacked(selection: ChartBarStackedSelection): void {
       chart
         .append('g')
         .classed('legend', true)
-        .datum(legendSquaresData(chartData.legend))
-        .call((s) => legendSquares(s))
+        .datum(legendData(chartData.legend))
+        .call((s) => legend(s))
         .on('mouseover.chartbarstackedhighlight mouseout.chartbarstackedhighlight', (e) => {
           chartBarStackedHoverLegendItem(
             chart,
@@ -96,7 +96,7 @@ export function chartBarStackedDataChange(selection: ChartBarStackedSelection): 
       } = chartD,
       chartS = <ChartBarStackedSelection>select(g[i]),
       barSeriesS = chartS.selectAll<Element, SeriesBarStacked>('.series-bar-stacked'),
-      legendS = chartS.selectAll<Element, LegendSquares>('.legend');
+      legendS = chartS.selectAll<Element, Legend>('.legend');
 
     barSeriesS.datum((d) => d);
 
@@ -148,7 +148,7 @@ export function chartBarStackedHoverBar(
 
 export function chartBarStackedHoverLegendItem(
   chart: Selection<Element, ChartBarStacked>,
-  legendItem: Selection<Element, LegendSquaresItem>,
+  legendItem: Selection<Element, LegendItem>,
   hover: boolean
 ): void {
   legendItem.each((_, i, g) => {

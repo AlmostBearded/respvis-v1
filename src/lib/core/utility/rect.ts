@@ -51,6 +51,22 @@ export function rectRight(rect: Rect): Position {
   return { x: rect.x + rect.width, y: rect.y + rect.height / 2 };
 }
 
+export function rectBottomLeft(rect: Rect): Position {
+  return { x: rect.x, y: rect.y + rect.height };
+}
+
+export function rectBottomRight(rect: Rect): Position {
+  return { x: rect.x + rect.width, y: rect.y + rect.height };
+}
+
+export function rectTopRight(rect: Rect): Position {
+  return { x: rect.x + rect.width, y: rect.y };
+}
+
+export function rectTopLeft(rect: Rect): Position {
+  return { x: rect.x, y: rect.y };
+}
+
 export function rectMinimized(rect: Rect): Rect {
   return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2, width: 0, height: 0 };
 }

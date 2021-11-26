@@ -1,5 +1,6 @@
 import { select, Selection } from 'd3-selection';
-import { arrayIs, debug, nodeToString, classOneOfEnum } from '../core';
+import { arrayIs, debug, nodeToString, classOneOfEnum, Rect, rectFromString } from '../core';
+import { pathRect } from '../core/utility/path';
 
 export enum LegendPosition {
   Top = 'with-legend-top',
@@ -21,42 +22,48 @@ export function classLegendOrientation(selection: Selection, orientation: Legend
   classOneOfEnum(selection, LegendOrientation, orientation);
 }
 
-export interface LegendSquaresItem {
+export interface LegendItem {
   label: string;
   index: number;
+  symbol: (pathElement: SVGPathElement, bounds: Rect) => void;
   key: string;
 }
 
-export interface LegendSquares {
+export interface Legend {
   title: string;
   labels: string[];
+  symbols:
+    | ((symbol: SVGPathElement, bounds: Rect) => void)
+    | ((symbol: SVGPathElement, bounds: Rect) => void)[];
   indices?: number[];
   keys?: string[];
 }
 
-export function legendSquaresData(data: Partial<LegendSquares>): LegendSquares {
+export function legendData(data: Partial<Legend>): Legend {
   const labels = data.labels || [];
   return {
     title: data.title || '',
     labels,
+    symbols: data.symbols || ((e, b) => pathRect(select(e), b)),
     keys: data.keys,
   };
 }
 
-export function legendSquaresCreateItems(legendData: LegendSquares): LegendSquaresItem[] {
-  const { labels, indices, keys } = legendData;
+export function legendCreateItems(legendData: Legend): LegendItem[] {
+  const { labels, indices, symbols, keys } = legendData;
 
   return labels.map((l, i) => {
     return {
       label: l,
       index: indices === undefined ? i : indices[i],
+      symbol: arrayIs(symbols) ? symbols[i] : symbols,
       key: keys === undefined ? l : keys[i],
     };
   });
 }
 
-export function legendSquares(selection: Selection<Element, LegendSquares>): void {
-  selection.classed('legend', true).classed('legend-squares', true);
+export function legend(selection: Selection<Element, Legend>): void {
+  selection.classed('legend', true);
   selection.append('text').classed('title', true).classed('horizontal', true);
 
   selection.append('g').classed('items', true);
@@ -75,30 +82,35 @@ export function legendSquares(selection: Selection<Element, LegendSquares>): voi
     })
     .on('render.legend', function (e, d) {
       debug(`render squares legend on ${nodeToString(this)}`);
-      const legend = select<Element, LegendSquares>(this);
+      const legend = select<Element, Legend>(this);
 
       legend.selectAll('.title').text(d.title);
 
       legend
         .selectAll('.items')
-        .selectAll<SVGGElement, LegendSquaresItem>('.legend-item')
-        .data(legendSquaresCreateItems(d), (d) => d.label)
+        .selectAll<SVGGElement, LegendItem>('.legend-item')
+        .data(legendCreateItems(d), (d) => d.label)
         .join(
           (enter) =>
             enter
               .append('g')
               .classed('legend-item', true)
-              .call((s) => s.append('rect').classed('symbol', true))
-              .call((s) => s.append('text').classed('label', true))
+              .call((itemS) =>
+                itemS
+                  .append('path')
+                  .classed('symbol', true)
+                  .on('render.symbol', function (e, d) {
+                    d.symbol(this, rectFromString(this.getAttribute('bounds')!));
+                  })
+              )
+              .call((itemS) => itemS.append('text').classed('label', true))
               .call((s) => legend.dispatch('enter', { detail: { selection: s } })),
           undefined,
           (exit) => exit.remove().call((s) => legend.dispatch('exit', { detail: { selection: s } }))
         )
+        .each((d, i, g) => select(g[i]).selectAll('.label').text(d.label))
         .attr('index', (d) => d.index)
         .attr('data-key', (d) => d.key)
-        .each((d, i, g) => {
-          select(g[i]).selectAll('.label').text(d.label);
-        })
         .call((s) => legend.dispatch('update', { detail: { selection: s } }));
     });
 }

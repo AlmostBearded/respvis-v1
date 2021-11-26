@@ -1,6 +1,8 @@
 import { select, Selection, ValueFn } from 'd3-selection';
 import { computedStyleWithoutDefaults, presentationAttributes } from '../utility/style';
 
+// TODO: maybe SVGO could be used to optimize the downloaded SVG? https://github.com/svg/svgo
+
 export function toolDownloadSVG(selection: Selection<HTMLLIElement>): void {
   selection
     .classed('tool-save-svg', true)

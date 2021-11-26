@@ -3,7 +3,16 @@ import { debug, nodeToString } from './utility/log';
 import { renderQueueEnqueue, renderQueueRender } from './render-queue';
 import { relativeBounds } from './utility/bounds';
 import { positionToTransformAttr } from './utility/position';
-import { rectEquals, rectFromString, rectToAttrs, rectToString } from './utility/rect';
+import {
+  rectCenter,
+  rectBottomLeft,
+  rectEquals,
+  rectFromString,
+  rectToAttrs,
+  rectToString,
+  rectTopRight,
+} from './utility/rect';
+import { circleInsideRect, circleToAttrs } from './utility/circle';
 
 export interface Layouter {
   layoutNodeResizeObserver: ResizeObserver;
@@ -149,6 +158,18 @@ function layoutNodeBounds(selection: Selection<HTMLDivElement, SVGElement>): boo
         case 'svg':
         case 'rect':
           svg.call((s) => rectToAttrs(s, bounds));
+          break;
+        case 'circle':
+          svg.call((s) => circleToAttrs(s, circleInsideRect(bounds)));
+          break;
+        case 'line':
+          const bottomLeft = rectBottomLeft(bounds);
+          const topRight = rectTopRight(bounds);
+          svg
+            .attr('x1', bottomLeft.x)
+            .attr('y1', bottomLeft.y)
+            .attr('x2', topRight.x)
+            .attr('y2', topRight.y);
           break;
         default:
           svg.call((s) => positionToTransformAttr(s, bounds));

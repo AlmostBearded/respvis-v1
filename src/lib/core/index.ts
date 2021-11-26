@@ -6,6 +6,8 @@ export * from './utility/bounds';
 export * from './utility/class';
 export * from './utility/style';
 export * from './utility/rect';
+export * from './utility/circle';
+export * from './utility/path';
 
 export * from './selection';
 export * from './layouter';

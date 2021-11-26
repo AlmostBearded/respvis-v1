@@ -1,13 +1,12 @@
 import { easeCubicOut } from 'd3-ease';
 import { scaleLinear } from 'd3-scale';
 import { select, Selection } from 'd3-selection';
-import { debug, nodeToString, Position, ScaleAny } from '../core';
+import { Circle, circleMinimized, circleToAttrs, debug, nodeToString, ScaleAny } from '../core';
 import { Size } from '../core/utility/size';
 
-export interface Point extends Position {
+export interface Point extends Circle {
   xValue: any;
   yValue: any;
-  radius: number;
   index: number;
   key: string;
 }
@@ -51,11 +50,13 @@ export function seriesPointCreatePoints(seriesData: SeriesPoint): Point[] {
     data.push({
       index: indices === undefined ? i : indices[i],
       key: keys?.[i] || i.toString(),
-      x: xScale(x)!,
-      y: yScale(y)!,
+      center: {
+        x: xScale(x)!,
+        y: yScale(y)!,
+      },
+      radius: r,
       xValue: x,
       yValue: y,
-      radius: r,
     });
   }
 
@@ -96,9 +97,7 @@ export function seriesPointJoin(
         enter
           .append('circle')
           .classed('point', true)
-          .attr('cx', (d) => d.x)
-          .attr('cy', (d) => d.y)
-          .attr('r', 0)
+          .each((d, i, g) => circleToAttrs(select(g[i]), circleMinimized(d)))
           .call((s) => seriesSelection.dispatch('enter', { detail: { selection: s } })),
       undefined,
       (exit) =>
@@ -108,9 +107,7 @@ export function seriesPointJoin(
             s
               .transition('exit')
               .duration(250)
-              .attr('cx', (d) => d.x)
-              .attr('cy', (d) => d.y)
-              .attr('r', 0)
+              .each((d, i, g) => circleToAttrs(select(g[i]), circleMinimized(d)))
               .remove()
           )
           .call((s) => seriesSelection.dispatch('exit', { detail: { selection: s } }))
@@ -120,9 +117,7 @@ export function seriesPointJoin(
         .transition('update')
         .duration(250)
         .ease(easeCubicOut)
-        .attr('cx', (d) => d.x)
-        .attr('cy', (d) => d.y)
-        .attr('r', (d) => d.radius)
+        .each((d, i, g) => circleToAttrs(select(g[i]), d))
     )
     .attr('index', (d) => d.index)
     .call((s) => seriesSelection.dispatch('update', { detail: { selection: s } }));
