@@ -1,8 +1,7 @@
-import { BaseType, select, selectAll, Selection } from 'd3-selection';
-import { debug, nodeToString } from '../core';
+import { select, Selection } from 'd3-selection';
 import {
   chartCartesian,
-  chartCartesianUpdateAxes,
+  chartCartesianAxes,
   chartCartesianData,
   ChartCartesian as ChartCartesian,
 } from '../core/chart-cartesian';
@@ -31,49 +30,39 @@ export type ChartBarSelection = Selection<SVGSVGElement | SVGGElement, ChartBar>
 
 export function chartBar(selection: ChartBarSelection): void {
   selection
-    .call((s) => chartCartesian(s, false))
+    .call((s) => chartCartesian(s))
     .classed('chart-bar', true)
-    .each((chartData, i, g) => {
-      const chart = <ChartBarSelection>select(g[i]);
-      const drawArea = chart.selectAll('.draw-area');
+    .each((chartD, i, g) => {
+      const chartS = <ChartBarSelection>select(g[i]);
+      const drawAreaS = chartS.selectAll('.draw-area');
 
-      drawArea
-        .append('g')
-        .datum<SeriesBar>(chartData)
+      const barSeriesS = drawAreaS
+        .selectAll<SVGGElement, SeriesBar>('.series-bar')
+        .data([chartD])
+        .join('g')
         .call((s) => seriesBar(s))
-        .on('mouseover.chartbarhighlight', (e) => chartBarHoverBar(chart, select(e.target), true))
-        .on('mouseout.chartbarhighlight', (e) => chartBarHoverBar(chart, select(e.target), false));
-    })
-    .on('datachange.debuglog', function () {
-      debug(`data change on ${nodeToString(this)}`);
-    })
-    .on('datachange.chartbar', function (e, chartData) {
-      chartBarDataChange(<ChartBarSelection>select(this));
-    })
-    .call((s) => chartBarDataChange(s));
-}
+        .on('mouseover.chartbarhighlight', (e) => chartBarHoverBar(chartS, select(e.target), true))
+        .on('mouseout.chartbarhighlight', (e) => chartBarHoverBar(chartS, select(e.target), false));
 
-export function chartBarDataChange(
-  selection: Selection<SVGSVGElement | SVGGElement, ChartBar>
-): void {
-  selection.each(function (chartD, i, g) {
-    const chartS = <ChartBarSelection>select(g[i]);
-    const barSeriesS = chartS.selectAll<Element, SeriesBar>('.series-bar').datum((d) => d);
+      drawAreaS
+        .selectAll<Element, SeriesLabelBar>('.series-label-bar')
+        .data(
+          chartD.labelsEnabled
+            ? [
+                seriesLabelBarData({
+                  barContainer: barSeriesS,
+                  ...chartD.labels,
+                }),
+              ]
+            : []
+        )
+        .join('g')
+        .call((s) => seriesLabelBar(s));
 
-    const labelSeriesD = seriesLabelBarData({
-      barContainer: barSeriesS,
-      ...chartD.labels,
+      chartD.xAxis.scale = chartD.categoryScale;
+      chartD.yAxis.scale = chartD.valueScale;
+      chartCartesianAxes(chartS);
     });
-    chartS
-      .selectAll('.draw-area')
-      .selectAll<Element, SeriesLabelBar>('.series-label-bar')
-      .data(chartD.labelsEnabled ? [labelSeriesD] : [])
-      .join((enter) => enter.append('g').call((s) => seriesLabelBar(s)));
-
-    chartD.xAxis.scale = chartD.categoryScale;
-    chartD.yAxis.scale = chartD.valueScale;
-    chartCartesianUpdateAxes(chartS);
-  });
 }
 
 export function chartBarHoverBar(chart: Selection, bar: Selection<Element, Bar>, hover: boolean) {

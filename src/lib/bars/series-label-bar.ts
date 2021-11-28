@@ -78,14 +78,9 @@ export function seriesLabelBar(selection: Selection<Element, SeriesLabelBar>): v
     .classed('series-label', true)
     .classed('series-label-bar', true)
     .attr('data-ignore-layout-children', true)
-    .on('datachange.serieslabelbar', function () {
-      debug(`data change on ${nodeToString(this)}`);
-      select(this).dispatch('render');
-    })
-    .on('render.serieslabelbar', function (e, d) {
-      debug(`render bar label series on ${nodeToString(this)}`);
-      const series = select<Element, SeriesLabelBar>(this);
-      series
+    .each((d, i, g) => {
+      const seriesS = select<Element, SeriesLabelBar>(g[i]);
+      seriesS
         .on('update.serieslabelbar', function (e: JoinEvent<Element, LabelBar>) {
           e.detail.selection.each((d, i, g) => {
             const s = select(g[i]);
@@ -99,6 +94,6 @@ export function seriesLabelBar(selection: Selection<Element, SeriesLabelBar>): v
         })
         .selectAll<SVGTextElement, Label>('text')
         .data(seriesLabelBarCreateLabels(d), (d) => d.key)
-        .call((s) => seriesLabelJoin(series, s));
+        .call((s) => seriesLabelJoin(seriesS, s));
     });
 }

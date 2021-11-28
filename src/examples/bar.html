@@ -29,39 +29,34 @@
       const cities = data.cities,
         populations = data.populations.map((p) => Math.round(p / 1000));
 
-      // respVis.enableDebugLog(true);
-
       const root = d3.select('#chart'),
+        chartData = {
+          keys: cities,
+          categoryEntity: 'Cities',
+          categories: cities,
+          values: populations,
+          tooltips: (barElement, barData) =>
+            `City: ${barData.category}<br/>Population: ${d3.format(',')(barData.value * 1000)}`,
+          labels: {},
+          xAxis: {
+            title: 'City',
+          },
+          yAxis: {
+            title: 'Population',
+            subtitle: '[1000 People]',
+          },
+        },
         chartWindow = root
           .append('div')
-          .datum(
-            respVis.chartWindowBarData({
-              keys: cities,
-              categoryEntity: 'Cities',
-              categories: cities,
-              values: populations,
-              tooltips: (barElement, barData) =>
-                `City: ${barData.category}<br/>Population: ${d3.format(',')(barData.value * 1000)}`,
-              xAxis: {
-                title: 'City',
-              },
-              yAxis: {
-                title: 'Population',
-                subtitle: '[1000 People]',
-              },
-            })
-          )
+          .datum(respVis.chartWindowBarData(chartData))
           .call(respVis.chartWindowBar)
           .on('densitychange', function (e, d) {
             const density = e.detail.density;
-            const flippedBars = density.x > 0.0135;
-            const labelPosition = flippedBars ? { x: 1, y: 0.5 } : { x: 0.5, y: 0 };
-
-            chartWindow.datum((d) => {
-              d.flipped = flippedBars;
-              d.labels.relativePositions = labelPosition;
-              return d;
-            });
+            chartData.flipped = density.x > 0.0135;
+            chartData.labels.relativePositions = chartData.flipped
+              ? { x: 1, y: 0.5 }
+              : { x: 0.5, y: 0 };
+            chartWindow.datum(respVis.chartWindowBarData(chartData)).call(respVis.chartWindowBar);
           });
     </script>
   </body>

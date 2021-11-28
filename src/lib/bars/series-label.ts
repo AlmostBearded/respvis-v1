@@ -31,21 +31,15 @@ export function seriesLabelCreateLabels(seriesData: SeriesLabel): Label[] {
 }
 
 export function seriesLabel(selection: Selection<Element, SeriesLabel>): void {
-  selection
-    .classed('series-label', true)
-    .attr('data-ignore-layout-children', true)
-    .on('datachange.serieslabel', function () {
-      debug(`data change on ${nodeToString(this)}`);
-      select(this).dispatch('render');
-    })
-    .on('render.serieslabel', function (e, d) {
-      debug(`render label series on ${nodeToString(this)}`);
-      const series = select<Element, SeriesLabel>(this);
-      series
-        .selectAll<SVGTextElement, Label>('text')
-        .data(seriesLabelCreateLabels(d), (d) => d.key)
-        .call((s) => seriesLabelJoin(series, s));
-    });
+  selection.classed('series-label', true).attr('data-ignore-layout-children', true);
+
+  selection.each((d, i, g) => {
+    const seriesS = select(g[i]);
+    seriesS
+      .selectAll<SVGTextElement, Label>('text')
+      .data(seriesLabelCreateLabels(d), (d) => d.key)
+      .call((s) => seriesLabelJoin(seriesS, s));
+  });
 }
 
 export function seriesLabelJoin(

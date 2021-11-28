@@ -97,20 +97,15 @@ export function seriesBar(selection: Selection<Element, SeriesBar>): void {
   selection
     .classed('series-bar', true)
     .attr('data-ignore-layout-children', true)
-    .on('datachange.seriesbar', function () {
-      debug(`data change on ${nodeToString(this)}`);
-      select(this).dispatch('render');
-    })
-    .on('render.seriesbar', function (e, d) {
-      const series = select<Element, SeriesBar>(this);
-      const bounds = series.bounds();
+    .each((d, i, g) => {
+      const seriesS = select<Element, SeriesBar>(g[i]);
+      const bounds = seriesS.bounds();
       if (!bounds) return;
-      debug(`render bar series on ${nodeToString(this)}`);
       d.bounds = bounds;
-      series
+      seriesS
         .selectAll<SVGRectElement, Bar>('rect')
         .data(seriesBarCreateBars(d), (d) => d.key)
-        .call((s) => seriesBarJoin(series, s));
+        .call((s) => seriesBarJoin(seriesS, s));
     })
     .on('mouseover.seriesbarhighlight mouseout.seriesbarhighlight', (e: MouseEvent) =>
       (<Element>e.target).classList.toggle('highlight', e.type.endsWith('over'))

@@ -3,7 +3,7 @@ import { zoom, ZoomBehavior } from 'd3-zoom';
 import { debug, nodeToString } from '../core';
 import {
   chartCartesian,
-  chartCartesianUpdateAxes,
+  chartCartesianAxes,
   chartCartesianData,
   ChartCartesian,
 } from '../core/chart-cartesian';
@@ -22,35 +22,20 @@ export type ChartPointSelection = Selection<SVGSVGElement | SVGGElement, ChartPo
 
 export function chartPoint(selection: ChartPointSelection): void {
   selection
-    .call((s) => chartCartesian(s, false))
+    .call((s) => chartCartesian(s))
     .classed('chart-point', true)
-    .each((d, i, g) => {
-      const drawArea = select(g[i]).selectAll('.draw-area');
+    .each((chartD, i, g) => {
+      const drawAreaS = select(g[i]).selectAll('.draw-area');
 
-      drawArea
-        .append('svg')
-        .datum(d)
+      drawAreaS
+        .selectAll<SVGSVGElement, SeriesPoint>('.series-point')
+        .data([chartD])
+        .join('svg')
         .call((s) => seriesPoint(s));
+
+      chartD.flipped = false;
+      chartD.xAxis.scale = chartD.xScale;
+      chartD.yAxis.scale = chartD.yScale;
     })
-    .on('datachange.debuglog', function () {
-      debug(`data change on ${nodeToString(this)}`);
-    })
-    .on('datachange.chartpoint', function (e, chartData) {
-      chartPointDataChange(<ChartPointSelection>select(this));
-    })
-    .call((s) => chartPointDataChange(s));
-}
-
-export function chartPointDataChange(selection: ChartPointSelection): void {
-  selection.each(function (chartData, i, g) {
-    const s = <ChartPointSelection>select(g[i]);
-
-    s.selectAll('.series-point').dispatch('datachange');
-
-    chartData.flipped = false;
-    chartData.xAxis.scale = chartData.xScale;
-    chartData.yAxis.scale = chartData.yScale;
-
-    chartCartesianUpdateAxes(s);
-  });
+    .call((s) => chartCartesianAxes(s));
 }

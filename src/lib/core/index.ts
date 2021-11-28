@@ -10,7 +10,6 @@ export * from './utility/path';
 
 export * from './selection';
 export * from './layouter';
-export * from './render-queue';
 export * from './resize-event-dispatcher';
 
 export * from './utility/scale';

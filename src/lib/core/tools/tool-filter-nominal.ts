@@ -20,24 +20,17 @@ export function toolFilterNominalData(data: Partial<ToolFilterNominal>): ToolFil
 export function toolFilterNominal(selection: Selection<HTMLLIElement, ToolFilterNominal>): void {
   selection.classed('tool-filter-nominal', true).call((s) => menuDropdown(s));
 
-  const items = selection
-    .selectAll<HTMLUListElement, SeriesCheckbox>('.items')
-    .datum(
-      seriesCheckboxData({
-        container: () => create('li').node()!,
-      })
-    )
-    .call((s) => seriesCheckbox(s));
-
-  selection
-    .on('datachange.toolfilternominal', function (e, toolD) {
-      const s = select(this);
-      s.selectAll('.text').text(`${toolD.text}`);
-      s.selectAll<HTMLUListElement, SeriesCheckbox>('.items').datum((d) => {
-        d.labels = toolD.options;
-        d.keys = toolD.keys;
-        return d;
-      });
-    })
-    .dispatch('datachange');
+  selection.each((d, i, g) => {
+    const s = select(g[i]);
+    s.selectAll('.text').text(d.text);
+    s.selectAll<HTMLUListElement, SeriesCheckbox>('.items')
+      .datum(
+        seriesCheckboxData({
+          container: () => create('li').node()!,
+          labels: d.options,
+          keys: d.keys,
+        })
+      )
+      .call((s) => seriesCheckbox(s));
+  });
 }

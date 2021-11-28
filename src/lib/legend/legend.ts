@@ -56,10 +56,46 @@ export function legendCreateItems(legendData: Legend): LegendItem[] {
 }
 
 export function legend(selection: Selection<Element, Legend>): void {
-  selection.classed('legend', true);
-  selection.append('text').classed('title', true).attr('data-orientation', WritingMode.Horizontal);
+  selection.classed('legend', true).each((legendD, i, g) => {
+    const legendS = select<Element, Legend>(g[i]);
 
-  selection.append('g').classed('items', true);
+    legendS
+      .selectAll('.title')
+      .data([null])
+      .join('text')
+      .classed('title', true)
+      .attr('data-orientation', WritingMode.Horizontal)
+      .text(legendD.title);
+
+    const itemS = legendS.selectAll('.items').data([null]).join('g').classed('items', true);
+
+    itemS
+      .selectAll<SVGGElement, LegendItem>('.legend-item')
+      .data(legendCreateItems(legendD), (d) => d.label)
+      .join(
+        (enter) =>
+          enter
+            .append('g')
+            .classed('legend-item', true)
+            .call((itemS) => itemS.append('path').classed('symbol', true))
+            .call((itemS) => itemS.append('text').classed('label', true))
+            .call((s) => legendS.dispatch('enter', { detail: { selection: s } })),
+        undefined,
+        (exit) => exit.remove().call((s) => legendS.dispatch('exit', { detail: { selection: s } }))
+      )
+      .each((itemD, i, g) => {
+        const itemS = select(g[i]);
+        itemS.selectAll('.label').text(itemD.label);
+        itemS.selectAll<SVGPathElement, any>('.symbol').call((symbolS) => {
+          const bounds = symbolS.bounds();
+          if (!bounds) return;
+          itemD.symbol(symbolS.node()!, bounds);
+        });
+      })
+      .attr('data-style', (d) => d.styleClass)
+      .attr('data-key', (d) => d.key)
+      .call((s) => legendS.dispatch('update', { detail: { selection: s } }));
+  });
 
   selection.on('mouseover.legend mouseout.legend', (e: MouseEvent) => {
     const item = (<Element>e.target).closest('.legend-item');
@@ -67,43 +103,4 @@ export function legend(selection: Selection<Element, Legend>): void {
       item.classList.toggle('highlight', e.type.endsWith('over'));
     }
   });
-
-  selection
-    .on('datachange.legend', function () {
-      debug(`data change on ${nodeToString(this)}`);
-      select(this).dispatch('render');
-    })
-    .on('render.legend', function (e, d) {
-      debug(`render squares legend on ${nodeToString(this)}`);
-      const legend = select<Element, Legend>(this);
-
-      legend.selectAll('.title').text(d.title);
-
-      legend
-        .selectAll('.items')
-        .selectAll<SVGGElement, LegendItem>('.legend-item')
-        .data(legendCreateItems(d), (d) => d.label)
-        .join(
-          (enter) =>
-            enter
-              .append('g')
-              .classed('legend-item', true)
-              .call((itemS) =>
-                itemS
-                  .append('path')
-                  .classed('symbol', true)
-                  .on('render.symbol', function (e, d) {
-                    d.symbol(this, rectFromString(this.getAttribute('bounds')!));
-                  })
-              )
-              .call((itemS) => itemS.append('text').classed('label', true))
-              .call((s) => legend.dispatch('enter', { detail: { selection: s } })),
-          undefined,
-          (exit) => exit.remove().call((s) => legend.dispatch('exit', { detail: { selection: s } }))
-        )
-        .each((d, i, g) => select(g[i]).selectAll('.label').text(d.label))
-        .attr('data-style', (d) => d.styleClass)
-        .attr('data-key', (d) => d.key)
-        .call((s) => legend.dispatch('update', { detail: { selection: s } }));
-    });
 }

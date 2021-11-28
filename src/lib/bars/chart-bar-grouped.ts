@@ -2,7 +2,7 @@ import { select, Selection } from 'd3-selection';
 import { debug, nodeToString } from '../core';
 import {
   chartCartesian,
-  chartCartesianUpdateAxes,
+  chartCartesianAxes,
   chartCartesianData,
   ChartCartesian as ChartCartesian,
 } from '../core/chart-cartesian';
@@ -50,46 +50,11 @@ export type ChartBarGroupedSelection = Selection<SVGSVGElement | SVGGElement, Ch
 
 export function chartBarGrouped(selection: ChartBarGroupedSelection): void {
   selection
-    .call((s) => chartCartesian(s, false))
+    .call((s) => chartCartesian(s))
     .classed('chart-bar-grouped', true)
     .attr('data-legend-position', LegendPosition.Right)
-    .each((chartData, i, g) => {
-      const chart = <ChartBarGroupedSelection>select(g[i]);
-      const drawArea = chart.selectAll('.draw-area');
-
-      drawArea
-        .append('g')
-        .datum(chartData)
-        .call((s) => seriesBarGrouped(s))
-        .on('mouseover.chartbargroupedhighlight mouseout.chartbargroupedhighlight', (e) =>
-          chartBarGroupedHoverBar(chart, select(e.target), e.type.endsWith('over'))
-        );
-
-      chart
-        .append('g')
-        .classed('legend', true)
-        .datum(legendData(chartData.legend))
-        .call((s) => legend(s))
-        .on('mouseover.chartbargroupedhighlight mouseout.chartbargroupedhighlight', (e) => {
-          chartBarGroupedHoverLegendItem(
-            chart,
-            select(e.target.closest('.legend-item')),
-            e.type.endsWith('over')
-          );
-        });
-    })
-    .on('datachange.debuglog', function () {
-      debug(`data change on ${nodeToString(this)}`);
-    })
-    .on('datachange.chartbargrouped', function (e, chartData) {
-      chartBarGroupedDataChange(<ChartBarGroupedSelection>select(this));
-    })
-    .call((s) => chartBarGroupedDataChange(s));
-}
-
-export function chartBarGroupedDataChange(selection: ChartBarGroupedSelection): void {
-  selection.each(function (chartD, i, g) {
-    const {
+    .each((chartD, i, g) => {
+      const {
         subcategories,
         xAxis,
         yAxis,
@@ -97,48 +62,62 @@ export function chartBarGroupedDataChange(selection: ChartBarGroupedSelection): 
         valueScale,
         styleClasses,
         labelsEnabled,
-        labels,
-        legend,
+        labels: labelsD,
+        legend: legendD,
         values,
-      } = chartD,
-      chartS = <ChartBarGroupedSelection>select(g[i]),
-      barSeriesS = chartS.selectAll<Element, SeriesBarGrouped>('.series-bar-grouped'),
-      legendS = chartS.selectAll<Element, Legend>('.legend');
+      } = chartD;
+      const chartS = <ChartBarGroupedSelection>select(g[i]);
+      const drawAreaS = chartS.selectAll('.draw-area');
 
-    barSeriesS.datum((d) => d);
+      const barSeriesS = drawAreaS
+        .selectAll<SVGGElement, SeriesBarGrouped>('.series-bar-grouped')
+        .data([chartD])
+        .join('g')
+        .call((s) => seriesBarGrouped(s))
+        .on('mouseover.chartbargroupedhighlight mouseout.chartbargroupedhighlight', (e) =>
+          chartBarGroupedHoverBar(chartS, select(e.target), e.type.endsWith('over'))
+        );
 
-    const labelSeriesD = seriesLabelBarData({
-      barContainer: barSeriesS,
-      ...labels,
+      drawAreaS
+        .selectAll<Element, SeriesLabelBar>('.series-label-bar')
+        .data(
+          labelsEnabled
+            ? [
+                seriesLabelBarData({
+                  barContainer: barSeriesS,
+                  ...labelsD,
+                }),
+              ]
+            : []
+        )
+        .join('g')
+        .call((s) => seriesLabelBar(s));
+
+      chartS
+        .selectAll<SVGGElement, Legend>('.legend')
+        .data([
+          legendData({ labels: subcategories, styleClasses, ...legendD, keys: subcategories }),
+        ])
+        .join('g')
+        .call((s) => legend(s))
+        .on('mouseover.chartbargroupedhighlight mouseout.chartbargroupedhighlight', (e) => {
+          chartBarGroupedHoverLegendItem(
+            chartS,
+            select(e.target.closest('.legend-item')),
+            e.type.endsWith('over')
+          );
+        });
+
+      xAxis.scale = categoryScale;
+      yAxis.scale = valueScale;
+      chartCartesianAxes(chartS);
+
+      chartS
+        .selectAll(`.axis-x .tick`)
+        .on('mouseover.chartbargroupedhighlight mouseout.chartbargroupedhighlight', (e) =>
+          chartBarGroupedHoverAxisTick(chartS, select(e.currentTarget), e.type.endsWith('over'))
+        );
     });
-    chartS
-      .selectAll('.draw-area')
-      .selectAll<Element, SeriesLabelBar>('.series-label-bar')
-      .data(labelsEnabled ? [labelSeriesD] : [])
-      .join((enter) => enter.append('g').call((s) => seriesLabelBar(s)));
-
-    legendS.datum((d) =>
-      Object.assign(
-        d,
-        {
-          labels: subcategories,
-          styleClasses: styleClasses,
-        },
-        legend,
-        { keys: subcategories }
-      )
-    );
-
-    xAxis.scale = categoryScale;
-    yAxis.scale = valueScale;
-    chartCartesianUpdateAxes(chartS);
-
-    chartS
-      .selectAll(`.axis-x .tick`)
-      .on('mouseover.chartbargroupedhighlight mouseout.chartbargroupedhighlight', (e) =>
-        chartBarGroupedHoverAxisTick(chartS, select(e.currentTarget), e.type.endsWith('over'))
-      );
-  });
 }
 
 export const chartBarGroupedHoverBar = chartBarStackedHoverBar;

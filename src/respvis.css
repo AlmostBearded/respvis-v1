@@ -261,7 +261,7 @@ text.title {
 }
 
 .layout.axis {
-  display: flex;
+  display: grid;
 }
 
 .layout.axis .title,
@@ -272,9 +272,48 @@ text.title {
 
 .layout.axis-left,
 .layout.axis-right {
-  flex-direction: row;
-  justify-content: flex-start;
-  height: 100%;
+  grid-template: 100% / auto auto auto;
+  align-items: start;
+}
+
+.layout.axis-bottom,
+.layout.axis-top {
+  grid-template: auto auto auto / 100%;
+  justify-items: end;
+}
+
+.layout.axis-left {
+  grid-template-areas: 'title subtitle ticks';
+}
+
+.layout.axis-right {
+  grid-template-areas: 'ticks title subtitle';
+}
+
+.layout.axis-bottom {
+  grid-template-areas:
+    'ticks'
+    'title'
+    'subtitle';
+}
+
+.layout.axis-top {
+  grid-template-areas:
+    'title'
+    'subtitle'
+    'ticks';
+}
+
+.layout.title {
+  grid-area: title;
+}
+
+.layout.subtitle {
+  grid-area: subtitle;
+}
+
+.layout.ticks-transform {
+  grid-area: ticks;
 }
 
 .layout.axis-left .ticks-transform {
@@ -301,12 +340,6 @@ text.title {
 
 .axis-bottom .tick text {
   text-anchor: middle;
-}
-
-.layout.axis-bottom,
-.layout.axis-top {
-  flex-direction: column;
-  align-items: flex-end;
 }
 
 .layout.axis-left .ticks-transform,

@@ -1,8 +1,6 @@
-import { scaleLinear } from 'd3-scale';
-import { BaseType, select, Selection } from 'd3-selection';
-import { axisBottom, axisLeft, ConfigureAxisFn, Axis, axisData } from './axis';
+import { select, Selection } from 'd3-selection';
+import { axisBottom, axisLeft, Axis, axisData } from './axis';
 import { chart } from './chart';
-import { debug, nodeToString } from './utility/log';
 
 export interface ChartCartesian {
   xAxis: Axis;
@@ -25,51 +23,59 @@ export function chartCartesianData(
 
 export type ChartCartesianSelection = Selection<SVGSVGElement | SVGGElement, ChartCartesian>;
 
-export function chartCartesian(selection: ChartCartesianSelection, autoUpdateAxes: boolean): void {
+export function chartCartesian(selection: ChartCartesianSelection): void {
   selection
     .call((s) => chart(s))
     .classed('chart-cartesian', true)
     .each((d, i, g) => {
       const s = <ChartCartesianSelection>select(g[i]);
 
-      const drawAreaS = s.append('svg').classed('draw-area', true);
+      const drawAreaS = s
+        .selectAll('.draw-area')
+        .data([null])
+        .join('svg')
+        .classed('draw-area', true);
 
-      drawAreaS.append('rect').classed('background', true);
+      drawAreaS.selectAll('.background').data([null]).join('rect').classed('background', true);
 
-      s.append('g')
-        .datum(axisData(d.yAxis))
-        .call((s) => axisLeft(s));
+      // s.selectAll<SVGGElement, Axis>('.axis-left')
+      //   .data([axisData(d.yAxis)])
+      //   .join('g')
+      //   .call((s) => axisLeft(s));
 
-      s.append('g')
-        .datum(axisData(d.xAxis))
-        .call((s) => axisBottom(s));
-    })
-    .call(
-      (s) =>
-        autoUpdateAxes &&
-        s
-          .on('datachange.debuglog', function () {
-            debug(`data change on ${nodeToString(this)}`);
-          })
-          .on('datachange.updateaxes', function (e, chartData) {
-            chartCartesianUpdateAxes(<ChartCartesianSelection>select(this));
-          })
-    )
-    .call((s) => chartCartesianUpdateAxes(s));
+      // s.selectAll<SVGGElement, Axis>('.axis-bottom')
+      //   .data([axisData(d.xAxis)])
+      //   .join('g')
+      //   .call((s) => axisBottom(s));
+    });
 }
 
-export function chartCartesianUpdateAxes(selection: ChartCartesianSelection): void {
+export function chartCartesianAxes(selection: ChartCartesianSelection): void {
   selection.each(function ({ flipped, xAxis, yAxis }, i, g) {
     const s = <ChartCartesianSelection>select(g[i]);
 
     s.selectAll<SVGGElement, Axis>('.axis-left')
-      .datum((d) => Object.assign(d, flipped ? xAxis : yAxis))
+      .data([axisData(flipped ? xAxis : yAxis)])
+      .join('g')
+      .call((s) => axisLeft(s))
       .classed('axis-x', flipped)
       .classed('axis-y', !flipped);
 
     s.selectAll<SVGGElement, Axis>('.axis-bottom')
-      .datum((d) => Object.assign(d, flipped ? yAxis : xAxis))
+      .data([axisData(flipped ? yAxis : xAxis)])
+      .join('g')
+      .call((s) => axisBottom(s))
       .classed('axis-x', !flipped)
       .classed('axis-y', flipped);
+
+    // s.selectAll<SVGGElement, Axis>('.axis-left')
+    //   .datum((d) => Object.assign(d, flipped ? xAxis : yAxis))
+    //   .classed('axis-x', flipped)
+    //   .classed('axis-y', !flipped);
+
+    // s.selectAll<SVGGElement, Axis>('.axis-bottom')
+    //   .datum((d) => Object.assign(d, flipped ? yAxis : xAxis))
+    //   .classed('axis-x', !flipped)
+    //   .classed('axis-y', flipped);
   });
 }

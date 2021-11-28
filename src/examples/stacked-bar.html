@@ -24,61 +24,58 @@
     <script src="./vendor/d3.v6.js"></script>
     <script src="../respvis.js"></script>
     <script type="module">
-      import data from './data/desktop-mobile-tablet.js';
+      import data from './data/desktop-phone-tablet.js';
 
       // data
-      const platforms = ['Desktop', 'Mobile', 'Tablet'],
+      const platforms = ['Desktop', 'Phone', 'Tablet'],
         years = data.years,
-        shares = data.desktop.map((d, i) => [data.desktop[i], data.mobile[i], data.tablet[i]]),
+        shares = data.desktop.map((d, i) => [data.desktop[i], data.phone[i], data.tablet[i]]),
         keys = shares.map((pS, i) => pS.map((_, j) => `${years[i]}${platforms[j]}`));
 
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
       const root = d3.select('#chart'),
+        chartData = {
+          keys: keys,
+          categoryEntity: 'Years',
+          categories: years,
+          values: shares,
+          valuesAsRatios: true,
+          valueDomain: [0, 100],
+          subcategoryEntity: 'Platforms',
+          subcategories: platforms,
+          labels: {},
+          legend: {},
+          tooltips: (barElement, barData) =>
+            `Year: ${barData.category}<br/>Platform: ${
+              barData.subcategory
+            }<br/>Market Share: ${d3.format('.2f')(barData.value)}%`,
+          xAxis: {
+            title: 'Year',
+          },
+          yAxis: {
+            title: 'Market Share',
+          },
+        },
         chartWindow = root
           .append('div')
-          .datum(
-            respVis.chartWindowBarStackedData({
-              keys: keys,
-              categoryEntity: 'Years',
-              categories: years,
-              values: shares,
-              valuesAsRatios: true,
-              valueDomain: [0, 100],
-              subcategoryEntity: 'Platforms',
-              subcategories: platforms,
-              tooltips: (barElement, barData) =>
-                `Year: ${barData.category}<br/>Platform: ${
-                  barData.subcategory
-                }<br/>Market Share: ${d3.format('.2f')(barData.value)}%`,
-              xAxis: {
-                title: 'Year',
-              },
-              yAxis: {
-                title: 'Market Share',
-              },
-            })
-          )
+          .datum(respVis.chartWindowBarStackedData(chartData))
           .call(respVis.chartWindowBarStacked)
           .on('densitychange', function (e, d) {
             const density = e.detail.density;
-            const flippedBars = density.x > 0.05;
-            const labelsEnabled = density.x < 0.06;
-            const yAxisSubtitle = density.x < 0.06 ? '[%]' : '';
-            const legendTitle = density.x < 0.06 ? 'Platforms' : '';
-            const legendPosition = flippedBars
-              ? respVis.LegendPosition.Top
-              : respVis.LegendPosition.Right;
+            chartData.flipped = density.x > 0.05;
+            chartData.labelsEnabled = density.x < 0.06;
+            chartData.yAxis.subtitle = density.x < 0.06 ? '[%]' : '';
+            chartData.legend.title = density.x < 0.06 ? 'Platforms' : '';
 
-            chart.attr('data-legend-position', legendPosition);
+            chart.attr(
+              'data-legend-position',
+              chartData.flipped ? respVis.LegendPosition.Top : respVis.LegendPosition.Right
+            );
 
-            chartWindow.datum((d) => {
-              d.flipped = flippedBars;
-              d.labelsEnabled = labelsEnabled;
-              d.yAxis.subtitle = yAxisSubtitle;
-              d.legend.title = legendTitle;
-              return d;
-            });
+            chartWindow
+              .datum(respVis.chartWindowBarStackedData(chartData))
+              .call(respVis.chartWindowBarStacked);
           }),
         chart = chartWindow.selectAll('svg.chart');
     </script>

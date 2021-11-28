@@ -44,14 +44,13 @@ export function seriesCheckbox(selection: Selection<HTMLElement, SeriesCheckbox>
       'click.seriescheckbox',
       (e) => e.target.classList.contains('checkbox') && e.target.querySelector('input').click()
     )
-    .on('datachange.seriescheckbox', function (e, d) {
-      const series = select<HTMLElement, SeriesCheckbox>(this);
-      series
+    .each((d, i, g) => {
+      const seriesS = select<HTMLElement, SeriesCheckbox>(g[i]);
+      seriesS
         .selectAll<Element, Checkbox>('.checkbox')
         .data(seriesCheckboxCreateCheckboxes(d), (d) => d.label)
-        .call((s) => seriesCheckboxJoin(series, s));
-    })
-    .dispatch('datachange');
+        .call((s) => seriesCheckboxJoin(seriesS, s));
+    });
 }
 
 export function seriesCheckboxJoin(

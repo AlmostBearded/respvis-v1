@@ -75,20 +75,15 @@ export function seriesPoint(selection: Selection<Element, SeriesPoint>): void {
   selection
     .classed('series-point', true)
     .attr('data-ignore-layout-children', true)
-    .on('datachange.seriespoint', function () {
-      debug(`data change on ${nodeToString(this)}`);
-      select(this).dispatch('render');
-    })
-    .on('render.seriespoint', function (e, d) {
-      const series = select<Element, SeriesPoint>(this);
-      const bounds = series.bounds();
+    .each((d, i, g) => {
+      const seriesS = select<Element, SeriesPoint>(g[i]);
+      const bounds = seriesS.bounds();
       if (!bounds) return;
-      debug(`render point series on ${nodeToString(this)}`);
       d.bounds = bounds;
-      series
-        .selectAll<SVGCircleElement, Point>('circle')
+      seriesS
+        .selectAll<SVGCircleElement, Point>('.point')
         .data(seriesPointCreatePoints(d), (d) => d.key)
-        .call((s) => seriesPointJoin(series, s));
+        .call((s) => seriesPointJoin(seriesS, s));
     })
     .on('mouseover.seriespointhighlight mouseout.seriespointhighlight', (e: MouseEvent) =>
       (<Element>e.target).classList.toggle('highlight', e.type.endsWith('over'))

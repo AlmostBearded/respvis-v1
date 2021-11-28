@@ -122,24 +122,19 @@ export function seriesBarStacked(selection: Selection<Element, SeriesBarStacked>
     .classed('series-bar', true)
     .classed('series-bar-stacked', true)
     .attr('data-ignore-layout-children', true)
-    .on('datachange.seriesbar', function () {
-      debug(`data change on ${nodeToString(this)}`);
-      select(this).dispatch('render');
-    })
-    .on('render.seriesbargrouped', function (e, d) {
-      const series = select<Element, SeriesBarGrouped>(this);
-      const bounds = series.bounds();
-      if (!bounds) return;
-      debug(`render grouped bar series on ${nodeToString(this)}`);
-      d.bounds = bounds;
-      series
-        .selectAll<SVGRectElement, BarGrouped>('rect')
-        .data(seriesBarStackedCreateBars(d), (d) => d.key)
-        .call((s) => seriesBarJoin(series, s));
-    })
     .on('update.subcategory', (e: JoinEvent<Element, BarGrouped>) =>
       e.detail.selection.attr('data-subcategory', (d) => d.subcategory)
     )
+    .each((d, i, g) => {
+      const seriesS = select<Element, SeriesBarGrouped>(g[i]);
+      const bounds = seriesS.bounds();
+      if (!bounds) return;
+      d.bounds = bounds;
+      seriesS
+        .selectAll<SVGRectElement, BarGrouped>('rect')
+        .data(seriesBarStackedCreateBars(d), (d) => d.key)
+        .call((s) => seriesBarJoin(seriesS, s));
+    })
     .on('mouseover.seriesbargroupedhighlight mouseout.seriesbargroupedhighlight', (e: MouseEvent) =>
       (<Element>e.target).classList.toggle('highlight', e.type.endsWith('over'))
     )

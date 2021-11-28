@@ -5,6 +5,7 @@ import {
   toolFilterNominalData,
   toolDownloadSVG,
   toolFilterNominal,
+  layouterCompute,
 } from '../core';
 import { arrayIs } from '../core';
 import { chartPoint, ChartPoint, chartPointData } from './chart-point';
@@ -29,22 +30,27 @@ export function chartWindowPoint(selection: ChartWindowPointSelection): void {
     })
     .call((s) => chartWindow(s))
     .each((chartWindowD, i, g) => {
-      const chartWindow = select<HTMLDivElement, ChartWindowPoint>(g[i]),
-        menuItems = chartWindow.selectAll('.menu-tools .items'),
-        layouter = chartWindow.selectAll('.layouter');
+      const chartWindowS = select<HTMLDivElement, ChartWindowPoint>(g[i]),
+        menuItemsS = chartWindowS.selectAll('.menu-tools > .items'),
+        layouterS = chartWindowS.selectAll<HTMLDivElement, any>('.layouter');
 
       // download svg
-      menuItems.append('li').call((s) => toolDownloadSVG(s));
+      menuItemsS
+        .selectAll<HTMLLIElement, any>('.tool-save-svg')
+        .data([null])
+        .join('li')
+        .call((s) => toolDownloadSVG(s));
 
       // chart
-      layouter
-        .append('svg')
-        .datum(chartPointData(chartWindowD))
+      const chartS = layouterS
+        .selectAll<SVGSVGElement, ChartPoint>('svg.chart-point')
+        .data([chartPointData(chartWindowD)])
+        .join('svg')
         .call((s) => chartPoint(s));
-    })
-    .on('datachange.chartwindowbar', function (e, chartWindowD) {
-      const chartWindowS = <ChartWindowPointSelection>select(this);
-      chartWindowS.selectAll<Element, ChartPoint>('svg.chart-point').datum((d) => d);
+
+      layouterS
+        .on('boundschange.chartwindowpoint', () => chartPoint(chartS))
+        .call((s) => layouterCompute(s));
     });
 }
 

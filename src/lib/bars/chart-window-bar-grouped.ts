@@ -6,6 +6,7 @@ import {
   toolFilterNominalData,
   toolDownloadSVG,
   toolFilterNominal,
+  layouterCompute,
 } from '../core';
 import { arrayFlat, arrayIs, arrayIs2D, arrayPartition } from '../core';
 import { chartBarGrouped, chartBarGroupedData, ChartBarGrouped } from './chart-bar-grouped';
@@ -55,131 +56,106 @@ export function chartWindowBarGrouped(
       });
     })
     .each((chartWindowD, i, g) => {
-      const chartWindow = select<HTMLDivElement, ChartWindowBarGrouped>(g[i]),
-        menuItems = chartWindow.selectAll('.menu-tools .items'),
-        layouter = chartWindow.selectAll('.layouter');
+      const {
+        categories,
+        categoryScale,
+        subcategories,
+        styleClasses,
+        values,
+        valueScale,
+        keys,
+        valueDomain,
+        labels: { labels: labels },
+      } = chartWindowD;
+      const chartWindowS = select<HTMLDivElement, ChartWindowBarGrouped>(g[i]),
+        menuItemsS = chartWindowS.selectAll('.menu-tools > .items'),
+        layouterS = chartWindowS.selectAll<HTMLDivElement, any>('.layouter');
 
       // category filter
-      menuItems
-        .append('li')
-        .classed('tool-filter-categories', true)
-        .datum(
+      const categoryFilterS = menuItemsS
+        .selectAll<HTMLLIElement, ToolFilterNominal>('.tool-filter-categories')
+        .data([
           toolFilterNominalData({
             text: chartWindowD.categoryEntity,
             options: chartWindowD.categories,
             keys: chartWindowD.categories,
-          })
-        )
-        .call(toolFilterNominal);
+          }),
+        ])
+        .join('li')
+        .classed('tool-filter-categories', true)
+        .call((s) => toolFilterNominal(s));
 
       // subcategory filter
-      menuItems
-        .append('li')
-        .classed('tool-filter-subcategories', true)
-        .datum(
+      const subcategoryFilterS = menuItemsS
+        .selectAll<HTMLLIElement, ToolFilterNominal>('.tool-filter-subcategories')
+        .data([
           toolFilterNominalData({
             text: chartWindowD.subcategoryEntity,
             options: chartWindowD.subcategories,
             keys: chartWindowD.subcategories,
-          })
-        )
-        .call(toolFilterNominal);
+          }),
+        ])
+        .join('li')
+        .classed('tool-filter-subcategories', true)
+        .call((s) => toolFilterNominal(s));
 
       // download svg
-      menuItems.append('li').call((s) => toolDownloadSVG(s));
+      menuItemsS
+        .selectAll<HTMLLIElement, any>('.tool-save-svg')
+        .data([null])
+        .join('li')
+        .call((s) => toolDownloadSVG(s));
 
-      chartWindow.on('change.chartwindowbargrouped', function () {
-        chartWindowBarGroupedApplyFilters(select<Element, ChartWindowBarGrouped>(this));
-      });
+      const filterCat = (v: any, i: number) =>
+        categoryFilterS
+          .selectAll(`.checkbox[data-key="${categories[i]}"] input`)
+          .property('checked');
+      const filterSubcat = (v: any, i: number) =>
+        subcategoryFilterS
+          .selectAll(`.checkbox[data-key="${subcategories[i]}"] input`)
+          .property('checked');
+
+      const filteredCats = categories.filter(filterCat),
+        filteredSubcats = subcategories.filter(filterSubcat),
+        filteredStyleClasses = styleClasses.filter(filterSubcat),
+        filteredValues = values.filter(filterCat).map((v) => v.filter(filterSubcat)),
+        filteredKeys = keys?.filter(filterCat).map((v) => v.filter(filterSubcat)),
+        filteredLabels = arrayIs(labels)
+          ? arrayFlat(
+              arrayPartition(labels, subcategories.length)
+                .filter(filterCat)
+                .map((v) => v.filter(filterSubcat))
+            )
+          : labels,
+        filteredValueDomain =
+          valueDomain instanceof Function ? valueDomain(filteredValues) : valueDomain;
+
+      categoryScale.domain(filteredCats);
+      valueScale.domain(filteredValueDomain).nice();
 
       // chart
-      const chart = layouter
-        .append('svg')
-        .datum(chartBarGroupedData(chartWindowD))
-        .call((s) => chartBarGrouped(s));
-
-      chartWindow.on('datachange.chartwindowbargrouped', function (e, chartWindowD) {
-        const chartWindowS = select<Element, ChartWindowBarGrouped>(this);
-
-        chartWindowS.selectAll<Element, ToolFilterNominal>('.tool-filter-categories').datum({
-          text: chartWindowD.categoryEntity,
-          options: chartWindowD.categories,
-          keys: chartWindowD.categories,
-        });
-
-        chartWindowS.selectAll<Element, ToolFilterNominal>('.tool-filter-subcategories').datum({
-          text: chartWindowD.subcategoryEntity,
-          options: chartWindowD.subcategories,
-          keys: chartWindowD.subcategories,
-        });
-
-        chartWindowBarGroupedApplyFilters(chartWindowS);
-      });
-    });
-}
-
-export function chartWindowBarGroupedApplyFilters(
-  selection: Selection<Element, ChartWindowBarGrouped>
-): void {
-  selection.each((chartWindowD, i, g) => {
-    const {
-      categories,
-      subcategories,
-      styleClasses,
-      values,
-      keys,
-      valueDomain,
-      labels: { labels: labels },
-    } = chartWindowD;
-    const chartWindowS = select<Element, ChartWindowBarGrouped>(g[i]);
-    const chartS = chartWindowS.selectAll<Element, ChartBarGrouped>('svg.chart-bar-grouped');
-    const catFilterS = chartWindowS.selectAll('.tool-filter-categories');
-    const subcatFilterS = chartWindowS.selectAll('.tool-filter-subcategories');
-    const filterCat = (v: any, i: number) =>
-      catFilterS.selectAll(`.checkbox[data-key="${categories[i]}"] input`).property('checked');
-    const filterSubcat = (v: any, i: number) =>
-      subcatFilterS
-        .selectAll(`.checkbox[data-key="${subcategories[i]}"] input`)
-        .property('checked');
-
-    const filteredCats = categories.filter(filterCat),
-      filteredSubcats = subcategories.filter(filterSubcat),
-      filteredStyleClasses = styleClasses.filter(filterSubcat),
-      filteredValues = values.filter(filterCat).map((v) => v.filter(filterSubcat)),
-      filteredKeys = keys?.filter(filterCat).map((v) => v.filter(filterSubcat)),
-      filteredLabels = arrayIs(labels)
-        ? arrayFlat(
-            arrayPartition(labels, subcategories.length)
-              .filter(filterCat)
-              .map((v) => v.filter(filterSubcat))
-          )
-        : labels,
-      filteredValueDomain =
-        valueDomain instanceof Function ? valueDomain(filteredValues) : valueDomain;
-
-    chartS.datum(
-      (d) => (
-        d.categoryScale.domain(filteredCats),
-        d.valueScale.domain(filteredValueDomain).nice(),
-        Object.assign<ChartBarGrouped, ChartBarGrouped, Partial<ChartBarGrouped>>(
-          d,
-          chartBarGroupedData(chartWindowD),
-          {
+      const chartS = layouterS
+        .selectAll<SVGSVGElement, ChartBarGrouped>('svg.chart-bar-grouped')
+        .data([
+          chartBarGroupedData({
+            ...chartWindowD,
             categories: filteredCats,
             subcategories: filteredSubcats,
             values: filteredValues,
             keys: filteredKeys,
             styleClasses: filteredStyleClasses,
-            legend: {
-              ...chartWindowD.legend,
-            },
-            labels: {
-              ...chartWindowD.labels,
-              labels: filteredLabels,
-            },
-          }
-        )
-      )
-    );
-  });
+            labels: { ...chartWindowD.labels, labels: filteredLabels },
+          }),
+        ])
+        .join('svg')
+        .call((s) => chartBarGrouped(s));
+
+      layouterS
+        .on('boundschange.chartwindowbargrouped', () => chartBarGrouped(chartS))
+        .call((s) => layouterCompute(s));
+
+      chartWindowS.on('change.chartwindowbargrouped', function () {
+        select<HTMLDivElement, ChartWindowBarGrouped>(this).call((s) => chartWindowBarGrouped(s));
+      });
+    });
 }
