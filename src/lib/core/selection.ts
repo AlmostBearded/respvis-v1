@@ -27,7 +27,6 @@ declare module 'd3-selection' {
     PElement extends BaseType = BaseType,
     PDatum = unknown
   > {
-
     layout(name: string): string | null;
     layout(
       name: string,
@@ -92,28 +91,6 @@ selection.prototype.bounds = function <
     else s.attr('bounds', rectToString(v));
   });
   return this;
-};
-
-const originalDatum = selection.prototype.datum;
-selection.prototype.datum = function <
-  GElement extends BaseType,
-  Datum,
-  PElement extends BaseType,
-  PDatum
->(this: Selection<GElement, Datum, PElement, PDatum>, datum?: any): any {
-  if (datum === undefined) return originalDatum.call(this);
-  return originalDatum.call(this, datum).dispatch('datachange');
-};
-
-const originalData = selection.prototype.data;
-selection.prototype.data = function <
-  GElement extends BaseType,
-  Datum,
-  PElement extends BaseType,
-  PDatum
->(this: Selection<GElement, Datum, PElement, PDatum>, data?: any, key?: any): any {
-  if (data === undefined) return originalData.call(this);
-  return originalData.call(this, data, key).dispatch('datachange');
 };
 
 export function isTransition<GElement extends BaseType, Datum, PElement extends BaseType, PDatum>(
