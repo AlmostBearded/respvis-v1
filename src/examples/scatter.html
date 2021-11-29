@@ -50,26 +50,27 @@
       // todo: only render points visible in current zoom frame
 
       const root = d3.select('#chart'),
-        chartData = {
-          xValues: areas,
-          xScale: areaScale,
-          yValues: prices,
-          yScale: priceScale,
-          radiuses: 5,
-          keys: areas.map((a, i) => i),
-          xAxis: {
-            title: 'Area',
-            subtitle: '[ft²]',
-            configureAxis: (a) => a.ticks(window.matchMedia(wideMediaQuery).matches ? 10 : 5),
-          },
-          yAxis: {
-            title: 'Price',
-            subtitle: '[1000 USD]',
-          },
-        },
         chartWindow = root
           .append('div')
-          .datum(respVis.chartWindowPointData(chartData))
+          .datum(
+            respVis.chartWindowPointData({
+              xValues: areas,
+              xScale: areaScale,
+              yValues: prices,
+              yScale: priceScale,
+              radiuses: 5,
+              keys: areas.map((a, i) => i),
+              xAxis: {
+                title: 'Area',
+                subtitle: '[ft²]',
+                configureAxis: (a) => a.ticks(window.matchMedia(wideMediaQuery).matches ? 10 : 5),
+              },
+              yAxis: {
+                title: 'Price',
+                subtitle: '[1000 USD]',
+              },
+            })
+          )
           .call(respVis.chartWindowPoint)
           .on('resize', function () {
             chartWindow.call(respVis.chartWindowPoint);

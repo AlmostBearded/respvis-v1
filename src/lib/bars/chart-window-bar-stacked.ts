@@ -6,11 +6,14 @@ import {
   toolDownloadSVG,
   toolFilterNominal,
   layouterCompute,
+  Checkbox,
 } from '../core';
 import { arrayFlat, arrayIs, arrayIs2D, arrayPartition } from '../core';
 import { chartBarStacked, chartBarStackedData, ChartBarStacked } from './chart-bar-stacked';
 
 export interface ChartWindowBarStacked extends ChartBarStacked {
+  categoryActiveStates: boolean[];
+  subcategoryActiveStates: boolean[];
   categoryEntity: string;
   subcategoryEntity: string;
   valueEntity: string;
@@ -37,6 +40,9 @@ export function chartWindowBarStackedData(
     valueEntity: data.valueEntity || 'Values',
     valueDomain: valueDomain,
     valuesAsRatios: data.valuesAsRatios || false,
+    categoryActiveStates: data.categoryActiveStates || chartData.categories.map(() => true),
+    subcategoryActiveStates:
+      data.subcategoryActiveStates || chartData.subcategories.map(() => true),
   };
 }
 
@@ -48,7 +54,7 @@ export function chartWindowBarStacked(
     .call((s) => chartWindow(s))
     .on('resize.chartwindowbar', function (e, d) {
       const s = select(this);
-      const { width, height } = e.detail.size;
+      const { width, height } = e.detail.bounds;
       const { values } = s.selectAll<Element, ChartBarStacked>('.chart-bar-stacked').datum();
       const dataCount = arrayFlat(values).length;
       s.dispatch('densitychange', {
@@ -66,6 +72,8 @@ export function chartWindowBarStacked(
         styleClasses,
         valueDomain,
         valuesAsRatios,
+        categoryActiveStates,
+        subcategoryActiveStates,
         labels: { labels: labels },
       } = chartWindowD;
       const chartWindowS = select<HTMLDivElement, ChartWindowBarStacked>(g[i]),
@@ -84,7 +92,20 @@ export function chartWindowBarStacked(
         ])
         .join('li')
         .classed('tool-filter-categories', true)
-        .call(toolFilterNominal);
+        .call(toolFilterNominal)
+        .call((s) =>
+          s.selectAll('.checkbox input').attr('checked', (d, i) => categoryActiveStates[i])
+        )
+        .on('change.chartwindowbar', function (e, filterD) {
+          const categoryFilterS = select(this);
+          const checkedStates: boolean[] = [];
+          const checkboxS = categoryFilterS
+            .selectAll<Element, Checkbox>('.checkbox')
+            .each((d, i, g) => checkedStates.push(g[i].querySelector('input')!.checked));
+          chartWindowS.dispatch('categoryfilter', {
+            detail: { categoryActiveStates: checkedStates },
+          });
+        });
 
       // subcategory filter
       const subcategoryFilterS = menuItemsS
@@ -98,7 +119,20 @@ export function chartWindowBarStacked(
         ])
         .join('li')
         .classed('tool-filter-subcategories', true)
-        .call(toolFilterNominal);
+        .call(toolFilterNominal)
+        .call((s) =>
+          s.selectAll('.checkbox input').attr('checked', (d, i) => subcategoryActiveStates[i])
+        )
+        .on('change.chartwindowbar', function (e, filterD) {
+          const subcategoryFilterS = select(this);
+          const checkedStates: boolean[] = [];
+          const checkboxS = subcategoryFilterS
+            .selectAll<Element, Checkbox>('.checkbox')
+            .each((d, i, g) => checkedStates.push(g[i].querySelector('input')!.checked));
+          chartWindowS.dispatch('subcategoryfilter', {
+            detail: { subcategoryActiveStates: checkedStates },
+          });
+        });
 
       // download svg
       menuItemsS
@@ -107,14 +141,8 @@ export function chartWindowBarStacked(
         .join('li')
         .call((s) => toolDownloadSVG(s));
 
-      const filterCat = (v: any, i: number) =>
-        categoryFilterS
-          .selectAll(`.checkbox[data-key="${categories[i]}"] input`)
-          .property('checked');
-      const filterSubcat = (v: any, i: number) =>
-        subcategoryFilterS
-          .selectAll(`.checkbox[data-key="${subcategories[i]}"] input`)
-          .property('checked');
+      const filterCat = (v: any, i: number) => categoryActiveStates[i];
+      const filterSubcat = (v: any, i: number) => subcategoryActiveStates[i];
 
       const filteredCats = categories.filter(filterCat);
       const filteredSubcats = subcategories.filter(filterSubcat);
@@ -161,9 +189,23 @@ export function chartWindowBarStacked(
       layouterS
         .on('boundschange.chartwindowbarstacked', () => chartBarStacked(chartS))
         .call((s) => layouterCompute(s));
-
-      chartWindowS.on('change.chartwindowbarstacked', function () {
-        select<HTMLDivElement, ChartWindowBarStacked>(this).call((s) => chartWindowBarStacked(s));
-      });
     });
+}
+
+export function chartWindowBarStackedAutoFilterCategories(
+  selection: Selection<HTMLDivElement, ChartWindowBarStacked>
+): void {
+  selection.on('categoryfilter.chartwindowbargrouped', function (e, d) {
+    d.categoryActiveStates = e.detail.categoryActiveStates;
+    select<HTMLDivElement, ChartWindowBarStacked>(this).call((s) => chartWindowBarStacked(s));
+  });
+}
+
+export function chartWindowBarStackedAutoFilterSubcategories(
+  selection: Selection<HTMLDivElement, ChartWindowBarStacked>
+): void {
+  selection.on('subcategoryfilter.chartwindowbargrouped', function (e, d) {
+    d.subcategoryActiveStates = e.detail.subcategoryActiveStates;
+    select<HTMLDivElement, ChartWindowBarStacked>(this).call((s) => chartWindowBarStacked(s));
+  });
 }

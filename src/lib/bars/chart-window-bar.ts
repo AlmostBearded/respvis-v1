@@ -8,12 +8,11 @@ import {
   Checkbox,
   layouterCompute,
 } from '../core';
-import { arrayIs, arrayIs2D, Position } from '../core';
+import { arrayIs } from '../core';
 import { chartBar, chartBarData, ChartBar } from './chart-bar';
-import { ChartBarGrouped } from './chart-bar-grouped';
-import { SeriesLabelBar } from './series-label-bar';
 
 export interface ChartWindowBar extends ChartBar {
+  categoryActiveStates: boolean[];
   categoryEntity: string;
   valueEntity: string;
   valueDomain: number[] | ((values: number[]) => number[]);
@@ -31,6 +30,7 @@ export function chartWindowBarData(data: Partial<ChartWindowBar>): ChartWindowBa
     ...chartData,
     categoryEntity: data.categoryEntity || 'Categories',
     valueEntity: data.valueEntity || 'Values',
+    categoryActiveStates: data.categoryActiveStates || chartData.categories.map(() => true),
     valueDomain: valueDomain,
   };
 }
@@ -46,6 +46,7 @@ export function chartWindowBar(selection: ChartWindowBarSelection): void {
     .call((s) => chartWindow(s))
     .each((chartWindowD, i, g) => {
       const {
+        categoryActiveStates,
         categories,
         categoryScale,
         values,
@@ -71,7 +72,20 @@ export function chartWindowBar(selection: ChartWindowBarSelection): void {
         ])
         .join('li')
         .classed('tool-filter-categories', true)
-        .call((s) => toolFilterNominal(s));
+        .call((s) => toolFilterNominal(s))
+        .call((s) =>
+          s.selectAll('.checkbox input').attr('checked', (d, i) => categoryActiveStates[i])
+        )
+        .on('change.chartwindowbar', function (e, filterD) {
+          const categoryFilterS = select(this);
+          const checkedStates: boolean[] = [];
+          const checkboxS = categoryFilterS
+            .selectAll<Element, Checkbox>('.checkbox')
+            .each((d, i, g) => checkedStates.push(g[i].querySelector('input')!.checked));
+          chartWindowS.dispatch('categoryfilter', {
+            detail: { categoryActiveStates: checkedStates },
+          });
+        });
 
       // download svg
       menuItemsS
@@ -80,10 +94,7 @@ export function chartWindowBar(selection: ChartWindowBarSelection): void {
         .join('li')
         .call((s) => toolDownloadSVG(s));
 
-      const filterCat = (v: any, i: number) =>
-        categoryFilterS
-          .selectAll(`.checkbox[data-key="${categories[i]}"] input`)
-          .property('checked');
+      const filterCat = (v: any, i: number) => categoryActiveStates[i];
 
       const filteredCategories = categories.filter(filterCat);
       const filteredValues = values.filter(filterCat);
@@ -117,58 +128,8 @@ export function chartWindowBar(selection: ChartWindowBarSelection): void {
       layouterS
         .on('boundschange.chartwindowbar', () => chartBar(chartS))
         .call((s) => layouterCompute(s));
-
-      chartWindowS.on('change.chartwindowbar', function () {
-        (<ChartWindowBarSelection>select(this)).call((s) => chartWindowBar(s));
-      });
-
-      // chartWindowBarApplyFilters(chartWindowS);
     });
 }
-
-// export function chartWindowBarApplyFilters(selection: ChartWindowBarSelection): void {
-//   selection.each((chartWindowD, i, g) => {
-//     const {
-//       categories,
-//       values,
-//       styleClasses,
-//       keys,
-//       valueDomain,
-//       labels: { labels: labels },
-//     } = chartWindowD;
-//     const chartWindowS = <ChartWindowBarSelection>select(g[i]);
-//     const chartS = chartWindowS.selectAll<Element, ChartBarGrouped>('svg.chart-bar');
-//     const catFilterS = chartWindowS.selectAll('.tool-filter-categories');
-//     const filterCat = (v: any, i: number) =>
-//       catFilterS.selectAll(`.checkbox[data-key="${categories[i]}"] input`).property('checked');
-
-//     const filteredCats = categories.filter(filterCat);
-//     const filteredValues = values.filter(filterCat);
-//     const filteredStyleClasses = arrayIs(styleClasses)
-//       ? styleClasses.filter(filterCat)
-//       : styleClasses;
-//     const filteredKeys = keys?.filter(filterCat);
-//     const filteredLabels = arrayIs(labels) ? labels.filter(filterCat) : labels;
-//     const filteredValueDomain =
-//       valueDomain instanceof Function ? valueDomain(filteredValues) : valueDomain;
-
-//     chartS.datum(
-//       (d) => (
-//         d.categoryScale.domain(filteredCats),
-//         d.valueScale.domain(filteredValueDomain).nice(),
-//         Object.assign(d, chartBarData(chartWindowD), {
-//           categories: filteredCats,
-//           values: filteredValues,
-//           keys: filteredKeys,
-//           labels: {
-//             ...chartWindowD.labels,
-//             labels: filteredLabels,
-//           },
-//         })
-//       )
-//     );
-//   });
-// }
 
 export function chartWindowBarDispatchDensityChange(selection: ChartWindowBarSelection): void {
   selection.each((d, i, g) => {
@@ -177,5 +138,12 @@ export function chartWindowBarDispatchDensityChange(selection: ChartWindowBarSel
     select(g[i]).dispatch('densitychange', {
       detail: { density: { x: values.length / width, y: values.length / height } },
     });
+  });
+}
+
+export function chartWindowBarAutoFilterCategories(selection: ChartWindowBarSelection): void {
+  selection.on('categoryfilter.chartwindowbar', function (e, d) {
+    d.categoryActiveStates = e.detail.categoryActiveStates;
+    select<HTMLDivElement, ChartWindowBar>(this).call((s) => chartWindowBar);
   });
 }

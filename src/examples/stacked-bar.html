@@ -35,47 +35,48 @@
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
       const root = d3.select('#chart'),
-        chartData = {
-          keys: keys,
-          categoryEntity: 'Years',
-          categories: years,
-          values: shares,
-          valuesAsRatios: true,
-          valueDomain: [0, 100],
-          subcategoryEntity: 'Platforms',
-          subcategories: platforms,
-          labels: {},
-          legend: {},
-          tooltips: (barElement, barData) =>
-            `Year: ${barData.category}<br/>Platform: ${
-              barData.subcategory
-            }<br/>Market Share: ${d3.format('.2f')(barData.value)}%`,
-          xAxis: {
-            title: 'Year',
-          },
-          yAxis: {
-            title: 'Market Share',
-          },
-        },
         chartWindow = root
           .append('div')
-          .datum(respVis.chartWindowBarStackedData(chartData))
+          .datum(
+            respVis.chartWindowBarStackedData({
+              keys: keys,
+              categoryEntity: 'Years',
+              categories: years,
+              values: shares,
+              valuesAsRatios: true,
+              valueDomain: [0, 100],
+              subcategoryEntity: 'Platforms',
+              subcategories: platforms,
+              labels: {},
+              legend: {},
+              tooltips: (barElement, barData) =>
+                `Year: ${barData.category}<br/>Platform: ${
+                  barData.subcategory
+                }<br/>Market Share: ${d3.format('.2f')(barData.value)}%`,
+              xAxis: {
+                title: 'Year',
+              },
+              yAxis: {
+                title: 'Market Share',
+              },
+            })
+          )
           .call(respVis.chartWindowBarStacked)
+          .call(respVis.chartWindowBarStackedAutoFilterCategories)
+          .call(respVis.chartWindowBarStackedAutoFilterSubcategories)
           .on('densitychange', function (e, d) {
             const density = e.detail.density;
-            chartData.flipped = density.x > 0.05;
-            chartData.labelsEnabled = density.x < 0.06;
-            chartData.yAxis.subtitle = density.x < 0.06 ? '[%]' : '';
-            chartData.legend.title = density.x < 0.06 ? 'Platforms' : '';
+            d.flipped = density.x > 0.05;
+            d.labelsEnabled = density.x < 0.06;
+            d.yAxis.subtitle = density.x < 0.06 ? '[%]' : '';
+            d.legend.title = density.x < 0.06 ? 'Platforms' : '';
 
             chart.attr(
               'data-legend-position',
-              chartData.flipped ? respVis.LegendPosition.Top : respVis.LegendPosition.Right
+              d.flipped ? respVis.LegendPosition.Top : respVis.LegendPosition.Right
             );
 
-            chartWindow
-              .datum(respVis.chartWindowBarStackedData(chartData))
-              .call(respVis.chartWindowBarStacked);
+            chartWindow.call(respVis.chartWindowBarStacked);
           }),
         chart = chartWindow.selectAll('svg.chart');
     </script>

@@ -36,10 +36,6 @@ export function seriesCheckboxCreateCheckboxes(seriesData: SeriesCheckbox): Chec
 export function seriesCheckbox(selection: Selection<HTMLElement, SeriesCheckbox>): void {
   selection
     .classed('series-checkbox', true)
-    .on('change.seriescheckbox', (e) => {
-      const input = <HTMLInputElement>e.target;
-      input.setAttribute('checked', input.checked.toString());
-    })
     .on(
       'click.seriescheckbox',
       (e) => e.target.classList.contains('checkbox') && e.target.querySelector('input').click()

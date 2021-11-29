@@ -34,51 +34,48 @@
         years = data.years,
         keys = revenues.map((yearlyRevs, i) => yearlyRevs.map((_, j) => sites[i] + years[j]));
 
-      // respVis.enableDebugLog(true);
-
       const root = d3.select('#chart'),
-        chartData = {
-          categoryEntity: 'Sites',
-          categories: sites,
-          subcategoryEntity: 'Years',
-          subcategories: years,
-          values: revenues,
-          keys: keys,
-          labels: {},
-          legend: {},
-          tooltips: (barElement, barData) =>
-            `Site: ${barData.category}<br/>Year: ${barData.subcategory}<br/>Revenue: $${d3.format(
-              ','
-            )(barData.value * 1000000)}`,
-          xAxis: {
-            title: 'Site',
-          },
-          yAxis: {
-            title: 'Revenue',
-          },
-        },
         chartWindow = root
           .append('div')
-          .datum(respVis.chartWindowBarGroupedData(chartData))
+          .datum(
+            respVis.chartWindowBarGroupedData({
+              categoryEntity: 'Sites',
+              categories: sites,
+              subcategoryEntity: 'Years',
+              subcategories: years,
+              values: revenues,
+              keys: keys,
+              labels: {},
+              legend: {},
+              tooltips: (barElement, barData) =>
+                `Site: ${barData.category}<br/>Year: ${
+                  barData.subcategory
+                }<br/>Revenue: $${d3.format(',')(barData.value * 1000000)}`,
+              xAxis: {
+                title: 'Site',
+              },
+              yAxis: {
+                title: 'Revenue',
+              },
+            })
+          )
           .call(respVis.chartWindowBarGrouped)
+          .call(respVis.chartWindowBarGroupedAutoFilterCategories)
+          .call(respVis.chartWindowBarGroupedAutoFilterSubcategories)
           .on('densitychange', function (e, d) {
             const density = e.detail.density;
-            chartData.flipped = density.x > 0.022;
-            chartData.labelsEnabled = density.x < 0.03;
-            chartData.labels.relativePositions = chartData.flipped
-              ? { x: 1, y: 0.5 }
-              : { x: 0.5, y: 0 };
-            chartData.yAxis.subtitle = density.x < 0.03 ? '[Million USD]' : '';
-            chartData.legend.title = density.x < 0.03 ? 'Years' : '';
+            d.flipped = density.x > 0.022;
+            d.labelsEnabled = density.x < 0.03;
+            d.labels.relativePositions = d.flipped ? { x: 1, y: 0.5 } : { x: 0.5, y: 0 };
+            d.yAxis.subtitle = density.x < 0.03 ? '[Million USD]' : '';
+            d.legend.title = density.x < 0.03 ? 'Years' : '';
 
             chart.attr(
               'data-legend-position',
-              chartData.flipped ? respVis.LegendPosition.Top : respVis.LegendPosition.Right
+              d.flipped ? respVis.LegendPosition.Top : respVis.LegendPosition.Right
             );
 
-            chartWindow
-              .datum(respVis.chartWindowBarGroupedData(chartData))
-              .call(respVis.chartWindowBarGrouped);
+            chartWindow.call(respVis.chartWindowBarGrouped);
           }),
         chart = chartWindow.selectAll('svg.chart');
     </script>

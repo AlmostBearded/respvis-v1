@@ -30,33 +30,33 @@
         populations = data.populations.map((p) => Math.round(p / 1000));
 
       const root = d3.select('#chart'),
-        chartData = {
-          keys: cities,
-          categoryEntity: 'Cities',
-          categories: cities,
-          values: populations,
-          tooltips: (barElement, barData) =>
-            `City: ${barData.category}<br/>Population: ${d3.format(',')(barData.value * 1000)}`,
-          labels: {},
-          xAxis: {
-            title: 'City',
-          },
-          yAxis: {
-            title: 'Population',
-            subtitle: '[1000 People]',
-          },
-        },
         chartWindow = root
           .append('div')
-          .datum(respVis.chartWindowBarData(chartData))
+          .datum(
+            respVis.chartWindowBarData({
+              keys: cities,
+              categoryEntity: 'Cities',
+              categories: cities,
+              values: populations,
+              tooltips: (barElement, barData) =>
+                `City: ${barData.category}<br/>Population: ${d3.format(',')(barData.value * 1000)}`,
+              labels: {},
+              xAxis: {
+                title: 'City',
+              },
+              yAxis: {
+                title: 'Population',
+                subtitle: '[1000 People]',
+              },
+            })
+          )
           .call(respVis.chartWindowBar)
+          .call(respVis.chartWindowBarAutoFilterCategories)
           .on('densitychange', function (e, d) {
             const density = e.detail.density;
-            chartData.flipped = density.x > 0.0135;
-            chartData.labels.relativePositions = chartData.flipped
-              ? { x: 1, y: 0.5 }
-              : { x: 0.5, y: 0 };
-            chartWindow.datum(respVis.chartWindowBarData(chartData)).call(respVis.chartWindowBar);
+            d.flipped = density.x > 0.0135;
+            d.labels.relativePositions = d.flipped ? { x: 1, y: 0.5 } : { x: 0.5, y: 0 };
+            chartWindow.call(respVis.chartWindowBar);
           });
     </script>
   </body>
