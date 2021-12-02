@@ -1,6 +1,7 @@
 import { Selection, ValueFn } from 'd3-selection';
 import { SelectionOrTransition } from '../selection';
-import { Position } from './position';
+import { Position, positionRound, positionToXYAttrs } from './position';
+import { sizeRound, sizeToAttrs } from './size';
 
 export interface Rect {
   x: number;
@@ -15,12 +16,9 @@ export function rectFromString(str: string): Rect {
 }
 
 export function rectToAttrs(selectionOrTransition: SelectionOrTransition, rect: Rect): void {
-  rect = rectRound(rect);
   selectionOrTransition
-    .attr('x', rect.x)
-    .attr('y', rect.y)
-    .attr('width', rect.width)
-    .attr('height', rect.height);
+    .call((s: SelectionOrTransition) => positionToXYAttrs(s, rect))
+    .call((s: SelectionOrTransition) => sizeToAttrs(s, rect));
 }
 
 export function rectToString(rect: Rect, decimals: number = 0): string {
@@ -72,13 +70,10 @@ export function rectMinimized(rect: Rect): Rect {
   return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2, width: 0, height: 0 };
 }
 
-export function rectRound(rect: Rect, decimals: number = 1): Rect {
-  const e = Math.pow(10, decimals);
+export function rectRound(rect: Rect, decimals: number = 0): Rect {
   return {
-    x: Math.round(rect.x * e) / e,
-    y: Math.round(rect.y * e) / e,
-    width: Math.round(rect.width * e) / e,
-    height: Math.round(rect.height * e) / e,
+    ...positionRound(rect, decimals),
+    ...sizeRound(rect, decimals),
   };
 }
 
