@@ -8,7 +8,6 @@ import {
 import { scaleLinear } from 'd3-scale';
 import { BaseType, select, Selection } from 'd3-selection';
 import { SelectionOrTransition, Transition } from 'd3-transition';
-import { debug, nodeToString } from './utility/log';
 import { VerticalPosition, WritingMode } from './utility/text';
 
 export interface ConfigureAxisFn {

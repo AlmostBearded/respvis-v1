@@ -1,6 +1,6 @@
 import { easeCubicOut } from 'd3-ease';
 import { select, Selection, ValueFn } from 'd3-selection';
-import { debug, nodeToString, Position, positionToTransformAttr } from '../core';
+import { Position, positionToTransformAttr } from '../core';
 
 export interface Label extends Position {
   text: string;

@@ -20,7 +20,6 @@ export * from './chart-cartesian';
 export * from './chart-window';
 
 export * from './utility/text';
-export * from './utility/log';
 
 export * from './series-checkbox';
 export * from './menu-dropdown';

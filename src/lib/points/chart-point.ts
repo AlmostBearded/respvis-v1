@@ -1,6 +1,4 @@
 import { BaseType, select, Selection } from 'd3-selection';
-import { zoom, ZoomBehavior } from 'd3-zoom';
-import { debug, nodeToString } from '../core';
 import {
   chartCartesian,
   chartCartesianAxes,

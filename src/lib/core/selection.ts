@@ -1,7 +1,6 @@
 import { BaseType, select, selectAll, Selection, selection, ValueFn } from 'd3-selection';
 import 'd3-transition';
 import { Transition } from 'd3-transition';
-import { debug, nodeToString } from './utility/log';
 import { Rect, rectFromString, rectToString } from './utility/rect';
 
 declare module 'd3-transition' {

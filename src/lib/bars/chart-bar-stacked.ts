@@ -1,5 +1,4 @@
 import { BaseType, select, Selection } from 'd3-selection';
-import { arrayFlat, debug, nodeToString, rectRound } from '../core';
 import {
   chartCartesian,
   chartCartesianAxes,

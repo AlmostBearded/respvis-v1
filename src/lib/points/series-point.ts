@@ -1,15 +1,7 @@
 import { easeCubicOut } from 'd3-ease';
 import { scaleLinear } from 'd3-scale';
 import { select, Selection } from 'd3-selection';
-import {
-  arrayIs,
-  Circle,
-  circleMinimized,
-  circleToAttrs,
-  debug,
-  nodeToString,
-  ScaleAny,
-} from '../core';
+import { arrayIs, Circle, circleMinimized, circleToAttrs, ScaleAny } from '../core';
 import { Size } from '../core/utility/size';
 
 export interface Point extends Circle {

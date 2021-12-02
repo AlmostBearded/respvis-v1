@@ -1,5 +1,4 @@
 import { select, Selection } from 'd3-selection';
-import { debug, nodeToString } from '../core';
 import {
   chartCartesian,
   chartCartesianAxes,

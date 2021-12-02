@@ -1,5 +1,4 @@
 import { select, Selection } from 'd3-selection';
-import { debug, nodeToString } from './utility/log';
 import { relativeBounds } from './utility/bounds';
 import { positionToTransformAttr } from './utility/position';
 import {
@@ -93,11 +92,6 @@ function layoutNodeBounds(selection: Selection<HTMLDivElement, SVGElement>): boo
     const changed = !rectEquals(prevBounds, bounds, 0.1);
     anyChanged = anyChanged || changed;
     if (changed) {
-      debug(
-        `bounds change on ${nodeToString(svgE)} from (${rectToString(
-          prevBounds
-        )}) to (${rectToString(bounds)})`
-      );
       svgS.attr('bounds', rectToString(bounds));
       switch (svgE.tagName) {
         case 'svg':

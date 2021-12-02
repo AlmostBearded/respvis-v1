@@ -1,7 +1,7 @@
 import { ScaleBand, scaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { select, Selection } from 'd3-selection';
 import { JoinEvent } from '.';
-import { arrayIs, arrayIs2D, debug, nodeToString, Rect } from '../core';
+import { arrayIs, arrayIs2D, Rect } from '../core';
 import { Size } from '../core/utility/size';
 import {
   SeriesConfigTooltips,

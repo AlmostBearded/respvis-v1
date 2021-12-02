@@ -1,14 +1,6 @@
 import { select, Selection } from 'd3-selection';
 import { JoinEvent } from '.';
-import {
-  arrayIs,
-  debug,
-  nodeToString,
-  Position,
-  rectPosition,
-  HorizontalPosition,
-  VerticalPosition,
-} from '../core';
+import { arrayIs, Position, rectPosition, HorizontalPosition, VerticalPosition } from '../core';
 import { Bar } from './series-bar';
 import { Label, seriesLabelJoin } from './series-label';
 
