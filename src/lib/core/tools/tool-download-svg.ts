@@ -1,5 +1,8 @@
 import { select, Selection, ValueFn } from 'd3-selection';
-import { computedStyleWithoutDefaults, presentationAttributes } from '../utility/style';
+import {
+  elementComputedStyleWithoutDefaults,
+  elementSVGPresentationAttrs,
+} from '../utility/element';
 
 // TODO: maybe SVGO could be used to optimize the downloaded SVG? https://github.com/svg/svgo
 
@@ -45,7 +48,7 @@ export function chartSaveSVG<Datum>(
 }
 
 function attrsFromComputedStyle(target: Element, source: Element): void {
-  const style = computedStyleWithoutDefaults(source, presentationAttributes);
+  const style = elementComputedStyleWithoutDefaults(source, elementSVGPresentationAttrs);
   for (let prop in style) {
     target.setAttribute(prop, style[prop]);
   }

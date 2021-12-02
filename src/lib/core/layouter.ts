@@ -1,5 +1,5 @@
 import { select, Selection } from 'd3-selection';
-import { relativeBounds } from './utility/bounds';
+import { elementRelativeBounds } from './utility/element';
 import { positionToTransformAttr } from './utility/position';
 import {
   rectBottomLeft,
@@ -88,7 +88,7 @@ function layoutNodeBounds(selection: Selection<HTMLDivElement, SVGElement>): boo
   selection.each(function (svgE) {
     const svgS = select(svgE);
     const prevBounds = rectFromString(svgS.attr('bounds') || '0, 0, 0, 0');
-    const bounds = relativeBounds(this);
+    const bounds = elementRelativeBounds(this);
     const changed = !rectEquals(prevBounds, bounds, 0.1);
     anyChanged = anyChanged || changed;
     if (changed) {
