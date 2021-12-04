@@ -25,6 +25,3 @@ export * from './menu-dropdown';
 
 export * from './tools/tool-download-svg';
 export * from './tools/tool-filter-nominal';
-
-// todo: is this still needed?
-import 'd3-transition';

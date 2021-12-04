@@ -1,5 +1,4 @@
 import { BaseType, selectAll, Selection } from 'd3-selection';
-import 'd3-transition';
 import { Transition } from 'd3-transition';
 
 declare module 'd3-transition' {
