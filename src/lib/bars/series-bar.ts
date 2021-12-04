@@ -155,7 +155,7 @@ export function seriesBarJoin(
         .transition('position')
         .duration(250)
         .ease(easeCubicOut)
-        .call((t) => rectToAttrs(t, rectFitStroke(d, toPX(select(g[i]).style('stroke-width'))!)))
+        .call((t) => rectToAttrs(t, rectFitStroke(d, toPX(select(g[i]).style('stroke-width')!)!)))
     )
     .attr('data-style', (d) => d.styleClass)
     .attr('data-category', (d) => d.category)
