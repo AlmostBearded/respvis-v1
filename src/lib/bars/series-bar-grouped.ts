@@ -2,7 +2,7 @@ import { range } from 'd3-array';
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { BaseType, select, Selection, ValueFn } from 'd3-selection';
 import { JoinEvent } from '.';
-import { arrayIs, arrayIs2D, Rect } from '../core';
+import { arrayIs, arrayIs2D, Rect, rectFromString } from '../core';
 import { Size } from '../core/utility/size';
 import {
   SeriesConfigTooltips,
@@ -131,9 +131,9 @@ export function seriesBarGrouped(selection: Selection<Element, SeriesBarGrouped>
     )
     .each((d, i, g) => {
       const seriesS = select<Element, SeriesBarGrouped>(g[i]);
-      const bounds = seriesS.bounds();
-      if (!bounds) return;
-      d.bounds = bounds;
+      const boundsAttr = seriesS.attr('bounds');
+      if (!boundsAttr) return;
+      d.bounds = rectFromString(boundsAttr);
       seriesS
         .selectAll<SVGRectElement, BarGrouped>('rect')
         .data(seriesBarGroupedCreateBars(d), (d) => d.key)

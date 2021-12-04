@@ -1,7 +1,13 @@
 import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { select, Selection, style } from 'd3-selection';
 import { arrayIs } from '../core';
-import { Rect, rectFitStroke, rectMinimized, rectToAttrs } from '../core/utility/rect';
+import {
+  Rect,
+  rectFitStroke,
+  rectFromString,
+  rectMinimized,
+  rectToAttrs,
+} from '../core/utility/rect';
 import { Transition } from 'd3-transition';
 import { easeCubicOut } from 'd3-ease';
 import { Size } from '../core/utility/size';
@@ -99,9 +105,9 @@ export function seriesBar(selection: Selection<Element, SeriesBar>): void {
     .attr('data-ignore-layout-children', true)
     .each((d, i, g) => {
       const seriesS = select<Element, SeriesBar>(g[i]);
-      const bounds = seriesS.bounds();
-      if (!bounds) return;
-      d.bounds = bounds;
+      const boundsAttr = seriesS.attr('bounds');
+      if (!boundsAttr) return;
+      d.bounds = rectFromString(boundsAttr);
       seriesS
         .selectAll<SVGRectElement, Bar>('rect')
         .data(seriesBarCreateBars(d), (d) => d.key)

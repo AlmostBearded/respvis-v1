@@ -1,7 +1,7 @@
 import { ScaleBand, scaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
 import { select, Selection } from 'd3-selection';
 import { JoinEvent } from '.';
-import { arrayIs, arrayIs2D, Rect } from '../core';
+import { arrayIs, arrayIs2D, Rect, rectFromString } from '../core';
 import { Size } from '../core/utility/size';
 import {
   SeriesConfigTooltips,
@@ -127,9 +127,9 @@ export function seriesBarStacked(selection: Selection<Element, SeriesBarStacked>
     )
     .each((d, i, g) => {
       const seriesS = select<Element, SeriesBarGrouped>(g[i]);
-      const bounds = seriesS.bounds();
-      if (!bounds) return;
-      d.bounds = bounds;
+      const boundsAttr = seriesS.attr('bounds');
+      if (!boundsAttr) return;
+      d.bounds = rectFromString(boundsAttr);
       seriesS
         .selectAll<SVGRectElement, BarGrouped>('rect')
         .data(seriesBarStackedCreateBars(d), (d) => d.key)

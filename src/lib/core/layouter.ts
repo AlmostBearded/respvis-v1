@@ -22,34 +22,16 @@ function layoutNodeStyleAttr(selection: Selection<HTMLDivElement, SVGElement>): 
   selection.each((d, i, g) => {
     const svgS = select(d);
     const propTrue = (p: string) => p.trim() === 'true';
-    const layoutFitWidth = propTrue(svgS.layout('--fit-width') || '');
-    const layoutFitHeight = propTrue(svgS.layout('--fit-height') || '');
-    const layoutWidth = svgS.layout('width');
-    const layoutHeight = svgS.layout('height');
     const computedStyle = window.getComputedStyle(g[i]);
-    const fitWidth = propTrue(computedStyle.getPropertyValue('--fit-width')) || layoutFitWidth;
-    const fitHeight = propTrue(computedStyle.getPropertyValue('--fit-height')) || layoutFitHeight;
-
-    // get layout string without width and height properties
-    const layout = (d.getAttribute('layout') || '')
-      .replace(/(?<![-a-zA-Z])(width|height):.*?;/g, '')
-      .trim();
+    const fitWidth = propTrue(computedStyle.getPropertyValue('--fit-width'));
+    const fitHeight = propTrue(computedStyle.getPropertyValue('--fit-height'));
 
     let style = '';
-    let width = layoutWidth;
-    let height = layoutHeight;
-    if ((!width && fitWidth) || (!height && fitHeight)) {
+    if (fitWidth || fitHeight) {
       const bbox = d.getBoundingClientRect();
-      if (fitWidth) width = `${bbox.width}px`;
-      if (fitHeight) height = `${bbox.height}px`;
+      if (fitWidth) style += `width: ${bbox.width}px; `;
+      if (fitHeight) style += `height: ${bbox.height}px; `;
     }
-    if (width) {
-      style += `width: ${width};`;
-    }
-    if (height) {
-      style += `height: ${height};`;
-    }
-    style += layout;
     g[i].setAttribute('style', style);
   });
 }
@@ -159,7 +141,7 @@ export function layouterCompute(selection: Selection<HTMLDivElement>): void {
     });
 
     if (anyBoundsChanged) {
-      const bounds = select(layoutRootS.datum()).bounds()!;
+      const bounds = rectFromString(select(layoutRootS.datum()).attr('bounds')!);
       layoutRootS
         .style('left', bounds.x)
         .style('top', bounds.y)

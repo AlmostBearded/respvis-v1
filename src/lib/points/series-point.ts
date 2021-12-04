@@ -1,7 +1,7 @@
 import { easeCubicOut } from 'd3-ease';
 import { scaleLinear } from 'd3-scale';
 import { select, Selection } from 'd3-selection';
-import { arrayIs, Circle, circleMinimized, circleToAttrs, ScaleAny } from '../core';
+import { arrayIs, Circle, circleMinimized, circleToAttrs, rectFromString, ScaleAny } from '../core';
 import { Size } from '../core/utility/size';
 
 export interface Point extends Circle {
@@ -69,9 +69,9 @@ export function seriesPoint(selection: Selection<Element, SeriesPoint>): void {
     .attr('data-ignore-layout-children', true)
     .each((d, i, g) => {
       const seriesS = select<Element, SeriesPoint>(g[i]);
-      const bounds = seriesS.bounds();
-      if (!bounds) return;
-      d.bounds = bounds;
+      const boundsAttr = seriesS.attr('bounds');
+      if (!boundsAttr) return;
+      d.bounds = rectFromString(boundsAttr);
       seriesS
         .selectAll<SVGCircleElement, Point>('.point')
         .data(seriesPointCreatePoints(d), (d) => d.key)

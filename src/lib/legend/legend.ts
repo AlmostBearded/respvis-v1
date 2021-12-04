@@ -87,9 +87,9 @@ export function legend(selection: Selection<Element, Legend>): void {
         const itemS = select(g[i]);
         itemS.selectAll('.label').text(itemD.label);
         itemS.selectAll<SVGPathElement, any>('.symbol').call((symbolS) => {
-          const bounds = symbolS.bounds();
-          if (!bounds) return;
-          itemD.symbol(symbolS.node()!, bounds);
+          const boundsAttr = symbolS.attr('bounds');
+          if (!boundsAttr) return;
+          itemD.symbol(symbolS.node()!, rectFromString(boundsAttr));
         });
       })
       .attr('data-style', (d) => d.styleClass)
