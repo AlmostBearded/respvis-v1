@@ -74,7 +74,7 @@
           .call(respVis.chartWindowPoint)
           .on('resize', function () {
             chartWindow.call(respVis.chartWindowPoint);
-            const { width, height } = drawArea.bounds(),
+            const { width, height } = respVis.rectFromString(drawArea.attr('bounds')),
               extent = [
                 [0, 0],
                 [width, height],
