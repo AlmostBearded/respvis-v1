@@ -1,6 +1,14 @@
 import { select, Selection } from 'd3-selection';
 import { JoinEvent } from '.';
-import { arrayIs, Position, rectPosition, HorizontalPosition, VerticalPosition } from '../core';
+import {
+  arrayIs,
+  Position,
+  rectPosition,
+  HorizontalAlignment,
+  VerticalAlignment,
+  textAlignHorizontal,
+  textAlignVertical,
+} from '../core';
 import { Bar } from './series-bar';
 import { Label, seriesLabelJoin } from './series-label';
 
@@ -77,11 +85,12 @@ export function seriesLabelBar(selection: Selection<Element, SeriesLabelBar>): v
           e.detail.selection.each((d, i, g) => {
             const s = select(g[i]);
             const { relativePosition: relPos } = d;
-            const HP = HorizontalPosition;
-            const VP = VerticalPosition;
-            const hPos = relPos.x < 0.5 ? HP.Left : relPos.x === 0.5 ? HP.Center : HP.Right;
-            const vPos = relPos.y < 0.5 ? VP.Top : relPos.y === 0.5 ? VP.Center : VP.Bottom;
-            s.attr('data-align-h', hPos).attr('data-align-v', vPos);
+            const HA = HorizontalAlignment;
+            const VA = VerticalAlignment;
+            const hPos = relPos.x < 0.5 ? HA.Left : relPos.x === 0.5 ? HA.Center : HA.Right;
+            const vPos = relPos.y < 0.5 ? VA.Top : relPos.y === 0.5 ? VA.Center : VA.Bottom;
+            textAlignHorizontal(s, hPos);
+            textAlignVertical(s, vPos);
           });
         })
         .selectAll<SVGTextElement, Label>('text')

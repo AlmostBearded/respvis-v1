@@ -8,7 +8,7 @@ import {
 import { scaleLinear } from 'd3-scale';
 import { BaseType, select, Selection } from 'd3-selection';
 import { SelectionOrTransition, Transition } from 'd3-transition';
-import { VerticalPosition, WritingMode } from './utility/text';
+import { textAlignVertical, VerticalAlignment, Orientation, textOrientation } from './utility/text';
 
 export interface ConfigureAxisFn {
   (axis: D3Axis<AxisDomain>): void;
@@ -38,9 +38,12 @@ export function axisLeft(selection: AxisSelection): void {
     .each((d, i, g) => axis(select(g[i]), d3Axis(d3AxisLeft, d), d.title, d.subtitle))
     .classed('axis-left', true);
 
-  selection.selectAll('.title text').attr('data-orientation', WritingMode.Vertical);
-  selection.selectAll('.subtitle text').attr('data-orientation', WritingMode.Vertical);
-  selection.selectAll('.tick text').attr('dy', null).attr('data-align-v', VerticalPosition.Center);
+  selection.selectAll('.title text').call((s) => textOrientation(s, Orientation.Vertical));
+  selection.selectAll('.subtitle text').call((s) => textOrientation(s, Orientation.Vertical));
+  selection
+    .selectAll('.tick text')
+    .attr('dy', null)
+    .call((s) => textAlignVertical(s, VerticalAlignment.Center));
 }
 
 export function axisLeftRender(selection: AxisSelection): void {}
@@ -50,8 +53,8 @@ export function axisBottom(selection: AxisSelection): void {
     .each((d, i, g) => axis(select(g[i]), d3Axis(d3AxisBottom, d), d.title, d.subtitle))
     .classed('axis-bottom', true);
 
-  selection.selectAll('.title text').classed(WritingMode.Horizontal, true);
-  selection.selectAll('.subtitle text').classed(WritingMode.Horizontal, true);
+  selection.selectAll('.title text').classed(Orientation.Horizontal, true);
+  selection.selectAll('.subtitle text').classed(Orientation.Horizontal, true);
   selection.selectAll('.tick text').attr('dy', null).classed('bottom', true);
 }
 

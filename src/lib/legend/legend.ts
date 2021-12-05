@@ -1,5 +1,5 @@
 import { select, Selection } from 'd3-selection';
-import { arrayIs, Rect, rectFromString, WritingMode } from '../core';
+import { arrayIs, Rect, rectFromString, Orientation, textOrientation } from '../core';
 import { pathRect } from '../core/utility/path';
 
 export enum LegendPosition {
@@ -64,7 +64,6 @@ export function legend(selection: Selection<Element, Legend>): void {
       .data([null])
       .join('text')
       .classed('title', true)
-      .attr('data-orientation', WritingMode.Horizontal)
       .text(legendD.title);
 
     const itemS = legendS.selectAll('.items').data([null]).join('g').classed('items', true);

@@ -1,4 +1,4 @@
-import { SelectionOrTransition } from '../selection';
+import { SelectionOrTransition } from './selection';
 
 export interface Size {
   width: number;

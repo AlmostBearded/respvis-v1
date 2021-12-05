@@ -1,5 +1,5 @@
 import { Selection, ValueFn } from 'd3-selection';
-import { SelectionOrTransition } from '../selection';
+import { SelectionOrTransition } from './selection';
 import { Position, positionRound, positionToXYAttrs } from './position';
 import { sizeRound, sizeToAttrs } from './size';
 
@@ -15,15 +15,15 @@ export function rectFromString(str: string): Rect {
   return { x: parts[0], y: parts[1], width: parts[2], height: parts[3] };
 }
 
+export function rectToString(rect: Rect, decimals: number = 0): string {
+  rect = rectRound(rect, decimals);
+  return `${rect.x}, ${rect.y}, ${rect.width}, ${rect.height}`;
+}
+
 export function rectToAttrs(selectionOrTransition: SelectionOrTransition, rect: Rect): void {
   selectionOrTransition
     .call((s: SelectionOrTransition) => positionToXYAttrs(s, rect))
     .call((s: SelectionOrTransition) => sizeToAttrs(s, rect));
-}
-
-export function rectToString(rect: Rect, decimals: number = 0): string {
-  rect = rectRound(rect, decimals);
-  return `${rect.x}, ${rect.y}, ${rect.width}, ${rect.height}`;
 }
 
 export function rectPosition(rect: Rect, percentage: Position): Position {

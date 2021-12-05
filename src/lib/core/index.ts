@@ -7,7 +7,7 @@ export * from './utility/rect';
 export * from './utility/circle';
 export * from './utility/path';
 
-export * from './selection';
+export * from './utility/selection';
 export * from './layouter';
 export * from './resize-event-dispatcher';
 

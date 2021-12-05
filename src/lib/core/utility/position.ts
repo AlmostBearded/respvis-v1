@@ -1,5 +1,5 @@
 import { ValueFn } from 'd3-selection';
-import { isTransition, SelectionOrTransition } from '../selection';
+import { isTransition, SelectionOrTransition } from './selection';
 
 export interface Position {
   x: number;
@@ -11,7 +11,8 @@ export function positionToXYAttrs(
   position: Position
 ): void {
   position = positionRound(position);
-  selectionOrTransition.attr('x', position.x).attr('y', position.y);
+  selectionOrTransition.attr('x', position.x);
+  selectionOrTransition.attr('y', position.y);
 }
 
 export function positionFromXYAttrs(selectionOrTransition: SelectionOrTransition): Position {
