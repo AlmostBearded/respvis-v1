@@ -9,7 +9,7 @@ import {
   layouterCompute,
   Checkbox,
 } from '../core';
-import { arrayFlat, arrayIs, arrayIs2D, arrayPartition } from '../core';
+import { arrayIs, arrayIs2D, arrayPartition } from '../core';
 import { chartBarGrouped, chartBarGroupedData, ChartBarGrouped } from './chart-bar-grouped';
 import { SeriesLabelBar } from './series-label-bar';
 
@@ -56,7 +56,7 @@ export function chartWindowBarGrouped(
       const s = select(this);
       const { width, height } = e.detail.bounds;
       const { values } = s.selectAll<Element, ChartBarGrouped>('.chart-bar-grouped').datum();
-      const dataCount = arrayFlat(values).length;
+      const dataCount = values.flat().length;
       s.dispatch('densitychange', {
         detail: { density: { x: dataCount / width, y: dataCount / height } },
       });
@@ -149,11 +149,10 @@ export function chartWindowBarGrouped(
         filteredValues = values.filter(filterCat).map((v) => v.filter(filterSubcat)),
         filteredKeys = keys?.filter(filterCat).map((v) => v.filter(filterSubcat)),
         filteredLabels = arrayIs(labels)
-          ? arrayFlat(
-              arrayPartition(labels, subcategories.length)
-                .filter(filterCat)
-                .map((v) => v.filter(filterSubcat))
-            )
+          ? arrayPartition(labels, subcategories.length)
+              .filter(filterCat)
+              .map((v) => v.filter(filterSubcat))
+              .flat()
           : labels,
         filteredValueDomain =
           valueDomain instanceof Function ? valueDomain(filteredValues) : valueDomain;

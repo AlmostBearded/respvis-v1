@@ -8,7 +8,7 @@ import {
   layouterCompute,
   Checkbox,
 } from '../core';
-import { arrayFlat, arrayIs, arrayIs2D, arrayPartition } from '../core';
+import { arrayIs, arrayIs2D, arrayPartition } from '../core';
 import { chartBarStacked, chartBarStackedData, ChartBarStacked } from './chart-bar-stacked';
 
 export interface ChartWindowBarStacked extends ChartBarStacked {
@@ -56,7 +56,7 @@ export function chartWindowBarStacked(
       const s = select(this);
       const { width, height } = e.detail.bounds;
       const { values } = s.selectAll<Element, ChartBarStacked>('.chart-bar-stacked').datum();
-      const dataCount = arrayFlat(values).length;
+      const dataCount = values.flat().length;
       s.dispatch('densitychange', {
         detail: { density: { x: dataCount / width, y: dataCount / height } },
       });
@@ -157,11 +157,10 @@ export function chartWindowBarStacked(
         });
       const filteredKeys = keys?.filter(filterCat).map((v) => v.filter(filterSubcat));
       const filteredLabels = arrayIs(labels)
-        ? arrayFlat(
-            arrayPartition(labels, subcategories.length)
-              .filter(filterCat)
-              .map((v) => v.filter(filterSubcat))
-          )
+        ? arrayPartition(labels, subcategories.length)
+            .filter(filterCat)
+            .map((v) => v.filter(filterSubcat))
+            .flat()
         : labels;
       const filteredValueDomain =
         valueDomain instanceof Function ? valueDomain(filteredValues) : valueDomain;

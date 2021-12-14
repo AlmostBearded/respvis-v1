@@ -2,6 +2,7 @@
   "compilerOptions": {
     "noEmitOnError": false,
     "skipLibCheck": true,
+    "lib": ["ES2015", "ES2019.Array", "DOM"],
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "strictBindCallApply": true,
