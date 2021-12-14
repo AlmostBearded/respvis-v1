@@ -1,5 +1,5 @@
 import { select, Selection } from 'd3-selection';
-import { arrayIs, Rect, rectFromString, Orientation, textOrientation } from '../core';
+import { arrayIs, Rect, rectFromString } from '../core';
 import { pathRect } from '../core/utility/path';
 
 export enum LegendPosition {
