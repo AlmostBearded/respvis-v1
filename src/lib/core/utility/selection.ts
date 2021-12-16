@@ -19,7 +19,6 @@ declare module 'd3-selection' {
     PElement extends BaseType = BaseType,
     PDatum = unknown
   > {
-    style(name: string): string | null; // add null return value
     attr(name: string): string | null; // add null return value
     dispatch(type: string, parameters?: Partial<CustomEventParameters>): this; // allow Partial parameters
   }
