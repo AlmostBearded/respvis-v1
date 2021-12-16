@@ -35,7 +35,7 @@ export type SelectionOrTransition<
 export function isSelection<GElement extends BaseType, Datum, PElement extends BaseType, PDatum>(
   selectionOrTransition: SelectionOrTransition<GElement, Datum, PElement, PDatum>
 ): selectionOrTransition is Selection<GElement, Datum, PElement, PDatum> {
-  return selectionOrTransition['enter'] && selectionOrTransition['exit'];
+  return selectionOrTransition['join'];
 }
 
 export function isTransition<GElement extends BaseType, Datum, PElement extends BaseType, PDatum>(
