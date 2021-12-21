@@ -41,7 +41,6 @@ export function chartBarStacked(selection: ChartBarStackedSelection): void {
   selection
     .call((s) => chartCartesian(s))
     .classed('chart-bar-stacked', true)
-    .attr('data-legend-position', LegendPosition.Right)
     .each((chartD, i, g) => {
       const {
         subcategories,

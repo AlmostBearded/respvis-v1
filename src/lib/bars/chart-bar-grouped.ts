@@ -51,7 +51,6 @@ export function chartBarGrouped(selection: ChartBarGroupedSelection): void {
   selection
     .call((s) => chartCartesian(s))
     .classed('chart-bar-grouped', true)
-    .attr('data-legend-position', LegendPosition.Right)
     .each((chartD, i, g) => {
       const {
         subcategories,
