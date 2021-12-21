@@ -37,7 +37,7 @@ export function legendData(data: Partial<Legend>): Legend {
     title: data.title || '',
     labels,
     styleClasses: data.styleClasses || labels.map((l, i) => `categorical-${i}`),
-    symbols: data.symbols || ((e, b) => pathRect(select(e), b)),
+    symbols: data.symbols || ((e, b) => pathRect(select(e), { ...b, x: 0, y: 0 })),
     keys: data.keys,
   };
 }
