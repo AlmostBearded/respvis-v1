@@ -15,6 +15,7 @@
 .layout {
   --fit-width: false;
   --fit-height: false;
+  pointer-events: none;
 }
 
 [data-style='categorical-0'] {
@@ -70,53 +71,57 @@
   stroke-width: 2px;
 }
 
-.layout.legend {
+.legend {
   grid-area: legend;
   display: flex;
   flex-direction: column;
   align-items: center;
+  font-size: 0.8em;
+  cursor: default;
+  margin: 0.5rem;
 }
 
-.layout.legend .title {
+[data-legend-position='right'] .legend,
+.legend {
+  align-self: start;
+}
+
+[data-legend-position='top'] .legend {
+  justify-self: end;
+}
+
+.legend .title {
   margin: 0 0.5em;
 }
 
-.layout.legend .items {
+.legend .items {
   display: flex;
   justify-content: center;
   align-items: flex-start;
 }
 
-.layout.legend-item {
+[data-legend-position='left'] .legend .items,
+[data-legend-position='right'] .legend .items,
+.legend.vertical .items,
+.legend .items {
+  flex-direction: column;
+}
+
+[data-legend-position='top'] .legend .items,
+[data-legend-position='bottom'] .legend .items,
+.legend.horizontal .items {
+  flex-direction: row;
+}
+
+.legend-item {
   display: flex;
   flex-direction: row;
   justify-content: center;
   margin: 0.25em;
 }
 
-.layout.legend-item .symbol {
-  margin-right: 0.5em;
-}
-
-.layout[data-legend-position='left'] .legend .items,
-.layout[data-legend-position='right'] .legend .items,
-.layout.legend.vertical .items,
-.layout.legend .items {
-  flex-direction: column;
-}
-
-.layout[data-legend-position='top'] .legend .items,
-.layout[data-legend-position='bottom'] .legend .items,
-.layout.legend.horizontal .items {
-  flex-direction: row;
-}
-
-.legend {
-  font-size: 0.8em;
-  cursor: default;
-}
-
 .legend-item .symbol {
+  margin-right: 0.5em;
   stroke: #000;
   stroke-width: 1px;
   width: 10px;
@@ -127,8 +132,8 @@
   filter: brightness(var(--highlight-brightness));
 }
 
-.layout.chart-cartesian[data-legend-position='right'],
-.layout.chart-cartesian {
+.chart-cartesian[data-legend-position='right'],
+.chart-cartesian {
   display: grid;
   grid-template: 1fr auto / auto 1fr auto;
   grid-template-areas:
@@ -137,32 +142,7 @@
   padding: 1rem;
 }
 
-.layout.chart-cartesian .draw-area {
-  grid-area: draw-area;
-  display: grid;
-}
-
-.draw-area {
-  overflow: visible;
-}
-
-.draw-area .background {
-  opacity: 0;
-}
-
-.layout.chart-cartesian .draw-area > * {
-  grid-area: 1 / 1;
-}
-
-.layout.chart-cartesian .axis-left {
-  grid-area: axis-left;
-}
-
-.layout.chart-cartesian .axis-bottom {
-  grid-area: axis-bottom;
-}
-
-.layout.chart-cartesian[data-legend-position='top'] {
+.chart-cartesian[data-legend-position='top'] {
   grid-template: auto 1fr auto / auto 1fr;
   grid-template-areas:
     '. legend'
@@ -170,17 +150,26 @@
     '. axis-bottom';
 }
 
-.layout.legend {
-  margin: 0.5rem;
+.draw-area {
+  grid-area: draw-area;
+  display: grid;
+  overflow: visible;
 }
 
-.layout[data-legend-position='right'] .legend,
-.layout .legend {
-  align-self: start;
+.draw-area > * {
+  grid-area: 1 / 1;
 }
 
-.layout[data-legend-position='top'] .legend {
-  justify-self: end;
+.draw-area .background {
+  opacity: 0;
+}
+
+.chart-cartesian .axis-left {
+  grid-area: axis-left;
+}
+
+.chart-cartesian .axis-bottom {
+  grid-area: axis-bottom;
 }
 
 .layouter {
@@ -194,6 +183,10 @@
 
 .layouter > :not(.layout) {
   position: absolute;
+  /* padding and margin are not ignored on root svg elements so they need to 
+  be set to 0 to not apply them twice (1x by layouter, 1x by browser) */
+  padding: 0;
+  margin: 0;
 }
 
 .series-label {
@@ -205,7 +198,7 @@
   font-size: 1.2em;
 }
 
-.layout.text {
+.text {
   --fit-width: true;
   --fit-height: true;
 }
@@ -256,67 +249,67 @@ text.title {
   font-size: 0.7em;
 }
 
-.layout.axis {
+.axis {
   display: grid;
 }
 
-.layout.axis .title,
-.layout.axis .subtitle {
+.axis .title,
+.axis .subtitle {
   --fit-width: true;
   --fit-height: true;
 }
 
-.layout.axis-left,
-.layout.axis-right {
+.axis-left,
+.axis-right {
   grid-template: 100% / auto auto auto;
   align-items: start;
 }
 
-.layout.axis-bottom,
-.layout.axis-top {
+.axis-bottom,
+.axis-top {
   grid-template: auto auto auto / 100%;
   justify-items: end;
 }
 
-.layout.axis-left {
+.axis-left {
   grid-template-areas: 'title subtitle ticks';
 }
 
-.layout.axis-right {
+.axis-right {
   grid-template-areas: 'ticks title subtitle';
 }
 
-.layout.axis-bottom {
+.axis-bottom {
   grid-template-areas:
     'ticks'
     'title'
     'subtitle';
 }
 
-.layout.axis-top {
+.axis-top {
   grid-template-areas:
     'title'
     'subtitle'
     'ticks';
 }
 
-.layout.title {
+.title {
   grid-area: title;
 }
 
-.layout.subtitle {
+.subtitle {
   grid-area: subtitle;
 }
 
-.layout.ticks-transform {
+.ticks-transform {
   grid-area: ticks;
 }
 
-.layout.axis-left .ticks-transform {
+.axis-left .ticks-transform {
   margin-left: 0.5em;
 }
 
-.layout.axis-bottom .ticks-transform {
+.axis-bottom .ticks-transform {
   margin-bottom: 0.5em;
 }
 
@@ -338,26 +331,22 @@ text.title {
   text-anchor: middle;
 }
 
-.layout.axis-left .ticks-transform,
-.layout.axis-right .ticks-transform {
+.axis-left .ticks-transform,
+.axis-right .ticks-transform {
   height: 100%;
   --fit-width: true;
 }
 
-.layout.axis-bottom .ticks-transform,
-.layout.axis-top .ticks-transform {
+.axis-bottom .ticks-transform,
+.axis-top .ticks-transform {
   width: 100%;
   --fit-height: true;
 }
 
-.layout.axis-left .ticks {
+.axis-left .ticks {
   width: 100%;
   height: 100%;
   margin-left: 100%;
-}
-
-.layout {
-  pointer-events: none;
 }
 
 .highlight text,
