@@ -85,7 +85,10 @@ function axis(
     .attr('font-size', null)
     .attr('text-anchor', null);
 
-  ticksS.selectAll<SVGGElement, string>('.tick').attr('data-key', (d) => d);
+  ticksS
+    .selectAll<SVGGElement, string>('.tick')
+    .attr('opacity', null)
+    .attr('data-key', (d) => d);
   ticksS.selectAll('.tick line').attr('stroke', null);
   ticksS.selectAll('.tick text').attr('fill', null);
   ticksS.selectAll('.domain').attr('stroke', null).attr('fill', null);
