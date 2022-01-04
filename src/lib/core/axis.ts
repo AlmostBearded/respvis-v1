@@ -127,14 +127,3 @@ function d3Axis(
   data.configureAxis(axis);
   return axis;
 }
-
-export function xyAttrsToTransformAttr(
-  selection: SelectionOrTransition<Element, any, BaseType, any>
-): void {
-  selection
-    .attr('transform', function () {
-      return `translate(${this.getAttribute('x') || 0}, ${this.getAttribute('y') || 0})`;
-    })
-    .attr('x', null)
-    .attr('y', null);
-}
