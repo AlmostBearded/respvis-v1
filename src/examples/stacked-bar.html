@@ -71,10 +71,12 @@
             d.yAxis.subtitle = density.x < 0.06 ? '[%]' : '';
             d.legend.title = density.x < 0.06 ? 'Platforms' : '';
 
-            chart.attr(
-              'data-legend-position',
-              d.flipped ? respVis.LegendPosition.Top : respVis.LegendPosition.Right
-            );
+
+
+            const legendPosition = d.flipped
+              ? respVis.LegendPosition.Top
+              : respVis.LegendPosition.Right;
+            chart.call(respVis.chartLegendPosition, legendPosition);
 
             chartWindow.call(respVis.chartWindowBarStacked);
           }),

@@ -5,7 +5,7 @@ import {
   chartCartesianData,
   ChartCartesian,
 } from '../core/chart-cartesian';
-import { Legend, legendData, legend, LegendPosition, LegendItem } from '../legend';
+import { Legend, legendData, legend, LegendItem } from '../legend';
 import { Bar } from './series-bar';
 import { BarGrouped } from './series-bar-grouped';
 import { SeriesBarStacked, seriesBarStackedData, seriesBarStacked } from './series-bar-stacked';

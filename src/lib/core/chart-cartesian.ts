@@ -68,14 +68,16 @@ export function chartCartesianAxes(selection: ChartCartesianSelection): void {
       .classed('axis-x', !flipped)
       .classed('axis-y', flipped);
 
-    // s.selectAll<SVGGElement, Axis>('.axis-left')
-    //   .datum((d) => Object.assign(d, flipped ? xAxis : yAxis))
-    //   .classed('axis-x', flipped)
-    //   .classed('axis-y', !flipped);
+export enum LegendPosition {
+  Top = 'top',
+  Right = 'right',
+  Bottom = 'bottom',
+  Left = 'left',
+}
 
-    // s.selectAll<SVGGElement, Axis>('.axis-bottom')
-    //   .datum((d) => Object.assign(d, flipped ? yAxis : xAxis))
-    //   .classed('axis-x', !flipped)
-    //   .classed('axis-y', flipped);
-  });
+export function chartLegendPosition(
+  chartSelection: Selection<SVGSVGElement | SVGGElement>,
+  position: LegendPosition
+): void {
+  chartSelection.attr('data-legend-position', position);
 }

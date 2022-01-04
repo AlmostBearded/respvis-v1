@@ -5,14 +5,7 @@ import {
   chartCartesianData,
   ChartCartesian as ChartCartesian,
 } from '../core/chart-cartesian';
-import {
-  Legend,
-  legendData,
-  LegendItem,
-  legend,
-  LegendOrientation,
-  LegendPosition,
-} from '../legend';
+import { Legend, legendData, legend } from '../legend';
 import {
   chartBarStackedHoverAxisTick,
   chartBarStackedHoverBar,

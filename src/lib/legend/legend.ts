@@ -2,13 +2,6 @@ import { select, Selection } from 'd3-selection';
 import { arrayIs, Rect, rectFromString } from '../core';
 import { pathRect } from '../core/utility/path';
 
-export enum LegendPosition {
-  Top = 'top',
-  Right = 'right',
-  Bottom = 'bottom',
-  Left = 'left',
-}
-
 export enum LegendOrientation {
   Vertical = 'vertical',
   Horizontal = 'horizontal',
