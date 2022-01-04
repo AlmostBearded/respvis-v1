@@ -1,7 +1,7 @@
 import { select, Selection } from 'd3-selection';
 import {
-  chartCartesian,
-  chartCartesianAxes,
+  chartCartesianRender,
+  chartCartesianAxesRender,
   chartCartesianData,
   ChartCartesian as ChartCartesian,
 } from '../core/chart-cartesian';
@@ -42,7 +42,7 @@ export type ChartBarGroupedSelection = Selection<SVGSVGElement | SVGGElement, Ch
 
 export function chartBarGrouped(selection: ChartBarGroupedSelection): void {
   selection
-    .call((s) => chartCartesian(s))
+    .call((s) => chartCartesianRender(s))
     .classed('chart-bar-grouped', true)
     .each((chartD, i, g) => {
       const {
@@ -101,7 +101,7 @@ export function chartBarGrouped(selection: ChartBarGroupedSelection): void {
 
       xAxis.scale = categoryScale;
       yAxis.scale = valueScale;
-      chartCartesianAxes(chartS);
+      chartCartesianAxesRender(chartS);
 
       chartS
         .selectAll(`.axis-x .tick`)

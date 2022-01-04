@@ -1,6 +1,6 @@
 import { BaseType, Selection } from 'd3-selection';
 
-export function chart<
+export function chartRender<
   GElement extends SVGSVGElement | SVGGElement,
   Datum,
   PElement extends BaseType,

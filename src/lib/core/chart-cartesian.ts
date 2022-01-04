@@ -1,6 +1,6 @@
 import { select, Selection } from 'd3-selection';
-import { axisBottom, axisLeft, Axis, axisData } from './axis';
-import { chart } from './chart';
+import { axisBottomRender, axisLeftRender, Axis, axisData } from './axis';
+import { chartRender } from './chart';
 
 export interface ChartCartesian {
   xAxis: Axis;
@@ -23,13 +23,13 @@ export function chartCartesianData(
 
 export type ChartCartesianSelection = Selection<SVGSVGElement | SVGGElement, ChartCartesian>;
 
-export function chartCartesian(selection: ChartCartesianSelection): void {
+export function chartCartesianRender(selection: ChartCartesianSelection): void {
   selection
-    .call((s) => chart(s))
+    .call((s) => chartRender(s))
     .classed('chart-cartesian', true)
-        .selectAll('.draw-area')
-        .data([null])
-        .join('svg')
+    .selectAll('.draw-area')
+    .data([null])
+    .join('svg')
     .classed('draw-area', true)
     .selectAll('.background')
     .data([null])
@@ -37,23 +37,25 @@ export function chartCartesian(selection: ChartCartesianSelection): void {
     .classed('background', true);
 }
 
-export function chartCartesianAxes(selection: ChartCartesianSelection): void {
+export function chartCartesianAxesRender(selection: ChartCartesianSelection): void {
   selection.each(function ({ flipped, xAxis, yAxis }, i, g) {
     const s = <ChartCartesianSelection>select(g[i]);
 
     s.selectAll<SVGGElement, Axis>('.axis-left')
       .data([flipped ? xAxis : yAxis])
       .join('g')
-      .call((s) => axisLeft(s))
+      .call((s) => axisLeftRender(s))
       .classed('axis-x', flipped)
       .classed('axis-y', !flipped);
 
     s.selectAll<SVGGElement, Axis>('.axis-bottom')
       .data([flipped ? yAxis : xAxis])
       .join('g')
-      .call((s) => axisBottom(s))
+      .call((s) => axisBottomRender(s))
       .classed('axis-x', !flipped)
       .classed('axis-y', flipped);
+  });
+}
 
 export enum LegendPosition {
   Top = 'top',

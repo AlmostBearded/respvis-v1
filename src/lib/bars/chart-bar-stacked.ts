@@ -1,7 +1,7 @@
 import { BaseType, select, Selection } from 'd3-selection';
 import {
-  chartCartesian,
-  chartCartesianAxes,
+  chartCartesianRender,
+  chartCartesianAxesRender,
   chartCartesianData,
   ChartCartesian,
 } from '../core/chart-cartesian';
@@ -39,7 +39,7 @@ export type ChartBarStackedSelection = Selection<SVGSVGElement | SVGGElement, Ch
 
 export function chartBarStacked(selection: ChartBarStackedSelection): void {
   selection
-    .call((s) => chartCartesian(s))
+    .call((s) => chartCartesianRender(s))
     .classed('chart-bar-stacked', true)
     .each((chartD, i, g) => {
       const {
@@ -102,7 +102,7 @@ export function chartBarStacked(selection: ChartBarStackedSelection): void {
 
       xAxis.scale = categoryScale;
       yAxis.scale = valueScale;
-      chartCartesianAxes(chartS);
+      chartCartesianAxesRender(chartS);
 
       chartS
         .selectAll(`.axis-x .tick`)

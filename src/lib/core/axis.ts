@@ -33,9 +33,9 @@ export function axisData(data: Partial<Axis>): Axis {
 export type AxisSelection = Selection<SVGSVGElement | SVGGElement, Axis>;
 export type AxisTransition = Transition<SVGSVGElement | SVGGElement, Axis>;
 
-export function axisLeft(selection: AxisSelection): void {
+export function axisLeftRender(selection: AxisSelection): void {
   selection
-    .each((d, i, g) => axis(select(g[i]), d3Axis(d3AxisLeft, d), d.title, d.subtitle))
+    .each((d, i, g) => axisRender(select(g[i]), d3Axis(d3AxisLeft, d), d.title, d.subtitle))
     .classed('axis-left', true);
 
   selection.selectAll('.title text').call((s) => textOrientation(s, Orientation.Vertical));
@@ -46,11 +46,9 @@ export function axisLeft(selection: AxisSelection): void {
     .call((s) => textAlignVertical(s, VerticalAlignment.Center));
 }
 
-export function axisLeftRender(selection: AxisSelection): void {}
-
-export function axisBottom(selection: AxisSelection): void {
+export function axisBottomRender(selection: AxisSelection): void {
   selection
-    .each((d, i, g) => axis(select(g[i]), d3Axis(d3AxisBottom, d), d.title, d.subtitle))
+    .each((d, i, g) => axisRender(select(g[i]), d3Axis(d3AxisBottom, d), d.title, d.subtitle))
     .classed('axis-bottom', true);
 
   selection.selectAll('.title text').classed(Orientation.Horizontal, true);
@@ -61,7 +59,7 @@ export function axisBottom(selection: AxisSelection): void {
     .call((s) => textAlignVertical(s, VerticalAlignment.Bottom));
 }
 
-function axis(
+function axisRender(
   selection: AxisSelection,
   a: D3Axis<AxisDomain>,
   title: string,

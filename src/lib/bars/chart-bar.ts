@@ -1,7 +1,7 @@
 import { select, Selection } from 'd3-selection';
 import {
-  chartCartesian,
-  chartCartesianAxes,
+  chartCartesianRender,
+  chartCartesianAxesRender,
   chartCartesianData,
   ChartCartesian as ChartCartesian,
 } from '../core/chart-cartesian';
@@ -30,7 +30,7 @@ export type ChartBarSelection = Selection<SVGSVGElement | SVGGElement, ChartBar>
 
 export function chartBar(selection: ChartBarSelection): void {
   selection
-    .call((s) => chartCartesian(s))
+    .call((s) => chartCartesianRender(s))
     .classed('chart-bar', true)
     .each((chartD, i, g) => {
       const chartS = <ChartBarSelection>select(g[i]);
@@ -61,7 +61,7 @@ export function chartBar(selection: ChartBarSelection): void {
 
       chartD.xAxis.scale = chartD.categoryScale;
       chartD.yAxis.scale = chartD.valueScale;
-      chartCartesianAxes(chartS);
+      chartCartesianAxesRender(chartS);
     });
 }
 

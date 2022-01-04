@@ -1,7 +1,7 @@
 import { BaseType, select, Selection } from 'd3-selection';
 import {
-  chartCartesian,
-  chartCartesianAxes,
+  chartCartesianRender,
+  chartCartesianAxesRender,
   chartCartesianData,
   ChartCartesian,
 } from '../core/chart-cartesian';
@@ -20,7 +20,7 @@ export type ChartPointSelection = Selection<SVGSVGElement | SVGGElement, ChartPo
 
 export function chartPoint(selection: ChartPointSelection): void {
   selection
-    .call((s) => chartCartesian(s))
+    .call((s) => chartCartesianRender(s))
     .classed('chart-point', true)
     .each((chartD, i, g) => {
       const drawAreaS = select(g[i]).selectAll('.draw-area');
@@ -35,5 +35,5 @@ export function chartPoint(selection: ChartPointSelection): void {
       chartD.xAxis.scale = chartD.xScale;
       chartD.yAxis.scale = chartD.yScale;
     })
-    .call((s) => chartCartesianAxes(s));
+    .call((s) => chartCartesianAxesRender(s));
 }
