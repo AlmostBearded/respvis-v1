@@ -42,14 +42,14 @@ export function chartCartesianAxes(selection: ChartCartesianSelection): void {
     const s = <ChartCartesianSelection>select(g[i]);
 
     s.selectAll<SVGGElement, Axis>('.axis-left')
-      .data([axisData(flipped ? xAxis : yAxis)])
+      .data([flipped ? xAxis : yAxis])
       .join('g')
       .call((s) => axisLeft(s))
       .classed('axis-x', flipped)
       .classed('axis-y', !flipped);
 
     s.selectAll<SVGGElement, Axis>('.axis-bottom')
-      .data([axisData(flipped ? yAxis : xAxis)])
+      .data([flipped ? yAxis : xAxis])
       .join('g')
       .call((s) => axisBottom(s))
       .classed('axis-x', !flipped)
