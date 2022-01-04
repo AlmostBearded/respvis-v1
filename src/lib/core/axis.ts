@@ -55,7 +55,10 @@ export function axisBottom(selection: AxisSelection): void {
 
   selection.selectAll('.title text').classed(Orientation.Horizontal, true);
   selection.selectAll('.subtitle text').classed(Orientation.Horizontal, true);
-  selection.selectAll('.tick text').attr('dy', null).classed('bottom', true);
+  selection
+    .selectAll('.tick text')
+    .attr('dy', null)
+    .call((s) => textAlignVertical(s, VerticalAlignment.Bottom));
 }
 
 function axis(
