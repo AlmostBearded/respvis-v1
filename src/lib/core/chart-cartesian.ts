@@ -16,7 +16,7 @@ export function chartCartesianData(
 ): ChartCartesian {
   return {
     xAxis: axisData(data.xAxis || {}),
-    yAxis: axisData(data.yAxis || axisData({})),
+    yAxis: axisData(data.yAxis || {}),
     flipped: data.flipped || false,
   };
 }
