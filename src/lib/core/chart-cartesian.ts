@@ -27,27 +27,14 @@ export function chartCartesian(selection: ChartCartesianSelection): void {
   selection
     .call((s) => chart(s))
     .classed('chart-cartesian', true)
-    .each((d, i, g) => {
-      const s = <ChartCartesianSelection>select(g[i]);
-
-      const drawAreaS = s
         .selectAll('.draw-area')
         .data([null])
         .join('svg')
-        .classed('draw-area', true);
-
-      drawAreaS.selectAll('.background').data([null]).join('rect').classed('background', true);
-
-      // s.selectAll<SVGGElement, Axis>('.axis-left')
-      //   .data([axisData(d.yAxis)])
-      //   .join('g')
-      //   .call((s) => axisLeft(s));
-
-      // s.selectAll<SVGGElement, Axis>('.axis-bottom')
-      //   .data([axisData(d.xAxis)])
-      //   .join('g')
-      //   .call((s) => axisBottom(s));
-    });
+    .classed('draw-area', true)
+    .selectAll('.background')
+    .data([null])
+    .join('rect')
+    .classed('background', true);
 }
 
 export function chartCartesianAxes(selection: ChartCartesianSelection): void {
