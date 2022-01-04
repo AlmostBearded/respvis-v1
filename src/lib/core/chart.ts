@@ -11,5 +11,4 @@ export function chart<
   return selection
     .classed('chart', true)
     .attr('xmlns', 'http://www.w3.org/2000/svg')
-    .attr('font-family', 'sans-serif');
 }
