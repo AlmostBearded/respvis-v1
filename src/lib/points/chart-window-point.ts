@@ -1,10 +1,10 @@
 import { select, Selection } from 'd3-selection';
 import {
-  chartWindow,
+  chartWindowRender,
   ToolFilterNominal,
   toolFilterNominalData,
-  toolDownloadSVG,
-  toolFilterNominal,
+  toolDownloadSVGRender,
+  toolFilterNominalRender,
   layouterCompute,
 } from '../core';
 import { arrayIs } from '../core';
@@ -28,7 +28,7 @@ export function chartWindowPoint(selection: ChartWindowPointSelection): void {
     .on('resize.chartwindowpoint', function (e, d) {
       chartWindowPointDispatchDensityChange(select(this));
     })
-    .call((s) => chartWindow(s))
+    .call((s) => chartWindowRender(s))
     .each((chartWindowD, i, g) => {
       const chartWindowS = select<HTMLDivElement, ChartWindowPoint>(g[i]),
         menuItemsS = chartWindowS.selectAll('.menu-tools > .items'),
@@ -36,10 +36,10 @@ export function chartWindowPoint(selection: ChartWindowPointSelection): void {
 
       // download svg
       menuItemsS
-        .selectAll<HTMLLIElement, any>('.tool-save-svg')
+        .selectAll<HTMLLIElement, any>('.tool-download-svg')
         .data([null])
         .join('li')
-        .call((s) => toolDownloadSVG(s));
+        .call((s) => toolDownloadSVGRender(s));
 
       // chart
       const chartS = layouterS

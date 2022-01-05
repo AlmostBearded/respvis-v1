@@ -1,16 +1,16 @@
 import { Selection } from 'd3-selection';
 import { layouter } from './layouter';
-import { menuDropdown } from './menu-dropdown';
+import { menuDropdownRender } from './menu-dropdown';
 import { resizeEventListener } from './resize-event-dispatcher';
 
-export function chartWindow(selection: Selection<HTMLDivElement>): void {
+export function chartWindowRender(selection: Selection<HTMLDivElement>): void {
   selection.classed('chart-window', true);
 
   selection
     .selectAll<HTMLDivElement, any>('.toolbar')
     .data([null])
     .join('div')
-    .call((s) => toolbar(s));
+    .call((s) => toolbarRender(s));
 
   selection
     .selectAll<HTMLDivElement, any>('.layouter')
@@ -21,18 +21,18 @@ export function chartWindow(selection: Selection<HTMLDivElement>): void {
   resizeEventListener(selection);
 }
 
-export function toolbar(selection: Selection<HTMLDivElement>): void {
+export function toolbarRender(selection: Selection<HTMLDivElement>): void {
   selection.classed('toolbar', true);
 
   selection
     .selectAll<HTMLDivElement, any>('.menu-tools')
     .data([null])
     .join('div')
-    .call((s) => menuTools(s));
+    .call((s) => menuToolsRender(s));
 }
 
-export function menuTools(selection: Selection<HTMLDivElement>): void {
-  selection.call((s) => menuDropdown(s)).classed('menu-tools', true);
+export function menuToolsRender(selection: Selection<HTMLDivElement>): void {
+  selection.call((s) => menuDropdownRender(s)).classed('menu-tools', true);
 
   selection.selectChildren('.chevron').remove();
   selection.selectChildren('.text').text('☰');

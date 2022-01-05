@@ -1,10 +1,10 @@
 import { select, selectAll, Selection } from 'd3-selection';
 import {
-  chartWindow,
+  chartWindowRender,
   ToolFilterNominal,
   toolFilterNominalData,
-  toolDownloadSVG,
-  toolFilterNominal,
+  toolDownloadSVGRender,
+  toolFilterNominalRender,
   layouterCompute,
   Checkbox,
 } from '../core';
@@ -51,7 +51,7 @@ export function chartWindowBarStacked(
 ): void {
   selection
     .classed('chart-window-bar-stacked', true)
-    .call((s) => chartWindow(s))
+    .call((s) => chartWindowRender(s))
     .on('resize.chartwindowbar', function (e, d) {
       const s = select(this);
       const { width, height } = e.detail.bounds;
@@ -92,7 +92,7 @@ export function chartWindowBarStacked(
         ])
         .join('li')
         .classed('tool-filter-categories', true)
-        .call(toolFilterNominal)
+        .call(toolFilterNominalRender)
         .call((s) =>
           s.selectAll('.checkbox input').attr('checked', (d, i) => categoryActiveStates[i])
         )
@@ -119,7 +119,7 @@ export function chartWindowBarStacked(
         ])
         .join('li')
         .classed('tool-filter-subcategories', true)
-        .call(toolFilterNominal)
+        .call(toolFilterNominalRender)
         .call((s) =>
           s.selectAll('.checkbox input').attr('checked', (d, i) => subcategoryActiveStates[i])
         )
@@ -136,10 +136,10 @@ export function chartWindowBarStacked(
 
       // download svg
       menuItemsS
-        .selectAll<HTMLLIElement, any>('.tool-save-svg')
+        .selectAll<HTMLLIElement, any>('.tool-download-svg')
         .data([null])
         .join('li')
-        .call((s) => toolDownloadSVG(s));
+        .call((s) => toolDownloadSVGRender(s));
 
       const filterCat = (v: any, i: number) => categoryActiveStates[i];
       const filterSubcat = (v: any, i: number) => subcategoryActiveStates[i];

@@ -33,7 +33,7 @@ export function seriesCheckboxCreateCheckboxes(seriesData: SeriesCheckbox): Chec
   });
 }
 
-export function seriesCheckbox(selection: Selection<HTMLElement, SeriesCheckbox>): void {
+export function seriesCheckboxRender(selection: Selection<HTMLElement, SeriesCheckbox>): void {
   selection
     .classed('series-checkbox', true)
     .on(

@@ -1,6 +1,6 @@
 import { create, select, Selection } from 'd3-selection';
-import { menuDropdown } from '../menu-dropdown';
-import { SeriesCheckbox, seriesCheckboxData, seriesCheckbox } from '../series-checkbox';
+import { menuDropdownRender } from '../menu-dropdown';
+import { SeriesCheckbox, seriesCheckboxData, seriesCheckboxRender } from '../series-checkbox';
 
 export interface ToolFilterNominal {
   text: string;
@@ -17,8 +17,8 @@ export function toolFilterNominalData(data: Partial<ToolFilterNominal>): ToolFil
   };
 }
 
-export function toolFilterNominal(selection: Selection<HTMLLIElement, ToolFilterNominal>): void {
-  selection.classed('tool-filter-nominal', true).call((s) => menuDropdown(s));
+export function toolFilterNominalRender(selection: Selection<HTMLLIElement, ToolFilterNominal>): void {
+  selection.classed('tool-filter-nominal', true).call((s) => menuDropdownRender(s));
 
   selection.each((d, i, g) => {
     const s = select(g[i]);
@@ -31,6 +31,6 @@ export function toolFilterNominal(selection: Selection<HTMLLIElement, ToolFilter
           keys: d.keys,
         })
       )
-      .call((s) => seriesCheckbox(s));
+      .call((s) => seriesCheckboxRender(s));
   });
 }

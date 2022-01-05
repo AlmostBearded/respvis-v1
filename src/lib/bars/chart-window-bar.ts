@@ -1,10 +1,10 @@
 import { select, Selection } from 'd3-selection';
 import {
-  chartWindow,
+  chartWindowRender,
   ToolFilterNominal,
   toolFilterNominalData,
-  toolDownloadSVG,
-  toolFilterNominal,
+  toolDownloadSVGRender,
+  toolFilterNominalRender,
   Checkbox,
   layouterCompute,
 } from '../core';
@@ -43,7 +43,7 @@ export function chartWindowBar(selection: ChartWindowBarSelection): void {
     .on('resize.chartwindowbar', function (e, d) {
       chartWindowBarDispatchDensityChange(select(this));
     })
-    .call((s) => chartWindow(s))
+    .call((s) => chartWindowRender(s))
     .each((chartWindowD, i, g) => {
       const {
         categoryActiveStates,
@@ -72,7 +72,7 @@ export function chartWindowBar(selection: ChartWindowBarSelection): void {
         ])
         .join('li')
         .classed('tool-filter-categories', true)
-        .call((s) => toolFilterNominal(s))
+        .call((s) => toolFilterNominalRender(s))
         .call((s) =>
           s.selectAll('.checkbox input').attr('checked', (d, i) => categoryActiveStates[i])
         )
@@ -89,10 +89,10 @@ export function chartWindowBar(selection: ChartWindowBarSelection): void {
 
       // download svg
       menuItemsS
-        .selectAll<HTMLLIElement, any>('.tool-save-svg')
+        .selectAll<HTMLLIElement, any>('.tool-download-svg')
         .data([null])
         .join('li')
-        .call((s) => toolDownloadSVG(s));
+        .call((s) => toolDownloadSVGRender(s));
 
       const filterCat = (v: any, i: number) => categoryActiveStates[i];
 

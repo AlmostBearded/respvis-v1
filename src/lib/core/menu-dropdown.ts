@@ -1,6 +1,6 @@
 import { Selection } from 'd3-selection';
 
-export function menuDropdown(selection: Selection<HTMLElement>): void {
+export function menuDropdownRender(selection: Selection<HTMLElement>): void {
   selection.classed('menu', true);
 
   // chevron & text

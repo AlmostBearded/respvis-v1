@@ -6,18 +6,18 @@ import {
 
 // TODO: maybe SVGO could be used to optimize the downloaded SVG? https://github.com/svg/svgo
 
-export function toolDownloadSVG(selection: Selection<HTMLLIElement>): void {
+export function toolDownloadSVGRender(selection: Selection<HTMLLIElement>): void {
   selection
-    .classed('tool-save-svg', true)
+    .classed('tool-download-svg', true)
     .text('Download SVG')
     .on('click', function () {
       select(this.closest('.chart-window'))
         .selectAll<SVGSVGElement, unknown>('.layouter > svg.chart')
-        .call((s) => chartSaveSVG(s, 'chart.svg'));
+        .call((s) => chartDownload(s, 'chart.svg'));
     });
 }
 
-export function chartSaveSVG<Datum>(
+export function chartDownload<Datum>(
   chartSelection: Selection<SVGSVGElement, Datum>,
   fileName: string | ValueFn<SVGSVGElement, Datum, string>
 ): void {
