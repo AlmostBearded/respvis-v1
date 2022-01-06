@@ -40,6 +40,10 @@ export function elementComputedStyleWithoutDefaults(
   return diff;
 }
 
+export function elementIs(obj: any): obj is Element {
+  return obj instanceof Element || obj instanceof HTMLElement || obj instanceof SVGElement;
+}
+
 // extracted from the SVG specification
 export const elementSVGPresentationAttrs = [
   'fill',
