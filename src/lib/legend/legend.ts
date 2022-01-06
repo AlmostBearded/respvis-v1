@@ -1,5 +1,5 @@
 import { select, Selection } from 'd3-selection';
-import { arrayIs, Rect, rectFromString } from '../core';
+import { arrayIs, Rect, rectFromSize, rectFromString, Size } from '../core';
 import { pathRect } from '../core/utility/path';
 
 export enum LegendOrientation {
@@ -10,7 +10,7 @@ export enum LegendOrientation {
 export interface LegendItem {
   label: string;
   styleClass: string;
-  symbol: (pathElement: SVGPathElement, bounds: Rect) => void;
+  symbol: (pathElement: SVGPathElement, size: Size) => void;
   key: string;
 }
 
@@ -18,8 +18,8 @@ export interface Legend {
   title: string;
   labels: string[];
   symbols:
-    | ((symbol: SVGPathElement, bounds: Rect) => void)
-    | ((symbol: SVGPathElement, bounds: Rect) => void)[];
+    | ((symbol: SVGPathElement, size: Size) => void)
+    | ((symbol: SVGPathElement, size: Size) => void)[];
   styleClasses: string | string[];
   keys?: string[];
 }
@@ -30,7 +30,7 @@ export function legendData(data: Partial<Legend>): Legend {
     title: data.title || '',
     labels,
     styleClasses: data.styleClasses || labels.map((l, i) => `categorical-${i}`),
-    symbols: data.symbols || ((e, b) => pathRect(select(e), { ...b, x: 0, y: 0 })),
+    symbols: data.symbols || ((e, s) => pathRect(e, rectFromSize(s))),
     keys: data.keys,
   };
 }
