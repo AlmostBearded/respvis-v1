@@ -97,3 +97,7 @@ export function rectToAttrs(selectionOrTransition: SelectionOrTransition, rect: 
 export function rectFromAttrs(selectionOrTransition: SelectionOrTransition): Rect {
   return { ...positionFromAttrs(selectionOrTransition), ...sizeFromAttrs(selectionOrTransition) };
 }
+
+export function rectFromSize(size: Size): Rect {
+  return { x: 0, y: 0, ...size };
+}
