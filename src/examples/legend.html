@@ -41,55 +41,54 @@
     <h1>Grouped Bar Chart</h1>
 
     <div id="chart"></div>
-    <script src="./vendor/d3.v6.js"></script>
-    <script src="../respvis.js"></script>
     <script type="module">
+      import {
+        legendData,
+        legendRender,
+        layouterRender,
+        rectFromSize,
+        pathRect,
+        pathCircle,
+        circleInsideRect,
+        layouterCompute,
+      } from '../respvis.mjs';
+
       const labels = [0, 1, 2, 3].map((n) => `Label ${n}`);
 
       const root = d3.select('#chart');
-      const layouter = root.append('div').call(respVis.layouter);
+      const layouter = root.append('div').call(layouterRender);
       const chart = layouter.append('svg').classed('chart', true);
 
-      const defaultLegendData = { title: 'Legend', labels };
+      const defaultLegendData = legendData({ title: 'Legend', labels });
+      const rectLegendData = legendData({
+        ...defaultLegendData,
+        symbols: (path, size) => pathRect(path, rectFromSize(size)),
+      });
+      const circleLegendData = legendData({
+        ...defaultLegendData,
+        symbols: (path, size) => pathCircle(path, circleInsideRect(rectFromSize(size))),
+      });
 
-      const rectLegend = chart
-        .append('g')
-        .datum(
-          respVis.legendData({
-            ...defaultLegendData,
-            symbols: (path, size) => respVis.pathRect(path, respVis.rectFromSize(size)),
-          })
-        )
-        .classed('rect-legend', true);
-
-      const circleLegend = chart
-        .append('g')
-        .datum(
-          respVis.legendData({
-            ...defaultLegendData,
-            symbols: (path, size) =>
-              respVis.pathCircle(path, respVis.circleInsideRect(respVis.rectFromSize(size))),
-          })
-        )
-        .classed('circle-legend', true);
+      const rectLegend = chart.append('g').datum(rectLegendData).classed('rect-legend', true);
+      const circleLegend = chart.append('g').datum(circleLegendData).classed('circle-legend', true);
 
       const horizontalLegend = chart
         .append('g')
-        .datum(respVis.legendData({ ...defaultLegendData }))
+        .datum(defaultLegendData)
         .classed('horizontal-legend', true);
 
       resize();
       window.addEventListener('resize', resize);
 
       function render() {
-        rectLegend.call(respVis.legendRender);
-        circleLegend.call(respVis.legendRender);
-        horizontalLegend.call(respVis.legendRender);
+        rectLegend.call(legendRender);
+        circleLegend.call(legendRender);
+        horizontalLegend.call(legendRender);
       }
 
       function resize() {
         render();
-        layouter.call(respVis.layouterCompute);
+        layouter.call(layouterCompute);
         render();
       }
     </script>
