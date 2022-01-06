@@ -1,18 +1,27 @@
 import { SelectionOrTransition } from './selection';
 import { Circle } from './circle';
 import { Rect } from './rect';
+import { elementIs } from './element';
+import { select } from 'd3-selection';
 
-export function pathRect(selectionOrTransition: SelectionOrTransition, rect: Rect): void {
+export function pathRect(selectionOrTransition: SelectionOrTransition | Element, rect: Rect): void {
   const { x, y, width: w, height: h } = rect;
+  selectionOrTransition = elementIs(selectionOrTransition)
+    ? select(selectionOrTransition)
+    : selectionOrTransition;
   selectionOrTransition.attr('d', `M ${x} ${y} h ${w} v ${h} h ${-w} v ${-h}`);
 }
 
-export function pathCircle(selectionOrTransition: SelectionOrTransition, circle: Circle): void {
+export function pathCircle(selectionOrTransition: SelectionOrTransition | Element, circle: Circle): void {
   const {
     center: { x: cx, y: cy },
     radius: r,
   } = circle;
 
+  selectionOrTransition = elementIs(selectionOrTransition)
+  ? select(selectionOrTransition)
+  : selectionOrTransition;
+  
   selectionOrTransition.attr(
     'd',
     `M ${cx - r} ${cy} 
