@@ -48,7 +48,7 @@ export function legendCreateItems(legendData: Legend): LegendItem[] {
   });
 }
 
-export function legend(selection: Selection<Element, Legend>): void {
+export function legendRender(selection: Selection<Element, Legend>): void {
   selection.classed('legend', true).each((legendD, i, g) => {
     const legendS = select<Element, Legend>(g[i]);
 

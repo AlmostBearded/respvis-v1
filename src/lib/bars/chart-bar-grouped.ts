@@ -5,7 +5,7 @@ import {
   chartCartesianData,
   ChartCartesian as ChartCartesian,
 } from '../core/chart-cartesian';
-import { Legend, legendData, legend } from '../legend';
+import { Legend, legendData, legendRender } from '../legend';
 import {
   chartBarStackedHoverAxisTick,
   chartBarStackedHoverBar,
@@ -90,7 +90,7 @@ export function chartBarGrouped(selection: ChartBarGroupedSelection): void {
           legendData({ labels: subcategories, styleClasses, ...legendD, keys: subcategories }),
         ])
         .join('g')
-        .call((s) => legend(s))
+        .call((s) => legendRender(s))
         .on('mouseover.chartbargroupedhighlight mouseout.chartbargroupedhighlight', (e) => {
           chartBarGroupedHoverLegendItem(
             chartS,
