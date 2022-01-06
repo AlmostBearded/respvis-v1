@@ -1,4 +1,4 @@
-import { select, selectAll, Selection } from 'd3-selection';
+import { select, selectAll, Selection } from 'd3';
 import {
   chartWindowRender,
   ToolFilterNominal,

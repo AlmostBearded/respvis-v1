@@ -1,7 +1,7 @@
-import { BaseType, selectAll, Selection } from 'd3-selection';
-import { Transition } from 'd3-transition';
+import { BaseType, CustomEventParameters, selectAll, Selection } from 'd3';
+import { Transition } from 'd3';
 
-declare module 'd3-transition' {
+declare module 'd3' {
   export interface Transition<
     // provide default type parameters
     GElement extends BaseType = BaseType,
@@ -11,7 +11,7 @@ declare module 'd3-transition' {
   > {}
 }
 
-declare module 'd3-selection' {
+declare module 'd3' {
   export interface Selection<
     // provide default type parameters
     GElement extends BaseType = BaseType,

@@ -1,4 +1,4 @@
-import { select, Selection } from 'd3-selection';
+import { select, Selection } from 'd3';
 import { JoinEvent } from '.';
 import {
   arrayIs,

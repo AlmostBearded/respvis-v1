@@ -1,5 +1,5 @@
-import { Selection } from 'd3-selection';
-import { layouter } from './layouter';
+import { Selection } from 'd3';
+import { layouterRender } from './layouter';
 import { menuDropdownRender } from './menu-dropdown';
 import { resizeEventListener } from './resize-event-dispatcher';
 
@@ -16,7 +16,7 @@ export function chartWindowRender(selection: Selection<HTMLDivElement>): void {
     .selectAll<HTMLDivElement, any>('.layouter')
     .data([null])
     .join('div')
-    .call((s) => layouter(s));
+    .call((s) => layouterRender(s));
 
   resizeEventListener(selection);
 }

@@ -1,5 +1,5 @@
-import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3-scale';
-import { select, Selection, style } from 'd3-selection';
+import { scaleBand, ScaleBand, ScaleContinuousNumeric, scaleLinear } from 'd3';
+import { select, Selection, style } from 'd3';
 import { arrayIs } from '../core';
 import {
   Rect,
@@ -8,8 +8,8 @@ import {
   rectMinimized,
   rectToAttrs,
 } from '../core/utility/rect';
-import { Transition } from 'd3-transition';
-import { easeCubicOut } from 'd3-ease';
+import { Transition } from 'd3';
+import { easeCubicOut } from 'd3';
 import { Size } from '../core/utility/size';
 import {
   SeriesConfigTooltips,

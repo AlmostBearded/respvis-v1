@@ -1,4 +1,4 @@
-import { select, Selection } from 'd3-selection';
+import { select, Selection } from 'd3';
 import { elementRelativeBounds } from './utility/element';
 import { positionToTransformAttr } from './utility/position';
 import {
@@ -116,7 +116,7 @@ function layedOutChildren(parent: Element): SVGElement[] {
     .nodes();
 }
 
-export function layouter(selection: Selection<HTMLDivElement>): void {
+export function layouterRender(selection: Selection<HTMLDivElement>): void {
   selection.classed('layouter', true);
 }
 

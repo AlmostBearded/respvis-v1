@@ -1,5 +1,5 @@
-import { max } from 'd3-array';
-import { select, Selection } from 'd3-selection';
+import { max } from 'd3';
+import { select, Selection } from 'd3';
 import {
   chartWindowRender,
   ToolFilterNominal,

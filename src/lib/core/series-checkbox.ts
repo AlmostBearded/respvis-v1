@@ -1,4 +1,4 @@
-import { create, EnterElement, select, Selection, ValueFn } from 'd3-selection';
+import { create, EnterElement, select, Selection, ValueFn } from 'd3';
 import { v4 as uuid } from 'uuid';
 
 export interface Checkbox {

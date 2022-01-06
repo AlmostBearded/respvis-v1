@@ -1,4 +1,4 @@
-import { BaseType, select, Selection } from 'd3-selection';
+import { BaseType, select, Selection } from 'd3';
 import {
   chartCartesianRender,
   chartCartesianAxesRender,

@@ -1,5 +1,5 @@
-import { easeCubicOut } from 'd3-ease';
-import { select, Selection, ValueFn } from 'd3-selection';
+import { easeCubicOut } from 'd3';
+import { select, Selection, ValueFn } from 'd3';
 import { Position, positionToTransformAttr } from '../core';
 
 export interface Label extends Position {

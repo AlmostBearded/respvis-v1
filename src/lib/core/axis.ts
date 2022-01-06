@@ -4,10 +4,10 @@ import {
   axisLeft as d3AxisLeft,
   axisBottom as d3AxisBottom,
   AxisScale,
-} from 'd3-axis';
-import { scaleLinear } from 'd3-scale';
-import { BaseType, select, Selection } from 'd3-selection';
-import { SelectionOrTransition, Transition } from 'd3-transition';
+} from 'd3';
+import { scaleLinear } from 'd3';
+import { BaseType, select, Selection } from 'd3';
+import { SelectionOrTransition, Transition } from 'd3';
 import { textAlignVertical, VerticalAlignment, Orientation, textOrientation } from './utility/text';
 
 export interface ConfigureAxisFn {

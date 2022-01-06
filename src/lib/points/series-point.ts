@@ -1,6 +1,6 @@
-import { easeCubicOut } from 'd3-ease';
-import { scaleLinear } from 'd3-scale';
-import { select, Selection } from 'd3-selection';
+import { easeCubicOut } from 'd3';
+import { scaleLinear } from 'd3';
+import { select, Selection } from 'd3';
 import { arrayIs, Circle, circleMinimized, circleToAttrs, rectFromString, ScaleAny } from '../core';
 import { Size } from '../core/utility/size';
 

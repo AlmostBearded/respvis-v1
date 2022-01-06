@@ -10,7 +10,7 @@ import {
   ScaleQuantize,
   ScaleThreshold,
   ScaleTime,
-} from 'd3-scale';
+} from 'd3';
 
 export type ScaleContinuous<TRange, TOutput> =
   | ScaleContinuousNumeric<TRange, TOutput>

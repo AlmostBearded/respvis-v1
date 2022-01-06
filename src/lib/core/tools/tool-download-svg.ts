@@ -1,4 +1,4 @@
-import { select, Selection, ValueFn } from 'd3-selection';
+import { select, Selection, ValueFn } from 'd3';
 import {
   elementComputedStyleWithoutDefaults,
   elementSVGPresentationAttrs,

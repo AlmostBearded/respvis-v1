@@ -1,4 +1,4 @@
-import { select, Selection } from 'd3-selection';
+import { select, Selection } from 'd3';
 import { arrayIs, Rect, rectFromSize, rectFromString, Size } from '../core';
 import { pathRect } from '../core/utility/path';
 

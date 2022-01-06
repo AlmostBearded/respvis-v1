@@ -2,7 +2,7 @@ import { SelectionOrTransition } from './selection';
 import { Circle } from './circle';
 import { Rect } from './rect';
 import { elementIs } from './element';
-import { select } from 'd3-selection';
+import { select } from 'd3';
 
 export function pathRect(selectionOrTransition: SelectionOrTransition | Element, rect: Rect): void {
   const { x, y, width: w, height: h } = rect;

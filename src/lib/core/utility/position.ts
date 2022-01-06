@@ -1,4 +1,4 @@
-import { ValueFn } from 'd3-selection';
+import { ValueFn } from 'd3';
 import { Circle } from './circle';
 import { Rect } from './rect';
 import { isTransition, SelectionOrTransition } from './selection';

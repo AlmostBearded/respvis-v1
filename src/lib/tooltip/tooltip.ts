@@ -1,4 +1,4 @@
-import { select, Selection } from 'd3-selection';
+import { select, Selection } from 'd3';
 import { Position } from '../core/utility/position';
 import { Size } from '../core/utility/size';
 

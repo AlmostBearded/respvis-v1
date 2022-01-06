@@ -1,4 +1,4 @@
-import { create, select, Selection } from 'd3-selection';
+import { create, select, Selection } from 'd3';
 import { menuDropdownRender } from '../menu-dropdown';
 import { SeriesCheckbox, seriesCheckboxData, seriesCheckboxRender } from '../series-checkbox';
 

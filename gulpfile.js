@@ -28,15 +28,7 @@ const path = require('path');
 async function bundleJS() {
   const bundle = await rollup.rollup({
     input: 'src/lib/index.ts',
-    external: [
-      'd3-selection',
-      'd3-array',
-      'd3-axis',
-      'd3-brush',
-      'd3-scale',
-      'd3-transition',
-      'd3-zoom',
-    ],
+    external: ['d3'],
     plugins: [rollupNodeResolve({ browser: true }), rollupCommonJs(), rollupTypescript()],
   });
 
@@ -58,13 +50,10 @@ async function bundleJS() {
         format: c.format,
         name: 'respVis',
         globals: {
-          'd3-selection': 'd3',
-          'd3-array': 'd3',
-          'd3-axis': 'd3',
-          'd3-brush': 'd3',
-          'd3-scale': 'd3',
-          'd3-transition': 'd3',
-          'd3-zoom': 'd3',
+          d3: 'd3',
+        },
+        paths: {
+          d3: 'https://cdn.skypack.dev/d3@7',
         },
         plugins: c.plugins,
         sourcemap: true,

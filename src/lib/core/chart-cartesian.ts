@@ -1,4 +1,4 @@
-import { select, Selection } from 'd3-selection';
+import { select, Selection } from 'd3';
 import { axisBottomRender, axisLeftRender, Axis, axisData } from './axis';
 import { chartRender } from './chart';
 

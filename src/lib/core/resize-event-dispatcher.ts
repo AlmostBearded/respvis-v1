@@ -1,4 +1,4 @@
-import { select, Selection } from 'd3-selection';
+import { select, Selection } from 'd3';
 import { Rect } from './utility/rect';
 
 export type ResizeEvent = CustomEvent<{ bounds: Rect }>;

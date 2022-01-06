@@ -1,4 +1,4 @@
-import { BaseType, Selection } from 'd3-selection';
+import { BaseType, Selection } from 'd3';
 
 export function chartRender<
   GElement extends SVGSVGElement | SVGGElement,

@@ -1,4 +1,4 @@
-import { Selection, ValueFn } from 'd3-selection';
+import { Selection, ValueFn } from 'd3';
 import { SelectionOrTransition } from './selection';
 import {
   Position,
