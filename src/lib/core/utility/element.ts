@@ -1,3 +1,4 @@
+import { select } from 'd3';
 import { Rect, rectRound } from './rect';
 
 export function elementRelativeBounds(element: Element): Rect {
@@ -38,6 +39,10 @@ export function elementComputedStyleWithoutDefaults(
   dummy.remove();
 
   return diff;
+}
+
+export function elementData<Data extends any>(element: Element): Data {
+  return select<Element, Data>(element).datum();
 }
 
 export function elementIs(obj: any): obj is Element {
