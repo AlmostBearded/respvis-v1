@@ -12,8 +12,7 @@
 
       #chart {
         width: 100%;
-        height: 75vh;
-        min-height: 25rem;
+        height: 18rem;
       }
 
       .chart {
@@ -56,12 +55,16 @@
         pathCircle,
         circleInsideRect,
         layouterCompute,
+        chartWindowRender,
+        toolDownloadSVGRender,
       } from '../respvis.mjs';
 
       const labels = [0, 1, 2, 3].map((n) => `Label ${n}`);
 
       const root = select('#chart');
-      const layouter = root.append('div').call(layouterRender);
+      const chartWindow = root.append('div').call(chartWindowRender);
+      chartWindow.selectAll('.menu-tools > .items').append('li').call(toolDownloadSVGRender);
+      const layouter = chartWindow.selectAll('.layouter');
       const chart = layouter.append('svg').classed('chart', true);
 
       const defaultLegendData = legendData({ title: 'Legend', labels });
