@@ -90,7 +90,7 @@ export function seriesBarCreateBars(seriesData: SeriesBar): Bar[] {
       bar: Bar = {
         category: c,
         value: v,
-        key: keys?.[i] || i.toString(),
+        key: keys[i],
         styleClass: arrayIs(styleClasses) ? styleClasses[i] : styleClasses,
         ...(flipped ? flippedRect : rect),
       };
