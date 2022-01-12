@@ -27,11 +27,10 @@ export function tooltipHide(tooltipSelection: Selection<HTMLDivElement> | null) 
 
 export function tooltipContent(
   tooltipSelection: Selection<HTMLDivElement> | null,
-  content: string | Element
+  content: string
 ) {
   tooltipSelection = tooltipSelection || tooltipSelectOrCreate();
-  if (typeof content === 'string') tooltipSelection.html(content);
-  else tooltipSelection.html('').append(() => content);
+  tooltipSelection.html(content);
 }
 
 export interface TooltipPositionConfig {
