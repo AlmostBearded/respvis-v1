@@ -142,7 +142,7 @@ export function chartWindowBarDispatchDensityChange(selection: ChartWindowBarSel
 }
 
 export function chartWindowBarAutoFilterCategories(selection: ChartWindowBarSelection): void {
-  selection.on('categoryfilter.chartwindowbar', function (e, d) {
+  selection.on('categoryfilter', function (e, d) {
     d.categoryActiveStates = e.detail.categoryActiveStates;
     select<HTMLDivElement, ChartWindowBar>(this).call((s) => chartWindowBar(s));
   });
