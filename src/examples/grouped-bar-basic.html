@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <title>RespVis - Basic Grouped Bar Chart</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="../respvis.css" />
+    <style>
+      #chart {
+        width: 100%;
+        height: 75vh;
+        min-height: 25rem;
+      }
+
+      body {
+        background-color: floralwhite;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Basic Grouped Bar Chart</h1>
+    <div id="chart"></div>
+    <script type="module">
+      import { select } from 'https://cdn.skypack.dev/d3@7';
+      import {
+        chartWindowBarGroupedData,
+        chartWindowBarGroupedRender,
+        chartWindowBarGroupedAutoFilterCategories,
+        chartWindowBarGroupedAutoFilterSubcategories,
+        chartWindowBarGroupedAutoResize,
+      } from '../respvis.mjs';
+
+      select('#chart')
+        .append('div')
+        .datum(
+          chartWindowBarGroupedData({
+            categories: ['A', 'B', 'C'],
+            subcategories: ['X', 'Y', 'Z'],
+            values: [
+              [2, 3, 4],
+              [5, 1, 2],
+              [3, 2, 4],
+            ],
+            xAxis: { title: 'Category' },
+            yAxis: { title: 'Value' },
+            legend: { title: 'Subcategories' }
+          })
+        )
+        .call(chartWindowBarGroupedRender)
+        .call(chartWindowBarGroupedAutoResize)
+        .call(chartWindowBarGroupedAutoFilterCategories)
+        .call(chartWindowBarGroupedAutoFilterSubcategories);
+    </script>
+  </body>
+</html>
