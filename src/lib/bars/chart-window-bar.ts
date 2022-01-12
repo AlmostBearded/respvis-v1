@@ -141,6 +141,12 @@ export function chartWindowBarDispatchDensityChange(selection: ChartWindowBarSel
   });
 }
 
+export function chartWindowBarAutoResize(selection: ChartWindowBarSelection): void {
+  selection.on('resize', function () {
+    select<HTMLDivElement, ChartWindowBar>(this).call((s) => chartWindowBar(s));
+  });
+}
+
 export function chartWindowBarAutoFilterCategories(selection: ChartWindowBarSelection): void {
   selection.on('categoryfilter', function (e, d) {
     d.categoryActiveStates = e.detail.categoryActiveStates;
