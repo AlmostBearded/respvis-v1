@@ -186,7 +186,7 @@ export function chartWindowBarGroupedRender(
 export function chartWindowBarGroupedAutoFilterCategories(
   selection: Selection<HTMLDivElement, ChartWindowBarGrouped>
 ): void {
-  selection.on('categoryfilter.chartwindowbargrouped', function (e, d) {
+  selection.on('categoryfilter', function (e, d) {
     d.categoryActiveStates = e.detail.categoryActiveStates;
     select<HTMLDivElement, ChartWindowBarGrouped>(this).call((s) => chartWindowBarGroupedRender(s));
   });
@@ -195,7 +195,7 @@ export function chartWindowBarGroupedAutoFilterCategories(
 export function chartWindowBarGroupedAutoFilterSubcategories(
   selection: Selection<HTMLDivElement, ChartWindowBarGrouped>
 ): void {
-  selection.on('subcategoryfilter.chartwindowbargrouped', function (e, d) {
+  selection.on('subcategoryfilter', function (e, d) {
     d.subcategoryActiveStates = e.detail.subcategoryActiveStates;
     select<HTMLDivElement, ChartWindowBarGrouped>(this).call((s) => chartWindowBarGroupedRender(s));
   });
