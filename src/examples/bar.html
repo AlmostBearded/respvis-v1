@@ -50,13 +50,13 @@
               },
             })
           )
-          .call(respVis.chartWindowBar)
+          .call(respVis.chartWindowBarRender)
           .call(respVis.chartWindowBarAutoFilterCategories)
           .on('densitychange', function (e, d) {
             const density = e.detail.density;
             d.flipped = density.x > 0.0135;
             d.labels.relativePositions = d.flipped ? { x: 1, y: 0.5 } : { x: 0.5, y: 0 };
-            chartWindow.call(respVis.chartWindowBar);
+            chartWindow.call(respVis.chartWindowBarRender);
           });
     </script>
   </body>

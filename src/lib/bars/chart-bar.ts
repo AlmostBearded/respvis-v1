@@ -5,7 +5,7 @@ import {
   chartCartesianData,
   ChartCartesian as ChartCartesian,
 } from '../core/chart-cartesian';
-import { seriesBar, seriesBarData, SeriesBar, Bar } from './series-bar';
+import { seriesBarRender, seriesBarData, SeriesBar, Bar } from './series-bar';
 import {
   SeriesLabelBar as SeriesLabelBar,
   seriesLabelBarData as seriesLabelBarData,
@@ -28,7 +28,7 @@ export function chartBarData(data: Partial<ChartBar>): ChartBar {
 
 export type ChartBarSelection = Selection<SVGSVGElement | SVGGElement, ChartBar>;
 
-export function chartBar(selection: ChartBarSelection): void {
+export function chartBarRender(selection: ChartBarSelection): void {
   selection
     .call((s) => chartCartesianRender(s))
     .classed('chart-bar', true)
@@ -40,7 +40,7 @@ export function chartBar(selection: ChartBarSelection): void {
         .selectAll<SVGGElement, SeriesBar>('.series-bar')
         .data([chartD])
         .join('g')
-        .call((s) => seriesBar(s))
+        .call((s) => seriesBarRender(s))
         .on('mouseover.chartbarhighlight', (e) => chartBarHoverBar(chartS, select(e.target), true))
         .on('mouseout.chartbarhighlight', (e) => chartBarHoverBar(chartS, select(e.target), false));
 

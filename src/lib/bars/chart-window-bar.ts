@@ -9,7 +9,7 @@ import {
   layouterCompute,
 } from '../core';
 import { arrayIs } from '../core';
-import { chartBar, chartBarData, ChartBar } from './chart-bar';
+import { chartBarRender, chartBarData, ChartBar } from './chart-bar';
 
 export interface ChartWindowBar extends ChartBar {
   categoryActiveStates: boolean[];
@@ -37,7 +37,7 @@ export function chartWindowBarData(data: Partial<ChartWindowBar>): ChartWindowBa
 
 export type ChartWindowBarSelection = Selection<HTMLDivElement, ChartWindowBar>;
 
-export function chartWindowBar(selection: ChartWindowBarSelection): void {
+export function chartWindowBarRender(selection: ChartWindowBarSelection): void {
   selection
     .classed('chart-window-bar', true)
     .on('resize.chartwindowbar', function (e, d) {
@@ -123,10 +123,10 @@ export function chartWindowBar(selection: ChartWindowBarSelection): void {
           }),
         ])
         .join('svg')
-        .call((s) => chartBar(s));
+        .call((s) => chartBarRender(s));
 
       layouterS
-        .on('boundschange.chartwindowbar', () => chartBar(chartS))
+        .on('boundschange.chartwindowbar', () => chartBarRender(chartS))
         .call((s) => layouterCompute(s));
     });
 }
@@ -143,13 +143,13 @@ export function chartWindowBarDispatchDensityChange(selection: ChartWindowBarSel
 
 export function chartWindowBarAutoResize(selection: ChartWindowBarSelection): void {
   selection.on('resize', function () {
-    select<HTMLDivElement, ChartWindowBar>(this).call((s) => chartWindowBar(s));
+    select<HTMLDivElement, ChartWindowBar>(this).call((s) => chartWindowBarRender(s));
   });
 }
 
 export function chartWindowBarAutoFilterCategories(selection: ChartWindowBarSelection): void {
   selection.on('categoryfilter', function (e, d) {
     d.categoryActiveStates = e.detail.categoryActiveStates;
-    select<HTMLDivElement, ChartWindowBar>(this).call((s) => chartWindowBar(s));
+    select<HTMLDivElement, ChartWindowBar>(this).call((s) => chartWindowBarRender(s));
   });
 }

@@ -99,7 +99,7 @@ export function seriesBarCreateBars(seriesData: SeriesBar): Bar[] {
   return data;
 }
 
-export function seriesBar(selection: Selection<Element, SeriesBar>): void {
+export function seriesBarRender(selection: Selection<Element, SeriesBar>): void {
   selection
     .classed('series-bar', true)
     .attr('data-ignore-layout-children', true)
