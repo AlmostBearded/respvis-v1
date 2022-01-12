@@ -10,7 +10,7 @@ import {
   Checkbox,
 } from '../core';
 import { arrayIs, arrayIs2D, arrayPartition } from '../core';
-import { chartBarGrouped, chartBarGroupedData, ChartBarGrouped } from './chart-bar-grouped';
+import { chartBarGroupedRender, chartBarGroupedData, ChartBarGrouped } from './chart-bar-grouped';
 import { SeriesLabelBar } from './series-label-bar';
 
 export interface ChartWindowBarGrouped extends ChartBarGrouped {
@@ -46,7 +46,7 @@ export function chartWindowBarGroupedData(
   };
 }
 
-export function chartWindowBarGrouped(
+export function chartWindowBarGroupedRender(
   selection: Selection<HTMLDivElement, ChartWindowBarGrouped>
 ): void {
   selection
@@ -175,10 +175,10 @@ export function chartWindowBarGrouped(
           }),
         ])
         .join('svg')
-        .call((s) => chartBarGrouped(s));
+        .call((s) => chartBarGroupedRender(s));
 
       layouterS
-        .on('boundschange.chartwindowbargrouped', () => chartBarGrouped(chartS))
+        .on('boundschange.chartwindowbargrouped', () => chartBarGroupedRender(chartS))
         .call((s) => layouterCompute(s));
     });
 }
@@ -188,7 +188,7 @@ export function chartWindowBarGroupedAutoFilterCategories(
 ): void {
   selection.on('categoryfilter.chartwindowbargrouped', function (e, d) {
     d.categoryActiveStates = e.detail.categoryActiveStates;
-    select<HTMLDivElement, ChartWindowBarGrouped>(this).call((s) => chartWindowBarGrouped(s));
+    select<HTMLDivElement, ChartWindowBarGrouped>(this).call((s) => chartWindowBarGroupedRender(s));
   });
 }
 
@@ -197,6 +197,6 @@ export function chartWindowBarGroupedAutoFilterSubcategories(
 ): void {
   selection.on('subcategoryfilter.chartwindowbargrouped', function (e, d) {
     d.subcategoryActiveStates = e.detail.subcategoryActiveStates;
-    select<HTMLDivElement, ChartWindowBarGrouped>(this).call((s) => chartWindowBarGrouped(s));
+    select<HTMLDivElement, ChartWindowBarGrouped>(this).call((s) => chartWindowBarGroupedRender(s));
   });
 }

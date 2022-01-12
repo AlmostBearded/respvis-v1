@@ -15,7 +15,7 @@ import {
   BarGrouped,
   SeriesBarGrouped,
   seriesBarGroupedData,
-  seriesBarGrouped,
+  seriesBarGroupedRender,
 } from './series-bar-grouped';
 import { SeriesLabelBar, seriesLabelBarData, seriesLabelBar } from './series-label-bar';
 
@@ -40,7 +40,7 @@ export function chartBarGroupedData(data: Partial<ChartBarGrouped>): ChartBarGro
 
 export type ChartBarGroupedSelection = Selection<SVGSVGElement | SVGGElement, ChartBarGrouped>;
 
-export function chartBarGrouped(selection: ChartBarGroupedSelection): void {
+export function chartBarGroupedRender(selection: ChartBarGroupedSelection): void {
   selection
     .call((s) => chartCartesianRender(s))
     .classed('chart-bar-grouped', true)
@@ -64,7 +64,7 @@ export function chartBarGrouped(selection: ChartBarGroupedSelection): void {
         .selectAll<SVGGElement, SeriesBarGrouped>('.series-bar-grouped')
         .data([chartD])
         .join('g')
-        .call((s) => seriesBarGrouped(s))
+        .call((s) => seriesBarGroupedRender(s))
         .on('mouseover.chartbargroupedhighlight mouseout.chartbargroupedhighlight', (e) =>
           chartBarGroupedHoverBar(chartS, select(e.target), e.type.endsWith('over'))
         );

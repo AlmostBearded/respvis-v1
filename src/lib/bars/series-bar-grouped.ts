@@ -121,7 +121,7 @@ export function seriesBarGroupedCreateBars(seriesData: SeriesBarGrouped): BarGro
   return data;
 }
 
-export function seriesBarGrouped(selection: Selection<Element, SeriesBarGrouped>): void {
+export function seriesBarGroupedRender(selection: Selection<Element, SeriesBarGrouped>): void {
   selection
     .classed('series-bar', true)
     .classed('series-bar-grouped', true)
