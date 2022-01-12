@@ -22,7 +22,7 @@ export interface SeriesBarGrouped extends SeriesConfigTooltips<SVGRectElement, B
   subcategoryPadding: number;
   values: number[][];
   valueScale: ScaleContinuousNumeric<number, number>;
-  styleClasses: string | string[] | string[];
+  styleClasses: string | string[] | string[][];
   keys?: string[][];
   flipped: boolean;
   bounds: Size;
