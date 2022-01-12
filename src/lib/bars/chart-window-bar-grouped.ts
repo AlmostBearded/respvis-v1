@@ -183,6 +183,14 @@ export function chartWindowBarGroupedRender(
     });
 }
 
+export function chartWindowBarGroupedAutoResize(
+  selection: Selection<HTMLDivElement, ChartWindowBarGrouped>
+): void {
+  selection.on('resize', function () {
+    select<HTMLDivElement, ChartWindowBarGrouped>(this).call((s) => chartWindowBarGroupedRender(s));
+  });
+}
+
 export function chartWindowBarGroupedAutoFilterCategories(
   selection: Selection<HTMLDivElement, ChartWindowBarGrouped>
 ): void {
