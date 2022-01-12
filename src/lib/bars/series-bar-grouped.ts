@@ -23,7 +23,7 @@ export interface SeriesBarGrouped extends SeriesConfigTooltips<SVGRectElement, B
   values: number[][];
   valueScale: ScaleContinuousNumeric<number, number>;
   styleClasses: string | string[] | string[][];
-  keys?: string[][];
+  keys: string[][];
   flipped: boolean;
   bounds: Size;
 }
@@ -48,7 +48,7 @@ export function seriesBarGroupedData(data: Partial<SeriesBarGrouped>): SeriesBar
     flipped: data.flipped || false,
     subcategoryPadding: data.subcategoryPadding || 0.1,
     styleClasses: data.styleClasses || subcategories.map((c, i) => `categorical-${i}`),
-    keys: data.keys,
+    keys: data.keys || categories.map((c) => subcategories.map((sc) => `${c}/${sc}`)),
     bounds: data.bounds || { width: 600, height: 400 },
     ...seriesConfigTooltipsData<SVGRectElement, BarGrouped>(data),
     tooltipsEnabled: data.tooltipsEnabled || true,
@@ -112,7 +112,7 @@ export function seriesBarGroupedCreateBars(seriesData: SeriesBarGrouped): BarGro
             : arrayIs(styleClasses)
             ? styleClasses[j]
             : styleClasses,
-          key: keys?.[i][j] || `${i}/${j}`,
+          key: keys[i][j],
           ...(flipped ? flippedRect : rect),
         };
       data.push(bar);
