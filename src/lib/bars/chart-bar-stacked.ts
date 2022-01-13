@@ -8,7 +8,7 @@ import {
 import { Legend, legendData, legendRender, LegendItem } from '../legend';
 import { Bar } from './series-bar';
 import { BarGrouped } from './series-bar-grouped';
-import { SeriesBarStacked, seriesBarStackedData, seriesBarStacked } from './series-bar-stacked';
+import { SeriesBarStacked, seriesBarStackedData, seriesBarStackedRender } from './series-bar-stacked';
 import { SeriesLabelBar, seriesLabelBarData, seriesLabelBar } from './series-label-bar';
 
 export interface ChartBarStacked extends Omit<SeriesBarStacked, 'styleClasses'>, ChartCartesian {
@@ -37,7 +37,7 @@ export function chartBarStackedData(data: Partial<ChartBarStacked>): ChartBarSta
 
 export type ChartBarStackedSelection = Selection<SVGSVGElement | SVGGElement, ChartBarStacked>;
 
-export function chartBarStacked(selection: ChartBarStackedSelection): void {
+export function chartBarStackedRender(selection: ChartBarStackedSelection): void {
   selection
     .call((s) => chartCartesianRender(s))
     .classed('chart-bar-stacked', true)
@@ -60,7 +60,7 @@ export function chartBarStacked(selection: ChartBarStackedSelection): void {
         .selectAll<SVGGElement, SeriesBarStacked>('.series-bar-stacked')
         .data([chartD])
         .join('g')
-        .call((s) => seriesBarStacked(s))
+        .call((s) => seriesBarStackedRender(s))
         .on('mouseover.chartbarstackedhighlight mouseout.chartbarstackedhighlight', (e) =>
           chartBarStackedHoverBar(chartS, select(e.target), e.type.endsWith('over'))
         );

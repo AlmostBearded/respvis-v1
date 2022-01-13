@@ -61,7 +61,7 @@
               },
             })
           )
-          .call(respVis.chartWindowBarStacked)
+          .call(respVis.chartWindowBarStackedRender)
           .call(respVis.chartWindowBarStackedAutoFilterCategories)
           .call(respVis.chartWindowBarStackedAutoFilterSubcategories)
           .on('densitychange', function (e, d) {
@@ -78,7 +78,7 @@
               : respVis.LegendPosition.Right;
             chart.call(respVis.chartLegendPosition, legendPosition);
 
-            chartWindow.call(respVis.chartWindowBarStacked);
+            chartWindow.call(respVis.chartWindowBarStackedRender);
           }),
         chart = chartWindow.selectAll('svg.chart');
     </script>

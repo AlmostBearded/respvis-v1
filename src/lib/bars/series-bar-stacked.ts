@@ -117,7 +117,7 @@ export function seriesBarStackedCreateBars(seriesData: SeriesBarStacked): BarGro
   return data;
 }
 
-export function seriesBarStacked(selection: Selection<Element, SeriesBarStacked>): void {
+export function seriesBarStackedRender(selection: Selection<Element, SeriesBarStacked>): void {
   selection
     .classed('series-bar', true)
     .classed('series-bar-stacked', true)

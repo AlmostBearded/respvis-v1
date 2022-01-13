@@ -9,7 +9,7 @@ import {
   Checkbox,
 } from '../core';
 import { arrayIs, arrayIs2D, arrayPartition } from '../core';
-import { chartBarStacked, chartBarStackedData, ChartBarStacked } from './chart-bar-stacked';
+import { chartBarStackedRender, chartBarStackedData, ChartBarStacked } from './chart-bar-stacked';
 
 export interface ChartWindowBarStacked extends ChartBarStacked {
   categoryActiveStates: boolean[];
@@ -46,7 +46,7 @@ export function chartWindowBarStackedData(
   };
 }
 
-export function chartWindowBarStacked(
+export function chartWindowBarStackedRender(
   selection: Selection<HTMLDivElement, ChartWindowBarStacked>
 ): void {
   selection
@@ -183,10 +183,10 @@ export function chartWindowBarStacked(
           }),
         ])
         .join('svg')
-        .call((s) => chartBarStacked(s));
+        .call((s) => chartBarStackedRender(s));
 
       layouterS
-        .on('boundschange.chartwindowbarstacked', () => chartBarStacked(chartS))
+        .on('boundschange.chartwindowbarstacked', () => chartBarStackedRender(chartS))
         .call((s) => layouterCompute(s));
     });
 }
