@@ -27,7 +27,7 @@ export function chartWindowBarStackedData(
   const chartData = chartBarStackedData(data),
     valueDomain =
       data.valueDomain ||
-      ((values) => [0, Math.max(...values.map((catV) => Math.max(...catV))) * 1.05]);
+      ((values) => [0, Math.max(...values.map((catV) => catV.reduce((a, b) => a + b))) * 1.05]);
 
   chartData.valueScale.domain(
     valueDomain instanceof Function ? valueDomain(chartData.values) : valueDomain
