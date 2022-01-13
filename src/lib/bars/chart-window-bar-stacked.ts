@@ -191,12 +191,20 @@ export function chartWindowBarStacked(
     });
 }
 
+export function chartWindowBarStackedAutoResize(
+  selection: Selection<HTMLDivElement, ChartWindowBarStacked>
+): void {
+  selection.on('resize', function () {
+    select<HTMLDivElement, ChartWindowBarStacked>(this).call((s) => chartWindowBarStackedRender(s));
+  });
+}
+
 export function chartWindowBarStackedAutoFilterCategories(
   selection: Selection<HTMLDivElement, ChartWindowBarStacked>
 ): void {
   selection.on('categoryfilter', function (e, d) {
     d.categoryActiveStates = e.detail.categoryActiveStates;
-    select<HTMLDivElement, ChartWindowBarStacked>(this).call((s) => chartWindowBarStacked(s));
+    select<HTMLDivElement, ChartWindowBarStacked>(this).call((s) => chartWindowBarStackedRender(s));
   });
 }
 
@@ -205,6 +213,6 @@ export function chartWindowBarStackedAutoFilterSubcategories(
 ): void {
   selection.on('subcategoryfilter', function (e, d) {
     d.subcategoryActiveStates = e.detail.subcategoryActiveStates;
-    select<HTMLDivElement, ChartWindowBarStacked>(this).call((s) => chartWindowBarStacked(s));
+    select<HTMLDivElement, ChartWindowBarStacked>(this).call((s) => chartWindowBarStackedRender(s));
   });
 }
