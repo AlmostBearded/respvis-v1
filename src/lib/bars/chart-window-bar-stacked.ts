@@ -25,9 +25,13 @@ export function chartWindowBarStackedData(
   data: Partial<ChartWindowBarStacked>
 ): ChartWindowBarStacked {
   const chartData = chartBarStackedData(data),
+    valuesAsRatios = data.valuesAsRatios || false,
     valueDomain =
       data.valueDomain ||
-      ((values) => [0, Math.max(...values.map((catV) => catV.reduce((a, b) => a + b))) * 1.05]);
+      ((values) =>
+        valuesAsRatios
+          ? [0, 100]
+          : [0, Math.max(...values.map((catV) => catV.reduce((a, b) => a + b))) * 1.05]);
 
   chartData.valueScale.domain(
     valueDomain instanceof Function ? valueDomain(chartData.values) : valueDomain
@@ -39,7 +43,7 @@ export function chartWindowBarStackedData(
     subcategoryEntity: data.subcategoryEntity || 'Subcategories',
     valueEntity: data.valueEntity || 'Values',
     valueDomain: valueDomain,
-    valuesAsRatios: data.valuesAsRatios || false,
+    valuesAsRatios,
     categoryActiveStates: data.categoryActiveStates || chartData.categories.map(() => true),
     subcategoryActiveStates:
       data.subcategoryActiveStates || chartData.subcategories.map(() => true),
