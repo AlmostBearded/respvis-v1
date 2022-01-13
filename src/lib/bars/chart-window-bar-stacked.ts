@@ -194,7 +194,7 @@ export function chartWindowBarStacked(
 export function chartWindowBarStackedAutoFilterCategories(
   selection: Selection<HTMLDivElement, ChartWindowBarStacked>
 ): void {
-  selection.on('categoryfilter.chartwindowbargrouped', function (e, d) {
+  selection.on('categoryfilter', function (e, d) {
     d.categoryActiveStates = e.detail.categoryActiveStates;
     select<HTMLDivElement, ChartWindowBarStacked>(this).call((s) => chartWindowBarStacked(s));
   });
@@ -203,7 +203,7 @@ export function chartWindowBarStackedAutoFilterCategories(
 export function chartWindowBarStackedAutoFilterSubcategories(
   selection: Selection<HTMLDivElement, ChartWindowBarStacked>
 ): void {
-  selection.on('subcategoryfilter.chartwindowbargrouped', function (e, d) {
+  selection.on('subcategoryfilter', function (e, d) {
     d.subcategoryActiveStates = e.detail.subcategoryActiveStates;
     select<HTMLDivElement, ChartWindowBarStacked>(this).call((s) => chartWindowBarStacked(s));
   });
