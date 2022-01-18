@@ -5,7 +5,7 @@ import {
   chartCartesianData,
   ChartCartesian,
 } from '../core/chart-cartesian';
-import { SeriesPoint, seriesPointData, seriesPoint } from './series-point';
+import { SeriesPoint, seriesPointData, seriesPointRender } from './series-point';
 
 export interface ChartPoint extends SeriesPoint, ChartCartesian {}
 
@@ -18,7 +18,7 @@ export function chartPointData(data: Partial<ChartPoint>): ChartPoint {
 
 export type ChartPointSelection = Selection<SVGSVGElement | SVGGElement, ChartPoint>;
 
-export function chartPoint(selection: ChartPointSelection): void {
+export function chartPointRender(selection: ChartPointSelection): void {
   selection
     .call((s) => chartCartesianRender(s))
     .classed('chart-point', true)
@@ -29,7 +29,7 @@ export function chartPoint(selection: ChartPointSelection): void {
         .selectAll<SVGSVGElement, SeriesPoint>('.series-point')
         .data([chartD])
         .join('svg')
-        .call((s) => seriesPoint(s));
+        .call((s) => seriesPointRender(s));
 
       chartD.flipped = false;
       chartD.xAxis.scale = chartD.xScale;

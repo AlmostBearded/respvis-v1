@@ -8,7 +8,7 @@ import {
   layouterCompute,
 } from '../core';
 import { arrayIs } from '../core';
-import { chartPoint, ChartPoint, chartPointData } from './chart-point';
+import { chartPointRender, ChartPoint, chartPointData } from './chart-point';
 
 export interface ChartWindowPoint extends ChartPoint {}
 
@@ -22,7 +22,7 @@ export function chartWindowPointData(data: Partial<ChartWindowPoint>): ChartWind
 
 export type ChartWindowPointSelection = Selection<HTMLDivElement, ChartWindowPoint>;
 
-export function chartWindowPoint(selection: ChartWindowPointSelection): void {
+export function chartWindowPointRender(selection: ChartWindowPointSelection): void {
   selection
     .classed('chart-window-point', true)
     .on('resize.chartwindowpoint', function (e, d) {
@@ -46,17 +46,17 @@ export function chartWindowPoint(selection: ChartWindowPointSelection): void {
         .selectAll<SVGSVGElement, ChartPoint>('svg.chart-point')
         .data([chartPointData(chartWindowD)])
         .join('svg')
-        .call((s) => chartPoint(s));
+        .call((s) => chartPointRender(s));
 
       layouterS
-        .on('boundschange.chartwindowpoint', () => chartPoint(chartS))
+        .on('boundschange.chartwindowpoint', () => chartPointRender(chartS))
         .call((s) => layouterCompute(s));
     });
 }
 
 export function chartWindowPointAutoResize(selection: ChartWindowPointSelection): void {
   selection.on('resize', function () {
-    select<HTMLDivElement, ChartWindowPoint>(this).call((s) => chartWindowPoint(s));
+    select<HTMLDivElement, ChartWindowPoint>(this).call((s) => chartWindowPointRender(s));
   });
 }
 

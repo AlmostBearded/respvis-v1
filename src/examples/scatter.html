@@ -71,9 +71,9 @@
               },
             })
           )
-          .call(respVis.chartWindowPoint)
+          .call(respVis.chartWindowPointRender)
           .on('resize', function () {
-            chartWindow.call(respVis.chartWindowPoint);
+            chartWindow.call(respVis.chartWindowPointRender);
             const { width, height } = respVis.rectFromString(drawArea.attr('bounds')),
               extent = [
                 [0, 0],
@@ -87,7 +87,7 @@
           .on('zoom', function (e, d) {
             areaScale.domain(e.transform.rescaleX(areaScale.domain(areaDomain)).domain());
             priceScale.domain(e.transform.rescaleY(priceScale.domain(priceDomain)).domain());
-            chartWindow.call(respVis.chartWindowPoint);
+            chartWindow.call(respVis.chartWindowPointRender);
           }),
         drawArea = chartWindow.selectAll('.draw-area').call(zoom);
     </script>

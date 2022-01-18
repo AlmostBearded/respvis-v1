@@ -63,7 +63,7 @@ export function seriesPointCreatePoints(seriesData: SeriesPoint): Point[] {
   return data;
 }
 
-export function seriesPoint(selection: Selection<Element, SeriesPoint>): void {
+export function seriesPointRender(selection: Selection<Element, SeriesPoint>): void {
   selection
     .classed('series-point', true)
     .attr('data-ignore-layout-children', true)
