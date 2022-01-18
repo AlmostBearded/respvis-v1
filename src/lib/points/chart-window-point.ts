@@ -54,6 +54,12 @@ export function chartWindowPoint(selection: ChartWindowPointSelection): void {
     });
 }
 
+export function chartWindowPointAutoResize(selection: ChartWindowPointSelection): void {
+  selection.on('resize', function () {
+    select<HTMLDivElement, ChartWindowPoint>(this).call((s) => chartWindowPoint(s));
+  });
+}
+
 export function chartWindowPointDispatchDensityChange(selection: ChartWindowPointSelection): void {
   selection.each((d, i, g) => {
     const { width, height } = g[i].getBoundingClientRect();
