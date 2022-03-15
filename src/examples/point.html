@@ -45,10 +45,6 @@
 
       const wideMediaQuery = 'screen and (min-width: 40rem)';
 
-      // todo: show density plot when too many points
-      //   (see http://nrabinowitz.github.io/rdv/?scatterplot)
-      // todo: only render points visible in current zoom frame
-
       const root = d3.select('#chart'),
         chartWindow = root
           .append('div')
@@ -59,7 +55,6 @@
               yValues: prices,
               yScale: priceScale,
               radiuses: 5,
-              keys: areas.map((a, i) => i),
               xAxis: {
                 title: 'Area',
                 subtitle: '[ft²]',
