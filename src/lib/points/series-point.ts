@@ -1,4 +1,4 @@
-import { easeCubicOut } from 'd3';
+import { easeCubicOut, extent as d3Extent, scalePoint } from 'd3';
 import { scaleLinear } from 'd3';
 import { select, Selection } from 'd3';
 import { arrayIs, Circle, circleMinimized, circleToAttrs, rectFromString, ScaleAny } from '../core';
@@ -23,11 +23,38 @@ export interface SeriesPoint {
 }
 
 export function seriesPointData(data: Partial<SeriesPoint>): SeriesPoint {
+  const xValues = data.xValues || [];
+  const yValues = data.yValues || [];
+
+  let xScale = data.xScale || scaleLinear().domain([0, 1]);
+  if (!data.xScale && xValues.length > 0) {
+    if (typeof xValues[0] === 'number') {
+      const extent = [Math.min(...xValues), Math.max(...xValues)];
+      const range = extent[1] - extent[0];
+      const domain = [extent[0] - range * 0.05, extent[1] + range * 0.05];
+      xScale = scaleLinear().domain(domain).nice();
+    } else {
+      xScale = scalePoint().domain(xValues);
+    }
+  }
+
+  let yScale = data.yScale || scaleLinear().domain([0, 1]);
+  if (!data.yScale && yValues.length > 0) {
+    if (typeof yValues[0] === 'number') {
+      const extent = [Math.min(...yValues), Math.max(...yValues)];
+      const range = extent[1] - extent[0];
+      const domain = [extent[0] - range * 0.05, extent[1] + range * 0.05];
+      yScale = scaleLinear().domain(domain).nice();
+    } else {
+      yScale = scalePoint().domain(yValues);
+    }
+  }
+
   return {
-    xValues: data.xValues || [],
-    xScale: data.xScale || scaleLinear().domain([0, 1]),
-    yValues: data.yValues || [],
-    yScale: data.yScale || scaleLinear().domain([0, 1]),
+    xValues,
+    xScale,
+    yValues,
+    yScale,
     radiuses: data.radiuses || 5,
     styleClasses: data.styleClasses || 'categorical-0',
     keys: data.keys,
