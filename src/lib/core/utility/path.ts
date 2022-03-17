@@ -3,6 +3,7 @@ import { Circle } from './circle';
 import { Rect } from './rect';
 import { elementIs } from './element';
 import { select } from 'd3';
+import { Position } from '..';
 
 export function pathRect(selectionOrTransition: SelectionOrTransition | Element, rect: Rect): void {
   const { x, y, width: w, height: h } = rect;
@@ -12,20 +13,36 @@ export function pathRect(selectionOrTransition: SelectionOrTransition | Element,
   selectionOrTransition.attr('d', `M ${x} ${y} h ${w} v ${h} h ${-w} v ${-h}`);
 }
 
-export function pathCircle(selectionOrTransition: SelectionOrTransition | Element, circle: Circle): void {
+export function pathCircle(
+  selectionOrTransition: SelectionOrTransition | Element,
+  circle: Circle
+): void {
   const {
     center: { x: cx, y: cy },
     radius: r,
   } = circle;
 
   selectionOrTransition = elementIs(selectionOrTransition)
-  ? select(selectionOrTransition)
-  : selectionOrTransition;
-  
+    ? select(selectionOrTransition)
+    : selectionOrTransition;
+
   selectionOrTransition.attr(
     'd',
     `M ${cx - r} ${cy} 
     a ${r},${r} 0 1,0 ${r * 2},0 
     a ${r},${r} 0 1,0 -${r * 2},0`
   );
+}
+
+export function pathLine(
+  selectionOrTransition: SelectionOrTransition | Element,
+  positions: Position[]
+): void {
+  if (positions.length < 2) return;
+
+  selectionOrTransition = elementIs(selectionOrTransition)
+    ? select(selectionOrTransition)
+    : selectionOrTransition;
+
+  selectionOrTransition.attr('d', `M${positions.map((p) => `${p.x},${p.y}`).join('L')}`);
 }
