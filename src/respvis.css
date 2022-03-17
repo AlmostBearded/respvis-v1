@@ -20,42 +20,52 @@
 
 [data-style='categorical-0'] {
   fill: var(--color-categorical-0);
+  stroke: var(--color-categorical-0);
 }
 
 [data-style='categorical-1'] {
   fill: var(--color-categorical-1);
+  stroke: var(--color-categorical-1);
 }
 
 [data-style='categorical-2'] {
   fill: var(--color-categorical-2);
+  stroke: var(--color-categorical-2);
 }
 
 [data-style='categorical-3'] {
   fill: var(--color-categorical-3);
+  stroke: var(--color-categorical-3);
 }
 
 [data-style='categorical-4'] {
   fill: var(--color-categorical-4);
+  stroke: var(--color-categorical-4);
 }
 
 [data-style='categorical-5'] {
   fill: var(--color-categorical-5);
+  stroke: var(--color-categorical-5);
 }
 
 [data-style='categorical-6'] {
   fill: var(--color-categorical-6);
+  stroke: var(--color-categorical-6);
 }
 
 [data-style='categorical-7'] {
   fill: var(--color-categorical-7);
+  stroke: var(--color-categorical-7);
 }
 
 [data-style='categorical-8'] {
   fill: var(--color-categorical-8);
+  stroke: var(--color-categorical-8);
 }
 
 [data-style='categorical-9'] {
   fill: var(--color-categorical-9);
+  stroke: var(--color-categorical-9);
 }
 
 .bar {
@@ -201,6 +211,10 @@
 .text {
   --fit-width: true;
   --fit-height: true;
+}
+
+text {
+  stroke: none;
 }
 
 text[data-align-h='center'] {
@@ -453,4 +467,13 @@ text.highlight {
   fill: var(--color-categorical-0);
   stroke: #000;
   stroke-width: 1px;
+}
+
+path.line {
+  fill: none;
+  stroke-width: 2.5px;
+}
+
+path.line.highlight {
+  stroke-width: 5px;
 }
