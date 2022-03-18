@@ -142,5 +142,6 @@ export function seriesPointJoin(
         .each((d, i, g) => circleToAttrs(select(g[i]), d))
     )
     .attr('data-style', (d) => d.styleClass)
+    .attr('data-key', (d) => d.key)
     .call((s) => seriesSelection.dispatch('update', { detail: { selection: s } }));
 }
