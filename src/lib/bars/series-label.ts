@@ -30,7 +30,7 @@ export function seriesLabelCreateLabels(seriesData: SeriesLabel): Label[] {
   }));
 }
 
-export function seriesLabel(selection: Selection<Element, SeriesLabel>): void {
+export function seriesLabelRender(selection: Selection<Element, SeriesLabel>): void {
   selection.classed('series-label', true).attr('data-ignore-layout-children', true);
 
   selection.each((d, i, g) => {
