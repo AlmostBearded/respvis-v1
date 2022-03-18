@@ -38,7 +38,7 @@ export function seriesLineData(data: Partial<SeriesLine>): SeriesLine {
       : scalePoint().domain(new Set(yValues.flat()));
 
   const styleClasses = data.styleClasses || yValues.map((_, i) => `categorical-${i}`);
-  const keys = data.keys || xValues.map((c, i) => i.toString());
+  const keys = data.keys || yValues.map((c, i) => i.toString());
   const flipped = data.flipped || false;
 
   return { xValues, yValues, xScale, yScale, styleClasses, keys, flipped };
