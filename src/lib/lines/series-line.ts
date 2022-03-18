@@ -8,24 +8,27 @@ export interface Line {
 }
 
 export interface SeriesLine {
-  xValues: any[][];
+  xValues: any[];
   xScale: ScaleAny<any, number, number>;
   yValues: any[][];
   yScale: ScaleAny<any, number, number>;
   styleClasses: string | string[];
   keys: string[];
+  flipped: boolean;
 }
 
 export function seriesLineData(data: Partial<SeriesLine>): SeriesLine {
   const xValues = data.xValues || [];
   const yValues = data.yValues || [];
+
+  // todo: figure out a better way to create default scales
+  // todo: what if typeof xValues[0] === Date? scaleUTC?
+  // todo: should we support xValues: any[][]?
+
   const xScale =
-    data.xScale || typeof xValues?.[0]?.[0] === 'number'
-      ? scaleLinear().domain([
-          Math.min(...xValues.map((a) => Math.min(...a))),
-          Math.max(...xValues.map((a) => Math.max(...a))),
-        ])
-      : scalePoint().domain(new Set(xValues.flat()));
+    data.xScale || typeof xValues?.[0] === 'number'
+      ? scaleLinear().domain([Math.min(...xValues), Math.max(...xValues)])
+      : scalePoint().domain(new Set(xValues));
   const yScale =
     data.yScale || typeof yValues?.[0]?.[0] === 'number'
       ? scaleLinear().domain([
@@ -33,10 +36,12 @@ export function seriesLineData(data: Partial<SeriesLine>): SeriesLine {
           Math.max(...yValues.map((a) => Math.max(...a))),
         ])
       : scalePoint().domain(new Set(yValues.flat()));
-  const styleClasses = data.styleClasses || 'categorical-0';
-  const keys = data.keys || xValues.map((c, i) => i.toString());
 
-  return { xValues, yValues, xScale, yScale, styleClasses, keys };
+  const styleClasses = data.styleClasses || yValues.map((_, i) => `categorical-${i}`);
+  const keys = data.keys || xValues.map((c, i) => i.toString());
+  const flipped = data.flipped || false;
+
+  return { xValues, yValues, xScale, yScale, styleClasses, keys, flipped };
 }
 
 export function seriesLineRender(selection: Selection<Element, SeriesLine>): void {
@@ -49,15 +54,19 @@ export function seriesLineRender(selection: Selection<Element, SeriesLine>): voi
       if (!boundsStr) return;
 
       const bounds = rectFromString(boundsStr);
-      const { xValues, yValues, xScale, yScale, keys, styleClasses } = seriesD;
-      xScale.range([0, bounds.width]);
-      yScale.range([bounds.height, 0]);
+      const { xValues, yValues, xScale, yScale, keys, styleClasses, flipped } = seriesD;
+      xScale.range(flipped ? [bounds.height, 0] : [0, bounds.width]);
+      yScale.range(flipped ? [0, bounds.width] : [bounds.height, 0]);
 
-      const lines: Line[] = xValues.map((xValues, lineIndex) => ({
-        positions: xValues.map((xValue, pointIndex) => ({
-          x: xScale(xValue)!,
-          y: yScale(yValues[lineIndex][pointIndex])!,
-        })),
+      const lines: Line[] = yValues.map((yValues, lineIndex) => ({
+        positions: yValues.map((yValue, pointIndex) => {
+          const x = xScale(xValues[pointIndex])!;
+          const y = yScale(yValue)!;
+          return {
+            x: flipped ? y : x,
+            y: flipped ? x : y,
+          };
+        }),
         key: keys[lineIndex],
         styleClass: arrayIs(styleClasses) ? styleClasses[lineIndex] : styleClasses,
       }));
