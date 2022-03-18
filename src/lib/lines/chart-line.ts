@@ -6,6 +6,7 @@ import {
   chartCartesianData,
   chartCartesianRender,
   arrayIs,
+  rectFromString,
 } from '../core';
 import { SeriesPoint, seriesPointRender, seriesPointData, Point } from '../points';
 import { Legend, legendData, legendRender, LegendItem } from '../legend';
@@ -29,6 +30,11 @@ export function chartLineRender(
     .each((chartD, i, g) => {
       const chartS = select<SVGSVGElement | SVGGElement, ChartLine>(g[i]);
       const drawAreaS = chartS.selectAll('.draw-area');
+      const drawAreaBounds = rectFromString(drawAreaS.attr('bounds') || '0, 0, 600, 400');
+      const { styleClasses, keys, xValues, yValues, xScale, yScale, flipped } = chartD;
+
+      xScale.range(flipped ? [drawAreaBounds.height, 0] : [0, drawAreaBounds.width]);
+      yScale.range(flipped ? [0, drawAreaBounds.width] : [drawAreaBounds.height, 0]);
 
       const lineSeriesS = drawAreaS
         .selectAll<SVGGElement, SeriesLine>('.series-line')
@@ -56,6 +62,7 @@ export function chartLineRender(
               yValues: yValues[lineI],
               xScale,
               yScale,
+              flipped,
             })
           )
         )

@@ -55,8 +55,6 @@ export function seriesLineRender(selection: Selection<Element, SeriesLine>): voi
 
       const bounds = rectFromString(boundsStr);
       const { xValues, yValues, xScale, yScale, keys, styleClasses, flipped } = seriesD;
-      xScale.range(flipped ? [bounds.height, 0] : [0, bounds.width]);
-      yScale.range(flipped ? [0, bounds.width] : [bounds.height, 0]);
 
       const lines: Line[] = yValues.map((yValues, lineIndex) => ({
         positions: yValues.map((yValue, pointIndex) => {
