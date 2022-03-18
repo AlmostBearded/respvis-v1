@@ -1,4 +1,5 @@
-import { BaseType, select, Selection } from 'd3';
+import { select, Selection } from 'd3';
+import { rectFromString } from '../core';
 import {
   chartCartesianRender,
   chartCartesianAxesRender,
@@ -24,6 +25,11 @@ export function chartPointRender(selection: ChartPointSelection): void {
     .classed('chart-point', true)
     .each((chartD, i, g) => {
       const drawAreaS = select(g[i]).selectAll('.draw-area');
+      const drawAreaBounds = rectFromString(drawAreaS.attr('bounds') || '0, 0, 600, 400');
+      const { xScale, yScale, flipped } = chartD;
+
+      xScale.range(flipped ? [drawAreaBounds.height, 0] : [0, drawAreaBounds.width]);
+      yScale.range(flipped ? [0, drawAreaBounds.width] : [drawAreaBounds.height, 0]);
 
       drawAreaS
         .selectAll<SVGSVGElement, SeriesPoint>('.series-point')
@@ -31,7 +37,6 @@ export function chartPointRender(selection: ChartPointSelection): void {
         .join('svg')
         .call((s) => seriesPointRender(s));
 
-      chartD.flipped = false;
       chartD.xAxis.scale = chartD.xScale;
       chartD.yAxis.scale = chartD.yScale;
     })

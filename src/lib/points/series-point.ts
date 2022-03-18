@@ -20,6 +20,7 @@ export interface SeriesPoint {
   styleClasses: string | string[];
   keys?: string[];
   bounds: Size;
+  flipped: boolean;
 }
 
 export function seriesPointData(data: Partial<SeriesPoint>): SeriesPoint {
@@ -59,14 +60,13 @@ export function seriesPointData(data: Partial<SeriesPoint>): SeriesPoint {
     styleClasses: data.styleClasses || 'categorical-0',
     keys: data.keys,
     bounds: data.bounds || { width: 600, height: 400 },
+    flipped: data.flipped || false,
   };
 }
 
 export function seriesPointCreatePoints(seriesData: SeriesPoint): Point[] {
-  const { xScale, yScale, xValues, yValues, radiuses, bounds, keys, styleClasses } = seriesData;
-
-  xScale.range([0, bounds.width]);
-  yScale.range([bounds.height, 0]);
+  const { xScale, yScale, xValues, yValues, radiuses, bounds, keys, styleClasses, flipped } =
+    seriesData;
 
   const data: Point[] = [];
 
@@ -78,8 +78,8 @@ export function seriesPointCreatePoints(seriesData: SeriesPoint): Point[] {
       styleClass: arrayIs(styleClasses) ? styleClasses[i] : styleClasses,
       key: keys?.[i] || i.toString(),
       center: {
-        x: xScale(x)!,
-        y: yScale(y)!,
+        x: flipped ? yScale(y)! : xScale(x)!,
+        y: flipped ? xScale(x)! : yScale(y)!,
       },
       radius: r,
       xValue: x,
