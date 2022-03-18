@@ -464,7 +464,6 @@ text.highlight {
 }
 
 .point {
-  fill: var(--color-categorical-0);
   stroke: #000;
   stroke-width: 1px;
 }
@@ -474,6 +473,7 @@ path.line {
   stroke-width: 2.5px;
 }
 
+.highlight path.line,
 path.line.highlight {
   stroke-width: 5px;
 }
