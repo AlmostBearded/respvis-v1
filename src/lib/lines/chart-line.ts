@@ -7,6 +7,7 @@ import {
   chartCartesianRender,
   arrayIs,
 } from '../core';
+import { SeriesPoint, seriesPointRender, seriesPointData, Point } from '../points';
 import { Legend, legendData, legendRender, LegendItem } from '../legend';
 
 export interface ChartLine extends SeriesLine, ChartCartesian {
@@ -43,7 +44,31 @@ export function chartLineRender(
 
       // todo: labels?
 
-      const { legend: legendD, styleClasses, keys } = chartD;
+      const { styleClasses, keys, xValues, yValues, xScale, yScale } = chartD;
+      drawAreaS
+        .selectAll<SVGGElement, SeriesPoint>('.series-point')
+        .data<SeriesPoint>(
+          keys.map((k, lineI) =>
+            seriesPointData({
+              styleClasses: arrayIs(styleClasses) ? styleClasses[lineI] : styleClasses,
+              keys: yValues[lineI].map((_, markerI) => `${k}-${markerI}`),
+              xValues,
+              yValues: yValues[lineI],
+              xScale,
+              yScale,
+            })
+          )
+        )
+        .join('g')
+        .call((s) => seriesPointRender(s))
+        .on('mouseover.chartlinehighlight', (e) =>
+          chartLineHoverMarker(chartS, select(e.target), true)
+        )
+        .on('mouseout.chartlinehighlight', (e) =>
+          chartLineHoverMarker(chartS, select(e.target), false)
+        );
+
+      const { legend: legendD } = chartD;
       chartS
         .selectAll<SVGGElement, Legend>('.legend')
         .data(
@@ -74,6 +99,21 @@ export function chartLineHoverLine(
 ) {
   lineS.each((lineD) => {
     chartS.selectAll(`.legend-item[data-key="${lineD.key}"]`).classed('highlight', hover);
+    chartS.selectAll(`.point[data-key^="${lineD.key}"]`).classed('highlight', hover);
+    // chartS.selectAll(`.label[data-key="${barD.key}"]`).classed('highlight', hover);
+    // chartS.selectAll(`.axis-x .tick[data-key="${barD.category}"]`).classed('highlight', hover);
+  });
+}
+
+export function chartLineHoverMarker(
+  chartS: Selection,
+  markerS: Selection<Element, Point>,
+  hover: boolean
+) {
+  markerS.each((pointD) => {
+    const lineKey = pointD.key.replace(/-[0-9]+$/, '');
+    chartS.selectAll(`.legend-item[data-key="${lineKey}"]`).classed('highlight', hover);
+    chartS.selectAll(`.line[data-key^="${lineKey}"]`).classed('highlight', hover);
     // chartS.selectAll(`.label[data-key="${barD.key}"]`).classed('highlight', hover);
     // chartS.selectAll(`.axis-x .tick[data-key="${barD.category}"]`).classed('highlight', hover);
   });
@@ -87,6 +127,7 @@ export function chartLineHoverLegendItem(
   legendItemS.each((_, i, g) => {
     const key = g[i].getAttribute('data-key')!;
     chartS.selectAll<any, Line>(`.line[data-key="${key}"]`).classed('highlight', hover);
+    chartS.selectAll(`.point[data-key^="${key}"]`).classed('highlight', hover);
     // .each((d) => chartS.selectAll(`.label[data-key="${d.key}"]`).classed('highlight', hover));
   });
 }
