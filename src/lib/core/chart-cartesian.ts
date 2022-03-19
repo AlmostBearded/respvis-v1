@@ -38,23 +38,25 @@ export function chartCartesianRender(selection: ChartCartesianSelection): void {
 }
 
 export function chartCartesianAxesRender(selection: ChartCartesianSelection): void {
-  selection.each(function ({ flipped, xAxis, yAxis }, i, g) {
-    const s = <ChartCartesianSelection>select(g[i]);
+  selection
+    .each(function ({ flipped, xAxis, yAxis }, i, g) {
+      const s = <ChartCartesianSelection>select(g[i]);
 
-    s.selectAll<SVGGElement, Axis>('.axis-left')
-      .data([flipped ? xAxis : yAxis])
-      .join('g')
-      .call((s) => axisLeftRender(s))
-      .classed('axis-x', flipped)
-      .classed('axis-y', !flipped);
+      s.selectAll<SVGGElement, Axis>('.axis-left')
+        .data([flipped ? xAxis : yAxis])
+        .join('g')
+        .call((s) => axisLeftRender(s))
+        .classed('axis-x', flipped)
+        .classed('axis-y', !flipped);
 
-    s.selectAll<SVGGElement, Axis>('.axis-bottom')
-      .data([flipped ? yAxis : xAxis])
-      .join('g')
-      .call((s) => axisBottomRender(s))
-      .classed('axis-x', !flipped)
-      .classed('axis-y', flipped);
-  });
+      s.selectAll<SVGGElement, Axis>('.axis-bottom')
+        .data([flipped ? yAxis : xAxis])
+        .join('g')
+        .call((s) => axisBottomRender(s))
+        .classed('axis-x', !flipped)
+        .classed('axis-y', flipped);
+    })
+    .attr('data-flipped', (d) => d.flipped);
 }
 
 export enum LegendPosition {
