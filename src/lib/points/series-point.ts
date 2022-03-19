@@ -1,6 +1,11 @@
 import { easeCubicOut, extent as d3Extent, scalePoint } from 'd3';
 import { scaleLinear } from 'd3';
 import { select, Selection } from 'd3';
+import {
+  SeriesConfigTooltips,
+  seriesConfigTooltipsData,
+  seriesConfigTooltipsHandleEvents,
+} from '../tooltip';
 import { arrayIs, Circle, circleMinimized, circleToAttrs, rectFromString, ScaleAny } from '../core';
 import { Size } from '../core/utility/size';
 
@@ -11,7 +16,7 @@ export interface Point extends Circle {
   key: string;
 }
 
-export interface SeriesPoint {
+export interface SeriesPoint extends SeriesConfigTooltips<SVGCircleElement, Point> {
   xValues: any[];
   xScale: ScaleAny<any, number, number>;
   yValues: any[];
@@ -61,6 +66,9 @@ export function seriesPointData(data: Partial<SeriesPoint>): SeriesPoint {
     keys: data.keys,
     bounds: data.bounds || { width: 600, height: 400 },
     flipped: data.flipped || false,
+    ...seriesConfigTooltipsData(data),
+    tooltipsEnabled: data.tooltipsEnabled || true,
+    tooltips: data.tooltips || ((e, d) => `X-Value: ${d.xValue}<br/>Y-Value: ${d.yValue}`),
   };
 }
 
@@ -106,7 +114,8 @@ export function seriesPointRender(selection: Selection<Element, SeriesPoint>): v
     })
     .on('mouseover.seriespointhighlight mouseout.seriespointhighlight', (e: MouseEvent) =>
       (<Element>e.target).classList.toggle('highlight', e.type.endsWith('over'))
-    );
+    )
+    .call((s) => seriesConfigTooltipsHandleEvents(s));
 }
 
 export function seriesPointJoin(
