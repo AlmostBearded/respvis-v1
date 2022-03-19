@@ -477,3 +477,20 @@ path.line {
 path.line.highlight {
   stroke-width: 5px;
 }
+
+.chart-line[data-flipped='false'] .layout.series-label {
+  margin-top: -1em;
+}
+
+.chart-line[data-flipped='false'] .series-label .label {
+  text-anchor: middle;
+  dominant-baseline: auto;
+}
+
+.chart-line[data-flipped='true'] .layout.series-label {
+  margin-left: 1em;
+}
+
+.chart-line[data-flipped='true'] .series-label .label {
+  dominant-baseline: middle;
+}

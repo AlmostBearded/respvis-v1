@@ -10,15 +10,32 @@ import {
 } from '../core';
 import { SeriesPoint, seriesPointRender, seriesPointData, Point } from '../points';
 import { Legend, legendData, legendRender, LegendItem } from '../legend';
+import { SeriesLabel, seriesLabelData, seriesLabelRender, JoinEvent } from '../bars';
 
 export interface ChartLine extends SeriesLine, ChartCartesian {
   legend: Partial<Legend>;
+  markerLabelsEnabled: boolean;
+  markerLabels: (
+    chartData: this,
+    markerData: {
+      lineIndex: number;
+      markerIndex: number;
+      xValue: any;
+      yValue: any;
+    }
+  ) => string;
 }
 
 export function chartLineData(data: Partial<ChartLine>): ChartLine {
   const seriesD = seriesLineData(data);
   const chartCartesianD = chartCartesianData(data);
-  return { ...seriesD, ...chartCartesianD, legend: data.legend || {} };
+  return {
+    ...seriesD,
+    ...chartCartesianD,
+    legend: data.legend || {},
+    markerLabelsEnabled: data.markerLabelsEnabled || false,
+    markerLabels: data.markerLabels || ((chartD, markerD) => `${markerD.yValue}`),
+  };
 }
 
 export function chartLineRender(
@@ -48,10 +65,7 @@ export function chartLineRender(
           chartLineHoverLine(chartS, select(e.target), false)
         );
 
-      // todo: labels?
-
-      const { styleClasses, keys, xValues, yValues, xScale, yScale } = chartD;
-      drawAreaS
+      const markerS = drawAreaS
         .selectAll<SVGGElement, SeriesPoint>('.series-point')
         .data<SeriesPoint>(
           keys.map((k, lineI) =>
@@ -73,7 +87,35 @@ export function chartLineRender(
         )
         .on('mouseout.chartlinehighlight', (e) =>
           chartLineHoverMarker(chartS, select(e.target), false)
-        );
+        )
+        .attr('data-key', (d, i) => keys[i]);
+
+      const { markerLabelsEnabled, markerLabels } = chartD;
+      drawAreaS
+        .selectAll<SVGGElement, SeriesLabel>('.series-label')
+        .data<SeriesLabel>(
+          markerLabelsEnabled
+            ? keys.map((lineKey, lineI) => {
+                const markerPoints = markerS
+                  .selectAll<Element, Point>(`.point[data-key^="${lineKey}"]`)
+                  .data();
+                return seriesLabelData({
+                  positions: markerPoints.map((p) => p.center),
+                  keys: markerPoints.map((p) => p.key),
+                  texts: markerPoints.map((p, markerI) =>
+                    markerLabels(chartD, {
+                      lineIndex: lineI,
+                      markerIndex: markerI,
+                      xValue: p.xValue,
+                      yValue: p.yValue,
+                    })
+                  ),
+                });
+              })
+            : []
+        )
+        .join('g')
+        .call((s) => seriesLabelRender(s));
 
       const { legend: legendD } = chartD;
       chartS
@@ -107,8 +149,7 @@ export function chartLineHoverLine(
   lineS.each((lineD) => {
     chartS.selectAll(`.legend-item[data-key="${lineD.key}"]`).classed('highlight', hover);
     chartS.selectAll(`.point[data-key^="${lineD.key}"]`).classed('highlight', hover);
-    // chartS.selectAll(`.label[data-key="${barD.key}"]`).classed('highlight', hover);
-    // chartS.selectAll(`.axis-x .tick[data-key="${barD.category}"]`).classed('highlight', hover);
+    chartS.selectAll(`.label[data-key^="${lineD.key}"]`).classed('highlight', hover);
   });
 }
 
@@ -121,8 +162,7 @@ export function chartLineHoverMarker(
     const lineKey = pointD.key.replace(/-[0-9]+$/, '');
     chartS.selectAll(`.legend-item[data-key="${lineKey}"]`).classed('highlight', hover);
     chartS.selectAll(`.line[data-key^="${lineKey}"]`).classed('highlight', hover);
-    // chartS.selectAll(`.label[data-key="${barD.key}"]`).classed('highlight', hover);
-    // chartS.selectAll(`.axis-x .tick[data-key="${barD.category}"]`).classed('highlight', hover);
+    chartS.selectAll(`.label[data-key="${pointD.key}"]`).classed('highlight', hover);
   });
 }
 
@@ -135,6 +175,6 @@ export function chartLineHoverLegendItem(
     const key = g[i].getAttribute('data-key')!;
     chartS.selectAll<any, Line>(`.line[data-key="${key}"]`).classed('highlight', hover);
     chartS.selectAll(`.point[data-key^="${key}"]`).classed('highlight', hover);
-    // .each((d) => chartS.selectAll(`.label[data-key="${d.key}"]`).classed('highlight', hover));
+    chartS.selectAll(`.label[data-key^="${key}"]`).classed('highlight', hover);
   });
 }
