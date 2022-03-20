@@ -26,12 +26,26 @@
         opacity: 0;
       }
 
+      .label {
+        opacity: 0;
+      }
+
       @media screen and (max-width: 40rem) {
-        .axis-bottom .ticks .tick:nth-of-type(3n + 1) {
+        .chart {
+          padding: 1rem 3rem 0rem;
+        }
+
+        .axis {
+          display: none;
+        }
+
+        .point:first-of-type,
+        .point:last-of-type {
           opacity: 1;
         }
 
-        .axis-left .ticks .tick:nth-of-type(2n + 1) {
+        .label:first-of-type,
+        .label:last-of-type {
           opacity: 1;
         }
       }
@@ -86,6 +100,8 @@
           tooltips: (markerE, markerD) =>
             `Year: ${markerD.xValue}<br/>Average Open Price: $${format(',.2f')(markerD.yValue)}`,
         },
+        markerLabelsEnabled: true,
+        markerLabels: (chartD, markerD) => `${markerD.xValue}: $${format('.2s')(markerD.yValue)}`,
       };
 
       const chart = select('#chart')
