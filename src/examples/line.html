@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <title>RespVis - Line Chart</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="../respvis.css" />
+    <style>
+      #chart {
+        width: 100%;
+        height: 75vh;
+        min-height: 25rem;
+        --medium-media: screen and (min-width: 40rem);
+        --wide-media: screen and (min-width: 60rem);
+      }
+
+      body {
+        background-color: floralwhite;
+      }
+
+      .axis .ticks .tick {
+        opacity: 0;
+      }
+
+      .point {
+        opacity: 0;
+      }
+
+      @media screen and (max-width: 40rem) {
+        .axis-bottom .ticks .tick:nth-of-type(3n + 1) {
+          opacity: 1;
+        }
+
+        .axis-left .ticks .tick:nth-of-type(2n + 1) {
+          opacity: 1;
+        }
+      }
+
+      @media screen and (min-width: 40rem) {
+        .axis-bottom .ticks .tick:nth-of-type(2n + 1) {
+          opacity: 1;
+        }
+
+        .axis-left .ticks .tick:nth-of-type(2n + 1) {
+          opacity: 1;
+        }
+
+        .point {
+          opacity: 1;
+        }
+      }
+
+      @media screen and (min-width: 60rem) {
+        .axis-bottom .ticks .tick {
+          opacity: 1;
+        }
+
+        .axis-left .ticks .tick {
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Line Chart</h1>
+    <div id="chart"></div>
+    <script type="module">
+      import { select, format } from 'https://cdn.skypack.dev/d3@7';
+      import {
+        chartWindowLineData,
+        chartWindowLineRender,
+        chartWindowLineAutoResize,
+      } from '../respvis.mjs';
+
+      import data from './data/google.js';
+
+      const mediumMediaQuery = 'screen and (min-width: 40rem)';
+      const wideMediaQuery = 'screen and (min-width: 60rem)';
+
+      const chartData = {
+        xValues: data.years,
+        yValues: [data.averageOpens],
+        xAxis: { title: 'Years' },
+        yAxis: { title: 'Average Open Prices' },
+        markerTooltips: {
+          tooltips: (markerE, markerD) =>
+            `Year: ${markerD.xValue}<br/>Average Open Price: $${format(',.2f')(markerD.yValue)}`,
+        },
+      };
+
+      const chart = select('#chart')
+        .append('div')
+        .on('resize', () => {
+          const medium = window.matchMedia(mediumMediaQuery).matches;
+          const wide = window.matchMedia(wideMediaQuery).matches;
+
+          console.log(medium, wide);
+
+          const priceTickFormat = wide
+            ? (v) => `$${format(',')(v)}`
+            : (v) => `$${format('.2s')(v)}`;
+          chartData.yAxis.configureAxis = (axis) => axis.tickFormat(priceTickFormat);
+
+          const yearTickFormat = wide ? (v) => v : (v) => `'${v.slice(-2)}`;
+          chartData.xAxis.configureAxis = (axis) => axis.tickFormat(yearTickFormat);
+
+          chart.datum(chartWindowLineData(chartData)).call(chartWindowLineRender);
+        });
+
+      chart.datum(chartWindowLineData(chartData)).call(chartWindowLineRender);
+    </script>
+  </body>
+</html>
