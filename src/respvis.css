@@ -149,7 +149,7 @@
   grid-template-areas:
     'axis-left draw-area legend'
     '. axis-bottom .';
-  padding: 2rem 0.5rem 0.5rem 0.5rem;
+  padding: 2rem 1rem 0.5rem 0.5rem;
 }
 
 .chart-cartesian[data-legend-position='top'] {
