@@ -11,6 +11,7 @@ import {
 import { SeriesPoint, seriesPointRender, seriesPointData, Point } from '../points';
 import { Legend, legendData, legendRender, LegendItem } from '../legend';
 import { SeriesLabel, seriesLabelData, seriesLabelRender, JoinEvent } from '../bars';
+import { SeriesConfigTooltips, seriesConfigTooltipsData } from '../tooltip';
 
 export interface ChartLine extends SeriesLine, ChartCartesian {
   legend: Partial<Legend>;
@@ -24,6 +25,7 @@ export interface ChartLine extends SeriesLine, ChartCartesian {
       yValue: any;
     }
   ) => string;
+  markerTooltips: Partial<SeriesConfigTooltips<SVGCircleElement, Point>>;
 }
 
 export function chartLineData(data: Partial<ChartLine>): ChartLine {
@@ -35,6 +37,7 @@ export function chartLineData(data: Partial<ChartLine>): ChartLine {
     legend: data.legend || {},
     markerLabelsEnabled: data.markerLabelsEnabled || false,
     markerLabels: data.markerLabels || ((chartD, markerD) => `${markerD.yValue}`),
+    markerTooltips: data.markerTooltips || {},
   };
 }
 
@@ -65,6 +68,7 @@ export function chartLineRender(
           chartLineHoverLine(chartS, select(e.target), false)
         );
 
+      const { markerTooltips } = chartD;
       const markerS = drawAreaS
         .selectAll<SVGGElement, SeriesPoint>('.series-point')
         .data<SeriesPoint>(
@@ -77,6 +81,7 @@ export function chartLineRender(
               xScale,
               yScale,
               flipped,
+              ...markerTooltips,
             })
           )
         )
