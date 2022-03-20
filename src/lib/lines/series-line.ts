@@ -27,14 +27,18 @@ export function seriesLineData(data: Partial<SeriesLine>): SeriesLine {
 
   const xScale =
     data.xScale || typeof xValues?.[0] === 'number'
-      ? scaleLinear().domain([Math.min(...xValues), Math.max(...xValues)])
+      ? scaleLinear()
+          .domain([Math.min(...xValues), Math.max(...xValues)])
+          .nice()
       : scalePoint().domain(new Set(xValues));
   const yScale =
     data.yScale || typeof yValues?.[0]?.[0] === 'number'
-      ? scaleLinear().domain([
-          Math.min(...yValues.map((a) => Math.min(...a))),
-          Math.max(...yValues.map((a) => Math.max(...a))),
-        ])
+      ? scaleLinear()
+          .domain([
+            Math.min(...yValues.map((a) => Math.min(...a))),
+            Math.max(...yValues.map((a) => Math.max(...a))),
+          ])
+          .nice()
       : scalePoint().domain(new Set(yValues.flat()));
 
   const styleClasses = data.styleClasses || yValues.map((_, i) => `categorical-${i}`);
