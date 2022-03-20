@@ -94,8 +94,6 @@
           const medium = window.matchMedia(mediumMediaQuery).matches;
           const wide = window.matchMedia(wideMediaQuery).matches;
 
-          console.log(medium, wide);
-
           const priceTickFormat = wide
             ? (v) => `$${format(',')(v)}`
             : (v) => `$${format('.2s')(v)}`;
