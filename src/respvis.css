@@ -327,6 +327,15 @@ text.title {
   margin-bottom: 0.5em;
 }
 
+.axis-left .title text,
+.axis-left .subtitle text,
+.axis-right .title text,
+.axis-right .subtitle text {
+  transform: rotate(-90deg);
+  text-anchor: end;
+  dominant-baseline: hanging;
+}
+
 .axis-left .tick text {
   dominant-baseline: middle;
   text-anchor: end;

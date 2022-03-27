@@ -38,26 +38,12 @@ export function axisLeftRender(selection: AxisSelection): void {
   selection
     .each((d, i, g) => axisRender(select(g[i]), d3Axis(d3AxisLeft, d), d.title, d.subtitle))
     .classed('axis-left', true);
-
-  selection.selectAll('.title text').call((s) => textOrientation(s, Orientation.Vertical));
-  selection.selectAll('.subtitle text').call((s) => textOrientation(s, Orientation.Vertical));
-  selection
-    .selectAll('.tick text')
-    .attr('dy', null)
-    .call((s) => textAlignVertical(s, VerticalAlignment.Center));
 }
 
 export function axisBottomRender(selection: AxisSelection): void {
   selection
     .each((d, i, g) => axisRender(select(g[i]), d3Axis(d3AxisBottom, d), d.title, d.subtitle))
     .classed('axis-bottom', true);
-
-  selection.selectAll('.title text').classed(Orientation.Horizontal, true);
-  selection.selectAll('.subtitle text').classed(Orientation.Horizontal, true);
-  selection
-    .selectAll('.tick text')
-    .attr('dy', null)
-    .call((s) => textAlignVertical(s, VerticalAlignment.Bottom));
 }
 
 function axisRender(
@@ -105,7 +91,7 @@ function axisRender(
   });
 
   ticksS.selectAll('.tick line').attr('stroke', null);
-  ticksS.selectAll('.tick text').attr('fill', null);
+  ticksS.selectAll('.tick text').attr('fill', null).attr('dx', null).attr('dy', null);
   ticksS.selectAll('.domain').attr('stroke', null).attr('fill', null);
 
   selection
