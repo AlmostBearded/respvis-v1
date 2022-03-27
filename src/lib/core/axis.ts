@@ -4,6 +4,7 @@ import {
   axisLeft as d3AxisLeft,
   axisBottom as d3AxisBottom,
   AxisScale,
+  ticks,
 } from 'd3';
 import { scaleLinear } from 'd3';
 import { BaseType, select, Selection } from 'd3';
@@ -90,6 +91,19 @@ function axisRender(
     .selectAll<SVGGElement, string>('.tick')
     .attr('opacity', null)
     .attr('data-key', (d) => d);
+
+  ticksS.selectAll('.tick').append('g').classed('pivot', true);
+  ticksS.selectAll<Element, any>('.tick').each((d, i, g) => {
+    const tickS = select(g[i]);
+    const textS = tickS.select('text');
+    const x = textS.attr('x') || '0';
+    const y = textS.attr('y') || '0';
+    textS.attr('x', null).attr('y', null);
+    const pivotS = tickS.select('.pivot')!;
+    pivotS.attr('transform', `translate(${x}, ${y})`);
+    pivotS.append(() => textS.node());
+  });
+
   ticksS.selectAll('.tick line').attr('stroke', null);
   ticksS.selectAll('.tick text').attr('fill', null);
   ticksS.selectAll('.domain').attr('stroke', null).attr('fill', null);
