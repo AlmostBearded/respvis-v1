@@ -70,6 +70,10 @@ function copyExamples() {
   return gulp.src('./src/examples/**/*').pipe(gulp.dest('./dist/examples'));
 }
 
+function copyExamplesRedirect() {
+  return gulp.src('./src/index.html').pipe(gulp.dest('./dist'));
+}
+
 // ## Reload browser
 
 function reloadBrowser(cb) {
@@ -93,7 +97,7 @@ exports.clean = cleanDist;
 
 exports.cleanAll = gulp.series([cleanDist, cleanNodeModules]);
 
-exports.build = gulp.series([exports.clean, gulp.parallel([bundleJS, bundleCSS, copyExamples])]);
+exports.build = gulp.series([exports.clean, gulp.parallel([bundleJS, bundleCSS, copyExamples, copyExamplesRedirect])]);
 
 exports.serve = function serve() {
   browserSync.init({
@@ -104,7 +108,7 @@ exports.serve = function serve() {
   const watchOptions = { ignoreInitial: false };
   gulp.watch('./src/**/*.ts', watchOptions, gulp.series(bundleJS, reloadBrowser));
   gulp.watch('./src/respvis.css', watchOptions, gulp.series(bundleCSS, reloadBrowser));
-  gulp.watch('./src/examples/**/*', watchOptions, gulp.series(copyExamples, reloadBrowser));
+  gulp.watch('./src/examples/**/*', watchOptions, gulp.series(copyExamples, copyExamplesRedirect, reloadBrowser));
 };
 
 exports.default = exports.serve;
