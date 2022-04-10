@@ -67,7 +67,10 @@ function bundleCSS() {
 }
 
 function copyExamples() {
-  return gulp.src('./src/examples/**/*').pipe(gulp.dest('./dist/examples'));
+  return gulp.parallel(
+    gulp.src('./src/examples/**/*').pipe(gulp.dest('./dist/examples')),
+    gulp.src('./src/index.html').pipe(gulp.dest('./dist'))
+  );
 }
 
 // ## Reload browser
