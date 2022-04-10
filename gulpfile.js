@@ -97,7 +97,10 @@ exports.clean = cleanDist;
 
 exports.cleanAll = gulp.series([cleanDist, cleanNodeModules]);
 
-exports.build = gulp.series([exports.clean, gulp.parallel([bundleJS, bundleCSS, copyExamples, copyExamplesRedirect])]);
+exports.build = gulp.series([
+  exports.clean,
+  gulp.parallel([bundleJS, bundleCSS, copyExamples, copyExamplesRedirect]),
+]);
 
 exports.serve = function serve() {
   browserSync.init({
@@ -108,7 +111,11 @@ exports.serve = function serve() {
   const watchOptions = { ignoreInitial: false };
   gulp.watch('./src/**/*.ts', watchOptions, gulp.series(bundleJS, reloadBrowser));
   gulp.watch('./src/respvis.css', watchOptions, gulp.series(bundleCSS, reloadBrowser));
-  gulp.watch('./src/examples/**/*', watchOptions, gulp.series(copyExamples, copyExamplesRedirect, reloadBrowser));
+  gulp.watch(
+    './src/examples/**/*',
+    watchOptions,
+    gulp.series(copyExamples, copyExamplesRedirect, reloadBrowser)
+  );
 };
 
 exports.default = exports.serve;
