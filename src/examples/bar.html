@@ -15,49 +15,57 @@
       body {
         background-color: floralwhite;
       }
+
+      @media (max-width: 60rem) {
+        .axis-bottom .tick text {
+          transform: rotate(-45deg);
+          text-anchor: end;
+        }
+      }
     </style>
   </head>
   <body>
     <h1>Bar Chart</h1>
     <div id="chart"></div>
-    <script src="./vendor/d3.v6.js"></script>
-    <script src="../respvis.js"></script>
-
-    <script type="module">
-      import data from './data/austrian-cities.js';
-
-      const cities = data.cities,
-        populations = data.populations.map((p) => Math.round(p / 1000));
-
-      const root = d3.select('#chart'),
-        chartWindow = root
-          .append('div')
-          .datum(
-            respVis.chartWindowBarData({
-              keys: cities,
-              categoryEntity: 'Cities',
-              categories: cities,
-              values: populations,
-              tooltips: (barElement, barData) =>
-                `City: ${barData.category}<br/>Population: ${d3.format(',')(barData.value * 1000)}`,
-              labels: {},
-              xAxis: {
-                title: 'City',
-              },
-              yAxis: {
-                title: 'Population',
-                subtitle: '[1000 People]',
-              },
-            })
-          )
-          .call(respVis.chartWindowBarRender)
-          .call(respVis.chartWindowBarAutoFilterCategories)
-          .on('densitychange', function (e, d) {
-            const density = e.detail.density;
-            d.flipped = density.x > 0.0135;
-            d.labels.relativePositions = d.flipped ? { x: 1, y: 0.5 } : { x: 0.5, y: 0 };
-            chartWindow.call(respVis.chartWindowBarRender);
-          });
-    </script>
   </body>
+  <script src="./vendor/d3.v6.js"></script>
+  <script type="module">
+    import {
+      chartWindowBarData,
+      chartWindowBarAutoFilterCategories,
+      chartWindowBarRender,
+    } from '../respvis.mjs';
+
+    import data from './data/austrian-cities.js';
+
+    const chartWindowData = {
+      categoryEntity: 'Cities',
+      categories: data.cities,
+      values: data.populations,
+      tooltips: (_, { category, value }) => `City: ${category}<br/>Population: ${value}`,
+      xAxis: { title: 'City' },
+      yAxis: { title: 'Population', configureAxis: (axis) => axis.tickFormat(d3.format('.2s')) },
+      labels: {},
+    };
+
+    const chartWindow = d3
+      .select('#chart')
+      .append('div')
+      .datum(chartWindowBarData(chartWindowData))
+      .call(chartWindowBarAutoFilterCategories)
+      .on('resize', function () {
+        const mediumWidth = window.matchMedia('(min-width: 40rem)').matches;
+        const largeWidth = window.matchMedia('(min-width: 60rem)').matches;
+
+        const labelPrecision = !mediumWidth ? 2 : !largeWidth ? 3 : 4;
+        chartWindowData.labels.labels = data.populations.map(d3.format(`.${labelPrecision}s`));
+
+        const flipped = !mediumWidth;
+        chartWindowData.flipped = flipped;
+        chartWindowData.labels.relativePositions = flipped ? { x: 1, y: 0.5 } : { x: 0.5, y: 0 };
+
+        chartWindow.datum(chartWindowBarData(chartWindowData)).call(chartWindowBarRender);
+      })
+      .call(chartWindowBarRender);
+  </script>
 </html>
