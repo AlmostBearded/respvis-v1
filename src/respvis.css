@@ -150,6 +150,7 @@
     'axis-left draw-area legend'
     '. axis-bottom .';
   padding: 2rem 1rem 0.5rem 0.5rem;
+  overflow: visible;
 }
 
 .chart-cartesian[data-legend-position='top'] {
