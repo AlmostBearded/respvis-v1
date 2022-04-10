@@ -23,6 +23,13 @@ export function chartDownload<Datum>(
 ): void {
   chartSelection.each((d, i, g) => {
     const clonedChart = <Element>g[i].cloneNode(true);
+
+    const width = clonedChart.getAttribute('width');
+    const height = clonedChart.getAttribute('height');
+    clonedChart.setAttribute('viewBox', `0, 0, ${width}, ${height}`);
+    clonedChart.removeAttribute('width');
+    clonedChart.removeAttribute('height');
+
     attrsFromComputedStyle(clonedChart, g[i]);
 
     const cloneContainer = document.createElement('div');
