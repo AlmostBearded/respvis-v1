@@ -31,7 +31,7 @@ export function elementComputedStyleWithoutDefaults(
   properties.forEach((p) => {
     const defaultValue = defaultStyle.getPropertyValue(p);
     const value = style.getPropertyValue(p);
-    if (defaultValue !== value) {
+    if (p === 'overflow' || defaultValue !== value) {
       diff[p] = value;
     }
   });
