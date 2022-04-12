@@ -35,7 +35,7 @@ export function chartLineData(data: Partial<ChartLine>): ChartLine {
     ...seriesD,
     ...chartCartesianD,
     legend: data.legend || {},
-    markerLabelsEnabled: data.markerLabelsEnabled || false,
+    markerLabelsEnabled: data.markerLabelsEnabled || true,
     markerLabels: data.markerLabels || ((chartD, markerD) => `${markerD.yValue}`),
     markerTooltips: data.markerTooltips || {},
   };
