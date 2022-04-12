@@ -10,8 +10,6 @@
         width: 100%;
         height: 75vh;
         min-height: 25rem;
-        --medium-media: screen and (min-width: 40rem);
-        --wide-media: screen and (min-width: 60rem);
       }
 
       body {
@@ -19,7 +17,7 @@
       }
 
       .axis .ticks .tick {
-        opacity: 0;
+        display: none;
       }
 
       .point {
@@ -27,12 +25,12 @@
       }
 
       .label {
-        opacity: 0;
+        display: none;
       }
 
       @media screen and (max-width: 40rem) {
         .chart {
-          padding: 1rem 3rem 0rem;
+          padding: 1rem 3rem 0rem 3rem;
         }
 
         .axis {
@@ -46,17 +44,13 @@
 
         .label:first-of-type,
         .label:last-of-type {
-          opacity: 1;
+          display: block;
         }
       }
 
-      @media screen and (min-width: 40rem) {
-        .axis-bottom .ticks .tick:nth-of-type(2n + 1) {
-          opacity: 1;
-        }
-
-        .axis-left .ticks .tick:nth-of-type(2n + 1) {
-          opacity: 1;
+      @media (min-width: 40rem) {
+        .ticks .tick:nth-of-type(2n + 1) {
+          display: block;
         }
 
         .point {
@@ -64,13 +58,9 @@
         }
       }
 
-      @media screen and (min-width: 60rem) {
-        .axis-bottom .ticks .tick {
-          opacity: 1;
-        }
-
-        .axis-left .ticks .tick {
-          opacity: 1;
+      @media (min-width: 60rem) {
+        .ticks .tick {
+          display: block;
         }
       }
     </style>
@@ -78,50 +68,45 @@
   <body>
     <h1>Line Chart</h1>
     <div id="chart"></div>
+    <script src="./vendor/d3.v6.js"></script>
     <script type="module">
-      import { select, format } from 'https://cdn.skypack.dev/d3@7';
       import {
         chartWindowLineData,
         chartWindowLineRender,
         chartWindowLineAutoResize,
       } from '../respvis.mjs';
 
-      import data from './data/google.js';
+      import { years, averageOpens } from './data/google.js';
 
-      const mediumMediaQuery = 'screen and (min-width: 40rem)';
-      const wideMediaQuery = 'screen and (min-width: 60rem)';
-
-      const chartData = {
-        xValues: data.years,
-        yValues: [data.averageOpens],
+      const data = {
+        xValues: years,
+        yValues: [averageOpens],
         xAxis: { title: 'Years' },
-        yAxis: { title: 'Average Open Prices' },
+        yAxis: { title: 'Average Open Prices', subtitle: '[USD]' },
         markerTooltips: {
-          tooltips: (markerE, markerD) =>
-            `Year: ${markerD.xValue}<br/>Average Open Price: $${format(',.2f')(markerD.yValue)}`,
+          tooltips: (_, { xValue, yValue }) =>
+            `Year: ${xValue}<br/>Average Open Price: $${d3.format('.2f')(yValue)}`,
         },
-        markerLabelsEnabled: true,
-        markerLabels: (chartD, markerD) => `${markerD.xValue}: $${format('.2s')(markerD.yValue)}`,
+        markerLabels: (_, { xValue, yValue }) => `${xValue}: $${d3.format('.2s')(yValue)}`,
       };
 
-      const chart = select('#chart')
+      const chart = d3
+        .select('#chart')
         .append('div')
+        .datum(chartWindowLineData(data))
+        .call(chartWindowLineRender)
         .on('resize', () => {
-          const medium = window.matchMedia(mediumMediaQuery).matches;
-          const wide = window.matchMedia(wideMediaQuery).matches;
+          const mediumWidth = window.matchMedia('(min-width: 40rem)').matches;
+          const largeWidth = window.matchMedia('(min-width: 60rem)').matches;
 
-          const priceTickFormat = wide
-            ? (v) => `$${format(',')(v)}`
-            : (v) => `$${format('.2s')(v)}`;
-          chartData.yAxis.configureAxis = (axis) => axis.tickFormat(priceTickFormat);
+          const priceTickFormat = largeWidth ? d3.format(',') : d3.format('.2s');
+          data.yAxis.configureAxis = (axis) => axis.tickFormat(priceTickFormat);
 
-          const yearTickFormat = wide ? (v) => v : (v) => `'${v.slice(-2)}`;
-          chartData.xAxis.configureAxis = (axis) => axis.tickFormat(yearTickFormat);
+          const yearTickFormat = largeWidth ? (v) => v : (v) => `'${v.slice(-2)}`;
+          data.xAxis.configureAxis = (axis) => axis.tickFormat(yearTickFormat);
 
-          chart.datum(chartWindowLineData(chartData)).call(chartWindowLineRender);
+          chart.datum(chartWindowLineData(data)).call(chartWindowLineRender);
         });
-
-      chart.datum(chartWindowLineData(chartData)).call(chartWindowLineRender);
     </script>
   </body>
 </html>
