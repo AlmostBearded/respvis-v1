@@ -15,76 +15,75 @@
       body {
         background-color: floralwhite;
       }
+
+      .tick {
+        display: none;
+      }
+
+      @media (min-width: 40rem) {
+        .tick:nth-of-type(2n + 1) {
+          display: block;
+        }
+      }
+
+      @media (min-width: 60rem) {
+        .tick {
+          display: block;
+        }
+      }
     </style>
   </head>
   <body>
     <h1>Point Chart</h1>
     <div id="chart"></div>
     <script src="./vendor/d3.v6.js"></script>
-    <script src="../respvis.js"></script>
     <script type="module">
-      import data from './data/houses.js';
+      import { chartWindowPointData, chartWindowPointRender, rectFromString } from '../respvis.mjs';
+      import { areas, prices } from './data/houses.js';
 
-      const areas = data.area,
-        minArea = Math.min(...areas),
-        maxArea = Math.max(...areas),
-        areaSpan = maxArea - minArea,
-        areaDomain = [0, maxArea + areaSpan * 0.2],
-        areaFormatter = (area) => `${area}ft²`,
-        areaScale = d3.scaleLinear().domain(areaDomain),
-        areaAxisTitle = 'Area';
+      const originalAreaScale = d3
+        .scaleLinear()
+        .domain([0, Math.max(...areas)])
+        .nice();
+      const originalPriceScale = d3
+        .scaleLinear()
+        .domain([0, Math.max(...prices)])
+        .nice();
 
-      const prices = data.price.map((price) => price / 1000),
-        minPrice = Math.min(...prices),
-        maxPrice = Math.max(...prices),
-        priceSpan = maxPrice - minPrice,
-        priceDomain = [0, maxPrice + priceSpan * 0.2],
-        priceFormatter = (price) => `$${price}k`,
-        priceScale = d3.scaleLinear().domain(priceDomain),
-        priceAxisTitle = 'Price';
+      const data = {
+        xValues: areas,
+        xScale: originalAreaScale,
+        yValues: prices,
+        yScale: originalPriceScale,
+        radiuses: 5,
+        xAxis: { title: 'Area', subtitle: '[ft²]' },
+        yAxis: { title: 'Price', subtitle: '[USD]' },
+      };
 
-      const wideMediaQuery = 'screen and (min-width: 40rem)';
+      const chartWindow = d3
+        .select('#chart')
+        .append('div')
+        .datum(chartWindowPointData(data))
+        .call(chartWindowPointRender);
 
-      const root = d3.select('#chart'),
-        chartWindow = root
-          .append('div')
-          .datum(
-            respVis.chartWindowPointData({
-              xValues: areas,
-              xScale: areaScale,
-              yValues: prices,
-              yScale: priceScale,
-              radiuses: 5,
-              xAxis: {
-                title: 'Area',
-                subtitle: '[ft²]',
-                configureAxis: (a) => a.ticks(window.matchMedia(wideMediaQuery).matches ? 10 : 5),
-              },
-              yAxis: {
-                title: 'Price',
-                subtitle: '[1000 USD]',
-              },
-            })
-          )
-          .call(respVis.chartWindowPointRender)
-          .on('resize', function () {
-            chartWindow.call(respVis.chartWindowPointRender);
-            const { width, height } = respVis.rectFromString(drawArea.attr('bounds')),
-              extent = [
-                [0, 0],
-                [width, height],
-              ];
-            zoom.extent(extent).translateExtent(extent);
-          }),
-        zoom = d3
-          .zoom()
-          .scaleExtent([1, 20])
-          .on('zoom', function (e, d) {
-            areaScale.domain(e.transform.rescaleX(areaScale.domain(areaDomain)).domain());
-            priceScale.domain(e.transform.rescaleY(priceScale.domain(priceDomain)).domain());
-            chartWindow.call(respVis.chartWindowPointRender);
-          }),
-        drawArea = chartWindow.selectAll('.draw-area').call(zoom);
+      const zoom = d3.zoom();
+      const drawArea = chartWindow.selectAll('.draw-area').call(
+        zoom.scaleExtent([1, 20]).on('zoom', function (e, d) {
+          data.xScale = e.transform.rescaleX(originalAreaScale);
+          data.yScale = e.transform.rescaleY(originalPriceScale);
+          chartWindow.datum(chartWindowPointData(data)).call(chartWindowPointRender);
+        })
+      );
+
+      chartWindow.on('resize', function () {
+        chartWindow.call(chartWindowPointRender);
+        const { width, height } = rectFromString(drawArea.attr('bounds'));
+        const extent = [
+          [0, 0],
+          [width, height],
+        ];
+        zoom.extent(extent).translateExtent(extent);
+      });
     </script>
   </body>
 </html>
