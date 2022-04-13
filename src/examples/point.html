@@ -74,13 +74,18 @@
       );
 
       chartWindow.on('resize', function () {
-        chartWindow.call(chartWindowPointRender);
         const { width, height } = rectFromString(drawArea.attr('bounds'));
         const extent = [
           [0, 0],
           [width, height],
         ];
         zoom.extent(extent).translateExtent(extent);
+
+        const mediumWidth = window.matchMedia('(min-width: 40rem)').matches;
+        const largeWidth = window.matchMedia('(min-width: 60rem)').matches;
+        const numberFormat = !largeWidth ? d3.format('.2s') : d3.format(',');
+        data.xAxis.configureAxis = data.yAxis.configureAxis = (a) => a.tickFormat(numberFormat);
+        chartWindow.datum(chartWindowPointData(data)).call(chartWindowPointRender);
       });
     </script>
   </body>
