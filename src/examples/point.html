@@ -39,37 +39,34 @@
       import { chartWindowPointData, chartWindowPointRender, rectFromString } from '../respvis.mjs';
       import { areas, prices } from './data/houses.js';
 
-      const originalAreaScale = d3
+      const areaScale = d3
         .scaleLinear()
         .domain([0, Math.max(...areas)])
         .nice();
-      const originalPriceScale = d3
+      const priceScale = d3
         .scaleLinear()
         .domain([0, Math.max(...prices)])
         .nice();
 
       const data = {
         xValues: areas,
-        xScale: originalAreaScale,
+        xScale: areaScale,
         yValues: prices,
-        yScale: originalPriceScale,
-        radiuses: 5,
+        yScale: priceScale,
         xAxis: { title: 'Area', subtitle: '[ft²]' },
         yAxis: { title: 'Price', subtitle: '[USD]' },
       };
 
-      const chartWindow = d3
-        .select('#chart')
-        .append('div')
-        .datum(chartWindowPointData(data))
-        .call(chartWindowPointRender);
+      const render = (cW) => cW.datum(chartWindowPointData(data)).call(chartWindowPointRender);
+
+      const chartWindow = d3.select('#chart').append('div').call(render);
 
       const zoom = d3.zoom();
       const drawArea = chartWindow.selectAll('.draw-area').call(
         zoom.scaleExtent([1, 20]).on('zoom', function (e, d) {
-          data.xScale = e.transform.rescaleX(originalAreaScale);
-          data.yScale = e.transform.rescaleY(originalPriceScale);
-          chartWindow.datum(chartWindowPointData(data)).call(chartWindowPointRender);
+          data.xScale = e.transform.rescaleX(areaScale);
+          data.yScale = e.transform.rescaleY(priceScale);
+          chartWindow.call(render);
         })
       );
 
@@ -83,9 +80,10 @@
 
         const mediumWidth = window.matchMedia('(min-width: 40rem)').matches;
         const largeWidth = window.matchMedia('(min-width: 60rem)').matches;
-        const numberFormat = !largeWidth ? d3.format('.2s') : d3.format(',');
+        const numberFormat = !mediumWidth ? d3.format('.2s') : d3.format(',');
         data.xAxis.configureAxis = data.yAxis.configureAxis = (a) => a.tickFormat(numberFormat);
-        chartWindow.datum(chartWindowPointData(data)).call(chartWindowPointRender);
+        data.radiuses = !mediumWidth ? 3 : !largeWidth ? 5 : 7;
+        chartWindow.call(render);
       });
     </script>
   </body>
