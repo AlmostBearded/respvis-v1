@@ -295,13 +295,13 @@ text.title {
 .axis-left,
 .axis-right {
   grid-template: 100% / auto auto auto;
-  align-items: start;
+  align-items: center;
 }
 
 .axis-bottom,
 .axis-top {
   grid-template: auto auto auto / 100%;
-  justify-items: end;
+  justify-items: center;
 }
 
 .axis-left {
