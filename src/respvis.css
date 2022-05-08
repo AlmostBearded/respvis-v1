@@ -142,11 +142,29 @@
   filter: brightness(var(--highlight-brightness));
 }
 
+.chart .header {
+  grid-area: header;
+  display: grid;
+  grid-template: auto auto / 1fr;
+  grid-template-areas:
+    'title'
+    'subtitle';
+  justify-items: center;
+  padding-bottom: 1rem;
+}
+
+.chart .header .title,
+.chart .header .subtitle {
+  --fit-width: true;
+  --fit-height: true;
+}
+
 .chart-cartesian[data-legend-position='right'],
 .chart-cartesian {
   display: grid;
-  grid-template: 1fr auto / auto 1fr auto;
+  grid-template: auto 1fr auto / auto 1fr auto;
   grid-template-areas:
+    'header header header'
     'axis-left draw-area legend'
     '. axis-bottom .';
   padding: 2rem 1rem 0.5rem 0.5rem;

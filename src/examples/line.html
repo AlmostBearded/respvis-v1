@@ -28,9 +28,13 @@
         display: none;
       }
 
-      @media screen and (max-width: 40rem) {
+      @media (max-width: 40rem) {
         .chart {
           padding: 1rem 3rem 0rem 3rem;
+        }
+
+        .chart .header .subtitle {
+          display: none;
         }
 
         .axis {
@@ -75,6 +79,8 @@
       import { years, averageOpens } from './data/google.js';
 
       const data = {
+        title: 'Average Open Prices of the Google Stock',
+        subtitle: '2004 to 2022',
         xValues: years,
         yValues: [averageOpens],
         xAxis: { title: 'Years' },
@@ -94,6 +100,8 @@
         .on('resize', () => {
           const mediumWidth = window.matchMedia('(min-width: 40rem)').matches;
           const largeWidth = window.matchMedia('(min-width: 60rem)').matches;
+
+          data.title = mediumWidth ? 'Average Open Prices of the Google Stock' : 'Google Stock Prices';
 
           const priceTickFormat = largeWidth ? d3.format(',') : d3.format('.2s');
           data.yAxis.configureAxis = (axis) => axis.tickFormat(priceTickFormat);

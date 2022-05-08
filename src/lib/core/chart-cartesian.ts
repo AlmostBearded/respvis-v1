@@ -3,6 +3,8 @@ import { axisBottomRender, axisLeftRender, Axis, axisData } from './axis';
 import { chartRender } from './chart';
 
 export interface ChartCartesian {
+  title: string;
+  subtitle: string;
   xAxis: Axis;
   yAxis: Axis;
   flipped: boolean;
@@ -15,6 +17,8 @@ export function chartCartesianData(
   }
 ): ChartCartesian {
   return {
+    title: data.title || '',
+    subtitle: data.subtitle || '',
     xAxis: axisData(data.xAxis || {}),
     yAxis: axisData(data.yAxis || {}),
     flipped: data.flipped || false,
@@ -35,6 +39,34 @@ export function chartCartesianRender(selection: ChartCartesianSelection): void {
     .data([null])
     .join('rect')
     .classed('background', true);
+
+  const header = selection
+    .selectAll('.header')
+    .data((d) => [d])
+    .join('g')
+    .classed('header', true);
+
+  header
+    .selectAll('.title')
+    .data((d) => [d.title])
+    .join('g')
+    .classed('title', true)
+    .attr('data-ignore-layout-children', true)
+    .selectAll('text')
+    .data((d) => [d])
+    .join('text')
+    .text((d) => d);
+
+  header
+    .selectAll('.subtitle')
+    .data((d) => [d.subtitle])
+    .join('g')
+    .classed('subtitle', true)
+    .attr('data-ignore-layout-children', true)
+    .selectAll('text')
+    .data((d) => [d])
+    .join('text')
+    .text((d) => d);
 }
 
 export function chartCartesianAxesRender(selection: ChartCartesianSelection): void {
