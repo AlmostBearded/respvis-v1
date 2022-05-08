@@ -18,6 +18,24 @@
         --color-categorical-1: #e23209;
         --color-categorical-2: #539322;
       }
+
+      @media (max-width: 40rem) {
+        .chart {
+          grid-template: 1fr auto auto / auto 1fr;
+          grid-template-areas:
+            'axis-left draw-area'
+            '. axis-bottom'
+            '. legend';
+        }
+
+        .legend .items {
+          flex-direction: row;
+        }
+
+        .axis-y .tick:nth-of-type(2n) {
+          display: none;
+        }
+      }
     </style>
   </head>
   <body>
@@ -25,59 +43,54 @@
 
     <div id="chart"></div>
     <script src="./vendor/d3.v6.js"></script>
-    <script src="../respvis.js"></script>
     <script type="module">
-      import data from './data/company.js';
+      import {
+        chartWindowBarGroupedData,
+        chartWindowBarGroupedRender,
+        chartWindowBarGroupedAutoFilterCategories,
+        chartWindowBarGroupedAutoFilterSubcategories,
+      } from '../respvis.mjs';
 
-      const sites = data.sites,
-        revenues = data.revenues,
-        years = data.years,
-        keys = revenues.map((yearlyRevs, i) => yearlyRevs.map((_, j) => sites[i] + years[j]));
+      import { sites, revenues, years } from './data/company.js';
 
-      const root = d3.select('#chart'),
-        chartWindow = root
-          .append('div')
-          .datum(
-            respVis.chartWindowBarGroupedData({
-              categoryEntity: 'Sites',
-              categories: sites,
-              subcategoryEntity: 'Years',
-              subcategories: years,
-              values: revenues,
-              keys: keys,
-              labels: {},
-              legend: {},
-              tooltips: (barElement, barData) =>
-                `Site: ${barData.category}<br/>Year: ${
-                  barData.subcategory
-                }<br/>Revenue: $${d3.format(',')(barData.value * 1000000)}`,
-              xAxis: {
-                title: 'Site',
-              },
-              yAxis: {
-                title: 'Revenue',
-              },
-            })
-          )
-          .call(respVis.chartWindowBarGroupedRender)
-          .call(respVis.chartWindowBarGroupedAutoFilterCategories)
-          .call(respVis.chartWindowBarGroupedAutoFilterSubcategories)
-          .on('densitychange', function (e, d) {
-            const density = e.detail.density;
-            d.flipped = density.x > 0.022;
-            d.labelsEnabled = density.x < 0.03;
-            d.labels.relativePositions = d.flipped ? { x: 1, y: 0.5 } : { x: 0.5, y: 0 };
-            d.yAxis.subtitle = density.x < 0.03 ? '[Million USD]' : '';
-            d.legend.title = density.x < 0.03 ? 'Years' : '';
+      const data = {
+        categoryEntity: 'Sites',
+        categories: sites,
+        subcategoryEntity: 'Years',
+        subcategories: years,
+        values: revenues,
+        labels: { labels: revenues.flat().map((r) => d3.format('.2s')(r)) },
+        legend: {},
+        tooltips: (e, { category, subcategory, value }) =>
+          `Site: ${category}<br/>Year: ${subcategory}<br/>Revenue: $${d3.format(',')(value)}`,
+        xAxis: {
+          title: 'Site',
+        },
+        yAxis: {
+          title: 'Revenue',
+          subtitle: '[USD]',
+        },
+      };
 
-            const legendPosition = d.flipped
-              ? respVis.LegendPosition.Top
-              : respVis.LegendPosition.Right;
-            chart.call(respVis.chartLegendPosition, legendPosition);
+      const chartWindow = d3
+        .select('#chart')
+        .append('div')
+        .datum(chartWindowBarGroupedData(data))
+        .call(chartWindowBarGroupedRender)
+        .call(chartWindowBarGroupedAutoFilterCategories)
+        .call(chartWindowBarGroupedAutoFilterSubcategories)
+        .on('resize', function (e, d) {
+          const mediumWidth = window.matchMedia('(min-width: 40rem)').matches;
+          const largeWidth = window.matchMedia('(min-width: 60rem)').matches;
 
-            chartWindow.call(respVis.chartWindowBarGroupedRender);
-          }),
-        chart = chartWindow.selectAll('svg.chart');
+          data.flipped = !mediumWidth;
+          data.labels.relativePositions = !mediumWidth ? { x: 1, y: 0.5 } : { x: 0.5, y: 0 };
+          data.legend.title = mediumWidth ? 'Years' : '';
+          const yTickFormat = largeWidth ? d3.format(',') : d3.format('.1s');
+          data.yAxis.configureAxis = (a) => a.tickFormat(yTickFormat);
+
+          chartWindow.datum(chartWindowBarGroupedData(data)).call(chartWindowBarGroupedRender);
+        });
     </script>
   </body>
 </html>
