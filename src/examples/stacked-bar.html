@@ -15,6 +15,24 @@
       body {
         background-color: floralwhite;
       }
+
+      @media (max-width: 40rem) {
+        .chart {
+          grid-template: auto 1fr auto / auto 1fr;
+          grid-template-areas:
+            '. legend'
+            'axis-left draw-area'
+            '. axis-bottom';
+        }
+
+        .legend .items {
+          flex-direction: row;
+        }
+
+        .axis-y .tick:nth-of-type(2n) {
+          display: none;
+        }
+      }
     </style>
   </head>
   <body>
@@ -22,65 +40,63 @@
 
     <div id="chart"></div>
     <script src="./vendor/d3.v6.js"></script>
-    <script src="../respvis.js"></script>
     <script type="module">
-      import data from './data/desktop-phone-tablet.js';
+      import {
+        chartWindowBarStackedData,
+        chartWindowBarStackedRender,
+        chartWindowBarStackedAutoFilterCategories,
+        chartWindowBarStackedAutoFilterSubcategories,
+      } from '../respvis.mjs';
+      import { years, desktop, phone, tablet, platforms } from './data/desktop-phone-tablet.js';
 
-      // data
-      const platforms = ['Desktop', 'Phone', 'Tablet'],
-        years = data.years,
-        shares = data.desktop.map((d, i) => [data.desktop[i], data.phone[i], data.tablet[i]]),
-        keys = shares.map((pS, i) => pS.map((_, j) => `${years[i]}${platforms[j]}`));
+      const shares = desktop.map((d, i) => [desktop[i], phone[i], tablet[i]]);
 
-      const wideMediaQuery = 'screen and (min-width: 40rem)';
+      const data = {
+        categoryEntity: 'Years',
+        categories: years,
+        values: shares,
+        valuesAsRatios: true,
+        valueDomain: [0, 100],
+        subcategoryEntity: 'Platforms',
+        subcategories: platforms,
+        labels: {},
+        legend: {},
+        tooltips: (e, { category, subcategory, value }) =>
+          `Year: ${category}<br/>Platform: ${subcategory}<br/>Market Share: ${d3.format('.2f')(
+            value
+          )}%`,
+        xAxis: {
+          title: 'Year',
+        },
+        yAxis: {
+          title: 'Market Share',
+          configureAxis: (a) => a.tickFormat((v) => `${v}%`),
+        },
+      };
 
-      const root = d3.select('#chart'),
-        chartWindow = root
-          .append('div')
-          .datum(
-            respVis.chartWindowBarStackedData({
-              keys: keys,
-              categoryEntity: 'Years',
-              categories: years,
-              values: shares,
-              valuesAsRatios: true,
-              valueDomain: [0, 100],
-              subcategoryEntity: 'Platforms',
-              subcategories: platforms,
-              labels: {},
-              legend: {},
-              tooltips: (barElement, barData) =>
-                `Year: ${barData.category}<br/>Platform: ${
-                  barData.subcategory
-                }<br/>Market Share: ${d3.format('.2f')(barData.value)}%`,
-              xAxis: {
-                title: 'Year',
-              },
-              yAxis: {
-                title: 'Market Share',
-              },
-            })
-          )
-          .call(respVis.chartWindowBarStackedRender)
-          .call(respVis.chartWindowBarStackedAutoFilterCategories)
-          .call(respVis.chartWindowBarStackedAutoFilterSubcategories)
-          .on('densitychange', function (e, d) {
-            const density = e.detail.density;
-            d.flipped = density.x > 0.05;
-            d.labelsEnabled = density.x < 0.06;
-            d.yAxis.subtitle = density.x < 0.06 ? '[%]' : '';
-            d.legend.title = density.x < 0.06 ? 'Platforms' : '';
+      const chartWindow = d3
+        .select('#chart')
+        .append('div')
+        .datum(chartWindowBarStackedData(data))
+        .call(chartWindowBarStackedRender)
+        .call(chartWindowBarStackedAutoFilterCategories)
+        .call(chartWindowBarStackedAutoFilterSubcategories)
+        .on('densitychange', function (e, d) {
+          const mediumWidth = window.matchMedia('(min-width: 40rem)').matches;
+          const largeWidth = window.matchMedia('(min-width: 60rem)').matches;
 
+          data.flipped = !mediumWidth;
+          data.legend.title = mediumWidth ? 'Platforms' : '';
+          const xTickFormat = largeWidth ? (v) => v : (v) => `'${v.slice(-2)}`;
+          data.xAxis.configureAxis = (a) => a.tickFormat(xTickFormat);
 
-
-            const legendPosition = d.flipped
+          /* const legendPosition = d.flipped
               ? respVis.LegendPosition.Top
               : respVis.LegendPosition.Right;
-            chart.call(respVis.chartLegendPosition, legendPosition);
+            chart.call(chartLegendPosition, legendPosition); */
 
-            chartWindow.call(respVis.chartWindowBarStackedRender);
-          }),
-        chart = chartWindow.selectAll('svg.chart');
+          chartWindow.datum(chartWindowBarStackedData(data)).call(chartWindowBarStackedRender);
+        });
     </script>
   </body>
 </html>
