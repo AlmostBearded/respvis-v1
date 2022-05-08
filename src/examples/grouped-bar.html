@@ -21,11 +21,14 @@
 
       @media (max-width: 40rem) {
         .chart {
-          grid-template: 1fr auto auto / auto 1fr;
-          grid-template-areas:
-            'axis-left draw-area'
-            '. axis-bottom'
-            '. legend';
+          grid-template:
+            'axis-left draw-area' 1fr
+            '. axis-bottom' auto
+            '. legend' auto / auto 1fr;
+        }
+
+        .legend .title {
+          display: none;
         }
 
         .legend .items {
@@ -60,7 +63,7 @@
         subcategories: years,
         values: revenues,
         labels: { labels: revenues.flat().map((r) => d3.format('.2s')(r)) },
-        legend: {},
+        legend: { title: 'Years' },
         tooltips: (e, { category, subcategory, value }) =>
           `Site: ${category}<br/>Year: ${subcategory}<br/>Revenue: $${d3.format(',')(value)}`,
         xAxis: {
@@ -85,7 +88,6 @@
 
           data.flipped = !mediumWidth;
           data.labels.relativePositions = !mediumWidth ? { x: 1, y: 0.5 } : { x: 0.5, y: 0 };
-          data.legend.title = mediumWidth ? 'Years' : '';
           const yTickFormat = largeWidth ? d3.format(',') : d3.format('.1s');
           data.yAxis.configureAxis = (a) => a.tickFormat(yTickFormat);
 
