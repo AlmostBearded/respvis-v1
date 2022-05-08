@@ -79,9 +79,9 @@
         .append('div')
         .datum(chartWindowBarStackedData(data))
         .call(chartWindowBarStackedRender)
-        .call(chartWindowBarStackedAutoFilterCategories)
-        .call(chartWindowBarStackedAutoFilterSubcategories)
-        .on('densitychange', function (e, d) {
+        .call(chartWindowBarStackedAutoFilterCategories(data))
+        .call(chartWindowBarStackedAutoFilterSubcategories(data))
+        .on('resize', function (e, d) {
           const mediumWidth = window.matchMedia('(min-width: 40rem)').matches;
           const largeWidth = window.matchMedia('(min-width: 60rem)').matches;
 

@@ -56,15 +56,6 @@ export function chartWindowBarStackedRender(
   selection
     .classed('chart-window-bar-stacked', true)
     .call((s) => chartWindowRender(s))
-    .on('resize.chartwindowbar', function (e, d) {
-      const s = select(this);
-      const { width, height } = e.detail.bounds;
-      const { values } = s.selectAll<Element, ChartBarStacked>('.chart-bar-stacked').datum();
-      const dataCount = values.flat().length;
-      s.dispatch('densitychange', {
-        detail: { density: { x: dataCount / width, y: dataCount / height } },
-      });
-    })
     .each((chartWindowD, i, g) => {
       const {
         categories,
@@ -204,19 +195,27 @@ export function chartWindowBarStackedAutoResize(
 }
 
 export function chartWindowBarStackedAutoFilterCategories(
-  selection: Selection<HTMLDivElement, ChartWindowBarStacked>
-): void {
-  selection.on('categoryfilter', function (e, d) {
-    d.categoryActiveStates = e.detail.categoryActiveStates;
-    select<HTMLDivElement, ChartWindowBarStacked>(this).call((s) => chartWindowBarStackedRender(s));
-  });
+  data?: ChartWindowBarStacked
+): (selection: Selection<HTMLDivElement, ChartWindowBarStacked>) => void {
+  return (s) =>
+    s.on('categoryfilter', function (e, d) {
+      data = data || d;
+      data.categoryActiveStates = e.detail.categoryActiveStates;
+      select<HTMLDivElement, ChartWindowBarStacked>(this)
+        .datum(chartWindowBarStackedData(data))
+        .call((s) => chartWindowBarStackedRender(s));
+    });
 }
 
 export function chartWindowBarStackedAutoFilterSubcategories(
-  selection: Selection<HTMLDivElement, ChartWindowBarStacked>
-): void {
-  selection.on('subcategoryfilter', function (e, d) {
-    d.subcategoryActiveStates = e.detail.subcategoryActiveStates;
-    select<HTMLDivElement, ChartWindowBarStacked>(this).call((s) => chartWindowBarStackedRender(s));
-  });
+  data?: ChartWindowBarStacked
+): (selection: Selection<HTMLDivElement, ChartWindowBarStacked>) => void {
+  return (s) =>
+    s.on('subcategoryfilter', function (e, d) {
+      data = data || d;
+      data.subcategoryActiveStates = e.detail.subcategoryActiveStates;
+      select<HTMLDivElement, ChartWindowBarStacked>(this)
+        .datum(chartWindowBarStackedData(data))
+        .call((s) => chartWindowBarStackedRender(s));
+    });
 }

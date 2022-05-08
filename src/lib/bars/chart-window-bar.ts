@@ -40,9 +40,6 @@ export type ChartWindowBarSelection = Selection<HTMLDivElement, ChartWindowBar>;
 export function chartWindowBarRender(selection: ChartWindowBarSelection): void {
   selection
     .classed('chart-window-bar', true)
-    .on('resize.chartwindowbar', function (e, d) {
-      chartWindowBarDispatchDensityChange(select(this));
-    })
     .call((s) => chartWindowRender(s))
     .each((chartWindowD, i, g) => {
       const {
@@ -131,25 +128,22 @@ export function chartWindowBarRender(selection: ChartWindowBarSelection): void {
     });
 }
 
-export function chartWindowBarDispatchDensityChange(selection: ChartWindowBarSelection): void {
-  selection.each((d, i, g) => {
-    const { width, height } = g[i].getBoundingClientRect();
-    const { values } = select(g[i]).selectAll<Element, ChartBar>('.chart-bar').datum();
-    select(g[i]).dispatch('densitychange', {
-      detail: { density: { x: values.length / width, y: values.length / height } },
-    });
-  });
-}
-
 export function chartWindowBarAutoResize(selection: ChartWindowBarSelection): void {
   selection.on('resize', function () {
     select<HTMLDivElement, ChartWindowBar>(this).call((s) => chartWindowBarRender(s));
   });
 }
 
-export function chartWindowBarAutoFilterCategories(selection: ChartWindowBarSelection): void {
-  selection.on('categoryfilter', function (e, d) {
-    d.categoryActiveStates = e.detail.categoryActiveStates;
-    select<HTMLDivElement, ChartWindowBar>(this).call((s) => chartWindowBarRender(s));
-  });
+export function chartWindowBarAutoFilterCategories(
+  data?: ChartWindowBar
+): (s: ChartWindowBarSelection) => void {
+  return (s: ChartWindowBarSelection) => {
+    s.on('categoryfilter', function (e, d) {
+      data = data || d;
+      data.categoryActiveStates = e.detail.categoryActiveStates;
+      select<HTMLDivElement, ChartWindowBar>(this)
+        .datum(chartWindowBarData(data))
+        .call((s) => chartWindowBarRender(s));
+    });
+  };
 }

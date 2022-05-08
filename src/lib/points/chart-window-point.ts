@@ -25,9 +25,6 @@ export type ChartWindowPointSelection = Selection<HTMLDivElement, ChartWindowPoi
 export function chartWindowPointRender(selection: ChartWindowPointSelection): void {
   selection
     .classed('chart-window-point', true)
-    .on('resize.chartwindowpoint', function (e, d) {
-      chartWindowPointDispatchDensityChange(select(this));
-    })
     .call((s) => chartWindowRender(s))
     .each((chartWindowD, i, g) => {
       const chartWindowS = select<HTMLDivElement, ChartWindowPoint>(g[i]),
@@ -57,15 +54,5 @@ export function chartWindowPointRender(selection: ChartWindowPointSelection): vo
 export function chartWindowPointAutoResize(selection: ChartWindowPointSelection): void {
   selection.on('resize', function () {
     select<HTMLDivElement, ChartWindowPoint>(this).call((s) => chartWindowPointRender(s));
-  });
-}
-
-export function chartWindowPointDispatchDensityChange(selection: ChartWindowPointSelection): void {
-  selection.each((d, i, g) => {
-    const { width, height } = g[i].getBoundingClientRect();
-    const { xValues } = select(g[i]).selectAll<Element, ChartPoint>('.chart-point').datum();
-    select(g[i]).dispatch('densitychange', {
-      detail: { density: { x: xValues.length / width, y: xValues.length / height } },
-    });
   });
 }

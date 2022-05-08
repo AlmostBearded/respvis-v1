@@ -77,8 +77,8 @@
         .append('div')
         .datum(chartWindowBarGroupedData(data))
         .call(chartWindowBarGroupedRender)
-        .call(chartWindowBarGroupedAutoFilterCategories)
-        .call(chartWindowBarGroupedAutoFilterSubcategories)
+        .call(chartWindowBarGroupedAutoFilterCategories(data))
+        .call(chartWindowBarGroupedAutoFilterSubcategories(data))
         .on('resize', function (e, d) {
           const mediumWidth = window.matchMedia('(min-width: 40rem)').matches;
           const largeWidth = window.matchMedia('(min-width: 60rem)').matches;

@@ -52,15 +52,6 @@ export function chartWindowBarGroupedRender(
   selection
     .classed('chart-window-bar-grouped', true)
     .call((s) => chartWindowRender(s))
-    .on('resize.chartwindowbar', function (e, d) {
-      const s = select(this);
-      const { width, height } = e.detail.bounds;
-      const { values } = s.selectAll<Element, ChartBarGrouped>('.chart-bar-grouped').datum();
-      const dataCount = values.flat().length;
-      s.dispatch('densitychange', {
-        detail: { density: { x: dataCount / width, y: dataCount / height } },
-      });
-    })
     .each((chartWindowD, i, g) => {
       const {
         categories,
@@ -192,19 +183,27 @@ export function chartWindowBarGroupedAutoResize(
 }
 
 export function chartWindowBarGroupedAutoFilterCategories(
-  selection: Selection<HTMLDivElement, ChartWindowBarGrouped>
-): void {
-  selection.on('categoryfilter', function (e, d) {
-    d.categoryActiveStates = e.detail.categoryActiveStates;
-    select<HTMLDivElement, ChartWindowBarGrouped>(this).call((s) => chartWindowBarGroupedRender(s));
-  });
+  data?: ChartWindowBarGrouped
+): (selection: Selection<HTMLDivElement, ChartWindowBarGrouped>) => void {
+  return (s) =>
+    s.on('categoryfilter', function (e, d) {
+      data = data || d;
+      data.categoryActiveStates = e.detail.categoryActiveStates;
+      select<HTMLDivElement, ChartWindowBarGrouped>(this)
+        .datum(chartWindowBarGroupedData(data))
+        .call((s) => chartWindowBarGroupedRender(s));
+    });
 }
 
 export function chartWindowBarGroupedAutoFilterSubcategories(
-  selection: Selection<HTMLDivElement, ChartWindowBarGrouped>
-): void {
-  selection.on('subcategoryfilter', function (e, d) {
-    d.subcategoryActiveStates = e.detail.subcategoryActiveStates;
-    select<HTMLDivElement, ChartWindowBarGrouped>(this).call((s) => chartWindowBarGroupedRender(s));
-  });
+  data?: ChartWindowBarGrouped
+): (selection: Selection<HTMLDivElement, ChartWindowBarGrouped>) => void {
+  return (s) =>
+    s.on('subcategoryfilter', function (e, d) {
+      data = data || d;
+      data.subcategoryActiveStates = e.detail.subcategoryActiveStates;
+      select<HTMLDivElement, ChartWindowBarGrouped>(this)
+        .datum(chartWindowBarGroupedData(data))
+        .call((s) => chartWindowBarGroupedRender(s));
+    });
 }
