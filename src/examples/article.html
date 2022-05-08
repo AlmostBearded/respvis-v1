@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <title>RespVis - News Article Context Example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="../respvis.css" />
+    <style>
+      .chart-container {
+        width: 100%;
+        height: 25rem;
+      }
+
+      body {
+        background-color: floralwhite;
+        max-width: 61rem;
+        margin: 3rem auto 0 auto;
+        padding: 0 1rem;
+      }
+
+      .chart {
+        padding-top: 0;
+      }
+
+      @media (max-width: 40rem) {
+        .chart {
+          grid-template: auto auto 1fr auto / auto 1fr;
+          grid-template-areas:
+            'header header'
+            '. legend'
+            'axis-left draw-area'
+            '. axis-bottom';
+        }
+
+        .legend .items {
+          flex-direction: row;
+        }
+
+        .axis-y .tick:nth-of-type(2n) {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Lorem ipsum dolor sit amet, consectetur adipiscing elit!</h1>
+    <p>
+      Vivamus iaculis augue elit, sit amet consectetur dui condimentum a. Vivamus arcu diam, commodo
+      id dictum et, fermentum eget tellus. Etiam mattis purus vitae volutpat luctus. Cras et nisi
+      risus. Suspendisse potenti. Donec ut rutrum magna. Aenean a ligula in erat sodales posuere at
+      sed quam. Etiam feugiat faucibus est id laoreet. Aliquam egestas euismod lectus, in finibus
+      sem pulvinar fringilla. Vestibulum justo lacus, gravida sed dolor sit amet, lacinia varius
+      augue. Aenean sollicitudin eleifend enim, sagittis viverra eros fringilla eget.
+    </p>
+    <div id="market-shares-chart" class="chart-container"></div>
+    <p>
+      Etiam rhoncus interdum urna, vel tincidunt justo consequat sit amet. Quisque pellentesque
+      sagittis feugiat. Morbi vel ultricies ligula. Sed faucibus enim dui, in dictum lectus gravida
+      ac. Aliquam commodo metus sed dui malesuada, nec commodo leo rutrum. Integer ut nulla blandit
+      libero finibus dignissim suscipit pretium elit. Morbi convallis ex eget leo semper volutpat.
+      Nulla feugiat dapibus porttitor. Praesent nec sodales urna. Nam lacinia odio sit amet arcu
+      mattis, ac imperdiet nibh accumsan. Phasellus congue congue arcu nec vulputate. In non commodo
+      felis, at tristique ante. Cras volutpat ante ex, in venenatis nunc blandit ut.
+    </p>
+    <p>
+      Etiam at turpis metus. Aliquam ut tellus at erat ultrices dapibus. Curabitur vestibulum
+      dignissim efficitur. Etiam sed mi quis orci interdum gravida. Curabitur eget massa quam. Morbi
+      leo leo, consectetur a nibh a, consectetur rhoncus ipsum. Pellentesque ultrices eros vel neque
+      lobortis, et cursus enim bibendum. Curabitur non elit quam. Aliquam vitae urna ut urna aliquet
+      lobortis sed in eros. Mauris sed euismod velit, quis tempus orci. Integer vehicula bibendum
+      libero non lobortis.
+    </p>
+    <p>
+      Nunc eu eros tincidunt, aliquam ipsum non, auctor ipsum. Fusce et sem fermentum nisl pulvinar
+      vulputate id a dui. Curabitur id aliquet magna. Donec laoreet ante at dapibus sagittis.
+      Maecenas id varius risus. Curabitur eros leo, pretium in ipsum eu, mollis interdum justo.
+      Curabitur sodales, erat quis ultricies consectetur, tortor velit condimentum mi, et pulvinar
+      tellus arcu sit amet magna. Integer iaculis diam vel lacus sodales consequat. Pellentesque
+      habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Donec semper
+      molestie massa, ut vehicula justo porttitor nec. Vestibulum vulputate purus turpis, eu cursus
+      ipsum consectetur sit amet. Mauris hendrerit venenatis porttitor. Fusce vel arcu nec ligula
+      scelerisque euismod. Ut sed sagittis justo. Aliquam eget dignissim risus, vitae ultrices
+      felis.
+    </p>
+    <script src="./vendor/d3.v6.js"></script>
+    <script type="module">
+      import {
+        chartWindowBarStackedData,
+        chartWindowBarStackedRender,
+        chartWindowBarStackedAutoFilterCategories,
+        chartWindowBarStackedAutoFilterSubcategories,
+      } from '../respvis.mjs';
+      import { years, desktop, phone, tablet, platforms } from './data/desktop-phone-tablet.js';
+
+      const shares = desktop.map((d, i) => [desktop[i], phone[i], tablet[i]]);
+
+      const data = {
+        title: 'Market Shares of Browsers',
+        categoryEntity: 'Years',
+        categories: years,
+        values: shares,
+        valuesAsRatios: true,
+        valueDomain: [0, 100],
+        subcategoryEntity: 'Platforms',
+        subcategories: platforms,
+        labels: {},
+        legend: {},
+        tooltips: (e, { category, subcategory, value }) =>
+          `Year: ${category}<br/>Platform: ${subcategory}<br/>Market Share: ${d3.format('.2f')(
+            value
+          )}%`,
+        xAxis: {
+          title: 'Year',
+        },
+        yAxis: {
+          title: 'Market Share',
+          configureAxis: (a) => a.tickFormat((v) => `${v}%`),
+        },
+      };
+
+      const chartWindow = d3
+        .select('#market-shares-chart')
+        .append('div')
+        .datum(chartWindowBarStackedData(data))
+        .call(chartWindowBarStackedRender)
+        .call(chartWindowBarStackedAutoFilterCategories(data))
+        .call(chartWindowBarStackedAutoFilterSubcategories(data))
+        .on('resize', function (e, d) {
+          const mediumWidth = window.matchMedia('(min-width: 40rem)').matches;
+          const largeWidth = window.matchMedia('(min-width: 60rem)').matches;
+
+          data.flipped = !mediumWidth;
+          data.legend.title = mediumWidth ? 'Platforms' : '';
+          const xTickFormat = largeWidth ? (v) => v : (v) => `'${v.slice(-2)}`;
+          data.xAxis.configureAxis = (a) => a.tickFormat(xTickFormat);
+
+          /* const legendPosition = d.flipped
+              ? respVis.LegendPosition.Top
+              : respVis.LegendPosition.Right;
+            chart.call(chartLegendPosition, legendPosition); */
+
+          chartWindow.datum(chartWindowBarStackedData(data)).call(chartWindowBarStackedRender);
+        });
+    </script>
+  </body>
+</html>
