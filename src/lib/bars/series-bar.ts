@@ -7,10 +7,10 @@ import {
   rectFromString,
   rectMinimized,
   rectToAttrs,
-} from '../core/utility/rect';
+} from '../core/utilities/rect';
 import { Transition } from 'd3';
 import { easeCubicOut } from 'd3';
-import { Size } from '../core/utility/size';
+import { Size } from '../core/utilities/size';
 import {
   SeriesConfigTooltips,
   seriesConfigTooltipsData,

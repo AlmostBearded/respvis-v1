@@ -9,7 +9,7 @@ import {
 import { scaleLinear } from 'd3';
 import { BaseType, select, Selection } from 'd3';
 import { SelectionOrTransition, Transition } from 'd3';
-import { textAlignVertical, VerticalAlignment, Orientation, textOrientation } from './utility/text';
+import { textAlignVertical, VerticalAlignment, Orientation, textOrientation } from './utilities/text';
 
 export interface ConfigureAxisFn {
   (axis: D3Axis<AxisDomain>): void;

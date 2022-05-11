@@ -2,7 +2,7 @@ import { select, Selection, ValueFn } from 'd3';
 import {
   elementComputedStyleWithoutDefaults,
   elementSVGPresentationAttrs,
-} from '../utility/element';
+} from '../utilities/element';
 
 // TODO: maybe SVGO could be used to optimize the downloaded SVG? https://github.com/svg/svgo
 

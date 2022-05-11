@@ -7,7 +7,7 @@ import {
   seriesConfigTooltipsHandleEvents,
 } from '../tooltip';
 import { arrayIs, Circle, circleMinimized, circleToAttrs, rectFromString, ScaleAny } from '../core';
-import { Size } from '../core/utility/size';
+import { Size } from '../core/utilities/size';
 
 export interface Point extends Circle {
   xValue: any;

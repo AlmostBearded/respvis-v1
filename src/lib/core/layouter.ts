@@ -1,6 +1,6 @@
 import { select, Selection } from 'd3';
-import { elementRelativeBounds } from './utility/element';
-import { positionToTransformAttr } from './utility/position';
+import { elementRelativeBounds } from './utilities/element';
+import { positionToTransformAttr } from './utilities/position';
 import {
   rectBottomLeft,
   rectEquals,
@@ -8,8 +8,8 @@ import {
   rectToAttrs,
   rectTopRight,
   rectToString,
-} from './utility/rect';
-import { circleInsideRect, circleToAttrs } from './utility/circle';
+} from './utilities/rect';
+import { circleInsideRect, circleToAttrs } from './utilities/circle';
 
 function layoutNodeRoot(layouter: HTMLDivElement): Selection<HTMLDivElement, SVGElement> {
   return select(layouter)
