@@ -71,6 +71,7 @@
 .bar {
   stroke-width: 1px;
   stroke: #000;
+  touch-action: none;
 }
 
 .highlight .bar,
