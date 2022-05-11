@@ -41,8 +41,8 @@ export function chartBarRender(selection: ChartBarSelection): void {
         .data([chartD])
         .join('g')
         .call((s) => seriesBarRender(s))
-        .on('mouseover.chartbarhighlight', (e) => chartBarHoverBar(chartS, select(e.target), true))
-        .on('mouseout.chartbarhighlight', (e) => chartBarHoverBar(chartS, select(e.target), false));
+        .on('pointerover.chartbarhighlight', (e) => chartBarHoverBar(chartS, select(e.target), true))
+        .on('pointerout.chartbarhighlight', (e) => chartBarHoverBar(chartS, select(e.target), false));
 
       drawAreaS
         .selectAll<Element, SeriesLabelBar>('.series-label-bar')

@@ -89,7 +89,7 @@ export function legendRender(selection: Selection<Element, Legend>): void {
       .call((s) => legendS.dispatch('update', { detail: { selection: s } }));
   });
 
-  selection.on('mouseover.legend mouseout.legend', (e: MouseEvent) => {
+  selection.on('pointerover.legend pointerout.legend', (e: PointerEvent) => {
     const item = (<Element>e.target).closest('.legend-item');
     if (item) {
       item.classList.toggle('highlight', e.type.endsWith('over'));

@@ -96,7 +96,7 @@ export function seriesLineRender(selection: Selection<Element, SeriesLine>): voi
         .attr('data-key', (d) => d.key)
         .call((s) => seriesS.dispatch('update', { detail: { selection: s } }));
     })
-    .on('mouseover.serieslinehighlight mouseout.serieslinehighlight', (e: MouseEvent) =>
+    .on('pointerover.serieslinehighlight pointerout.serieslinehighlight', (e: PointerEvent) =>
       (<Element>e.target).classList.toggle('highlight', e.type.endsWith('over'))
     );
 }

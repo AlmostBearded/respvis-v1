@@ -112,7 +112,7 @@ export function seriesPointRender(selection: Selection<Element, SeriesPoint>): v
         .data(seriesPointCreatePoints(d), (d) => d.key)
         .call((s) => seriesPointJoin(seriesS, s));
     })
-    .on('mouseover.seriespointhighlight mouseout.seriespointhighlight', (e: MouseEvent) =>
+    .on('pointerover.seriespointhighlight pointerout.seriespointhighlight', (e: PointerEvent) =>
       (<Element>e.target).classList.toggle('highlight', e.type.endsWith('over'))
     )
     .call((s) => seriesConfigTooltipsHandleEvents(s));

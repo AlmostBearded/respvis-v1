@@ -113,7 +113,7 @@ export function seriesBarRender(selection: Selection<Element, SeriesBar>): void 
         .data(seriesBarCreateBars(d), (d) => d.key)
         .call((s) => seriesBarJoin(seriesS, s));
     })
-    .on('mouseover.seriesbarhighlight mouseout.seriesbarhighlight', (e: MouseEvent) =>
+    .on('pointerover.seriesbarhighlight pointerout.seriesbarhighlight', (e: PointerEvent) =>
       (<Element>e.target).classList.toggle('highlight', e.type.endsWith('over'))
     )
     .call((s) => seriesConfigTooltipsHandleEvents(s));

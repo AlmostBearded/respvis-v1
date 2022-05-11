@@ -65,7 +65,7 @@ export function chartBarGroupedRender(selection: ChartBarGroupedSelection): void
         .data([chartD])
         .join('g')
         .call((s) => seriesBarGroupedRender(s))
-        .on('mouseover.chartbargroupedhighlight mouseout.chartbargroupedhighlight', (e) =>
+        .on('pointerover.chartbargroupedhighlight pointerout.chartbargroupedhighlight', (e) =>
           chartBarGroupedHoverBar(chartS, select(e.target), e.type.endsWith('over'))
         );
 
@@ -91,7 +91,7 @@ export function chartBarGroupedRender(selection: ChartBarGroupedSelection): void
         ])
         .join('g')
         .call((s) => legendRender(s))
-        .on('mouseover.chartbargroupedhighlight mouseout.chartbargroupedhighlight', (e) => {
+        .on('pointerover.chartbargroupedhighlight pointerout.chartbargroupedhighlight', (e) => {
           chartBarGroupedHoverLegendItem(
             chartS,
             select(e.target.closest('.legend-item')),
@@ -105,7 +105,7 @@ export function chartBarGroupedRender(selection: ChartBarGroupedSelection): void
 
       chartS
         .selectAll(`.axis-x .tick`)
-        .on('mouseover.chartbargroupedhighlight mouseout.chartbargroupedhighlight', (e) =>
+        .on('pointerover.chartbargroupedhighlight pointerout.chartbargroupedhighlight', (e) =>
           chartBarGroupedHoverAxisTick(chartS, select(e.currentTarget), e.type.endsWith('over'))
         );
     });

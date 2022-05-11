@@ -61,7 +61,7 @@ export function chartBarStackedRender(selection: ChartBarStackedSelection): void
         .data([chartD])
         .join('g')
         .call((s) => seriesBarStackedRender(s))
-        .on('mouseover.chartbarstackedhighlight mouseout.chartbarstackedhighlight', (e) =>
+        .on('pointerover.chartbarstackedhighlight pointerout.chartbarstackedhighlight', (e) =>
           chartBarStackedHoverBar(chartS, select(e.target), e.type.endsWith('over'))
         );
 
@@ -92,7 +92,7 @@ export function chartBarStackedRender(selection: ChartBarStackedSelection): void
         ])
         .join('g')
         .call((s) => legendRender(s))
-        .on('mouseover.chartbarstackedhighlight mouseout.chartbarstackedhighlight', (e) => {
+        .on('pointerover.chartbarstackedhighlight pointerout.chartbarstackedhighlight', (e) => {
           chartBarStackedHoverLegendItem(
             chartS,
             select(e.target.closest('.legend-item')),
@@ -106,7 +106,7 @@ export function chartBarStackedRender(selection: ChartBarStackedSelection): void
 
       chartS
         .selectAll(`.axis-x .tick`)
-        .on('mouseover.chartbarstackedhighlight mouseout.chartbarstackedhighlight', (e) =>
+        .on('pointerover.chartbarstackedhighlight pointerout.chartbarstackedhighlight', (e) =>
           chartBarStackedHoverAxisTick(chartS, select(e.currentTarget), e.type.endsWith('over'))
         );
     });

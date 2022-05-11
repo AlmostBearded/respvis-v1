@@ -61,10 +61,10 @@ export function chartLineRender(
         .data([chartD])
         .join('g')
         .call((s) => seriesLineRender(s))
-        .on('mouseover.chartlinehighlight', (e) =>
+        .on('pointerover.chartlinehighlight', (e) =>
           chartLineHoverLine(chartS, select(e.target), true)
         )
-        .on('mouseout.chartlinehighlight', (e) =>
+        .on('pointerout.chartlinehighlight', (e) =>
           chartLineHoverLine(chartS, select(e.target), false)
         );
 
@@ -87,10 +87,10 @@ export function chartLineRender(
         )
         .join('g')
         .call((s) => seriesPointRender(s))
-        .on('mouseover.chartlinehighlight', (e) =>
+        .on('pointerover.chartlinehighlight', (e) =>
           chartLineHoverMarker(chartS, select(e.target), true)
         )
-        .on('mouseout.chartlinehighlight', (e) =>
+        .on('pointerout.chartlinehighlight', (e) =>
           chartLineHoverMarker(chartS, select(e.target), false)
         )
         .attr('data-key', (d, i) => keys[i]);
@@ -132,7 +132,7 @@ export function chartLineRender(
         )
         .join('g')
         .call((s) => legendRender(s))
-        .on('mouseover.chartlinehighlight mouseout.chartlinehighlight', (e) => {
+        .on('pointerover.chartlinehighlight pointerout.chartlinehighlight', (e) => {
           chartLineHoverLegendItem(
             chartS,
             select(e.target.closest('.legend-item')),

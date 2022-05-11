@@ -34,7 +34,7 @@ export function seriesConfigTooltipsHandleEvents<ItemElement extends Element, It
   seriesItemFinder?: (eventTarget: Element) => ItemElement | null
 ): void {
   seriesSelection
-    .on('mouseover.tooltip', (e, d) => {
+    .on('pointerover.tooltip', (e, d) => {
       const { tooltips, tooltipsEnabled } = d;
       const item = seriesItemFinder ? seriesItemFinder(<Element>e.target) : <ItemElement>e.target;
       if (!tooltipsEnabled || !item) return;
@@ -42,14 +42,14 @@ export function seriesConfigTooltipsHandleEvents<ItemElement extends Element, It
       tooltipShow(null);
       tooltipContent(null, tooltips(item, data));
     })
-    .on('mousemove.tooltip', (e: MouseEvent, d) => {
+    .on('pointermove.tooltip', (e: PointerEvent, d) => {
       const { tooltipsEnabled, tooltipPosition: position } = d;
       const item = seriesItemFinder ? seriesItemFinder(<Element>e.target) : <ItemElement>e.target;
       if (!tooltipsEnabled || !item) return;
       const data = select<ItemElement, ItemDatum>(item).datum();
       tooltipPosition(null, position(item, data, { x: e.clientX, y: e.clientY }));
     })
-    .on('mouseout.tooltip', (e: MouseEvent, d) => {
+    .on('pointerout.tooltip', (e: PointerEvent, d) => {
       const { tooltipsEnabled } = d;
       if (tooltipsEnabled) tooltipHide(null);
     });

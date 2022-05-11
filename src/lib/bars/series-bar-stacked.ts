@@ -135,7 +135,7 @@ export function seriesBarStackedRender(selection: Selection<Element, SeriesBarSt
         .data(seriesBarStackedCreateBars(d), (d) => d.key)
         .call((s) => seriesBarJoin(seriesS, s));
     })
-    .on('mouseover.seriesbargroupedhighlight mouseout.seriesbargroupedhighlight', (e: MouseEvent) =>
+    .on('pointerover.seriesbargroupedhighlight pointerout.seriesbargroupedhighlight', (e: PointerEvent) =>
       (<Element>e.target).classList.toggle('highlight', e.type.endsWith('over'))
     )
     .call((s) => seriesConfigTooltipsHandleEvents(s));
