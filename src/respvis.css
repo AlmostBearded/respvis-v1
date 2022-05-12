@@ -71,13 +71,6 @@
 .bar {
   stroke-width: 1px;
   stroke: #000;
-  -webkit-touch-callout: none; /* iOS Safari */
-  -webkit-user-select: none; /* Safari */
-   -khtml-user-select: none; /* Konqueror HTML */
-     -moz-user-select: none; /* Old versions of Firefox */
-      -ms-user-select: none; /* Internet Explorer/Edge */
-          user-select: none; /* Non-prefixed version, currently
-                                supported by Chrome, Edge, Opera and Firefox */
 }
 
 .highlight .bar,
@@ -164,6 +157,14 @@
 .chart .header .subtitle {
   --fit-width: true;
   --fit-height: true;
+}
+
+@media (hover: none) {
+  .chart {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
 }
 
 .chart-cartesian[data-legend-position='right'],
